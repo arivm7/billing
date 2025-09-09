@@ -1,0 +1,29 @@
+{
+	"name" : "ri/s1.ri.net.ua",
+	"description" : "RI-network Biling system",
+	"type" : "project",
+	"authors" : [{
+			"name" : "Ar",
+			"email" : "ariv@meta.ua",
+			"homepage" : "https://my.ri.net.ua",
+			"role" : "CEO"
+		}
+	],
+	"autoload" : {
+		"psr-4" : {
+			"billing\\" : "billing/",
+			"app\\" : "app/",
+			"config\\" : "config/"
+		}
+	},
+	"homepage" : "https://my.ri.net.ua",
+	"keywords" : [
+		"billing internet management user hard material control"
+	],
+	"require": {
+		"monolog/monolog": "^3.9",
+		"phpmailer/phpmailer": "^6.10",
+		"vlucas/valitron": "^1.4",
+		"ezyang/htmlpurifier": "^4.18"
+	}
+}

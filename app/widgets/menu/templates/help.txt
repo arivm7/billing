@@ -1,0 +1,145 @@
+Примеры вызова меню с другими шаблонами
+
+
+<!--
+<style>
+    /* Общие переменные и базовые стили для всех меню */
+    .my-accordion-menu {
+        /* Переменные */
+        --acc-bg: #0D5995;
+        --acc-hover-bg: #0d6efd;
+        --acc-color: white;
+        --acc-border-color: #ccc;
+        --acc-padding: 12px 16px;
+        --acc-fixed-width: 250px;
+        --acc-min-width: 250px;
+        --acc-max-width: 250px;
+        --acc-indent: 10px;
+        --acc-transition: 0.3s ease;
+        --acc-open-max-height: 500px;
+        --acc-radius: 8px; /* закруглённые углы */
+
+
+        /* Применение */
+        background: var(--acc-bg);
+        color: var(--acc-color);
+        font-family: monospace;
+        min-width: var(--acc-min-width);
+        max-width: var(--acc-max-width);
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        /* закруглённые углы и обрезка дочерних overflow */
+        border-radius: var(--acc-radius);
+        /*overflow: hidden;*/
+    }
+
+    /* Пункты меню — разделители */
+    .my-accordion-menu li {
+        /*border-bottom: 1px solid var(--acc-border-color);*/
+    }
+
+    /* Заголовки пунктов */
+    .my-accordion-menu-item {
+        display: flex;
+        flex-direction: column;        /* <--- вместо строки, колоночная раскладка */
+        align-items: flex-start;       /* заголовок слева */
+
+        padding: var(--acc-padding);
+        cursor: pointer;
+        user-select: none;
+        transition: background var(--acc-transition);
+
+         /*Обрезка длинного текста*/
+        max-width: 100%;                 /* 20ch; -- примерно 20 символов*/
+        white-space: nowrap;             /* Запрещаем перенос строк*/
+        overflow: hidden;                /* Обрезаем текст, выходящий за границы*/
+        text-overflow: ellipsis;         /* Добавляем многоточие при обрезке*/
+
+        border-radius: var(--acc-radius) var(--acc-radius) var(--acc-radius) var(--acc-radius);  /* закругление */
+    }
+
+    .my-accordion-menu-item > a {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;   /* для стрелки */
+        /*align-items: center;*/
+    }
+
+    .my-accordion-menu-item:hover {
+        background: var(--acc-hover-bg);
+    }
+
+    /* Подменю */
+    .my-accordion-submenu {
+        /*max-height: 0;*/
+        overflow: hidden;
+        transition: max-height var(--acc-transition);
+        padding-left: var(--acc-indent);
+        background: var(--acc-bg);
+        color: var(--acc-color);
+
+        /* Обрезка текста */
+        max-width: 100%;                 /* 20ch; -- примерно 20 символов*/
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .my-accordion-submenu li {
+        padding: var(--acc-padding);
+        /*border-bottom: 1px solid var(--acc-border-color);*/
+    }
+
+    .my-accordion-submenu li:last-child {
+        /* нижним подпунктам придадим скругление снизу */
+        border-radius: var(--acc-radius) var(--acc-radius) var(--acc-radius) var(--acc-radius);
+    }
+
+    .my-accordion-submenu.open {
+        max-height: var(--acc-open-max-height);
+    }
+
+    /* Стрелка */
+    .arrow {
+        transition: transform var(--acc-transition);
+    }
+    .my-accordion-menu-item.open .arrow {
+        transform: rotate(90deg);
+    }
+
+    .fixed-width {
+      width: var(--acc-fixed-width);
+    }
+
+
+</style>
+-->
+
+                    <!--
+                    <?php
+//                    new Menu(
+//                            [
+//                                'template'       => DIR_WIDGETS . '/menu/templates/menu_template_select.php',
+//                                'container'      => 'select',
+//                                'container_attr' => "class='menu'",
+//                                'db_table'       => 'menu',
+//                                'cache_time'     => 10,
+//                                'cache_key'      => 'select-menu'
+//                            ]
+//                    );
+                    ?>
+                    <hr>
+                    -->
+                    <?php
+//                        new Menu(
+//                            [
+//                                'template'       => DIR_WIDGETS . '/menu/templates/menu_template_ul_li.php',
+//                                'container'      => 'ul',
+//                                'container_attr' => "id='my-accordion' class='my-accordion-menu'",
+//                                'db_table'       => 'menu',
+//                                'cache_time'     => 10,
+//                                'cache_key'      => 'ul-menu'
+//                            ]
+//                        );
+                    ?>

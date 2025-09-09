@@ -1,0 +1,88 @@
+# =======================
+# Файлы сборки или деплоя (опционально)
+# =======================
+# /make_folders.sh
+# /deploy.sh
+*.launch
+
+# submodule
+dcjqaccordion
+
+# ================================
+# Конфиденциальные конфиги
+# ================================
+config/config_db.php
+.env
+.env.*
+
+# ================================
+# IDE: Eclipse, VSCode и прочее
+# ================================
+.project
+.buildpath
+.settings/
+.metadata/
+.remote-sync.json
+*.tmp
+*.swp
+*.bak
+*.orig
+*.sublime-project
+*.sublime-workspace
+.idea/
+.vscode/
+nbproject
+.kdev4
+*.kdev4
+
+# ================================
+# Composer
+# ================================
+vendor/
+composer.lock
+composer.phar
+
+# ================================
+# Кэш, временные и логи
+# ================================
+.cache/
+tmp/*
+tmp/
+public/tmp/
+public/tmp/*
+**/cache/
+**/log/
+*.log
+
+
+# ================================
+# ОС и редакторы
+# ================================
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.bak
+*.tmp
+*.orig
+
+# =======================
+# Тесты и окружения (опционально)
+# =======================
+phpunit.xml
+.env
+.env.*
+/coverage/
+
+# =======================
+# Сторонние frontend-библиотеки (если есть)
+# =======================
+# node_modules/
+# bower_components/
+# public/vendor/
+
+# ================================
+# Публичные диагностические файлы
+# ================================
+public/phpinfo.php
+composer.reload.sh

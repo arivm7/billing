@@ -1,0 +1,16 @@
+# Если запрашиваемый путь — не файл на диске (!-f означает «не является файлом»), идём дальше.
+RewriteCond %{REQUEST_FILENAME} !-f
+# И если путь — не директория (!-d означает «не является директорией»), идём дальше.
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Любой путь ((.*)) перенаправляется на index.php?$1
+RewriteRule (.*) index.php?$1 [L,QSA]
+# [L] — означает "Last rule", т.е. прекратить дальнейшие правила
+# [QSA] — "Query String Append": если был GET-параметр, он добавляется к index.php
+
+
+# Возможные доработки:
+# Чтобы параметр $1 попадал в $_GET['q'], чаще пишут так:
+# RewriteRule ^(.*)$ index.php?q=$1 [L,QSA]
+# Тогда:
+# /some/path → index.php?q=some/path
