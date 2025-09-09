@@ -1,0 +1,80 @@
+:root {
+  /* Глобальные коэффициенты */
+  --shrink-font-coef: 0.95;      /* текст */
+  --shrink-padding-coef: 0.95;    /* padding */
+  --shrink-margin-coef: 0.95;     /* margin */
+  --shrink-lineheight-coef: 0.95; /* line-height */
+
+  /* Производные переменные */
+  --shrink-font: calc(var(--shrink-font-coef) * 1rem);
+  --shrink-font-sm: calc(var(--shrink-font-coef) * 0.875rem);
+  --shrink-font-xs: calc(var(--shrink-font-coef) * 0.75rem);
+
+  --shrink-lineheight: var(--shrink-lineheight-coef);
+}
+
+
+
+/* Применяем глобальный шрифт */
+body {
+  font-size: var(--shrink-font);
+  line-height: var(--shrink-lineheight);
+  margin: calc(var(--shrink-margin-coef) * 1rem);
+}
+
+
+
+/* Кнопки */
+.btn {
+  padding: calc(var(--shrink-padding-coef) * 0.25rem) calc(var(--shrink-padding-coef) * 0.5rem);
+  font-size: var(--shrink-font);
+  line-height: var(--shrink-lineheight);
+  margin: calc(var(--shrink-margin-coef) * 0.25rem);
+}
+
+
+
+.btn-sm {
+  padding: calc(var(--shrink-padding-coef) * 0.2rem) calc(var(--shrink-padding-coef) * 0.4rem);
+  font-size: var(--shrink-font-sm);
+}
+
+
+
+/* Поля ввода */
+.form-control,
+.input-group-text {
+  padding: calc(var(--shrink-padding-coef) * 0.25rem) calc(var(--shrink-padding-coef) * 0.5rem);
+  font-size: var(--shrink-font);
+  line-height: var(--shrink-lineheight);
+  margin-bottom: calc(var(--shrink-margin-coef) * 0.5rem);
+}
+
+
+
+/* Заголовки */
+h1, .h1 { font-size: calc(var(--shrink-font-coef) * 2rem); }
+h2, .h2 { font-size: calc(var(--shrink-font-coef) * 1.75rem); }
+h3, .h3 { font-size: calc(var(--shrink-font-coef) * 1.5rem); }
+h4, .h4 { font-size: calc(var(--shrink-font-coef) * 1.25rem); }
+h5, .h5 { font-size: var(--shrink-font); }
+h6, .h6 { font-size: var(--shrink-font-sm); }
+
+
+
+/* Таблицы */
+.table-sm td,
+.table-sm th {
+  padding: calc(var(--shrink-padding-coef) * 0.3rem);
+  font-size: var(--shrink-font);
+}
+
+
+
+/* Общие утилиты */
+.p-1 { padding: calc(var(--shrink-padding-coef) * 0.25rem) !important; }
+.p-2 { padding: calc(var(--shrink-padding-coef) * 0.5rem) !important; }
+.m-1 { margin: calc(var(--shrink-margin-coef) * 0.25rem) !important; }
+.m-2 { margin: calc(var(--shrink-margin-coef) * 0.5rem) !important; }
+
+
