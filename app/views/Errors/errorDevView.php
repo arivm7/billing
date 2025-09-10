@@ -16,7 +16,7 @@ use billing\core\ErrorHandler;
     <body>
         <h1>Произошла ошибка</h1>
         <p><b>Код ошибки:</b> <?= $errno ?></p>
-        <p><b>Текст ошибки:</b><pre><?php print_r($errstr); ?></pre></p>
+        <p><b>Текст ошибки:</b></p><pre><?php print_r($errstr); ?></pre>
         <p><b>Файл:</b> <?= $errfile ?></p>
         <p><b>Строка:</b> <?= $errline ?></p>
         <hr>

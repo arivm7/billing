@@ -112,12 +112,12 @@ class AuthModel extends UserModel {
 
 
 
-    /**
-     * Регистрация активности пользователя
-     * @param type $id
-     */
-    function lastAct($id) {
-        throw new Exception('Это еще не реализовано');
+//     /**
+//      * Регистрация активности пользователя
+//      * @param type $id
+//      */
+//     function lastAct($id) {
+//         throw new Exception('Это еще не реализовано');
 //        $rows = $this->model->findBySql(
 //                "SELECT * FROM `users_actions` WHERE (`user_id`=?) AND (`date_logout` IS NULL) ORDER BY `id` DESC LIMIT 1", [$id]);
 //        if (count($rows) == 1) {
@@ -135,7 +135,7 @@ class AuthModel extends UserModel {
 //            $row['date_logout'] = null;
 //            $this->model->insert_row("users_actions", $row);
 //        }
-    }
+//     }
 
 
 

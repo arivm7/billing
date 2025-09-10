@@ -8,24 +8,24 @@ $postRec = Firm::POST_REC;
 ?>
 
 <div class="container mt-4">
-    <h2 class="mb-4">Редактирование предприятия</h2>
+    <h2 class="mb-4"><?=__('Edit enterprise');?></h2>
     <form method="post">
         <input type="hidden" name="<?= Firm::POST_REC ?>[<?= Firm::F_ID ?>]" value="<?= (int)($item[Firm::F_ID] ?? 0) ?>">
 
         <!-- Навигация по вкладкам -->
         <ul class="nav nav-tabs" id="firmTab<?=$item[Firm::F_ID];?>" role="tablist">
             <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#tab-edit-info<?=$item[Firm::F_ID];?>" type="button" role="tab">Инфо</button>
+                <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#tab-edit-info<?=$item[Firm::F_ID];?>" type="button" role="tab"><?=__('Info');?></button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="bank-tab" data-bs-toggle="tab" data-bs-target="#tab-edit-bank<?=$item[Firm::F_ID];?>" type="button" role="tab">Банк</button>
+                <button class="nav-link" id="bank-tab" data-bs-toggle="tab" data-bs-target="#tab-edit-bank<?=$item[Firm::F_ID];?>" type="button" role="tab"><?=__('Bank');?></button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="office-tab" data-bs-toggle="tab" data-bs-target="#tab-edit-office<?=$item[Firm::F_ID];?>" type="button" role="tab">Офис</button>
+                <button class="nav-link" id="office-tab" data-bs-toggle="tab" data-bs-target="#tab-edit-office<?=$item[Firm::F_ID];?>" type="button" role="tab"><?=__('Office');?></button>
             </li>
             <?php if (can_edit(Module::MOD_FIRM_STATUS)) : ?>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="status-tab" data-bs-toggle="tab" data-bs-target="#tab-edit-status<?=$item[Firm::F_ID];?>" type="button" role="tab">Статус</button>
+                <button class="nav-link" id="status-tab" data-bs-toggle="tab" data-bs-target="#tab-edit-status<?=$item[Firm::F_ID];?>" type="button" role="tab"><?=__('Status');?></button>
             </li>
             <?php endif; ?>
         </ul>
@@ -38,13 +38,13 @@ $postRec = Firm::POST_REC;
                 <div class="row g-3">
                     <?php
                     $infoFields = [
-                        Firm::F_NAME_SHORT => 'Краткое название',
-                        Firm::F_NAME_LONG => 'Полное название',
-                        Firm::F_NAME_TITLE => 'Публичное название предприятия',
-                        Firm::F_MANAGER_JOB_TITLE => 'Должность ответственного',
-                        Firm::F_MANAGER_NAME_SHORT => 'ФИО ответственного',
-                        Firm::F_MANAGER_NAME_LONG => 'Фамилия Имя Отчество',
-                        Firm::F_OFFICE_PHONES => 'Контактные телефоны',
+                        Firm::F_NAME_SHORT => __('Short name'),
+                        Firm::F_NAME_LONG => __('Full name'),
+                        Firm::F_NAME_TITLE => __('Public enterprise name'),
+                        Firm::F_MANAGER_JOB_TITLE => __('Responsible position'),
+                        Firm::F_MANAGER_NAME_SHORT => __('Responsible person name'),
+                        Firm::F_MANAGER_NAME_LONG => __('Full name'),
+                        Firm::F_OFFICE_PHONES => __('Contact phones'),
                     ];
                     foreach ($infoFields as $field => $label) {
                         $val = h($item[$field] ?? '');
@@ -64,12 +64,12 @@ HTML;
                 <div class="row g-3">
                     <?php
                     $bankFields = [
-                        Firm::F_COD_EDRPOU => 'ЕДРПОУ',
-                        Firm::F_COD_IPN => 'ИПН',
-                        Firm::F_REGISTRATION => 'Регистрация',
-                        Firm::F_ADDRESS_REGISTRATION => 'Адрес регистрации',
-                        Firm::F_BANK_IBAN => 'IBAN',
-                        Firm::F_BANK_NAME => 'Название банка',
+                        Firm::F_COD_EDRPOU => __('EDRPOU code'),
+                        Firm::F_COD_IPN => __('Tax ID'),
+                        Firm::F_REGISTRATION => __('Registration'),
+                        Firm::F_ADDRESS_REGISTRATION => __('Registration address'),
+                        Firm::F_BANK_IBAN => __('IBAN'),
+                        Firm::F_BANK_NAME => __('Bank name'),
                     ];
                     foreach ($bankFields as $field => $label) {
                         $val = h($item[$field] ?? '');
@@ -99,15 +99,15 @@ HTML;
                 <div class="row g-3">
                     <?php
                     $officeFields = [
-                        Firm::F_ADDRESS_OFFICE_FULL => 'Адрес офиса',
-                        Firm::F_ADDRESS_POST_PERSON => 'От кого (почта)',
-                        Firm::F_ADDRESS_POST_INDEX => 'Индекс',
-                        Firm::F_ADDRESS_POST_UL => 'Улица',
-                        Firm::F_ADDRESS_POST_DOM => 'Дом, корп., стр., кв.',
-                        Firm::F_ADDRESS_POST_SITY => 'Город',
-                        Firm::F_ADDRESS_POST_REGION => 'Область',
-                        Firm::F_ADDRESS_POST_COUNTRY => 'Страна',
-                        Firm::F_ADDRESS_OFFICE_COURIER => 'Адрес для курьеров',
+                        Firm::F_ADDRESS_OFFICE_FULL => __('Office address'),
+                        Firm::F_ADDRESS_POST_PERSON => __('From whom (mail)'),
+                        Firm::F_ADDRESS_POST_INDEX => __('Postal code'),
+                        Firm::F_ADDRESS_POST_UL => __('Street'),
+                        Firm::F_ADDRESS_POST_DOM => __('Building, corp., apt.'),
+                        Firm::F_ADDRESS_POST_SITY => __('City'),
+                        Firm::F_ADDRESS_POST_REGION => __('Region'),
+                        Firm::F_ADDRESS_POST_COUNTRY => __('Country'),
+                        Firm::F_ADDRESS_OFFICE_COURIER => __('Courier address'),
                     ];
                     foreach ($officeFields as $field => $label) {
                         $val = htmlspecialchars($item[$field] ?? '');
@@ -128,12 +128,12 @@ HTML;
                 <div class="row g-3">
                     <?php
                     $checkboxes = [
-                        Firm::F_HAS_ACTIVE => 'Активное предприятие',
-                        Firm::F_HAS_DELETE => 'Помечено как удалённое',
-                        Firm::F_HAS_AGENT => 'Предприятие-агент (наше)',
-                        Firm::F_HAS_CLIENT => 'Предприятие-клиент',
-                        Firm::F_HAS_ALL_VISIBLE => 'Видимое для всех',
-                        Firm::F_HAS_ALL_LINKING => 'Подключаемое всеми',
+                        Firm::F_HAS_ACTIVE => __('Active enterprise'),
+                        Firm::F_HAS_DELETE => __('Marked as deleted'),
+                        Firm::F_HAS_AGENT => __('Agent enterprise, provider representative'),
+                        Firm::F_HAS_CLIENT => __('Client enterprise'),
+                        Firm::F_HAS_ALL_VISIBLE => __('Visible to all'),
+                        Firm::F_HAS_ALL_LINKING => __('Connectable by all'),
                     ];
 
                     foreach ($checkboxes as $field => $label) {
@@ -148,20 +148,12 @@ HTML;
 HTML;
                     }
 
-//                    // Селектор ППП
-//                    echo <<<HTML
-//<div class="col-md-6">
-//    <label class="form-label">ППП по умолчанию</label>
-//    <input type="number" class="form-control" name="{$postRec}[ppp_default_id]" value="{$item[Firm::F_PPP_DEFAULT_ID]}">
-//</div>
-//HTML;
-
                     // Статическая информация
                     $readonlyFields = [
-                        Firm::F_CREATION_UID => 'Кем создано (UID)',
-                        Firm::F_CREATION_DATE => 'Дата создания',
-                        Firm::F_MODIFIED_UID => 'Кем изменено (UID)',
-                        Firm::F_MODIFIED_DATE => 'Дата изменения',
+                        Firm::F_CREATION_UID => __('Created by (UID)'),
+                        Firm::F_CREATION_DATE => __('Creation date'),
+                        Firm::F_MODIFIED_UID => __('Modified by (UID)'),
+                        Firm::F_MODIFIED_DATE => __('Modification date'),
                     ];
                     echo "<table class='table border w-50'>";
                     foreach ($readonlyFields as $field => $label) {
@@ -177,7 +169,7 @@ HTML;
 
         <!-- Кнопки -->
         <div class="mt-4">
-            <button type="submit" class="btn btn-primary">Сохранить</button>
+            <button type="submit" class="btn btn-primary"><?=__('Save');?></button>
         </div>
     </form>
 </div>

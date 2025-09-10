@@ -102,9 +102,9 @@ class Pagination {
     /**
      * Формирует URL текущей страницы без параметра page, чтобы можно было использовать его,
      * например, для генерации ссылок пагинации (?page=2, ?page=3 и т.д.), не дублируя параметр page.
-     * @return type
+     * @return string
      */
-    public function getParams() {
+    public function getParams(): string {
         /**
          * Делит текущий URL по символу "?" :
          * $url[0] — путь (например, "/admin/users")

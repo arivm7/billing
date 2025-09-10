@@ -43,6 +43,9 @@ class ErrorHandler {
             ?string $errFile,
             ?int $errLine)
     {
+
+        $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+
         $this->log(
             prefix: 'ERROR',
             message: "[{$errNo}] {$errStr}",
@@ -50,8 +53,8 @@ class ErrorHandler {
             line: $errLine
         );
         if (self::DEBUG || in_array($errNo, [E_USER_ERROR, E_RECOVERABLE_ERROR])) {
-            //     displayError($errno, $errstr, $errfile, $errline, int $response_code = 500, mixed $dump = null){};
-            $this->displayError(errno: $errNo, errstr: $errStr, errfile: $errFile, errline: $errLine);
+                              // errno,        $errstr,         $errfile,          $errline,          $errcontext              $response_code
+            $this->displayError( errno: $errNo, errstr: $errStr, errfile: $errFile, errline: $errLine, errcontext: $backtrace);
         }
         // true -- прекратить обработку ошибки
         // false -- продолжить обработку ошибки
@@ -70,8 +73,8 @@ class ErrorHandler {
                 line: $error['line'],
                 dump: $error);
             ob_end_clean(); // !!!
-            //     displayError($errno,         $errstr,           $errfile,       $errline,       $errcontext, $response_code)
-            $this->displayError($error['type'], $error['message'], $error['file'], $error['line'], $error,      self::DEFAULT_RESPONSE_CODE);
+            //     displayError($errno,               $errstr,                   $errfile,                $errline,                $errcontext,         $response_code)
+            $this->displayError(errno: $error['type'], errstr: $error['message'], errfile: $error['file'], errline: $error['line'], errcontext: $error);
         } else {
             ob_end_flush(); // !!!
         }
@@ -87,8 +90,8 @@ class ErrorHandler {
             file: $e->getFile(),
             line: $e->getLine(),
             dump: $e);
-        //     displayError($errno,       $errstr,          $errfile,      $errline,      $errcontext, $response_code)
-        $this->displayError('Исключение', $e->getMessage(), $e->getFile(), $e->getLine(), $e,          (int)$e->getCode());
+                         // errno,              $errstr,                  $errfile,               $errline,                $errcontext     $response_code
+        $this->displayError(errno: 'Исключение', errstr: $e->getMessage(), errfile: $e->getFile(), errline: $e->getLine(), errcontext: $e, response_code: (int)$e->getCode());
     }
 
 

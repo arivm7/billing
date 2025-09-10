@@ -28,7 +28,7 @@ class ConciliationController extends AbonController {
             'user' => $user,
         ]);
 
-        View::setMeta(title: 'Запрос на Акт сверки платежей');
+        View::setMeta(title: __('Запрос на Акт сверки платежей'));
 
     }
 
@@ -41,12 +41,12 @@ class ConciliationController extends AbonController {
         $user = array();
         if (is_numeric($this->route[F_ALIAS])) {
             if (!App::$auth->isAuth) {
-                MsgQueue::msg(MsgType::ERROR, 'Для данного действия тредуется авторизация');
+                MsgQueue::msg(MsgType::ERROR, __('Для данного действия требуется авторизация'));
                 redirect('/');
             }
             $user = $model->get_user_by_abon_id((int)$this->route[F_ALIAS]);
             if ($_SESSION[User::SESSION_USER_REC][User::F_ID] != $user[User::F_ID]) {
-                MsgQueue::msg(MsgType::ERROR, 'Вы запрашиваете чужой документ');
+                MsgQueue::msg(MsgType::ERROR, __('Вы запрашиваете чужой документ'));
                 redirect('/');
             }
             $abon = $model->get_abon((int)$this->route[F_ALIAS]);
@@ -182,8 +182,8 @@ class ConciliationController extends AbonController {
         //
         $contragents = $model->get_firms_by_uid_cli($U[User::F_ID]);
         if(empty($contragents)) {
-            $contragents[0]['name_long'] = $U['name'];
-            $contragents[0]['name_short'] = $U['name_short'];
+            $contragents[0]['name_long'] = $U[User::F_NAME_FULL];
+            $contragents[0]['name_short'] = $U[User::F_NAME_SHORT];
         }
 
         //

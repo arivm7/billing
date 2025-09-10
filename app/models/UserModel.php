@@ -10,6 +10,7 @@ use config\tables\User;
 use config\tables\TP;
 use config\tables\TSUserTp;
 use config\tables\Contacts;
+use billing\core\base\Lang;
 
 
 
@@ -124,7 +125,7 @@ class UserModel extends AppBaseModel{
     public function cleaningPhones(): bool {
         try {
             $cleanPhone = PhoneTools::cleaning($this->attributes[User::F_PHONE_MAIN]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->errors['phone_number'][] = $e->getMessage();
             return false;
         }
@@ -183,9 +184,11 @@ class UserModel extends AppBaseModel{
     }
 
 
+    
     /**
      * Создаёт пользователя в базе с параметрами из $this->attributes
-     * @return type
+     * @param array|null $user_data
+     * @return bool
      */
     public function userSave(array|null $user_data = null): bool {
         if (!$user_data) {
@@ -240,21 +243,23 @@ class UserModel extends AppBaseModel{
     /**
      * Возвращает из базы ассоциативный массив со списком ТП разрешенных текущему авторизованному пользователю.
      * Если парамерт-фильтр установлен в null, то он не участвует в запросе и выбираются все значения.
+     * @param int|null $abon_id
      * @param int|null $status -- 0 — Отключен/демонтирован, 1 — Работает
      * @param int|null $deleted -- ТП физически демонтирована, её больше нет.
      * @param int|null $is_managed -- Управляемая ТП, т.е. есть микротик и абоны почключены через таблицу АБОН
      * @param int|null $rang_id -- Ранг узла: 1 — Абонентский узел | 2 — AP | 3 — Агрегатор AP | 4 — Bridge AP | 5 — Bridge Client | 10 — Хостинговая тех. площадка | 100 — Биллинг
+     * @return array
      */
     function get_my_tp_list(
             int|null $abon_id = null,
             int|null $status = 1,
             int|null $deleted = null,
             int|null $is_managed = null,
-            int|null $rang_id = null)
+            int|null $rang_id = null): array
     {
         $my = (is_null($abon_id) ? $_SESSION[User::SESSION_USER_REC][User::F_ID] : $abon_id);
         if (!$this->validate_id(table_name: User::TABLE, id_value: $my, field_id: User::F_ID)) {
-            throw new Exception("ID[{$abon_id}] No Valid");
+            throw new \Exception("ID[{$abon_id}] No Valid");
         }
         $sql = "SELECT "
                 . "".TP::TABLE.".* "

@@ -33,7 +33,7 @@ class View {
      * Сохраняется сюда функцией extractScripts()
      * Должны выводиться в виде или в компоновке как-то так:
      * <?php foreach ($scripts as $script) { echo $script; } ?>
-     * @var type
+     * @var array
      */
     public $scripts;
 
@@ -140,10 +140,10 @@ class View {
     /**
      * Извлекает все теги <script>...</script> из HTML-контента и возвращает "очищенный" от них текст.
      * Сами скрипты при этом сохраняются в свойство $this->scripts.
-     * @param type $content
-     * @return type
+     * @param string $content
+     * @return string
      */
-    public function extractScripts($content) {
+    public function extractScripts(string $content): string {
         /**
          * Шаблон регулярного выражения:
          * #<script.*?>.*?</script># — ищет любой тег <script>...</script>

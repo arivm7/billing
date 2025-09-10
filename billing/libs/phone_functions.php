@@ -167,8 +167,8 @@ function extractCountryCode(string $number): string {
 
 /**
  * Проверяет длину номера с учётом кода страны
- * @param type $number
- * @param type $code
+ * @param string $number
+ * @param string $code
  * @global array $phoneNumberLengths
  * @return bool
  * @throws InvalidArgumentException

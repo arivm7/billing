@@ -148,10 +148,10 @@ class Router {
 
     /**
      * Из URL-строки возвращает толко фрагмент вида 'контроллер/действие'
-     * @param type $urlPath
+     * @param string $urlPath
      * @return string
      */
-    protected static function removeQueryString($urlPath): string {
+    protected static function removeQueryString(string $urlPath): string {
         if ($urlPath) {
             $params = explode(separator: '&', string: $urlPath, limit: 2);
             if (false === strpos($params[0], '=')) {

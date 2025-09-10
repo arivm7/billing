@@ -1,7 +1,6 @@
 <?php
 
 namespace app\widgets\menu;
-use app\models\AbonModel;
 use app\models\MenuModel;
 use config\tables\Menu as M;
 use billing\core\App;
@@ -86,7 +85,7 @@ class Menu {
     /**
      * поля класса для замены значения:
      * [ 'tpl', 'container', 'db_table', 'time_cache', ...]
-     * @param type $options
+     * @param array $options
      */
     function setOptions(array $options): void {
         foreach ($options as $key => $value) {

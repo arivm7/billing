@@ -25,6 +25,7 @@ class Module {
 
     /*
      * ID Модулей из базы
+     *
      * Важно:
      * в случае изменения номера модуля в базе нужно изменить тут
      *
@@ -36,12 +37,12 @@ class Module {
     const MOD_FIRM          = 22;   const MOD_MY_FIRM         = 31;
     const MOD_CONCILIATION  = 35;   const MOD_MY_CONCILIATION = 34;
     const MOD_NOTIFY        = 37;   const MOD_MY_NOTIFY       = 38;
+    const MOD_PAYMENTS      = 40;   const MOD_MY_PAYMENTS     = 41;
     const MOD_FIRM_STATUS   = 33;
     const MOD_MODULES       = 32;
     const MOD_DOCS          = 30;
     const MOD_SEARCH        = 36;
     const MOD_WEB_DEBUG     = 39;
-
 
 
 

@@ -5,7 +5,6 @@ use config\tables\Firm;
 use config\tables\Module;
 use config\tables\User;
 require DIR_LIBS . '/form_functions.php';
-
 /** @var array $user */
 ?>
 <div class="container">
@@ -17,17 +16,17 @@ require DIR_LIBS . '/form_functions.php';
             <ul class="nav nav-tabs justify-content-start" id="my_tab_user_abon" role="tablist">
                 <!-- Вкладка пользователя -->
                 <li class="nav-item" role="presentation">
-                    <a class="nav-link active" id="tab1-tab" data-bs-toggle="tab" href="#tab_user_<?=$user[User::F_ID];?>" role="tab"><small><?=__('User card');?></small></a>
+                    <a class="nav-link active" data-bs-toggle="tab" href="#tab_user_<?=$user[User::F_ID];?>" role="tab"><small><?=__('User card');?></small></a>
                 </li>
                 <!-- Вкладка Абонентов -->
                 <li class="nav-item" role="presentation">
-                  <a class="nav-link" id="tab2-tab" data-bs-toggle="tab" href="#tab_abons_<?=$user[User::F_ID];?>" role="tab"><small><?=__('Abonent services');?></small></a>
+                  <a class="nav-link" data-bs-toggle="tab" href="#tab_abons_<?=$user[User::F_ID];?>" role="tab"><small><?=__('Abonent services');?></small></a>
                 </li>
             </ul>
 
-            <div class="tab-content" id="myTabContent">
+            <div class="tab-content">
 
-                <!-- Контьент Вкладки пользователя -->
+                <!-- Контент Вкладки пользователя -->
                 <div class="tab-pane fade show active" id="tab_user_<?=$user[User::F_ID];?>" role="tabpanel">
                     <?php if (can_view(Module::MOD_MY_USER_CARD)) require DIR_INC . '/user_view.php'; ?>
                     <hr>
@@ -36,15 +35,15 @@ require DIR_LIBS . '/form_functions.php';
                         <div class="container-fluid">
                             <ul class="nav nav-tabs justify-content-end" id="my_tab_contacts" role="tablist">
                                 <li class="nav-item" role="presentation">
-                                    <a class="nav-link py-1 px-2 active" id="tab1-tab" data-bs-toggle="tab" href="#tab_view_contacts_<?=$user[User::F_ID];?>" role="tab"><small><?=__('View');?></small></a>
+                                    <a class="nav-link py-1 px-2 active" data-bs-toggle="tab" href="#tab_view_contacts_<?=$user[User::F_ID];?>" role="tab"><small><?=__('View');?></small></a>
                                 </li>
                                 <?php if (can_edit([Module::MOD_MY_CONTACTS, Module::MOD_CONTACTS]) || can_add([Module::MOD_MY_CONTACTS, Module::MOD_CONTACTS])) : ?>
                                 <li class="nav-item" role="presentation">
-                                  <a class="nav-link py-1 px-2" id="tab2-tab" data-bs-toggle="tab" href="#tab_edit_contacts_<?=$user[User::F_ID];?>" role="tab"><small><?=__('Edit');?></small></a>
+                                  <a class="nav-link py-1 px-2" data-bs-toggle="tab" href="#tab_edit_contacts_<?=$user[User::F_ID];?>" role="tab"><small><?=__('Edit');?></small></a>
                                 </li>
                                 <?php endif; ?>
                             </ul>
-                            <div class="tab-content" id="myTabContent">
+                            <div class="tab-content">
                                 <div class="tab-pane fade show active" id="tab_view_contacts_<?=$user[User::F_ID];?>" role="tabpanel">
                                     <?php require DIR_INC . '/contacts_view.php'; ?>
                                 </div>
@@ -57,6 +56,7 @@ require DIR_LIBS . '/form_functions.php';
                         </div>
                     <?php endif; ?>
 
+                    <!--Просмотр предприятий-->
                     <?php if (can_view(Module::MOD_MY_FIRM) && !empty($user[Firm::TABLE])) : ?>
                         <h3 class="fs-3 text-center"><?=__('Contacts for document exchange');?></h3>
                         <?=get_html_accordion(

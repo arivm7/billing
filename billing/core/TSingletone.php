@@ -42,9 +42,9 @@ trait TSingletone
      * Фактический экземпляр Синглтона почти всегда находится в статическом поле.
      * В этом случае статическое поле представляет собой массив,
      * где каждый подкласс Синглтона хранит свой собственный экземпляр.
-     * @return type
+     * @return object
      */
-    public static function instance() {
+    public static function instance():object {
         /**
          * Получает имя текущего вызывающего класса.
          * Это важно для поддержки наследования — чтобы каждый подкласс имел свой собственный "единственный" экземпляр.
@@ -72,9 +72,9 @@ trait TSingletone
 
     /**
      * Просто обёртка для instance()
-     * @return type
+     * @return object
      */
-    public static function getInstance() {
+    public static function getInstance(): object {
         return static::instance();
     }
     

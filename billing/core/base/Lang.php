@@ -132,9 +132,9 @@ class Lang {
      * @param string $key -- ключ для поиска и возврата значения из словаря
      * @param mixed $param -- вставка внутренних значений в строку
      * @param string|null $default -- значение "по умолчанию" если в словаре нет записи
-     * @return type
+     * @return string
      */
-    public static function get(string $key, mixed $param = null, string|null $default = null) {
+    public static function get(string $key, mixed $param = null, string|null $default = null):string {
         if (!isset(self::$lang_data[$key])) {
             switch (ErrorHandler::DEBUG && App::$app->get_config('lang_strong_file_existence')) {
                 case 0:
@@ -148,7 +148,7 @@ class Lang {
                     break;
                 case 2:
                 default:
-                 // throw new Exception("Не найден языковой файл Формы-Включения | Language file for Include not found: '{$lang_inc_file}'");
+                 // throw new Exception("Не найден языковой ключ | Language key not found: '{$key}'");
                     break;
             }
         }

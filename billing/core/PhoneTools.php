@@ -152,7 +152,7 @@ class PhoneTools {
      * Ищет сперва 3 цифры, затем 2, затем 1
      * @param string $number
      * @return string $countryPrefix
-     * @throws InvalidArgumentException
+     * @throws \InvalidArgumentException
      */
     public static function getCountryCode(string $number): string {
 
@@ -177,10 +177,10 @@ class PhoneTools {
 
     /**
      * Проверяет длину номера с учётом кода страны
-     * @param type $number - номер телефона
-     * @param type $code - код страны
+     * @param string $number - номер телефона
+     * @param string $code - код страны
      * @return bool
-     * @throws InvalidArgumentException
+     * @throws \InvalidArgumentException
      */
     public static function validateLength(string $number, string $code): bool {
 
@@ -206,7 +206,7 @@ class PhoneTools {
      * Простая проверка и упорядочивание номера телефона
      * @param string $phone
      * @return string
-     * @throws InvalidArgumentException
+     * @throws \InvalidArgumentException
      */
     public static function simpleCleaning(string $phone): string {
 
