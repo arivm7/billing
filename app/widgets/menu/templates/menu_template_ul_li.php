@@ -3,6 +3,7 @@
  *   Шаблон для построения html-строки меню
  */
 use app\models\MenuModel;
+use app\widgets\menu\Menu;
 /**
  * @var Menu    $this
  * @var int     $id       вызов require из Menu::item_to_template(array $item, string $tab, int $id);

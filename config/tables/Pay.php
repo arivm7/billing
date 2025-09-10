@@ -5,11 +5,6 @@
 namespace config\tables;
 
 
-        // pay_type_id
-        define('PAY_MONEY',   1);   // 1   Денежное пополнение ЛС
-        define('PAY_CORRECT', 2);   // 2   Компенсация на сумму
-        define('PAY_REQUEST', 3);   // 3   Начисление за услугу
-
 
 class Pay {
 

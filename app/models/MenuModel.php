@@ -8,7 +8,7 @@ use config\tables\Menu;
 class MenuModel extends AppBaseModel {
 
 
-    public string $db_table       = Menu::TABLE;
+    public string $db_table = Menu::TABLE;
 
 
 

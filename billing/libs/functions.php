@@ -1163,9 +1163,9 @@ function get_html_pa_status_badge(PAStatus $status, ?array $messages = null): st
  * @param string|null $left
  * @param string|null $right
  * @param string $attributes
- * @return type
+ * @return string
  */
-function get_html_content_left_right_(string|null $left, string|null $right, string $attributes = null) {
+function get_html_content_left_right_(string|null $left, string|null $right, string $attributes = null): string {
     return  "<div ".($attributes ?: "")." style='display: flex; justify-content: space-between; align-items: center;'>"
                 . "<div>{$left}</div>"
                 . "<div>{$right}</div>"

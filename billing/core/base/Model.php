@@ -710,13 +710,13 @@ abstract class Model {
      * @param string $table
      * @param string $field_id
      * @return int
-     * @throws Exception
+     * @throws \Exception
      */
     function get_next_id(string $table = User::TABLE, string $field_id = User::F_ID): int {
         $sql = "SELECT MAX($field_id) AS max_id FROM `$table`";
         $row = $this->get_rows_by_sql($sql);
         if (!$row) {
-            throw new Exception("Ошибка выполнения запроса: $sql");
+            throw new \Exception("Ошибка выполнения запроса: $sql");
         }
         return $row[0]['max_id'] + 1;
     }

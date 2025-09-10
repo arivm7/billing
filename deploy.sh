@@ -47,9 +47,9 @@ DEPLOY=(
 EXCLUDES=(
     ".git"
     ".gitignore"
-    "public/phpinfo.php"
-    "public/uploads/*"
     "storage/*"
+    "public/uploads/*"
+    "public/phpinfo.php"
 )
 
 

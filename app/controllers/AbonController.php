@@ -21,11 +21,8 @@ use config\tables\Price;
 use config\tables\Notify;
 use config\tables\TP;
 use config\tables\TSUserFirm;
-use config\tables\TSUserTp;
 use config\tables\PA;
 use config\tables\User;
-use config\SessionFields;
-use DebugView;
 
 
 require_once DIR_LIBS . '/datetime_functions.php';
@@ -52,10 +49,10 @@ class AbonController extends AppBaseController {
      *   PP01A    -- Активная абонплата за 1 день
      *   REST     -- Остаток на лицевом счету
      *   PREPAYED -- Количество предоплаченных дней
-     * @param type $data -- Ассоциативный массив записи абонента с добюавленными базовыми границами (abon_rest)
+     * @param array $data -- Ассоциативный массив записи абонента с добюавленными базовыми границами (abon_rest)
      * @return void
      */
-    function update_rest_fields(&$data): void {
+    function update_rest_fields(array &$data): void {
 
         /**
          * Активная абонплата за 30 дней

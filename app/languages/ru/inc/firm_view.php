@@ -1,0 +1,46 @@
+<?php
+/**
+ * ru
+ * for firm_view
+ */
+
+return [
+    'Viewing company data' => 'Просмотр данных предприятия',
+    'Info' => 'Инфо',
+    'Bank' => 'Банк',
+    'Office' => 'Офис',
+    'Status' => 'Статус',
+    'Short name of the enterprise' => 'Краткое название предприятия',
+    'Full name of the company' => 'Полное название предприятия',
+    'Public name, TM' => 'Публичное название, ТМ',
+    'Position of manager' => 'Должность руководителя',
+    'Short full name of the manager' => 'Краткое ФИО руководителя',
+    'Full name of the manager' => 'Полное ФИО руководителя',
+    'Contact numbers' => 'Контактные телефоны',
+    'EDRPOU' => 'ЕГРПОУ',
+    'TIN' => 'ИНН',
+    'Registration' => 'Регистрация',
+    'Registration address' => 'Адрес регистрации',
+    'Bank name' => 'Название банка',
+    'Office address' => 'Адрес офиса',
+    'Sender (post)' => 'От кого (почта)',
+    'Postal code' => 'Индекс',
+    'Street' => 'Улица',
+    'Building / Block / Apt.' => 'Дом, корп., стр., кв.',
+    'City' => 'Город',
+    'Region' => 'Область',
+    'Country' => 'Страна',
+    'Courier address' => 'Адрес для курьеров',
+    'Marked as deleted, not participating in service' => 'Помечено как удалённое, не участвует в обслуживании',
+    'Active counterparty, works, serviced' => 'Является контрагентом, работает, обслуживается',
+    'Active enterprise, is a counterparty' => 'Активное предприятие, явлается контрагеном',
+    'Enterprise temporarily disabled' => 'Предприятие временно отключено',
+    'Provider' => 'Провайдер',
+    'Not a provider' => 'Не провайдер',
+    'Subscriber' => 'Абоннет',
+    'Not a subscriber' => 'Не абонент',
+    'Visible to all upon connection' => 'Видимое для всех при подключении',
+    'Visible only to owner user' => 'Видимое только пользователю-владелцу',
+    'Connectable by all' => 'Подключаемое всеми',
+    'Can only be connected to owner user' => 'Может подключаться только к пользователю владельцу',
+];

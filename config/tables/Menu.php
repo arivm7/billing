@@ -19,7 +19,7 @@ class Menu {
     /**
      * Имя таблицы в базе данных
      */
-    public const TABLE            = 'menu';
+    public const TABLE            = 'adm_menu';
 
     public const F_ID             = 'id';               // ID элемента меню
     public const F_ORDER          = 'order_num';        // Порядковый номер элемента меню при отображении

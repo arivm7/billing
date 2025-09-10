@@ -31,7 +31,6 @@ enum PAStatus {
 
 
 
-
 class AbonModel extends UserModel {
 
 
@@ -275,13 +274,11 @@ class AbonModel extends UserModel {
 
 
 
-
     /**
      * Считает правильно
      * @param array $price_apply
      * @param int $today
      * @return array
-     * @throws Exception
      */
     public static function get_price_apply_cost_per_montch(array $price_apply, int $today): array {
         $struct = array();
@@ -474,7 +471,6 @@ class AbonModel extends UserModel {
      * @global array self::CACHE_PA_BY_ABON -- Кэш-таблица
      * @param int $abon_id -- ID абоненета
      * @return array -- список прикрепленных прайсовых фрагментов
-     * @throws Exception -- если ошибка запроса к базе
      */
     function get_prices_apply_by_abon($abon_id): array {
 
@@ -508,8 +504,23 @@ class AbonModel extends UserModel {
 
 
 
-    function get_payments(int $abon_id): array {
-        return $this->get_rows_by_field(table: Pay::TABLE, field_name: Pay::F_ABON_ID, field_value: $abon_id);
+    function get_payments(
+            int      $abon_id,
+            int|null $pay_type = null,
+            int|null $ppp_id = null
+        ): array
+    {
+        $sql = "SELECT "
+                . "*  "
+                . "FROM "
+                . "`".Pay::TABLE."` "
+                . "WHERE "
+                . "`".Pay::F_ABON_ID."`={$abon_id} "
+                . ($pay_type ? "AND `".Pay::F_PAY_TYPE_ID."`=1 " : "")
+                . ($ppp_id ? "AND `".Pay::F_PAY_PPP_ID."` = {$ppp_id} " : "")
+                . "ORDER BY "
+                . "`".Pay::TABLE."`.`".Pay::F_PAY_DATE."` DESC";
+        return $this->get_rows_by_sql($sql);
     }
 
 
@@ -518,7 +529,6 @@ class AbonModel extends UserModel {
      * Возвращает список предприятий-клиентов привязанных к указанному пользователю
      * @param int $uid -- ID пользователя
      * @return array -- список предприятий
-     * @throws type -- если не удалось получить список предприятий
      */
     function get_firms_by_uid_cli(int $uid): array
     {
@@ -545,10 +555,10 @@ class AbonModel extends UserModel {
      * Связь осуществляется через net_router_id и firm_id, и учитываются только те записи, которые актуальны на текущий момент
      * (то есть, период действия еще не закончился или не ограничен).
      *
-     * @param type $abon_id
+     * @param int $abon_id
      * @return array
      */
-    function get_agents_by_abon_id($abon_id): array {
+    function get_agents_by_abon_id(int $abon_id): array {
         $sql = "SELECT
                 *,
                 id AS firm_id

@@ -308,7 +308,7 @@ function selectRow(
  * @param string $confirm
  * @param string $text
  * @param array $param -- массив полей и значений формы для передачи в запросе
- * @return type
+ * @return string
  */
 function get_html_form_delete_confirm(
         string $action='',
@@ -317,7 +317,7 @@ function get_html_form_delete_confirm(
         string $attr_button = "class='btn btn-outline-warning btn-sm'",
         string $confirm = "Delete record?",
         string $text = "Delete",
-        array  $param = [])
+        array  $param = []): string
 {
     $str = "";
     foreach ($param as $name => $value) {

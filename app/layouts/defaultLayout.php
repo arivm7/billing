@@ -70,7 +70,6 @@ use billing\core\base\View;
                                 'template'       => DIR_WIDGETS . '/menu/templates/menu_template_bootstrap.php',
                                 'container'      => 'div',
                                 'container_attr' => 'class="accordion fixed-width" id="accordionEx"',
-                                'db_table'       => 'menu',
                                 'cache_time'     => 1,
                                 'cache_key'      => 'menu_bootstrap_' . ($_SESSION[User::SESSION_USER_REC][User::F_ID] ?? 0)
                             ]
