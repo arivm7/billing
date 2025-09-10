@@ -840,9 +840,43 @@ function redirect(string | false $url = false) {
 }
 
 
-function h(string|null $str) {
-    return htmlspecialchars($str ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-    // return htmlspecialchars($str ?? '', ENT_QUOTES);
+
+/**
+ * Сохраняет HTML-сущности (&#10;, &nbsp;, &#x0A; и т.д.).
+ * Сохраняет переводы строк.
+ * Экранирует все спецсимволы, включая ' и ".
+ * @param string|null $str
+ * @return string
+ */
+function h(string|null $str): string {
+    // return htmlspecialchars($str ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+
+    if ($str === null) {
+        return '';
+    }
+
+    // Регулярка для всех HTML-сущностей
+    $entityPattern = '/&(?:[a-zA-Z0-9]+|#[0-9]+|#x[0-9a-fA-F]+);/';
+
+    // Массив для хранения сущностей
+    $entities = [];
+
+    // Заменяем сущности на маркеры __ENTITY0__, __ENTITY1__ и т.д.
+    $str = preg_replace_callback($entityPattern, function($matches) use (&$entities) {
+        $key = '__ENTITY' . count($entities) . '__';
+        $entities[$key] = $matches[0];
+        return $key;
+    }, $str);
+
+    // Экранируем все спецсимволы
+    $str = htmlspecialchars($str, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+
+    // Восстанавливаем сущности из массива
+    $str = strtr($str, $entities);
+
+    return $str;
+
+
 }
 
 
