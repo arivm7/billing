@@ -156,7 +156,7 @@ class Lang {
         if ($param) {
             return sprintf($str, $param);
         }
-        return  $str;
+        return  h($str);
     }
 
 
