@@ -1,5 +1,5 @@
-<!--abon_card.php-->
 <?php
+/** app/views/inc/abon_card.php */
 use app\models\PAStatus;
 use config\tables\Abon;
 use config\tables\PA;
@@ -7,38 +7,35 @@ use billing\core\base\Lang;
 Lang::load_inc(__FILE__);
 
 /**
- * @var array $abon — массив с данными абонента
- *  Ключи соответствуют названиям колонок таблицы `abons`
- */
-
-/**
- * Поддержка функции Аккордеона
- * в ней передаваемый элемент $item
+ * @var $item -- Поддержка функции Аккордеона в ней передаваемый элемент
  */
 
 /** @var array $item */
 /** @var array $abon */
+
 if (isset($item) && !isset($abon)) { $abon = $item; }
 
 ?>
 <div class="container-fluid">
     <ul class="nav nav-tabs justify-content-end" id="my_tab_abon_data<?=$abon[Abon::F_ID]?>" role="tablist">
       <li class="nav-item" role="presentation">
-          <a class="nav-link active" id="tab1-tab" data-bs-toggle="tab" href="#tab_abon_<?=$abon[Abon::F_ID]?>" role="tab"><small><?=__('Abonent connections');?></small></a>
+          <a class="nav-link active" data-bs-toggle="tab" href="#tab_abon_<?=$abon[Abon::F_ID]?>" role="tab"><small><?=__('Abonent connections');?></small></a>
       </li>
       <li class="nav-item" role="presentation">
-        <a class="nav-link" id="tab2-tab" data-bs-toggle="tab" href="#tab_pa_<?=$abon[Abon::F_ID]?>" role="tab"><small><?=__('Price charges');?></small></a>
+        <a class="nav-link" data-bs-toggle="tab" href="#tab_pa_<?=$abon[Abon::F_ID]?>" role="tab"><small><?=__('Price charges');?></small></a>
       </li>
       <li class="nav-item" role="presentation">
-        <a class="nav-link" id="tab2-tab" data-bs-toggle="tab" href="#tab_notify_<?=$abon[Abon::F_ID]?>" role="tab"><small><?=__('Notifications');?></small></a>
+        <a class="nav-link" data-bs-toggle="tab" href="#tab_notify_<?=$abon[Abon::F_ID]?>" role="tab"><small><?=__('Notifications');?></small></a>
       </li>
     </ul>
+
     <div class="tab-content" id="myTabContent">
         <div class="tab-pane fade show active" id="tab_abon_<?=$abon[Abon::F_ID]?>" role="tabpanel">
             <?php require DIR_INC . '/abon_view.php'; ?>
         </div>
         <div class="tab-pane fade" id="tab_pa_<?=$abon[Abon::F_ID]?>" role="tabpanel">
             <!-- Перебор подключенных прайсовых фрагментов -->
+            <div class="container-fluid mt-4">
             <?php
                 if ($abon[PA::TABLE]) {
                     echo get_html_accordion(
@@ -58,15 +55,16 @@ if (isset($item) && !isset($abon)) { $abon = $item; }
                                     return $title;
                             }
                     );
-                    /* $firm = $user[Firm::TABLE][0]; */
-                    /* include DIR_INC . '/firm_edit.php'; */
                 } else {
-                    echo "<br><div class='alert alert-info' role='alert'>".__('Активных прайсов нет')."</div>";
+                    echo "<br><div class='alert alert-info' role='alert'>".__('No active prices')."</div>";
                 }
             ?>
+            </div>
         </div>
         <div class="tab-pane fade" id="tab_notify_<?=$abon[Abon::F_ID]?>" role="tabpanel">
+            <div class="container-fluid mt-4">
             <?php require DIR_INC . '/notify_view.php'; ?>
+            </div>
         </div>
 
     </div>

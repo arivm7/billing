@@ -19,6 +19,7 @@ class Abon {
     const POST_REC                  = 'abon';
 
     public const TABLE              = 'abons';          // 'Список абонентов';
+    public const REC                = 'abon';           // 'Поле одного абонента';
 
     public const F_ID               = 'id';
     public const F_ID_HASH          = 'id_hash';        // 'хэш эквивалент для ID',

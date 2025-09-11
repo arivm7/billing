@@ -504,23 +504,33 @@ class AbonModel extends UserModel {
 
 
 
+    function get_sql_payments(
+            int      $abon_id,
+            int|null $pay_type = null,
+            int|null $ppp_id = null
+        ): string
+    {
+        return "SELECT "
+                . "*  "
+                . "FROM "
+                . "`".Pay::TABLE."` "
+                . "WHERE "
+                . "`".Pay::F_ABON_ID."`={$abon_id} "
+                . ($pay_type ? "AND `".Pay::F_TYPE_ID."`=1 " : "")
+                . ($ppp_id ? "AND `".Pay::F_PPP_ID."` = {$ppp_id} " : "")
+                . "ORDER BY "
+                . "`".Pay::TABLE."`.`".Pay::F_DATE."` DESC";
+    }
+
+
+
     function get_payments(
             int      $abon_id,
             int|null $pay_type = null,
             int|null $ppp_id = null
         ): array
     {
-        $sql = "SELECT "
-                . "*  "
-                . "FROM "
-                . "`".Pay::TABLE."` "
-                . "WHERE "
-                . "`".Pay::F_ABON_ID."`={$abon_id} "
-                . ($pay_type ? "AND `".Pay::F_PAY_TYPE_ID."`=1 " : "")
-                . ($ppp_id ? "AND `".Pay::F_PAY_PPP_ID."` = {$ppp_id} " : "")
-                . "ORDER BY "
-                . "`".Pay::TABLE."`.`".Pay::F_PAY_DATE."` DESC";
-        return $this->get_rows_by_sql($sql);
+        return $this->get_rows_by_sql($this->get_sql_payments(abon_id: $abon_id, pay_type: $pay_type, ppp_id: $ppp_id));
     }
 
 

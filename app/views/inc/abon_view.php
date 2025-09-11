@@ -1,4 +1,6 @@
 <?php
+/** app/views/inc/abon_view.php */
+use config\tables\Abon;
 use config\tables\Module;
 use billing\core\base\Lang;
 Lang::load_inc(__FILE__);
@@ -23,38 +25,38 @@ if (isset($item) && !isset($abon)) {
 
     <div class="card shadow-sm">
         <div class="card-header">
-            <h4><?= __('Параметры абонентского подключеня') ?></h4>
+            <h4><?= __('Subscriber connection parameters') ?></h4>
         </div>
         <div class="card-body">
             <table class="table table-striped table-bordered table-hover" >
                 <!-- ID абонента -->
                 <tr>
-                    <td><?= __('Договор №'); ?></td>
-                    <td><?= h($abon['id']); ?>
+                    <td><?= __('Contract №'); ?></td>
+                    <td><?= h($abon[Abon::F_ID]); ?>
                         <?php if (can_use(Module::MOD_ABON)): ?>
-                            <?php if (!empty($abon['id_hash'])): ?>
-                                <small class="text-muted"> | (hash: <?= h($abon['id_hash']); ?>)</small>
+                            <?php if (!empty($abon[Abon::F_ID_HASH])): ?>
+                                <small class="text-muted"> | (hash: <?= h($abon[Abon::F_ID_HASH]); ?>)</small>
                             <?php endif; ?>
                         <?php endif; ?>
                     </td>
                 </tr>
                 <!-- Адрес подключения -->
                 <tr>
-                    <td><strong>Адрес подключения:</strong></td>
-                    <td><?= nl2br(h($abon['address'])); ?></td>
+                    <td><strong><?=__('Connection address');?>:</strong></td>
+                    <td><?= cleaner_html($abon[Abon::F_ADDRESS]); ?></td>
                 </tr>
                 <!-- Координаты Google Maps -->
-                <?php if (!empty($abon['coord_gmap'])): ?>
+                <?php if (!empty($abon[Abon::F_COORD_GMAP])): ?>
                     <tr>
-                        <td><strong>Координаты (Google Maps):</strong></td>
-                        <td><a href="https://maps.google.com/?q=<?= urlencode($abon['coord_gmap']); ?>" target="_blank"><?= h($abon['coord_gmap']); ?></a></td>
+                        <td><strong><?=__('Coordinates');?> (Google Maps):</strong></td>
+                        <td><a href="https://maps.google.com/?q=<?= urlencode($abon[Abon::F_COORD_GMAP]); ?>" target="_blank"><?= h($abon[Abon::F_COORD_GMAP]); ?></a></td>
                     </tr>
                 <?php endif; ?>
                 <!-- Дата подключения -->
-                <?php if ($abon['date_join']) : ?>
+                <?php if ($abon[Abon::F_DATE_JOIN]) : ?>
                 <tr>
-                    <td><strong>Дата подключения:</strong></td>
-                    <td><?= date('d.m.Y', $abon['date_join']); ?></td>
+                    <td><strong><?=__('Connection date');?>:</strong></td>
+                    <td><?= date('d.m.Y', $abon[Abon::F_DATE_JOIN]); ?></td>
                 </tr>
                 <?php endif; ?>
             </table>
@@ -63,31 +65,31 @@ if (isset($item) && !isset($abon)) {
             <div class="row container-fluid">
                 <div class="col justify-content-start">
                     <!-- Флаг "Плательщик" -->
-                    <strong>Статус услуги:&nbsp;</strong>
-                    <?php if ($abon['is_payer']): ?>
-                        <span class="badge bg-success">Подключена</span>
+                    <strong><?=__('Service status');?>:&nbsp;</strong>
+                    <?php if ($abon[Abon::F_IS_PAYER]): ?>
+                        <span class="badge bg-success"><?=__('Enabled');?></span>
                     <?php else: ?>
-                        <span class="badge bg-secondary">Отключён</span>
+                        <span class="badge bg-secondary"><?=__('Disabled');?></span>
                     <?php endif; ?>
                 </div>
                 <div class="col justify-content-end">
                     <!-- Настройки задолженности -->
-                    <?php if ($abon['is_payer']): ?>
+                    <?php if ($abon[Abon::F_IS_PAYER]): ?>
                         <div class="row">
                             <div class="col small text-end font-monospace text-nowrap">
-                                Границы обслуживания:
+                                <?=__('Service boundaries');?>:
                             </div>
-                            <div class="col small border text-center font-monospace"  title="Количество предоплаченных дней, &#10;при пересечении которых, отправлять &#10;предупреждение о необходимоси платежа." >
-                                <?= $abon['duty_max_warn'] ?>
+                            <div class="col small border text-center font-monospace"  title="<?=__('Number of prepaid days, upon crossing which send warning');?>." >
+                                <?= $abon[Abon::F_DUTY_MAX_WARN] ?>
                             </div>
-                            <div class="col small border text-center font-monospace" title="Количество предоплаченных дней, &#10;при пересечении которых отключать услугу." >
-                                <?= $abon['duty_max_off'] ?>
+                            <div class="col small border text-center font-monospace" title="<?=__('Number of prepaid days, upon crossing which disable service');?>." >
+                                <?= $abon[Abon::F_DUTY_MAX_OFF] ?>
                             </div>
-                            <div class="col small border text-center font-monospace" title="Автоматически отключать услугу." >
-                                <?= $abon['duty_auto_off'] ? '[x]' : '[&nbsp;]' ?>
+                            <div class="col small border text-center font-monospace" title="<?=__('Automatically disable service');?>." >
+                                <?= $abon[Abon::F_DUTY_AUTO_OFF] ? '[x]' : '[&nbsp;]' ?>
                             </div>
-                            <div class="col small border text-center font-monospace" title="Количество дней ожидания перед отключением." >
-                                <?= $abon['duty_wait_days'] ?>
+                            <div class="col small border text-center font-monospace" title="<?=__('Number of waiting days before disabling');?>." >
+                                <?= $abon[Abon::F_DUTY_WAIT_DAYS] ?>
                             </div>
                         </div>
                     <?php endif; ?>

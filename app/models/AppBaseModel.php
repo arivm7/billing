@@ -6,7 +6,8 @@ use billing\core\base\Lang;
 use billing\core\base\Model;
 use config\Icons;
 use config\tables\Module;
-
+use config\tables\Ppp;
+use config\tables\PppType;
 use config\tables\TP;
 use config\tables\User;
 
@@ -525,5 +526,22 @@ class AppBaseModel extends Model
 
 
 
+    function get_ppp(int $ppp_id): array {
+        return $this->get_row_by_id(table_name: Ppp::TABLE, field_id: Ppp::F_ID, id_value: $ppp_id);
+    }
+
+
+
+    function get_ppp_title(int $ppp_id): string {
+        if (empty($ppp_id)) { return ''; }
+        return $this->get_row_by_id(table_name: Ppp::TABLE, field_id: Ppp::F_ID, id_value: $ppp_id)[Ppp::F_TITLE];
+    }
+
+
+    function get_ppp_type_title(int $ppp_id): string {
+        $ppp = $this->get_row_by_id(table_name: Ppp::TABLE, field_id: Ppp::F_ID, id_value: $ppp_id);
+        $ppp_type = $this->get_row_by_id(table_name: PppType::TABLE, field_id: PppType::F_ID, id_value: $ppp[Ppp::F_TYPE_ID]);
+        return $ppp_type[PppType::F_TITLE[Lang::F_CODE]];
+    }
 
 }

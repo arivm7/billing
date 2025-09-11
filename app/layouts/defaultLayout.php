@@ -27,6 +27,15 @@ use billing\core\base\View;
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
         <?=View::getMeta();?>
         <style>
+
+            /* относительно контейнера */
+            .min-w-100 { min-width: 100% !important; }
+            .min-w-75  { min-width:  75% !important; }
+            .min-w-50  { min-width:  50% !important; }
+            .min-w-25  { min-width:  25% !important; }
+            .min-w-15  { min-width:  15% !important; }
+            .min-w-10  { min-width:  10% !important; }
+
             /* размер текста */
             .fs-7  {font-size:0.75rem!important}
             .fs-8  {font-size:0.5rem!important}
@@ -90,45 +99,70 @@ use billing\core\base\View;
                     <?php include DIR_INC . '/alerts.php'; ?>
                     <?= $content ?>
                     <hr>
-                    <div class="text text-secondary font-monospace fs-6">
-                        <table align=right border=0 cellpadding=10 cellspacing=10>
-                            <tr>
-                                <?php if (Theme::id() == Theme::F_ID_LIGHT) : ?>
-                                <td valign=center><a href="/how_to_pay_all.php"><img  src='/img/p24/liqpay/logo_liqpay_main.svg' height=24 alt='LIQPAY' title='Инструкция по оплате через LIQPAY'></a></td>
-                                <td valign=center><a href="/how_to_pay_all.php"><img  src='/img/p24/p24/24-pay-mark.svg' style='max-height:60px;' alt='24Pay' title='(24)Pay'></a></td>
-                                <?php else : ?>
-                                <td valign=center><a href="/how_to_pay_all.php"><img  src='/img/p24/liqpay/logo_liqpay_white_color_book.svg' height=24 alt='LIQPAY' title='Инструкция по оплате через LIQPAY'></a></td>
-                                <td valign=center><a href="/how_to_pay_all.php"><img  src='/img/p24/p24/24-pay-mark_border.svg' style='max-height:42px;' alt='24Pay' title='(24)Pay'></a></td>
-                                <?php endif; ?>
-                                <td valign=center><a href="/how_to_pay_all.php"><img  src='/img/p24/visa/full-color-128x72.png' style='max-height:38px;' alt='VISA' title='VISA'></a></td>
-                                <td valign=center><a href="/how_to_pay_all.php"><img  src='/img/p24/mc/mc_symbol.svg' style='max-height:48px;' alt='Mastercard' title='Mastercard'></a></td>
-                                <td valign=center> </td>
-                                <td><font size="-1">© RI-Network 2006-<?=date('Y');?>.<br>Контакти:<br>+38 (098) 363-35-78, +38 (093) 648-00-09<br>+38 (093) 957-69-44, +38 (050) 268-52-29</font></td>
-                            </tr>
-                        </table>
-                    </div>
-                    <?php if (can_view(Module::MOD_WEB_DEBUG)) : ?>
-                    <hr>
-                    <div class="text text-secondary font-monospace fs-7">
-                        <?php
-                            Timers::setTimeEnd();
-                            $format = "%s %' 10.4f сек.<br>\n";
-                            echo str_replace(" ", '&nbsp;', sprintf($format, __('Data preparation time'), Timers::getTimePrepareData()));
-                            echo str_replace(" ", '&nbsp;', sprintf($format, __('Data rendering time'),   Timers::getTimeRender()));
-                            echo str_replace(" ", '&nbsp;', sprintf($format, __('Page rendering time'),   Timers::getTimeLayout()));
-                            echo str_replace(" ", '&nbsp;', sprintf($format, __('TOTAL time'),            Timers::getTimeAll()));
-                        ?>
-                        <?php
-                            if (ErrorHandler::DEBUG) {
-                                echo "<hr>countSQL: " . Db::$countSql;
-                                // debug(vendor\billing\core\Db::$queriesSql, 'queriesSql: ');
-                            }
-                        ?>
-                    </div>
-                    <?php endif; ?>
                 </div>
             </div>
+
+            <div class="my-content container-fluid">
+                <div class="d-flex justify-content-end flex-wrap align-items-center text-secondary font-monospace fs-6">
+                    <!-- Блок с изображениями -->
+                    <div class="d-flex flex-wrap align-items-center me-4 gap-3">
+                        <?php $title_for = __('Payment instructions'); ?>
+                        <?php if (Theme::id() == Theme::F_ID_LIGHT) : ?>
+                            <a href="/how_to_pay_all.php">
+                                <img src='/img/p24/liqpay/logo_liqpay_main.svg' height="24" alt='LIQPAY' title='<?=$title_for;?> LIQPAY'>
+                            </a>
+                            <a href="/how_to_pay_all.php">
+                                <img src='/img/p24/p24/24-pay-mark.svg' style='max-height:60px;' alt='24Pay' title='<?=$title_for;?> (24)Pay'>
+                            </a>
+                        <?php else : ?>
+                            <a href="/how_to_pay_all.php">
+                                <img src='/img/p24/liqpay/logo_liqpay_white_color_book.svg' height="24" alt='LIQPAY' title='<?=$title_for;?> LIQPAY'>
+                            </a>
+                            <a href="/how_to_pay_all.php">
+                                <img src='/img/p24/p24/24-pay-mark_border.svg' style='max-height:42px;' alt='24Pay' title='<?=$title_for;?> (24)Pay'>
+                            </a>
+                        <?php endif; ?>
+                        <a href="/how_to_pay_all.php">
+                            <img src='/img/p24/visa/full-color-128x72.png' style='max-height:38px;' alt='VISA' title='<?=$title_for;?> VISA'>
+                        </a>
+                        <a href="/how_to_pay_all.php">
+                            <img src='/img/p24/mc/mc_symbol.svg' style='max-height:48px;' alt='Mastercard' title='<?=$title_for;?> Mastercard'>
+                        </a>
+                    </div>
+
+                    <!-- Блок с копирайтом -->
+                    <div class="text-start small mt-2 mt-sm-0">
+                        © RI-Network 2006-<?=date('Y');?>.<br>
+                        Контакти:<br>
+                        +38 (098) 363-35-78, +38 (093) 648-00-09<br>
+                        +38 (093) 957-69-44, +38 (050) 268-52-29
+                    </div>
+                </div>
+
+                <?php if (can_view(Module::MOD_WEB_DEBUG)) : ?>
+                <hr>
+                <div class="text text-secondary font-monospace fs-7">
+                    <?php
+                        Timers::setTimeEnd();
+                        $format = "%s %' 10.4f сек.<br>\n";
+                        echo str_replace(" ", '&nbsp;', sprintf($format, __('Data preparation time'), Timers::getTimePrepareData()));
+                        echo str_replace(" ", '&nbsp;', sprintf($format, __('Data rendering time'),   Timers::getTimeRender()));
+                        echo str_replace(" ", '&nbsp;', sprintf($format, __('Page rendering time'),   Timers::getTimeLayout()));
+                        echo str_replace(" ", '&nbsp;', sprintf($format, __('TOTAL time'),            Timers::getTimeAll()));
+                    ?>
+                    <?php
+                        if (ErrorHandler::DEBUG) {
+                            echo "<hr>countSQL: " . Db::$countSql;
+                            // debug(vendor\billing\core\Db::$queriesSql, 'queriesSql: ');
+                        }
+                    ?>
+                </div>
+                <?php endif; ?>
+
+            </div>
+
         </div>
+
         <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
         <script type='text/javascript' src='/public/js/main.js'></script>
         <script type='text/javascript' src='/public/dcjqaccordion/js/jquery.cookie.js'></script>

@@ -10,6 +10,13 @@ use Exception;
 
 class Lang {
 
+    /*
+     * Коды языков
+     */
+    public const C_RU  = 'ru';
+    public const C_UK  = 'uk';
+    public const C_EN  = 'en';
+
     public const F_GET  = 'lang';
     public const F_CODE = 'code';
     public const F_ORDER = 'order';
