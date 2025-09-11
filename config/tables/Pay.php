@@ -5,7 +5,6 @@
 namespace config\tables;
 
 
-
 class Pay {
 
 
@@ -18,6 +17,23 @@ class Pay {
     const TYPE_CORRECT  = 2;    // Корректировка ЛС       | Начисление для корректировки остатка ЛС, компенсац...
     const TYPE_REQUEST  = 3;    // Начисление за услугу   | Начисление за дополнительную услугу (ремонт, настройка, задолженность за подключение и пр.) как правило, единоразовое начисление.
 
+    const TYPES = [
+        self::TYPE_MONEY => [
+            'uk' => 'Грошове поповнення ЛЗ',
+            'ru' => 'Денежное пополнение ЛС',
+            'en' => 'Cash replenishment of personal account',
+        ],
+        self::TYPE_CORRECT => [
+            'uk' => 'Коригування залишку в особистому кабінеті',
+            'ru' => 'Корректировка остатка в личном кабинете',
+            'en' => 'Adjusting the balance in your personal account',
+        ],
+        self::TYPE_REQUEST => [
+            'uk' => 'Нарахування за додаткову разову послугу',
+            'ru' => 'Начисление за дополнительную разовую услугу',
+            'en' => 'Charge for additional one-time service',
+        ],
+    ];
 
     const POST_REC = 'payment';
 
@@ -28,27 +44,38 @@ class Pay {
     const F_AGENT_ID        = "agent_id";       // ID того, кто внёс запись
     const F_ABON_ID         = "abon_id";        // Абонент, на которого зачисляется платеж
     const F_PAY_FAKT        = "pay_fakt";       // Фактическая сумма, пришедшая на счёт
-    const F_PAY             = "pay";            // Сумма платежа, вносимая на ЛС
-    const F_PAY_DATE        = "pay_date";       // Дата платежа
-    const F_PAY_BANK_NO     = "pay_bank_no";    // Банковский номер операции
-    const F_PAY_TYPE_ID     = "pay_type_id";    // ИД Типа платежа
-    const F_PAY_PPP_ID      = "pay_ppp_id";     // ППП
-    const F_PAY_SOURCE_ID   = "pay_sourse_id";  // На какой счёт пришёл платёж
+    const F_PAY_ACNT        = "pay";            // Сумма платежа, вносимая на ЛС
+    const F_DATE            = "pay_date";       // Дата платежа
+    const F_BANK_NO         = "pay_bank_no";    // Банковский номер операции
+    const F_TYPE_ID         = "pay_type_id";    // ИД Типа платежа
+    const F_PPP_ID          = "pay_ppp_id";     // ППП
     const F_DESCRIPTION     = "description";    // Описание платежа
     const F_CREATED_DATE    = "created_date";   // Дата создания записи
     const F_CREATED_UID     = "created_uid";    // Юзер, создавший запись
     const F_MODIFIED_DATE   = "modified_date";  // Дата изменения записи
     const F_MODIFIED_UID    = "modified_uid";   // Кто изменил запись
 
+    /*
+     * Вычисляемые поля
+     */
+    const F_AGENT_TITLE     = "agent_title";    // Имя того, кто внёс запись (вычисляемое)
+    const F_TYPE_TITLE      = "pay_type_title"; // Имя Типа платежа (вычисляемое)
+    const F_PPP_TITLE       = "pay_ppp_title";  // Имя ППП (вычисляемое)
 
     /*
-     * URI для управления платежами
+     * URI для админгистративного управления платежами
      */
 
-    const URI_LIST = '/admin/payments/list';
-    const URI_FORM = '/admin/payments/form';
-    const URI_DEL = '/admin/payments/delete';
-    const URI_ACCESS = '/admin/payments/access';
+    const URI_ADM_LIST      = '/admin/payments/list';
+    const URI_ADM_FORM      = '/admin/payments/form';
+    const URI_ADM_DEL       = '/admin/payments/delete';
+    const URI_ADM_ACCESS    = '/admin/payments/access';
+
+    /*
+     * URI для личного кабинета абонента
+     */
+    const URI_MY            = '/payments';
+    const URI_MY_LIST       = '/payments/list';
 
 
 

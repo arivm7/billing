@@ -80,6 +80,7 @@ require DIR_LIBS . '/form_functions.php';
                 <!-- Контент Вкладки Абонентов -->
                 <div class="tab-pane fade" id="tab_abons_<?=$user[User::F_ID];?>" role="tabpanel">
                     <!-- Перебор подключенных абонентов -->
+                    <div class="container-fluid mt-4">
                     <?php
                         if (!empty($user[Abon::TABLE])) {
                             echo get_html_accordion(
@@ -99,6 +100,7 @@ require DIR_LIBS . '/form_functions.php';
                             echo "<br><div class='alert alert-info' role='alert'>".__('There is no list of abonent connections to display')."</div>";
                         }
                     ?>
+                    </div>
                 </div>
             </div>
         </div>

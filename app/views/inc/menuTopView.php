@@ -1,4 +1,5 @@
 <?php
+/** /app/views/inc/menuTopView.php */
 use app\widgets\Theme\ThemeSelector;
 use billing\core\App;
 use config\tables\Module;
@@ -13,26 +14,26 @@ $path=strtolower(($this->route[F_PREFIX] ? $this->route[F_PREFIX] . '/' : "") . 
 ?>
 <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid align-items-center text-end">
-        <a class="navbar-brand" href="/" title="<?=__('To Home');?>" >
-            <img src="/public/img/ri_logo2.svg" alt="[RILAN-admin]" title="<?=__('Rilan');?>. <?=__('Admin portal');?>." height="75" class="d-inline-block align-text-top">
+        <a class="navbar-brand" href="/" title="<?=__('To the main page');?>" >
+            <img src="/public/img/ri_logo2.svg" alt="[RILAN-admin]" title="<?=__('Rilan');?>. <?=__('Subscriber personal cabinet');?>." height="75" class="d-inline-block align-text-top">
         </a>
-        <a class="navbar-brand" href="https://my.ri.net.ua/" title="<?=__('Старая версия');?>" >
-            <img src="/public/img/ri_icon.ico" alt="[RI-network]" title="<?=__('Rilan');?>. <?=__('Старій вариант личного кабинета');?>." height="40" class="d-inline-block align-text-top">
+        <a class="navbar-brand" href="https://my.ri.net.ua/" title="<?=__('Rilan');?>. <?=__('Old version of personal cabinet');?>." >
+            <img src="/public/img/ri_icon.ico" alt="[RI-network]" height="40" class="d-inline-block align-text-top">
         </a>
         <div class="ms-auto">
 <?php if (App::$auth->isAuth) : ?>
             <ul class="nav nav-pills me-auto">
                 <?php if (can_view(Module::MOD_SEARCH)) : ?>
-                <li class="nav-item">
-                    <a class="nav-link <?=(str_contains($path, 'admin/') ? "active" : "");?>" href="/admin">Admin</a>
+                <li class="nav-item pe-2 d-flex align-items-center">
+                    <a class="btn btn-outline-success btn-sm <?=(str_contains($path, 'admin/') ? "active" : "");?>" href="/admin/admin/menuedit">Admin</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link disabled" href="/help">Help</a>
+                <li class="nav-item pe-2 d-flex align-items-center">
+                    <a class="btn btn-outline-success btn-sm disabled" href="/help">Help</a>
                 </li>
                 <li class="nav-item pe-2">
                     <form class="d-flex" role="search" method="get" action="/abon/form">
                         <div class="input-group input-group-sm w-auto" style="max-width: 120px;">
-                            <input class="form-control form-control-sm" type="search" placeholder="AID/UID" aria-label="Search" name="id" title="№ договора (ID абонента) или ID пользователя." >
+                            <input class="form-control form-control-sm" type="search" placeholder="AID/UID" aria-label="Search" name="id" title="<?=__('Contract number (subscriber ID) or user ID');?>." >
                             <button class="btn btn-outline-success btn-sm" type="submit">></button>
                         </div>
                     </form>
@@ -40,8 +41,8 @@ $path=strtolower(($this->route[F_PREFIX] ? $this->route[F_PREFIX] . '/' : "") . 
                 <li class="nav-item pe-2">
                     <form class="d-flex" role="search" method="get" action="/search/text">
                         <div class="input-group align-items-center">
-                            <input class="form-control form-control-sm" type="search" placeholder="Строка пошуку" aria-label="Search" title="Поиск">
-                            <button class="btn btn-outline-success btn-sm" type="submit">Поиск</button>
+                            <input class="form-control form-control-sm" type="search" placeholder="<?=__('Search fragment');?>" aria-label="Search" title="<?=__('Search');?>">
+                            <button class="btn btn-outline-success btn-sm" type="submit"><?=__('Search');?></button>
                         </div>
                     </form>
                 </li>
@@ -65,8 +66,12 @@ $path=strtolower(($this->route[F_PREFIX] ? $this->route[F_PREFIX] . '/' : "") . 
             </ul>
 <?php else : ?>
             <ul class="nav nav-pills">
-                <li class="nav-item pe-2"><a class="nav-link <?=($path == 'auth/signup' ? "active" : "");?>" href="/auth/signup"><?=__('signup');?></a></li>
-                <li class="nav-item pe-2"><a class="nav-link <?=($path == 'auth/login'  ? "active" : "");?>" href="/auth/login"><?=__('login');?></a></li>
+                <li class="nav-item pe-2 d-flex align-items-center">
+                    <a class="btn btn-outline-success btn-sm <?=($path == 'auth/signup' ? "active" : "");?>" href="/auth/signup"><?=__('Register');?></a>
+                </li>
+                <li class="nav-item pe-2 d-flex align-items-center">
+                    <a class="btn btn-outline-success btn-sm <?=($path == 'auth/login'  ? "active" : "");?>" href="/auth/login"><?=__('Login');?></a>
+                </li>
                 <li class="nav-item pe-2"><?php new LangSelector(); ?></li>
                 <li class="nav-item pe-2"><?php new ThemeSelector(); ?></li>
             </ul>
@@ -74,4 +79,3 @@ $path=strtolower(($this->route[F_PREFIX] ? $this->route[F_PREFIX] . '/' : "") . 
         </div>
     </div>
 </nav>
-

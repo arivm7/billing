@@ -1,11 +1,13 @@
 <?php
 /**
  * ru
- * for /Auth/login
+ * for app/views/Auth/loginView.php
  */
 
 return [
-    'Вход'                  => "Вход",
-    'Войти'                 => "Войти",
-    'Обюязательное поле'    => "Обюязательное поле",
+    'Sign in' => 'Представиться',
+    'Required field' => 'Обязательное поле',
+    'Login' => 'Логин',
+    'Password' => 'Пароль',
+    'Enter' => 'Войти',
 ];

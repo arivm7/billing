@@ -100,15 +100,15 @@ class ConciliationController extends AbonController {
         $pays = $model->get_payments($A[Abon::F_ID]);
 
         foreach ($pays as $p) {
-            if(get_date($p[Pay::F_PAY_DATE]) <= $today) {
-                $rec['date']     = get_date($p[Pay::F_PAY_DATE]);
+            if(get_date($p[Pay::F_DATE]) <= $today) {
+                $rec['date']     = get_date($p[Pay::F_DATE]);
                 $rec['pay_fakt'] = $p[Pay::F_PAY_FAKT];
-                if($p[Pay::F_PAY_TYPE_ID] == Pay::TYPE_MONEY) {
-                    $rec['pay']      = $p[Pay::F_PAY];
+                if($p[Pay::F_TYPE_ID] == Pay::TYPE_MONEY) {
+                    $rec['pay']      = $p[Pay::F_PAY_ACNT];
                     $rec['cost']     = 0;
                 } else {
                     $rec['pay']      = 0;
-                    $rec['cost']     = -$p[Pay::F_PAY];
+                    $rec['cost']     = -$p[Pay::F_PAY_ACNT];
                 }
                 $events[]        = $rec;
             } else {

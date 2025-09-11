@@ -48,19 +48,23 @@ function debug(mixed $value, string $comment = '', DebugView $debug_view = Debug
 
 
 $lines = file($input, FILE_IGNORE_NEW_LINES);
+$basename = basename($input, '.php');
 
-// Определяем базовое имя: ищем <!--xxx.php--> в первых двух строках
-$basename = null;
+// Определяем имя вида: ищем в первых строках
+$view_name = null;
 foreach (array_slice($lines, 0, 3) as $line) {
-    if (preg_match('/<!--\s*([^>]+\.php)\s*-->/', $line, $m)) {
-        $basename = basename($m[1], '.php');
+    if (preg_match('/(?:<!--\s*|\/\*\s*|\*+\s*|\/\/\s*)([^>\s]+\.php)/', $line, $m)) {
+        $view_name = $m[1];
+        // $view_name = basename($m[1], '.php');
         break;
     }
 }
 
-if (!$basename) {
-    $basename = basename($input, '.php');
+if (!$view_name) {
+    $view_name = $basename;
 }
+
+
 
 // Выходные файлы
 $outClean = "__{$basename}_clean.php";
@@ -105,8 +109,14 @@ if (preg_match_all($regex, $code, $matches, PREG_SET_ORDER)) {
 file_put_contents($outClean, $clean);
 
 // Пишем словари
-function writeLang(string $lang, array $trs, string $file, string $basename): void {
-    $out = "<?php\n/**\n * $lang\n * for $basename\n */\n\nreturn [\n";
+function writeLang(string $lang, array $trs, string $file, string $view_name): void {
+    $out = "<?php\n"
+            . "/**\n"
+            . " * {$lang}\n"
+            . " * for {$view_name}\n"
+            . " */\n"
+            . "\n"
+            . "return [\n";
     foreach ($trs as $key => $row) {
         $k = addslashes($key);
         $v = addslashes($row[$lang]);
@@ -114,12 +124,12 @@ function writeLang(string $lang, array $trs, string $file, string $basename): vo
     }
     $out .= "];\n";
     file_put_contents($file, $out);
-    echo "Generated: $file\n";
+    echo "Generated: {$file}\n";
 }
 
-writeLang('en', $translations, $outEn, $basename);
-writeLang('ru', $translations, $outRu, $basename);
-writeLang('uk', $translations, $outUk, $basename);
+writeLang('en', $translations, $outEn, $view_name);
+writeLang('ru', $translations, $outRu, $view_name);
+writeLang('uk', $translations, $outUk, $view_name);
 
 echo "Cleaned source written to: $outClean\n";
 

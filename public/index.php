@@ -55,9 +55,10 @@ define('MODEL_SUFFIX',          'Model');
 
 $ALLOWED_ADDRES = false;
 $ALLOWED_ADDRESSES = [
-//'176.105.102.234/29',
-//'213.111.124.217/29',
-'95.158.32.243',
+    '176.36.12.167',
+    //'176.105.102.234/29',
+    //'213.111.124.217/29',
+    '95.158.32.243',
 ];
 
 if (filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP)) {

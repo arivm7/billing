@@ -1,10 +1,13 @@
 <?php
 /**
- * uk
- * for /Auth/login
+ * en
+ * for app/views/Auth/loginView.php
  */
+
 return [
-    'Вход'                  => "Login",
-    'Войти'                 => "Enter",
-    'Обюязательное поле'    => "Required field",
+    'Sign in' => 'Sign in',
+    'Required field' => 'Required field',
+    'Login' => 'Login',
+    'Password' => 'Password',
+    'Enter' => 'Enter',
 ];

@@ -12,6 +12,7 @@ return [
     'Personal account'      => 'Личный кабинент абонента',
     'signup'                => 'Регистрация',
     'login'                 => 'Вход',
+    'Payment instructions'  => 'Инструкция по оплате',
 
     'Data preparation time' => 'Время подготовки данных....',
     'Data rendering time'   => 'Время отрисовки данных.....',

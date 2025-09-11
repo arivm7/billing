@@ -12,6 +12,7 @@ return [
     'Personal account'      => 'Subscriber\'s personal account',
     'signup'                => 'Registration',
     'login'                 => 'Login',
+    'Payment instructions'  => 'Payment instructions',
 
     'Data preparation time' => 'Data preparation time...',
     'Data rendering time'   => 'Data rendering time.....',

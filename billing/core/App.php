@@ -28,4 +28,16 @@ class App {
 
     }
 
+
+
+    /**
+     * Обёртка для App::Registry->get_config()
+     * @param string $name
+     * @return mixed
+     */
+    static function get_config(string $name): mixed {
+        return App::$app->get_config($name);
+    }
+
+    
 }
