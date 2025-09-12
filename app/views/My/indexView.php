@@ -59,21 +59,21 @@ require DIR_LIBS . '/form_functions.php';
                     <!--Просмотр предприятий-->
                     <?php if (can_view(Module::MOD_MY_FIRM) && !empty($user[Firm::TABLE])) : ?>
                         <h3 class="fs-3 text-center"><?=__('Contacts for document exchange');?></h3>
-                        <?=get_html_accordion(
-                            table: $user[Firm::TABLE],
-                            file_view: DIR_INC . '/firm_tabs.php',
-                            func_get_title: function(array $firm) {
-                                    return get_html_content_left_right(
-                                        left:   " :: " . $firm[Firm::F_NAME_LONG] . "",
-                                        right:  ($firm[Firm::F_HAS_ACTIVE]
-                                                    ? "<span class='badge bg-success'>".__('Works')."</span>"
-                                                    : "<span class='badge bg-secondary'>".__('Not used')."</span>"
-                                                ) . '&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;',
-                                        add_class: 'w-100');
-                            });
+                        <?= get_html_accordion(
+                                table: $user[Firm::TABLE],
+                                file_view: DIR_INC . '/firm_tabs.php',
+                                func_get_title: function(array $firm) {
+                                        return get_html_content_left_right(
+                                            left:   " :: " . $firm[Firm::F_NAME_LONG] . "",
+                                            right:  ($firm[Firm::F_HAS_ACTIVE]
+                                                        ? "<span class='badge bg-success'>".__('Works')."</span>"
+                                                        : "<span class='badge bg-secondary'>".__('Not used')."</span>"
+                                                    ) . '&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;',
+                                            add_class: 'w-100');
+                                        }
+                                );
                         ?>
                     <?php endif; ?>
-
                 </div>
 
 
@@ -81,9 +81,8 @@ require DIR_LIBS . '/form_functions.php';
                 <div class="tab-pane fade" id="tab_abons_<?=$user[User::F_ID];?>" role="tabpanel">
                     <!-- Перебор подключенных абонентов -->
                     <div class="container-fluid mt-4">
-                    <?php
-                        if (!empty($user[Abon::TABLE])) {
-                            echo get_html_accordion(
+                    <?php if (!empty($user[Abon::TABLE])) : ?>
+                        <?= get_html_accordion(
                                     table: $user[Abon::TABLE],
                                     file_view: DIR_INC . '/abon_card.php',
                                     func_get_title: function(array $abon) {
@@ -96,10 +95,11 @@ require DIR_LIBS . '/form_functions.php';
                                                 add_class: 'w-100');
                                     }
                             );
-                        } else {
-                            echo "<br><div class='alert alert-info' role='alert'>".__('There is no list of abonent connections to display')."</div>";
-                        }
-                    ?>
+                        ?>
+                    <?php else: ?>
+                        <br>
+                        <div class='alert alert-info' role='alert'><?=__('There is no list of abonent connections to display');?></div>
+                    <?php endif; ?>
                     </div>
                 </div>
             </div>

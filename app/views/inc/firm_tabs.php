@@ -8,11 +8,11 @@ Lang::load_inc(__FILE__);
 <div class="container-fluid">
     <ul class="nav nav-tabs justify-content-end" role="tablist"> <!-- id="my_tab_firms" -->
         <li class="nav-item" role="presentation">
-            <a class="nav-link py-1 px-2 active" id="tab1-tab" data-bs-toggle="tab" href="#tab_view_firms_<?=$item[Firm::F_ID]?>" role="tab"><small>Смотреть</small></a>
+            <a class="nav-link py-1 px-2 active" data-bs-toggle="tab" href="#tab_view_firms_<?=$item[Firm::F_ID]?>" role="tab"><small><?=__('View');?></small></a>
         </li>
         <?php if (can_edit(Module::MOD_MY_FIRM) || can_edit(Module::MOD_FIRM)) : ?>
         <li class="nav-item" role="presentation">
-          <a class="nav-link py-1 px-2" id="tab2-tab" data-bs-toggle="tab" href="#tab_edit_firms_<?=$item[Firm::F_ID]?>" role="tab"><small>Редактировать</small></a>
+          <a class="nav-link py-1 px-2" data-bs-toggle="tab" href="#tab_edit_firms_<?=$item[Firm::F_ID]?>" role="tab"><small><?=__('Edit');?></small></a>
         </li>
         <?php endif; ?>
     </ul>

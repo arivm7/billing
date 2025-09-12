@@ -137,9 +137,10 @@ Lang::load_inc(__FILE__);
         </div>
         <?php endif; ?>
     </div>
-
     <!-- Кнопка возврата -->
+    <!--
     <div class="mt-4">
         <a href="?" class="btn btn-secondary">Назад</a>
     </div>
+    -->
 </div>

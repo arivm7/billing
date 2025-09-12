@@ -876,7 +876,6 @@ function h(string|null $str): string {
 
     return $str;
 
-
 }
 
 

@@ -53,6 +53,7 @@ class PA {
      * вычисляемые поля
      * ---------------- */
 
+    const F_USER_ID             = 'user_id';            // Пользоватеь, к которому относится Абонент, которому назначен прайс
     const FF_PA_ID              = 'prices_apply_id';    // prices_apply.id
     const FF_DATE_START_STR     = 'date_start_str';     // prices_apply.date_start),'%Y-%m-%d')
     const FF_DATE_END_STR       = 'date_end_str';       // prices_apply.date_end),  '%Y-%m-%d')
