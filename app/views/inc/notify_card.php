@@ -1,61 +1,61 @@
 <?php
+/** app/views/inc/notify_card.php */
+use config\tables\Module;
+use config\tables\Notify;
+use config\tables\User;
 use billing\core\base\Lang;
 Lang::load_inc(__FILE__);
+
+/** @var array $item   -- приходит от аккордеона */
+/** @var array $notify -- Для использования в этом виде */
+
 /**
- * @var array $sms  данные одной записи из таблицы sms_list
- *                  ключи: id, abon_id, type_id, date, text, phonenumber, method
+ * данные одной записи из таблицы sms_list
+ * ключи: id, abon_id, type_id, date, text, phonenumber, method
  */
 
-use config\tables\Module;
+$notify = $item;
+$type_title = Notify::get_type_title($notify[Notify::F_TYPE_ID] ?? Notify::TYPE_NA);
 
-// преобразуем дату
-$dateFormatted = !empty($item['date']) ? date('Y-m-d H:i:s', $item['date']) : '-';
+/**
+ * Проверка административного разрешения
+ */
+$can_admin = can_view(Module::MOD_NOTIFY);
 
-// словарь типов уведомлений
-$typeNames = [
-    1 => 'SMS',
-    2 => 'Email',
-    3 => 'Другое',
-];
-$typeName = $typeNames[$item['type_id']] ?? 'Неизвестно';
+/**
+ * Проверка личного разрешения
+ */
+$can_my    = ($notify[Notify::F_USER_ID] == $_SESSION[User::SESSION_USER_REC][User::F_ID]) && can_view(Module::MOD_MY_NOTIFY);
+
 ?>
-<?php if (can_view([Module::MOD_NOTIFY, Module::MOD_MY_NOTIFY])) : ?>
+<?php if ($can_my || $can_admin) : ?>
     <div class="card">
         <div class="card-header">
-            <h3 class="fs-5" ><span class="text-secondary small"><?=h($item['id']);?> | </span><?= h($typeName) ?> (<?= $item['type_id'] ?>)</h3>
+            <h3 class="fs-5" >
+                <?php if ($can_admin) : ?>
+                <span class="text-secondary small"><?=h($notify[Notify::F_ID]);?> | <?= $notify[Notify::F_TYPE_ID] ?> | </span>
+                <?php endif; ?>
+                <?= h($type_title) ?>
+            </h3>
         </div>
         <div class="card-body">
-            <table class="table table-bordered table-sm">
-                <!--
+            <table class="table table-bordered table-hover table-sm pt-3">
                 <tr>
-                    <th>ID</th>
-                    <td><?= h($item['id']) ?></td>
+                    <th><?= __('Message text');?></th>
+                    <td><pre class="h3 fs-5 mb-0"><?= cleaner_html($notify[Notify::F_TEXT]) ?></pre></td>
                 </tr>
                 <tr>
-                    <th>Абонент (ID)</th>
-                    <td><?= h($item['abon_id']) ?></td>
+                    <th><?= __('Recipient');?></th>
+                    <td><?= h($notify[Notify::F_PHONENUMBER]) ?></td>
                 </tr>
                 <tr>
-                    <th>Тип уведомления</th>
-                    <td><?= h($typeName) ?> (<?= $item['type_id'] ?>)</td>
+                    <th><?= __('Send date');?></th>
+                    <td><?= !empty($notify[Notify::F_DATE]) ? date('Y-m-d H:i:s', $notify[Notify::F_DATE]) : '-' ?></td>
                 </tr>
-                -->
+                <?php if ($can_admin) : ?>
                 <tr>
-                    <th>Текст сообщения</th>
-                    <td><pre class="h3 fs-5 mb-0"><?= cleaner_html($item['text']) ?></pre></td>
-                </tr>
-                <tr>
-                    <th>Получатель</th>
-                    <td><?= h($item['phonenumber']) ?></td>
-                </tr>
-                <tr>
-                    <th>Дата отправки</th>
-                    <td><?= $dateFormatted ?></td>
-                </tr>
-                <?php if (can_view([Module::MOD_NOTIFY])) : ?>
-                <tr>
-                    <th>Метод отправки</th>
-                    <td><?= h($item['method']) ?></td>
+                    <th><?= __('Send method');?></th>
+                    <td><?= h($notify[Notify::F_METHOD]) ?></td>
                 </tr>
                 <?php endif; ?>
             </table>

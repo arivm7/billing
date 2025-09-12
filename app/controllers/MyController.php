@@ -45,16 +45,33 @@ class MyController extends AppBaseController  {
             }
 
             if (can_view(Module::MOD_MY_ABON)) {
-                $my[Abon::TABLE] = $this->model->get_rows_by_field(
+                $my[Abon::TABLE] = $this->model->get_rows_by_where(
                         table: Abon::TABLE,
-                        field_name: Abon::F_USER_ID,
-                        field_value:  $my[User::F_ID]
+                        where: '('.Abon::F_USER_ID.'='.$my[User::F_ID].')'
+                                . (can_view(Module::MOD_ABON) ? '' : ' AND ('.Abon::F_IS_PAYER.')'),
+                        order_by: Abon::F_DATE_JOIN . ' DESC',
+
                 );
 
                 if (can_view(Module::MOD_MY_PA)) {
                     foreach ($my[Abon::TABLE] as &$abon) {
+
                         $abon[PA::TABLE] = $this->model->get_pa_by_abon_id($abon[Abon::F_ID]);
+
+                        /** Для передачи USER_ID в PA */
+                        foreach ($abon[PA::TABLE] as &$pa_one) {
+                            $pa_one[PA::F_USER_ID] = $my[User::F_ID];
+                        }
+
+                        /** Общее количество записей в базе */
+                        $abon[Notify::F_COUNT] = $this->model->get_count_by_sql($this->model->get_sql_notify_by_abon_id($abon[Abon::F_ID]));
+                        /** Отображаемые записи */
                         $abon[Notify::TABLE] = $this->model->get_notify_by_abon_id($abon[Abon::F_ID], App::$app->get_config('notify_list_limit'));
+
+                        /** Для передачи USER_ID в Notify */
+                        foreach ($abon[Notify::TABLE] as &$notify_one) {
+                            $notify_one[Notify::F_USER_ID] = $my[User::F_ID];
+                        }
                     }
                 }
             }

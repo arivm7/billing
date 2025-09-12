@@ -413,6 +413,18 @@ class AbonModel extends UserModel {
 
 
 
+    function get_sql_notify_by_abon_id(int $abon_id, int|string|null $limit = null): string
+    {
+        return "SELECT "
+                . "* "
+                . "FROM ".Notify::TABLE." "
+                . "WHERE ".Notify::F_ABON_ID."=".$this->quote($abon_id)." "
+                . "ORDER BY ".Notify::F_ID." DESC"
+                . (empty($limit) ? "" : " LIMIT {$limit}");
+    }
+
+
+
     /**
      * Список уведомлений (СМС)
      * @param int $abon_id
@@ -421,12 +433,8 @@ class AbonModel extends UserModel {
      */
     function get_notify_by_abon_id(int $abon_id, int|string|null $limit = null): array
     {
-        return $this->get_rows_by_field(
-                table: Notify::TABLE,
-                field_name: Notify::F_ABON_ID,
-                field_value: $abon_id,
-                order_by: Notify::F_ID . ' DESC',
-                limit: $limit);
+        $sql = $this->get_sql_notify_by_abon_id($abon_id, $limit);
+        return $this->get_rows_by_sql($sql);
     }
 
 
