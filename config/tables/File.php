@@ -82,6 +82,7 @@ class File {
     public const F_SUB_TITLE        = 'sub_title';          // Название типа подпапки для публичных файлов, характеризующая группу или тип файла (Icon, Image, Doc, Media)
     public const F_MIME             = 'mime';               // MIME-тип (image/png, application/pdf и т.п.)
     public const F_SIZE             = 'size';               // Размер в байтах
+    public const F_READONLY         = 'readonly';           // атрибут "только чтение"
     public const F_CREATION_UID     = 'creation_uid';       // Кто создал заппись
     public const F_CREATION_DATE    = 'creation_date';      // Дата создания записи
     public const F_MODIFIED_UID     = 'modified_uid';       // Кто изменил запись

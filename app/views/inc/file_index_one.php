@@ -42,12 +42,18 @@ if (MimeTypes::MIME_TYPES[$file[File::F_MIME]][MimeTypes::F_BROWSABLE]) {
                 </button>
             </div>
             <div class="col p-1">
-                <a href="<?= File::URI_DEL . '?' . File::F_GET_ID . '=' . $file[File::F_ID] ?>"
-                   class="btn btn-danger btn-sm p-1"
-                   title="Удалиь файл с диска и из базы"
-                   onclick="return confirm('<?= __('Удалить файл'); ?> «<?= h($file[File::F_ORIGINAL_NAME]) ?>»?');">
-                    <img src="<?= Icons::SRC_ICON_TRASH; ?>" alt="[X]" height="30rem">
-                </a>
+                <?php if ($file[File::F_READONLY]) : ?>
+                    <span class="btn btn-secondary btn-sm p-1" title="Файл только для чтения">
+                        <img src="<?= Icons::SRC_ICON_TRASH; ?>" alt="[X]" height="30rem">
+                    </span>
+                <?php else : ?>
+                    <a href="<?= File::URI_DEL . '?' . File::F_GET_ID . '=' . $file[File::F_ID] ?>"
+                       class="btn btn-danger btn-sm p-1"
+                       title="Удалиь файл с диска и из базы"
+                       onclick="return confirm('<?= __('Удалить файл'); ?> «<?= h($file[File::F_ORIGINAL_NAME]) ?>»?');">
+                       <img src="<?= Icons::SRC_ICON_TRASH; ?>" alt="[X]" height="30rem">
+                    </a>
+                <?php endif; ?>
             </div>
         </div>
     </div>

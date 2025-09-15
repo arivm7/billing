@@ -160,6 +160,7 @@ class FilesController extends AppBaseController
         $post_rec = $_POST[File::POST_REC];
         $file = $model->get_file($post_rec[File::F_ID]);
         $row[File::F_ID] = (int)$post_rec[File::F_ID];
+        $row[File::F_READONLY] = (int)($post_rec[File::F_READONLY] ?? 0);
 
         $do_move_file = false;
 
