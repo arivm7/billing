@@ -1,4 +1,4 @@
-<?php
+    <?php
 use billing\core\App;
 use config\SessionFields;
 use config\tables\File;
@@ -26,22 +26,32 @@ $max_file_size = App::$app->get_config('files_upload_max_filesize');
     <h2 class="mb-4"><?=  $is_edit ? "Редактирование параметров файла":"Отправка файла на сервер" ?></h2>
     <form action="" method="post" enctype="multipart/form-data" id="uploadForm">
         <input type="hidden" name="<?= File::POST_REC ?>[<?= File::F_USER_ID ?>]" value="<?= $user_id ?>">
-        <div class="mb-3">
-        <?php if ($is_edit) : ?>
-            <input type="hidden" name="<?= File::POST_REC ?>[<?= File::F_ID ?>]" value="<?= $file[File::F_ID] ?>">
-            <div class="input-group">
-                <label class="input-group-text" for="original_name" ><?= __('Новое имя файла'); ?></label>
-                <input type="text" id="original_name"
-                       class="form-control"
-                       name="<?= File::POST_REC ?>[<?= File::F_ORIGINAL_NAME ?>]"
-                       value="<?= (isset($file[File::F_ORIGINAL_NAME]) ? $file[File::F_ORIGINAL_NAME] : ""); ?>" required>
+        <div class="row mb-3">
+            <div class="col-9">
+                <?php if ($is_edit) : ?>
+                    <input type="hidden" name="<?= File::POST_REC ?>[<?= File::F_ID ?>]" value="<?= $file[File::F_ID] ?>">
+                    <div class="input-group">
+                        <label class="input-group-text" for="original_name" ><?= __('Новое имя файла'); ?></label>
+                        <input type="text" id="original_name"
+                               class="form-control"
+                               name="<?= File::POST_REC ?>[<?= File::F_ORIGINAL_NAME ?>]"
+                               value="<?= (isset($file[File::F_ORIGINAL_NAME]) ? $file[File::F_ORIGINAL_NAME] : ""); ?>" required>
+                    </div>
+                <?php else : ?>
+                    <!-- Поле MAX_FILE_SIZE требуется указывать перед полем загрузки файла -->
+                    <input type="hidden" name="MAX_FILE_SIZE" value="<?= $max_file_size; ?>" />
+                    <label for="file" class="form-label">Выберите файл <span class="text-secondary">(не больше <?= round($max_file_size/1024/1024, 2); ?> Мб)</span></label>
+                    <input type="file" class="form-control" id="file" name="<?= File::F_ORIGINAL_NAME ?>" required>
+                <?php endif; ?>
             </div>
-        <?php else : ?>
-            <!-- Поле MAX_FILE_SIZE требуется указывать перед полем загрузки файла -->
-            <input type="hidden" name="MAX_FILE_SIZE" value="<?= $max_file_size; ?>" />
-            <label for="file" class="form-label">Выберите файл <span class="text-secondary">(не больше <?= round($max_file_size/1024/1024, 2); ?> Мб)</span></label>
-            <input type="file" class="form-control" id="file" name="<?= File::F_ORIGINAL_NAME ?>" required>
-        <?php endif; ?>
+            <div class="col-3 mb-3 d-flex align-items-end">
+              <label class="form-check-label me-3" for="checkChecked">Readonly</label>
+              <input class="form-check-input me-3" type="checkbox"
+                     name="<?= File::POST_REC ?>[<?= File::F_READONLY ?>]"
+                     value="1"
+                     id="checkChecked"
+                     <?= (!empty($file[File::F_READONLY]) ? "checked" : ""); ?>>
+            </div>
         </div>
 
         <div class="row">
