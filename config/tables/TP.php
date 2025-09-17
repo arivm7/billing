@@ -4,13 +4,24 @@
 namespace config\tables;
 
 
+use billing\core\base\Lang;
+
 class TP {
+
+    const URI_INDEX                = '/tp';
+    const URI_EDIT                 = '/tp/edit';
+    const URI_SAVE                 = '/tp/save';
+    const URI_DELETE               = '/tp/delete';
+    const URI_COMBINE              = '/api/combine';
 
     const POST_REC                 = 'tp';
 
     const TABLE                    = 'tp_list'; // Технические площадки, точки доступа
 
     const F_ID                     = 'id';
+    const F_STATUS                 = 'status';                  // '0 — Отключен/демонтирован, 1 — Работает',
+    const F_DELETED                = 'deleted';                 // 'ТП демонтирована',
+    const F_IS_MANAGED             = 'is_managed';              // 'Управляемая ТП, т.е. есть микротик и абоны почключены через таблицу АБОН',
     const F_TERRITORIAL_GROUP_ID   = 'territorial_group_id';    // 'ID территориальной группы технических площадок',
     const F_INVEST_GROUP_ID        = 'invest_group_id';         // 'ID инвестиционной группы распределения дивидендов',
     const F_ADMIN_OWNER_ID         = 'admin_owner_id';          // 'ID администратора-владельца',
@@ -25,9 +36,6 @@ class TP {
     const F_COORD                  = 'coord';                   // 'Географические координаты ТП для отображения на картах',
     const F_RANG_ID                = 'rang_id';                 // 'Ранг узла: 1 — Абонентский узел | 2 — AP | 3 — Агрегатор AP | 4 — Bridge AP | 5 — Bridge Client | 10 — Хостинговая тех. площадка | 100 — Биллинг',
     const F_UPLINK_ID              = 'uplink_id';               // 'Узел "верхнего" уровня, от которого идёт сигнал к этому узлу (не обязательно маршрутизатор)',
-    const F_STATUS                 = 'status';                  // '0 — Отключен/демонтирован, 1 — Работает',
-    const F_DELETED                = 'deleted';                 // 'ТП демонтирована',
-    const F_IS_MANAGED             = 'is_managed';              // 'Управляемая ТП, т.е. есть микротик и абоны почключены через таблицу АБОН',
     const F_WEB_MANAGEMENT         = 'web_management';          // 'Страница web-доступа к устройству',
     const F_DEFAULT_PRICE_ID       = 'default_price_id';        // 'Прайс По_умолчанию для этой ТП',
     const F_DESCRIPTION            = 'description';             // 'Описание ТП',
@@ -37,19 +45,122 @@ class TP {
     const F_COST_TP_DESCRIPTION    = 'cost_tp_description';     // 'Описание стоимости строительства / ввода в эксплуатацию ТП',
     const F_ABON_ID_RANGE_START    = 'abon_id_range_start';     // 'Начало диапазона выдачи ID для пользователей',
     const F_ABON_ID_RANGE_END      = 'abon_id_range_end';       // 'Конец диапазона выдачи ID для пользователей',
-    const F_SCRIPT_MIK_IP          = 'script_mik_ip';           // 'IP устройства',
-    const F_SCRIPT_MIK_PORT        = 'script_mik_port';         // 'tcp порт доступа на устройство',
-    const F_SCRIPT_MIK_LOGIN       = 'script_mik_login';        // 'login доступа на устройство',
-    const F_SCRIPT_MIK_PASSWD      = 'script_mik_passwd';       // 'passwd доступа на устройства',
-    const F_SCRIPT_FTP_IP          = 'script_ftp_ip';           // 'IP-адрес для ftp доступа',
-    const F_SCRIPT_FTP_PORT        = 'script_ftp_port';         // 'TCP-порт для ftp доступа',
-    const F_SCRIPT_FTP_LOGIN       = 'script_ftp_login';        // 'Логин для ftp доступа',
-    const F_SCRIPT_FTP_PASSWD      = 'script_ftp_passwd';       // 'Пасс для ftp доступа',
-    const F_SCRIPT_FTP_FOLDER      = 'script_ftp_folder';       // 'Имя папаки для сохранения файлов',
-    const F_SCRIPT_FTP_GETPATH     = 'script_ftp_getpath';      // 'Путь и шаблон на сервере для скачивания файлов',
+    const F_MIK_IP                 = 'script_mik_ip';           // 'IP устройства',
+    const F_MIK_PORT               = 'script_mik_port';         // 8728 'API tcp порт доступа на устройство',
+    const F_MIK_PORT_SSL           = 'script_mik_port_ssl';     // 8729 'API tcp порт для SSL доступа на устройство',
+    const F_MIK_LOGIN              = 'script_mik_login';        // 'login доступа на устройство',
+    const F_MIK_PASSWD             = 'script_mik_passwd';       // 'passwd доступа на устройства',
+    const F_MIK_FTP_IP             = 'script_ftp_ip';           // 'IP-адрес для ftp доступа',
+    const F_MIK_FTP_PORT           = 'script_ftp_port';         // 'TCP-порт для ftp доступа',
+    const F_MIK_FTP_LOGIN          = 'script_ftp_login';        // 'Логин для ftp доступа',
+    const F_MIK_FTP_PASSWD         = 'script_ftp_passwd';       // 'Пасс для ftp доступа',
+    const F_MIK_FTP_FOLDER         = 'script_ftp_folder';       // 'Имя папаки для сохранения файлов',
+    const F_MIK_FTP_GETPATH        = 'script_ftp_getpath';      // 'Путь и шаблон на сервере для скачивания файлов',
     const F_CREATION_DATE          = 'creation_date';           // 'Дата создания записи о техплощадке',
     const F_CREATION_UID           = 'creation_uid';            // 'Кто создал запись о ТП',
     const F_MODIFIED_DATE          = 'modified_date';           // 'Дата инменения записи о ТП',
     const F_MODIFIED_UID           = 'modified_uid';            // 'Кто изменил запись о ТП'
+
+
+
+    /**
+     * длины полей для валидатора
+     */
+    const LENGTS = [
+        self::F_TITLE        => 64,
+        self::F_LOGIN        => 50,
+        self::F_PASS         => 50,
+        self::F_COORD        => 40,
+        self::F_IP           => 40,
+        self::F_MIK_PORT     => 6,
+        self::F_MIK_PORT_SSL => 6,
+        self::F_MIK_FTP_PORT => 6,
+    ];
+
+
+
+    /**
+     * Вычисляемые поля
+     */
+    const F_ADMIN_OWNER_NAME       = 'admin_owner_name';        // 'Имя/Название администратора-владельца',
+    const F_FIRM_NAME              = 'firm_name';               // 'Имя/Название Обслуживающего предприятия',
+    const F_UPLINK_NAME            = 'uplink_name';             // 'Имя/Название узла "верхнего" уровня, от которого идёт сигнал к этому узлу (не обязательно маршрутизатор)',
+    const F_COUNT_PA               = 'count_pa';                // 'Количество подключённых PA',
+    const F_RANG_TITLE             = 'rang_title';              // 'Ранг узла: 1 — Абонентский узел | 2 — AP | 3 — Агрегатор AP | 4 — Bridge AP | 5 — Bridge Client | 10 — Хостинговая тех. площадка | 100 — Биллинг',
+    const F_UPLINK_TITLE           = 'uplink_title';            // 'Узел "верхнего" уровня, от которого идёт сигнал к этому узлу (не обязательно маршрутизатор)',
+
+
+
+    const TYPE_NA           = 0;    // N/A 	N/A
+    const TYPE_ABON         = 1;    // Абон. узел 	1 — Абонентский узел (station/client/router)
+    const TYPE_NAT          = 2;    // Маршрутизатор 	2 — Точка доступа, Узел подключения абонентов, упр...
+    const TYPE_AG           = 3;    // Агрегатор 	3 — Агрегатор узлов подключения (WR)
+    const TYPE_BRIDGE       = 4;    // ТД Мост          4 — Bridge AP. ТД Радиоудлинитель
+    const TYPE_CLI_BRIDGE   = 5;    // Абон. Мост 	5 — Client Bridge. Оборудование в режиме Мост на с...
+    const TYPE_HOSTIG       = 10;   // Хостинг          10 -- Хостинговая тех. площадка
+    const TYPE_MONITOR      = 90;   // Мониторинг 	100 — Сервер мониторинга
+    const TYPE_MON_PROXI    = 91;   // Прокси мониторинга  100 — Сервер прокси-мониторинга
+    const TYPE_BILLIG       = 100;  // Биллинг 	100 — Сервер биллинга
+
+    const TYPES = [
+        self::TYPE_NA => [
+            Lang::C_EN => 'N/A',
+            Lang::C_RU => 'N/A',
+            Lang::C_UK => 'N/A',
+        ],
+        self::TYPE_ABON => [
+            Lang::C_EN => 'Subscriber node',
+            Lang::C_RU => 'Абонентский узел',
+            Lang::C_UK => 'Абонентський вузол',
+        ],
+        self::TYPE_NAT => [
+            Lang::C_EN => 'Router, NAT',
+            Lang::C_RU => 'Маршрутизатор, NAT',
+            Lang::C_UK => 'Маршрутизатор, NAT',
+        ],
+        self::TYPE_AG => [
+            Lang::C_EN => 'Aggregator',
+            Lang::C_RU => 'Агрегатор',
+            Lang::C_UK => 'Агрегатор',
+        ],
+        self::TYPE_BRIDGE => [
+            Lang::C_EN => 'Bridge, access point',
+            Lang::C_RU => 'Мост, точка доступа',
+            Lang::C_UK => 'Міст, точка доступу',
+        ],
+        self::TYPE_CLI_BRIDGE => [
+            Lang::C_EN => 'Subscriber bridge',
+            Lang::C_RU => 'Абонентский мост',
+            Lang::C_UK => 'Абонентський міст',
+        ],
+        self::TYPE_HOSTIG => [
+            Lang::C_EN => 'Hosting site',
+            Lang::C_RU => 'Хостинговая площадка',
+            Lang::C_UK => 'Хостингова площадка',
+        ],
+        self::TYPE_MONITOR => [
+            Lang::C_EN => 'Monitoring system',
+            Lang::C_RU => 'Система мониторинга',
+            Lang::C_UK => 'Система моніторингу',
+        ],
+        self::TYPE_MON_PROXI => [
+            Lang::C_EN => 'Monitoring proxy',
+            Lang::C_RU => 'Прокси мониторинга',
+            Lang::C_UK => 'Проксі моніторингу',
+        ],
+        self::TYPE_BILLIG => [
+            Lang::C_EN => 'Billing system',
+            Lang::C_RU => 'Биллинговая система',
+            Lang::C_UK => 'Білінгова система',
+        ],
+    ];
+
+
+
+    public static function get_type_name(int $type_id): string {
+        return self::TYPES[$type_id][Lang::code()];
+    }
+
+
 
 }

@@ -72,6 +72,8 @@ class Icons {
     const SRC_MIK_BTN_CLEAR   = '/img/mik_icon_clear_cmd.png';
     const SRC_MIK_LOGO16      = '/img/mikrotik_logo_16.png';
     const SRC_MIK_LOGO16_GRAY = '/img/mikrotik_logo_16_gray.png';
+    const SRC_ICON_MIK_BLUE   = '/img/icon_mik_blue.svg';
+    const SRC_ICON_MIK_GRAY   = '/img/icon_mik_gray.svg';
     const SRC_TP_EDIT         = '/img/icon_tp_edit.png';
 
     const SRC_USER_CARD       = '/img/user_card_black_128.png';
