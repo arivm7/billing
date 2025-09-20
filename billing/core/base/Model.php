@@ -142,8 +142,8 @@ abstract class Model {
 
 
 
-    public function query(string $sql, ?array $params = [], int|string|null $fetchColumn = null): array|int|string {
-        return $this->db->query($sql, $params, $fetchColumn);
+    public function query(string $sql, ?array $params = [], int|null $fetchCell = null, int|null $fetchVector = null): array|int|string {
+        return $this->db->query(sql: $sql, params: $params, fetchCell: $fetchCell, fetchVector: $fetchVector);
     }
 
 
@@ -225,7 +225,8 @@ abstract class Model {
      */
     public function get_row_by_id(string $table_name, int|string $id_value, string $field_id = self::F_ID): array|null {
 
-        if  (   !(
+        if  (
+                !(
                     array_key_exists($table_name, self::$CACHE_TABLES_ROWS) &&
                     array_key_exists($field_id,   self::$CACHE_TABLES_ROWS[$table_name]) &&
                     array_key_exists($id_value,   self::$CACHE_TABLES_ROWS[$table_name][$field_id])
@@ -296,11 +297,12 @@ abstract class Model {
      * @param string|null $row_id_by
      * @return array -- результат выборки таблицы
      */
-    function get_rows_by_where(string $table, string $where = "1", string|int|null $limit = '', string $id_alias="", string $order_by = null, string|null $row_id_by = null): array {
+    function get_rows_by_where(string $table, string|null $where = null, string|int|null $limit = '', string $id_alias="", string $order_by = null, string|null $row_id_by = null): array {
         $sql = "SELECT "
                 . "*"
                 . (is_empty($id_alias) ? "" : ", " . self::F_ID . " AS {$id_alias}")
-                . " FROM {$table} WHERE {$where} "
+                . " FROM {$table}"
+                . (is_empty($where) ? "" : " WHERE {$where}")
                 . (is_empty($order_by) ? "" : " ORDER BY {$order_by}")
                 . (is_empty($limit) ? "" : " LIMIT {$limit}")
                 ;
@@ -352,8 +354,8 @@ abstract class Model {
      * @param string $field_count -- поле, по кторому считать количество
      * @return int
      */
-    function get_count(string $table, string $where = "1", string $field_count = self::F_ID): int {
-        $sql = "SELECT COUNT(`{$field_count}`) AS COUNT FROM {$table} WHERE {$where}";
+    function get_count(string $table, string|null $where = null, string $field_count = self::F_ID): int {
+        $sql = "SELECT COUNT(`{$field_count}`) AS COUNT FROM {$table}" . ($where ? " WHERE {$where}" : "");
         return $this->get_count_by_sql($sql);
 
     }
@@ -562,12 +564,6 @@ abstract class Model {
                 . " WHERE {$where}";
         return $this->execute($sql);
 
-    }
-
-
-
-    function is_payer(int $abon_id): bool {
-        return $this->get_abon($abon_id)['is_payer'];
     }
 
 

@@ -165,7 +165,7 @@ class AdminController extends AdminBaseController {
             'params' => [
                 'table'=> $tree,
                 'pre_align' => true,
-                'col_titles' =>  ["id", "v", "<span title='№ пп -- ".Menu::F_ORDER."'>пп</span>", "<span title='parentd_id'>PI</span>", "<span title='Модуль'>M</span>", "AN", "item", "childs"],
+                'col_titles' =>  ["id", "v", "<span title='№ пп -- ".Menu::F_ORDER."'>№</span>", "<span title='parentd_id'>PI</span>", "<span title='Модуль'>M</span>", "AN", "item", "childs"],
                 'child_col_titles' =>  true,
                 'cell_attributes' =>  ["align=center", "", "align=center", "align=center", "", "", "", ""],
                 'child_cell_attributes' => true,

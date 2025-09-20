@@ -32,6 +32,21 @@ enum DebugView: string
 }
 
 
+
+/**
+ * Статус прикрепленных прайсовых фрагментов
+ * CLOSED, CURRENT, FUTURE
+ */
+enum PAStatus: int  {
+    case FUTURE         = 0b00000001;
+    case CURRENT        = 0b00000010;
+    case CLOSE_TODAY    = 0b00000100;
+    case CLOSED         = 0b00001000;
+    case FULL_CLOSED    = 0b10000000;
+}
+
+
+
 enum DataTypes {
     case INT;
     case INT_NULABLE;
@@ -39,3 +54,49 @@ enum DataTypes {
     case FLOAT;
     case STR;
 }
+
+
+class AbonStatus
+{
+    const ABON_0        = -1000; // Нулевой абон -- служебный ИД
+    const NA            =  -100; // Вообще не абон. Не прошел валидность ИД
+    const SW            =   -10; // Свитч
+    const OFF           =    -2; // Не плательщик
+    const LONG_PAUSED   =    -1; // долго на паузе, т.е. потенциальный OFF
+    const PAUSED        =     0; // Отключены прайсы, но, плательщик
+    const WARN          =     1; // Есть активные прайсы, должник в статусе "Требуется уведомление"
+    const WARN2         =     2; // Есть активные прайсы, должник в статусе "Нужно отключать"
+    const OK            =     3; // Есть активные прайсы, "+" на ЛС
+}
+
+
+class AbonStatusTitle
+{
+    const ABON_0      = 'AID служебный или отстутствует';
+    const NA     = 'AID не прошел проверку на валидность';
+    const SW          = 'Коммутатор или другое служебное сетевое устройство';
+    const OFF    = 'Абонентт НЕ плательщик';
+    const LONG   = 'Долго на паузе, потенциальный НЕ плательщик.';
+    const PAUSED = 'На паузе: Отключены прайсы, но, потенциально, плательщик.';
+    const WARN   = 'Есть активные прайсы, должник в статусе &laquo;Требуется уведомление&raquo;"';
+    const WARN2  = 'Есть активные прайсы, должник в статусе &laquo;Нужно отключать&raquo;"';
+    const OK     = 'Есть активные прайсы, &laquo;+&raquo; на ЛС, или в зоне &laquo;Уведомление не требуется&raquo;';
+}
+
+
+class MikRuleTypes {
+    const NAT = -2;
+    const IP  = -3;
+    const UV  = -4;
+}
+
+class MikAbonStatus {
+
+    const ABON_0  = 0;
+    const XZ = -100;
+    const SW = -1;
+
+}
+
+
+define('MAX_COMMENT_LENGTH', 20);

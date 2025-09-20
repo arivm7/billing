@@ -41,6 +41,7 @@ class Module {
     const MOD_FIRM_STATUS   = 33;
     const MOD_MODULES       = 32;
     const MOD_DOCS          = 30;
+    const MOD_TP            = 29;
     const MOD_SEARCH        = 36;
     const MOD_WEB_DEBUG     = 39;
 

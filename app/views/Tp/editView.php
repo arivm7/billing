@@ -49,6 +49,7 @@ $fields = [
     TP::F_ABON_ID_RANGE_END         => ['type'=>'number',      'col_w'=>'3'],
     TP::F_MIK_IP                    => ['type'=>'text',        'col_w'=>'3'],
     TP::F_MIK_PORT                  => ['type'=>'number',      'col_w'=>'3'],
+    TP::F_MIK_PORT_SSL              => ['type'=>'number',      'col_w'=>'3'],
     TP::F_MIK_LOGIN                 => ['type'=>'text',        'col_w'=>'3'],
     TP::F_MIK_PASSWD                => ['type'=>'text',        'col_w'=>'3'],
     TP::F_MIK_FTP_IP                => ['type'=>'text',        'col_w'=>'3'],

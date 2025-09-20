@@ -1,6 +1,8 @@
 <?php
 
+
 namespace app\models;
+
 
 use billing\core\base\Lang;
 use billing\core\base\Model;
@@ -8,7 +10,9 @@ use config\Icons;
 use config\tables\Module;
 use config\tables\Ppp;
 use config\tables\PppType;
+use config\tables\Price;
 use config\tables\TP;
+use config\tables\TSUserTp;
 use config\tables\User;
 
 require_once DIR_LIBS . '/datetime_functions.php';
@@ -38,6 +42,23 @@ class AppBaseModel extends Model
 
 
 
+    function get_prices(int|null $tp_id = null, bool $include_null = true): array {
+        if (!is_null($tp_id)) {
+            $list1 = $this->get_rows_by_sql("SELECT * FROM `prices` WHERE `active` AND (`tp_id` = {$tp_id})");
+        } else {
+            $list1 = [];
+        }
+
+        if ($include_null) {
+            $list2 = $this->get_rows_by_sql("SELECT * FROM `prices` WHERE `active` AND (`tp_id` IS NULL)");
+        } else {
+            $list2 = [];
+        }
+
+        return array_merge($list1, $list2);
+    }
+
+
     /**
      * Кэш-таблица для function get_tp(int $id)
      */
@@ -49,10 +70,110 @@ class AppBaseModel extends Model
         //echo "get_tp(int $id)<br>";
         if (!array_key_exists($id, self::$CASHE_TP_LIST)) {
             self::$CASHE_TP_LIST[$id] = $this->get_row_by_id("tp_list", $id);
-            self::$CASHE_TP_LIST[$id]["rang_title"]   = (self::$CASHE_TP_LIST[$id]["rang_id"]   > 0 ? $this->get_row_by_id("tp_rangs", self::$CASHE_TP_LIST[$id]["rang_id"])["title"] : "");
-            self::$CASHE_TP_LIST[$id]["uplink_title"] = (self::$CASHE_TP_LIST[$id]["uplink_id"] > 0 ? $this->get_tp(self::$CASHE_TP_LIST[$id]["uplink_id"])["title"] : "");
+
+            self::$CASHE_TP_LIST[$id][TP::F_MIK_PORT]     = (int)self::$CASHE_TP_LIST[$id][TP::F_MIK_PORT];     // просто переделыание в int. После исправления базы убрать
+            self::$CASHE_TP_LIST[$id][TP::F_MIK_PORT_SSL] = (int)self::$CASHE_TP_LIST[$id][TP::F_MIK_PORT_SSL]; // просто переделыание в int. После исправления базы убрать
+            self::$CASHE_TP_LIST[$id][TP::F_MIK_FTP_PORT] = (int)self::$CASHE_TP_LIST[$id][TP::F_MIK_FTP_PORT]; // просто переделыание в int. После исправления базы убрать
+
+            self::$CASHE_TP_LIST[$id][TP::F_RANG_TITLE]   = (self::$CASHE_TP_LIST[$id]["rang_id"]   > 0 ? $this->get_row_by_id("tp_rangs", self::$CASHE_TP_LIST[$id]["rang_id"])["title"] : "");
+            self::$CASHE_TP_LIST[$id][TP::F_UPLINK_TITLE] = (self::$CASHE_TP_LIST[$id]["uplink_id"] > 0 ? $this->get_tp(self::$CASHE_TP_LIST[$id]["uplink_id"])["title"] : "");
         }
         return self::$CASHE_TP_LIST[$id];
+    }
+
+
+
+    function get_id_vector(string $sql) {
+        return $this->query(sql: $sql, fetchVector: 0);
+    }
+
+
+
+    function get_my_tp_id_list() {
+        $user_id = $_SESSION[User::SESSION_USER_REC][User::F_ID];
+        $sql = "SELECT `".TSUserTp::F_TP_ID."` FROM `".TSUserTp::TABLE."` WHERE `".TSUserTp::F_USER_ID."` = {$user_id}";
+        return $this->get_id_vector($sql);
+    }
+
+
+
+    /**
+     * Возвращает SQL-запрос для получения списка ТП.
+     * Если указан $user_id, то, список ТП принадлежащих этому пользователю.
+     * Если указан $id_list, то список ТП из этого списка.
+     * Если не укзанны ни $user_id ни $id_list, то в качестве $user_id берётся ID текущего авторизованного пользователя.
+     * @param int|null $user_id
+     * @param array|null $id_list
+     * @param int|null $status
+     * @param int|null $deleted
+     * @param int|null $managed
+     * @param int|null $rang
+     * @return string
+     */
+    function get_sql_tp_list(
+            int|null    $user_id = null,    // Вернуть список для указанного пользователя
+            array|null  $id_list = null,    // Массив со списком нужных ТП
+            int|null    $status  = null,    // 1 — Работает, 0 — Отключен
+            int|null    $deleted = null,    // 1 — ТП демонтирована, 0 — Можно вернуть в работу
+            int|null    $managed = null,    // 1 — Управляемая (Mik)
+            int|null    $rang    = null     // 1 — Абонентский узел. 2 — AP...
+            ): string
+    {
+        if (empty($user_id) && empty($id_list)) {
+            $user_id = $_SESSION[User::SESSION_USER_REC][User::F_ID];
+        }
+
+        if (!empty ($user_id)) {
+            return "SELECT "
+                    . "* "
+                    . "FROM `".TP::TABLE."` "
+                    . "WHERE "
+                    . "`".TP::F_ID."` IN (SELECT `".TSUserTp::F_TP_ID."` FROM `".TSUserTp::TABLE."` WHERE `".TSUserTp::F_USER_ID."` = {$user_id}) "
+                    . (is_null($status)  ? "" : "AND (`".TP::F_STATUS."` = {$status}) ")
+                    . (is_null($deleted) ? "" : "AND (`".TP::F_DELETED."` = {$deleted}) ")
+                    . (is_null($managed) ? "" : "AND (`".TP::F_IS_MANAGED."` = {$managed}) ")
+                    . (is_null($rang)    ? "" : "AND (`".TP::F_RANG_ID."` = {$rang}) ")
+                    . "ORDER BY `".TP::F_STATUS."` DESC, `".TP::F_DELETED."` ASC, `".TP::F_TITLE."` ASC";
+        }
+
+        if (!empty($id_list)) {
+            return "SELECT "
+                    . "* "
+                    . "FROM `".TP::TABLE."` "
+                    . "WHERE "
+                    . "`".TP::F_ID."` IN (".implode(",", $id_list).") "
+                    . (is_null($status)  ? "" : "AND (`".TP::F_STATUS."` = {$status}) ")
+                    . (is_null($deleted) ? "" : "AND (`".TP::F_DELETED."` = {$deleted}) ")
+                    . (is_null($managed) ? "" : "AND (`".TP::F_IS_MANAGED."` = {$managed}) ")
+                    . (is_null($rang)    ? "" : "AND (`".TP::F_RANG_ID."` = {$rang}) ")
+                    . "ORDER BY `status` DESC, `deleted` ASC, `title` ASC";
+        }
+        throw new \Exception("Не указан user_id, или не удалось его получить, и не указан id_list.");
+    }
+
+
+
+    /**
+     * Возвращает спискок ТП.
+     * Все параметры передаются для формированя SQL с помощью get_sql_tp_list().
+     * @param int|null $user_id
+     * @param array|null $id_list
+     * @param int|null $status
+     * @param int|null $deleted
+     * @param int|null $managed
+     * @param int|null $rang
+     * @return array
+     */
+    function get_tp_list(
+            int|null    $user_id = null,    // Вернуть список для указанного пользователя
+            array|null  $id_list = null,    // Массив со списком нужных ТП
+            int|null    $status  = null,    // 1 — Работает, 0 — Отключен
+            int|null    $deleted = null,    // 1 — ТП демонтирована, 0 — Можно вернуть в работу
+            int|null    $managed = null,    // 1 — Управляемая (Mik)
+            int|null    $rang    = null     // 1 — Абонентский узел. 2 — AP...
+            ): array
+    {
+        return $this->get_rows_by_sql($this->get_sql_tp_list($user_id, $id_list, $status, $deleted, $managed, $rang));
     }
 
 
@@ -63,13 +184,13 @@ class AppBaseModel extends Model
      * ТП кэшируются
      * @param int $uid -- user_id из таблицы связи ts_user_tp
      * @param array|null $list_tp_id
-     * @param bool|null $status -- true | false | NULL - все
+     * @param bool|null $status     -- true | false | NULL - все
      * @param bool|null $is_managed -- true | false | NULL - все
-     * @param bool|null $deleted -- true | false | NULL - все
+     * @param bool|null $deleted    -- true | false | NULL - все
      * @return array -- список ТП
      * @throws \Exception
      */
-    function get_tps_by_uid(int $uid, array|null $list_tp_id = null, bool|null $status = null, bool|null $is_managed = null, bool|null $deleted = null): array {
+    function get_tp_list_by_uid(int $uid, array|null $list_tp_id = null, bool|null $status = null, bool|null $is_managed = null, bool|null $deleted = null): array {
         if (is_null($list_tp_id)) {
             $ts_list = $this->get_rows_by_field(table: 'ts_user_tp', field_name: 'user_id', field_value: $uid);
         } else {
@@ -109,73 +230,8 @@ class AppBaseModel extends Model
     }
 
 
-    /**
-     * Для указанного абонента возвращает последние закрытый, все текущие и все будущие прайсы.
-     * @param int $aid -- ИД абонента для которого ищутся правйсовые фрагменты
-     * @param array $PA_LIST -- массив прайсовых фрагментов из которого делается выборка
-     * @return array -- возвращает массив:
-     *                  $last['off'] = array(prices_apply) -- последние закрытые
-     *                  $last['cur'] = array(prices_apply) -- все текущие
-     *                  $last['fut'] = array(prices_apply) -- все будущие
-     */
-    function get_last_PA(int $aid, array &$PA_LIST): array {
-        $last['off'] = array();
-        $last['cur'] = array();
-        $last['fut'] = array();
-        $last['off_time'] = -1;
-        $last['cur_time'] = -1;
-        $last['fut_time'] = -1;
-        /**
-         * Ищем даты последних включенных и отключенных прайсов
-         */
-        foreach ($PA_LIST as $pid => $pa) {
-            if ($pa['abon_id'] == $aid) {
-                switch ($this->get_prices_apply_age($pa)) {
-                    case PRICES_APPLY_CLOSED:
-                        if ($pa['date_end'] > $last['off_time']) {
-                            $last['off_time'] = $pa['date_end'];
-                        }
-                        break;
-                    case PRICES_APPLY_CURRENT:
-                        if ($pa['date_start'] > $last['cur_time']) {
-                            $last['cur_time'] = $pa['date_start'];
-                        }
-                        break;
-                    case PRICES_APPLY_FUTURE:
-                        if ($pa['date_start'] > $last['fut_time']) {
-                            $last['fut_time'] = $pa['date_start'];
-                        }
-                        break;
-                }
-            }
-        }
-        /**
-         * Считываем все прайсовые фрагенты по найденным датам
-         */
-        foreach ($PA_LIST as $pid => $pa) {
-            if ($pa['abon_id'] == $aid) {
-                switch ($this->get_prices_apply_age($pa)) {
-                    case PRICES_APPLY_CLOSED:
-                        if ($pa['date_end'] == $last['off_time']) { $last['off'][] = $pa; }
-                        break;
-                    case PRICES_APPLY_CURRENT:
-                        $last['cur'][] = $pa;
-                        break;
-                    case PRICES_APPLY_FUTURE:
-                        $last['fut'][] = $pa;
-                        break;
-                }
-            }
-        }
-        return $last;
-    }
 
-
-
-
-
-
-    function has_pa_last_day(array $pa_rec, int $today = NA): bool {
+    public function has_pa_last_day(array $pa_rec, int $today = NA): bool {
 
         $pa_rec['date_end'] = (($pa_rec['date_end'] > 0)
                                         ? date_only($pa_rec['date_end'])
@@ -193,7 +249,7 @@ class AppBaseModel extends Model
      * @param int $aid -- ИД абонента
      * @return float -- возвращаемая сумма всех платежей
      */
-    function get_sum_pays_by_abon(array &$abon): float {
+    public function get_sum_pays_by_abon(array &$abon): float {
         $sum = 0.0;
         if (isset($abon['PAYMENTS'])) {
             foreach ($abon['PAYMENTS'] as $P) {

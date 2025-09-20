@@ -48,7 +48,6 @@ class AdminUsersController extends AdminBaseController {
         $model = new AdminUsersModel();
         $user_id = isset($_GET['id']) ? (int)$_GET['id'] : -1;
         $user = $model->get_user($user_id);
-            debug($_POST, debug_view: \DebugView::PRINTR);
 
         if (isset($_POST[User::POST_REC]) && is_array($_POST[User::POST_REC]) ) {
             // Есть данные отредактированной формы

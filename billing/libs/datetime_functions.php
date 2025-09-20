@@ -150,6 +150,11 @@ function year($datetime = NA, $format="Y") {
 
 
 
+function date_Ymd(int|null $timestamp, $value_if_null = ""): string {
+    return (!is_null($timestamp) && ($timestamp > 0) ? date("Y-m-d", $timestamp): $value_if_null);
+}
+
+
 /**
  * Возвращает строку вида "08.2023" для указанной даты
  * @param int $datetime -- для та для которой нужно вернуть "мм.гггг"

@@ -483,7 +483,7 @@ class AbonController extends AppBaseController {
              * Считываем ТП привязанные к авторизованному пользователю
              * которые указаны в таблице связи ts_user_tp
              */
-            $TP_LIST = indexing_arr($model->get_tps_by_uid($user_id, list_tp_id: $show_tp_list)); // , status: true (! если выбирать ли ТП только активные, то невозможно посмотреть абонентов на отклюенных ТП)
+            $TP_LIST = indexing_arr($model->get_tp_list_by_uid($user_id, list_tp_id: $show_tp_list)); // , status: true (! если выбирать ли ТП только активные, то невозможно посмотреть абонентов на отклюенных ТП)
             //echo "(1) TP_LIST: <pre>". print_r($TP_LIST, true)."</pre><hr>";
 
 
