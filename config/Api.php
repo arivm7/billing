@@ -1,9 +1,17 @@
 <?php
-
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : Api.php
+ *  Path    : config/Api.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 19 Sep 2025 23:07:55
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
 
 namespace config;
-
-
 
 use app\models\AppBaseModel;
 use billing\core\MsgQueue;
@@ -11,6 +19,11 @@ use billing\core\MsgType;
 use config\tables\TP;
 use MikrotikApi\MikroLink;
 
+/**
+ * Description of Api.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
 class Api {
 
 

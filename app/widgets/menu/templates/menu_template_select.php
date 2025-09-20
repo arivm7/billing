@@ -1,4 +1,16 @@
 <?php
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : menu_template_select.php
+ *  Path    : app/widgets/menu/templates/menu_template_select.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 16 Sep 2025 12:49:54
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
+
 /**
  *   Шаблон для построения html-строки меню
  */
@@ -14,4 +26,3 @@ use app\widgets\menu\Menu;
 <?php if (isset($item[MenuModel::F_CHILDS])): ?>
     <?= $this->get_html(subTree:$item[MenuModel::F_CHILDS], tab: "&nbsp;&nbsp;" . $tab . "-"); ?>
 <?php endif; ?>
-

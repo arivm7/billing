@@ -1,4 +1,16 @@
 <?php
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : functions.php
+ *  Path    : billing/libs/functions.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 20 Sep 2025 10:53:30
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
+
 
 use app\controllers\ApiController;
 use app\models\AbonModel;
@@ -1673,7 +1685,7 @@ function url_pa_form($pa_id, int $icon_width = Icons::ICON_WIDTH_DEF, int $icon_
     // !!! Вызов кэшируется. Но всё равно нужно как-то обойтись без вызова базы.
     $model = new AbonModel();
     $pa = $model->get_row_by_id(PA::TABLE, $pa_id);
-    return "<a href=/pa_form.php?pa_id=".$pa_id." target=_blank title='Редактировать прикрепленный прайсовый фрагмент \n[{$pa_id}] {$pa['net_name']}'><img src='/img/icon_pa_edit.png' width=$icon_width height=$icon_height /></a>";
+    return "<a href=/pa_form.php?pa_id=".$pa_id." target=_blank title='Редактировать прикрепленный прайсовый фрагмент \n[{$pa_id}] {$pa['net_name']}'><img src='".Icons::SRC_PA_EDIT."' width=$icon_width height=$icon_height /></a>";
 }
 
 
@@ -1689,7 +1701,4 @@ function price_frm(int $price_id, bool $has_img = true, int $icon_width = 22, in
     $price = $model->get_price($price_id);
     return "<a href='/price_form.php?id={$price_id}' title='Редактировать прайс \n[".$price_id."] ".$price['title']."\n{$price['description']}' target={$target}>".($has_img?"<img src=/img/price_edit.png alt='[edit]' width=$icon_width height=$icon_height>":$price['title'])."</a>";
 }
-
-
-
 

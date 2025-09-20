@@ -1,4 +1,22 @@
 <?php
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : colors.php
+ *  Path    : config/colors.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 16 Sep 2025 12:49:54
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
+
+/**
+ * Цветовые константы
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
+
 
 
 const WHITE        = '#ffffff'; // Белый
@@ -25,4 +43,3 @@ const COLOR3_VALUE = '#cccccc';
 const COLOR4_VALUE = '#cebeff';
 const COLOR5_VALUE = '#e0c7ff';
 const COLOR6_VALUE = '#ffffA8';
-

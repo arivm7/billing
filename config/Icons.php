@@ -1,13 +1,22 @@
 <?php
-
-
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : Icons.php
+ *  Path    : config/Icons.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 20 Sep 2025 10:51:34
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
 
 namespace config;
 
 /**
  * SRC для иконок
- * @author ar
  *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
 class Icons {
 
@@ -35,6 +44,7 @@ class Icons {
 
     const SRC_PA_ACT          = '/img/icon_btn_pa_green.svg';
     const SRC_PA_OFF          = '/img/icon_btn_pa_gray.svg';
+    const SRC_PA_EDIT         = '/img/icon_pa_edit.svg';
 
     const SRC_A_ACT           = '/img/icon_btn_abon_green.svg';
     const SRC_A_OFF           = '/img/icon_btn_abon_gray.svg';

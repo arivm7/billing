@@ -1,4 +1,15 @@
 <?php
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : Model.php
+ *  Path    : billing/core/base/Model.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 19 Sep 2025 19:31:53
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
 
 namespace billing\core\base;
 
@@ -7,7 +18,11 @@ use config\tables\Abon;
 use config\SessionFields;
 use config\tables\User;
 
-
+/**
+ * Description of Model.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
 abstract class Model {
 
     /**

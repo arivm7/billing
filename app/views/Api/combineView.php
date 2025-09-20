@@ -48,25 +48,45 @@ $tp = $bill_rec[Api::BILL_TP];
     <h1 class="fs-2" title="id ТП в Базе"><span class="text-secondary"><?=$tp[TP::F_ID];?></span> | <span title="Название ТП в Базе"><?=$tp[TP::F_TITLE];?></span> | <span title="Идентификация на оборудовании"><?=$mik_rec['identity'];?></span> |</h1>
     <?php include DIR_INC . '/mik_resource.php'; ?>
 
-    <div class="accordion">
-      <div class="accordion-item">
-        <h2 class="accordion-header">
-          <button class="accordion-button collapsed" type="button"
-                  data-bs-toggle="collapse" data-bs-target="#acc_raw_tables"
-                  aria-expanded="false" aria-controls="acc_raw_tables">
-              <span class="fs-5">Сырые таблицы из микротика | Количество таблиц: <?= count($mik_rec['addr_list']);?></span>
-          </button>
-        </h2>
-        <div id="acc_raw_tables" class="accordion-collapse collapse">
-          <div class="accordion-body">
-            <?php include DIR_INC . '/mik_raw_tables.php'; ?>
-          </div>
+    <div class="accordion" id="accCombineMain">
+        <!-- Сырые таблицы -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="heading1">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapse1" aria-expanded="true" aria-controls="collapse1">
+                    <div class="d-flex justify-content-between align-items-center w-100">
+                        <div><span class="text-success fs-5">Сырые таблицы из микротика</span></div>
+                        <div><span class="text-secondary fs-7">Количество таблиц: <?= count($mik_rec['addr_list']); ?>&nbsp;|&nbsp;&nbsp;</span></div>
+                    </div>
+                </button>
+            </h2>
+            <div id="collapse1" class="accordion-collapse collapse show"
+                 aria-labelledby="heading1" data-bs-parent="#accCombineMain">
+                <div class="accordion-body">
+                    <?php include DIR_INC . '/mik_raw_tables.php'; ?>
+                </div>
+            </div>
         </div>
-      </div>
+        <!-- Аналитические таблицы -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="heading2">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapse2" aria-expanded="false" aria-controls="collapse2">
+                    <div class="d-flex justify-content-between align-items-center w-100">
+                        <div><span class="text-success fs-5">Аналитические таблицы</span></div>
+                        <div><span class="text-secondary fs-7">Количество таблиц: <?= count($out_tables); ?>&nbsp;|&nbsp;&nbsp;</span></div>
+                    </div>
+                </button>
+            </h2>
+            <div id="collapse2" class="accordion-collapse collapse"
+                 aria-labelledby="heading2" data-bs-parent="#accCombineMain">
+                <div class="accordion-body">
+                    <?php include DIR_INC . '/mik_out_tables.php'; ?>
+                </div>
+            </div>
+        </div>
     </div>
     <hr>
-    <?php include DIR_INC . '/mik_out_tables.php'; ?>
-
 </div>
 
 

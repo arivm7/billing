@@ -1,8 +1,17 @@
 <?php
-
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : NewsController.php
+ *  Path    : app/controllers/NewsController.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 16 Sep 2025 12:49:54
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
 
 namespace app\controllers;
-
 
 use billing\core\base\Lang;
 use billing\core\base\View;
@@ -13,8 +22,11 @@ use billing\core\Pagination;
 use Valitron\Validator;
 use DateTime;
 
-
-
+/**
+ * Description of NewsController.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
 class NewsController extends AppBaseController {
 
 

@@ -1,4 +1,15 @@
 <?php
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : MsgQueue.php
+ *  Path    : billing/core/MsgQueue.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 19 Sep 2025 15:32:22
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
 
 namespace billing\core;
 
@@ -13,6 +24,11 @@ enum MsgType: string {
     case INFO_AUTO      = SessionFields::INFO_AUTO;
 }
 
+/**
+ * Description of MsgQueue.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
 class MsgQueue {
 
     public static function msg(MsgType $type, string|array $message): void

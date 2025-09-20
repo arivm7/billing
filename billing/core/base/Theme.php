@@ -1,13 +1,25 @@
 <?php
-
-
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : Theme.php
+ *  Path    : billing/core/base/Theme.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 16 Sep 2025 12:49:54
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
 
 namespace billing\core\base;
 
-
-
 use billing\core\App;
 
+/**
+ * Description of Theme.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
 class Theme {
 
     public const F_GET      = 'theme';

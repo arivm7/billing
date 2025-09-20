@@ -1,4 +1,17 @@
 <?php
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : ApiController.php
+ *  Path    : app/controllers/ApiController.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 20 Sep 2025 00:17:09
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
+
+
 declare(strict_types=1);
 
 
@@ -20,6 +33,11 @@ use config\tables\TP;
 use DebugView;
 use MikrotikApi\MikroLink;
 
+/**
+ * Description of ApiController.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
 class ApiController extends AppBaseController {
 
 

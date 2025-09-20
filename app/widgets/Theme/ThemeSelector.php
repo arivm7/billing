@@ -1,12 +1,26 @@
 <?php
-
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : ThemeSelector.php
+ *  Path    : app/widgets/Theme/ThemeSelector.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 16 Sep 2025 12:49:54
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
 
 namespace app\widgets\Theme;
-
 
 use billing\core\App;
 use billing\core\base\Theme;
 
+/**
+ * Description of ThemeSelector.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
 class ThemeSelector {
 
 

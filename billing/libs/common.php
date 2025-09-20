@@ -1,5 +1,15 @@
 <?php
-
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : common.php
+ *  Path    : billing/libs/common.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 19 Sep 2025 22:26:09
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
 
 define('NA',      -1); // N/A -- Значение не определено
 define('CR', '&#10;');

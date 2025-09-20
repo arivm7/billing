@@ -3,6 +3,7 @@ set -euo pipefail
 
 if [[ $# -lt 1 ]]; then
   echo "Usage: $0 input.php"
+  echo "Справка в php-файле."
   exit 1
 fi
 

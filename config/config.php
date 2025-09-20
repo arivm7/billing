@@ -1,4 +1,23 @@
 <?php
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : config.php
+ *  Path    : config/config.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 19 Sep 2025 19:35:32
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
+
+/**
+ * Конфиг сайта
+ * Параметры переменных, используемх сайтом
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
+
 
 $config = [
 
@@ -21,7 +40,8 @@ $config = [
     ],
 
     /**
-     * Текущая тема
+     * Текущая тема.
+     * Автоматически заполняется
      */
     'theme_curr' => [],
 
@@ -47,6 +67,7 @@ $config = [
     /**
      * запись текущего языка, выбранного из массива 'lang_list'
      * Значение перезаписывается виджетом LangSelector
+     * Автоматически заполняется
      */
     'lang_curr' => [],
 

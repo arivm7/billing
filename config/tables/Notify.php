@@ -1,13 +1,25 @@
 <?php
-
-
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : Notify.php
+ *  Path    : config/tables/Notify.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 16 Sep 2025 12:49:54
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
 
 namespace config\tables;
 
-
-
 use billing\core\base\Lang;
 
+/**
+ * Description of Notify.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
 class Notify {
 
     /**

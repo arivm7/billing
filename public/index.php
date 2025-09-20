@@ -1,4 +1,18 @@
 <?php
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : index.php
+ *  Path    : public/index.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 20 Sep 2025 18:43:59
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
+
+
+
 /**
  * Время начала работы скрипта. Для вычисления времени работы.
  */

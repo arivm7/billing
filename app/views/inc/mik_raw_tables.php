@@ -36,7 +36,7 @@ $mik_addr_list = $mik_rec['addr_list'];
                     role="tab"
                     aria-controls="pane-<?=$list;?>"
                     aria-selected="true">
-                <?=$list;?><span class="text-secondary"> | <?=count($rows);?> |</span>
+                <?=$list;?><span class="text-secondary"> [<?=count($rows);?>]</span>
             </button>
         </li>
     <?php endforeach; ?>

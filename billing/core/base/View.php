@@ -1,4 +1,15 @@
 <?php
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : View.php
+ *  Path    : billing/core/base/View.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 16 Sep 2025 12:49:54
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
 
 namespace billing\core\base;
 
@@ -8,9 +19,9 @@ use billing\core\Timers;
 
 
 /**
- * Description of View
+ * Description of View.php
  *
- * @author ar
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
 class View {
 

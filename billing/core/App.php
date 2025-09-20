@@ -1,6 +1,15 @@
 <?php
-
-
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : App.php
+ *  Path    : billing/core/App.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 16 Sep 2025 12:49:54
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
 
 namespace billing\core;
 
@@ -9,6 +18,11 @@ use app\widgets\LangSelector\LangSelector;
 use app\widgets\Theme\ThemeSelector;
 use config\tables\Perm;
 
+/**
+ * Description of App.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
 class App {
 
     public static Registry $app;
@@ -39,5 +53,5 @@ class App {
         return App::$app->get_config($name);
     }
 
-    
+
 }

@@ -1,11 +1,26 @@
 <?php
-
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : LangSelector.php
+ *  Path    : app/widgets/LangSelector/LangSelector.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 16 Sep 2025 12:49:54
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
 
 namespace app\widgets\LangSelector;
 
 use billing\core\App;
 use billing\core\base\Lang;
 
+/**
+ * Description of LangSelector.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
 class LangSelector {
 
     protected string $template;

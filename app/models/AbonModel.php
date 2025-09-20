@@ -313,7 +313,6 @@ class AbonModel extends UserModel {
         $struct = array();
 
         $pa_age = self::get_price_apply_age($price_apply, $today);
-//        debug($pa_age);
         switch ($pa_age) {
             case PAStatus::FUTURE:
                 return $struct;
@@ -331,7 +330,6 @@ class AbonModel extends UserModel {
 
             default:
                 throw new \Exception("<hr>Этого не должно быть:<br>get_price_apply_cost_per_montch():<br><pre>". print_r($price_apply, 1)."</pre><hr>");
-                //break;
         }
 
         $index = 0;
@@ -346,8 +344,11 @@ class AbonModel extends UserModel {
                 (abs($price_apply[PA::FF_P_PPD])   > 0) ||
                 (abs($price_apply[PA::FF_P_PPM]) > 0)
           ) {
-            // дни начисления в одном месяце
+
             if(date("Ym", $price_apply[PA::F_DATE_START]) == date("Ym", $price_apply[PA::F_DATE_END])) {
+                /**
+                 * дни начисления в одном месяце
+                 */
                 $days_of_month = date("t", $price_apply[PA::F_DATE_START]);
                 $days_costed = date("j", $price_apply[PA::F_DATE_END]) - date("j", $price_apply[PA::F_DATE_START]) + 1;
                 $cost = self::get_price_apply_cost($price_apply, $today);
@@ -359,8 +360,13 @@ class AbonModel extends UserModel {
                 $struct[$index]['name']     = $price_apply[PA::F_NET_NAME] ?? "";
                 $struct[$index]['cost']     = $cost;
             } else {
-                // дни начисления в разных месяцах
-                //дней в первом месяце
+                /**
+                 * дни начисления в разных месяцах
+                 */
+
+                /**
+                 * дней в первом месяце
+                 */
                 $day_start = day($price_apply[PA::F_DATE_START]);
                 $days_of_month = \days_of_month($price_apply[PA::F_DATE_START]);
                 $days_costed = $days_of_month - $day_start + 1;                  //echo "Оплачиваемых дней в певом месяце = ".$days_costed."<br>";
@@ -374,7 +380,9 @@ class AbonModel extends UserModel {
                 $struct[$index]['name']     = $price_apply[PA::F_NET_NAME] ?? "";
                 $struct[$index]['cost']     = $cost;
 
-                //дней в последнем месяце
+                /**
+                 * дней в последнем месяце
+                 */
                 $day_end = day($price_apply[PA::F_DATE_END]);
                 $days_of_month = days_of_month($price_apply[PA::F_DATE_END]);
                 $days_costed = $day_end;                                         //echo "Оплачиваемых дней в поледнем месяце = ".$days_costed."<br>";
@@ -388,21 +396,24 @@ class AbonModel extends UserModel {
                 $struct[$index]['name']     = $price_apply[PA::F_NET_NAME] ?? "";
                 $struct[$index]['cost']     = $cost;
 
-                //полных месяцев
+                /**
+                 * полных месяцев
+                 */
                 $y1 = year (mktime(0, 0, 0, month($price_apply[PA::F_DATE_START]) +1, 1, year($price_apply[PA::F_DATE_START])));
                 $m1 = month(mktime(0, 0, 0, month($price_apply[PA::F_DATE_START]) +1, 1, year($price_apply[PA::F_DATE_START])));
                 $y2 = year (mktime(0, 0, 0, month($price_apply[PA::F_DATE_END]  ) -1, 1, year($price_apply[PA::F_DATE_END]  )));
                 $m2 = month(mktime(0, 0, 0, month($price_apply[PA::F_DATE_END]  ) -1, 1, year($price_apply[PA::F_DATE_END]  )));
+
                 /*
                  * тестирование конкретного прайсового фрагмента
                  *
-                if($prices_apply['id'] == 1337) {
-                    echo "<hr>1337:<br>$y1-$m1<br>$y2-$m2<br>";
-                    echo (date("m", $prices_apply['date_end'])-1)."<br>";
-                    echo (date("Y-m-d", mktime(0, 0, 0, date("m", $prices_apply['date_end'])-1, 1, date("Y", $prices_apply['date_end']))))."<br>";
-                    echo mktime(0, 0, 0, $m2, 1, $y2)."<br>";
-                    echo mktime(0, 0, 0, $m1, 1, $y1)."<hr>";
-                }
+                    if($prices_apply['id'] == 1337) {
+                        echo "<hr>1337:<br>$y1-$m1<br>$y2-$m2<br>";
+                        echo (date("m", $prices_apply['date_end'])-1)."<br>";
+                        echo (date("Y-m-d", mktime(0, 0, 0, date("m", $prices_apply['date_end'])-1, 1, date("Y", $prices_apply['date_end']))))."<br>";
+                        echo mktime(0, 0, 0, $m2, 1, $y2)."<br>";
+                        echo mktime(0, 0, 0, $m1, 1, $y1)."<hr>";
+                    }
                  */
 
                 $m = $m1;
@@ -432,10 +443,10 @@ class AbonModel extends UserModel {
             }
         }
         /*
-         * * тестирование конкретного прайсового фрагмента
-        if($prices_apply['id'] == 1741) {
-            echo "<hr>1741:<pre>".print_r($struct, true)."</pre><hr>";
-        }
+         * тестирование конкретного прайсового фрагмента
+            if($prices_apply['id'] == 1741) {
+                echo "<hr>1741:<pre>".print_r($struct, true)."</pre><hr>";
+            }
          */
         return $struct;
     }

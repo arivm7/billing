@@ -1,4 +1,15 @@
 <?php
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : compare_functions.php
+ *  Path    : billing/libs/compare_functions.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 16 Sep 2025 12:49:54
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
 
 
 
@@ -150,6 +161,5 @@ function compare_address_asc($a, $b): int {
 function compare_address_desc($a, $b): int {
     return compare_address_asc($b, $a);
 }
-
 
 

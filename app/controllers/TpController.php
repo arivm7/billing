@@ -1,15 +1,23 @@
 <?php
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : TpController.php
+ *  Path    : app/controllers/TpController.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 16 Sep 2025 20:53:29
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
 
 namespace app\controllers;
-
-
 
 use app\models\TpModel;
 use billing\core\App;
 use billing\core\base\View;
 use billing\core\MsgQueue;
 use billing\core\MsgType;
-
 use config\SessionFields;
 use config\tables\Firm;
 use config\tables\Module;
@@ -20,6 +28,11 @@ use DataTypes;
 use DebugView;
 use Valitron\Validator;
 
+/**
+ * Description of TpController.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
 class TpController extends AppBaseController {
 
 

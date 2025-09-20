@@ -1,4 +1,16 @@
 <?php
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : datetime_functions.php
+ *  Path    : billing/libs/datetime_functions.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 19 Sep 2025 22:44:34
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
+
 
 
 define('TWENTY_FOUR_HOURS',   86400); // twenty-four hours -- сутки
@@ -414,6 +426,5 @@ function convertMysqlDateTimeToUnixTimeStamp($mysql_datetime) {
     $se=strval(substr($mysql_datetime,17,2));
     return \mktime($hr,$mi,$se,$mo,$da,$yr);
 }
-
 
 

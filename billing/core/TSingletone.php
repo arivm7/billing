@@ -1,13 +1,25 @@
 <?php
-
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : TSingletone.php
+ *  Path    : billing/core/TSingletone.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 16 Sep 2025 12:49:54
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
 
 namespace billing\core;
 
-
 /**
+ * Description of TSingletone.php
  * Если вам нужно поддерживать несколько типов синглтонов в вашем приложении,
  * вы можете определить основные функции Singleton в базовом классе,
  * перемещая фактическую бизнес -логику (например, журнал) в подклассы.
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
 trait TSingletone
 {
@@ -77,7 +89,7 @@ trait TSingletone
     public static function getInstance(): object {
         return static::instance();
     }
-    
+
 
 
 }

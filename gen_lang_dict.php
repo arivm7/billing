@@ -1,5 +1,46 @@
 #!/usr/bin/env php
 <?php
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : gen_lang_dict.php
+ *  Path    : gen_lang_dict.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 20 Sep 2025 18:30:48
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
+
+
+
+/**
+ * Генератор словарей.
+ *
+ * Сперва вам нужно полностью сформировать файл, для которого нужно будет сформировать переводы.
+ * В этом файле все фрагменты, нуждающиеся в переводе нужно обернуть в функцию-обёртку __('').
+ * Внутри вызова этой функции нужно вписать сразху все три языковых хначения:
+ * __('english | русккий | украинский')
+ *
+ * Данній скрипт разбирает єти конструкции и формирует язіковіе файлі и формирует фвйл с ключами вместо мультиязічной строки.
+ * В качестве ключа берётся английский вариант.
+ *
+ * генерирует 4 файла:
+ * Один исправленный php-файл с клчами
+ * и три языковых файла вида:
+ *
+ *       <?php
+ *       // en              <- язык языкового файла
+ *       // for Layouts     <- Вид или другой файл для котрого этот перевод
+ *       return [
+ *           'ключ' => 'Языковой перевод',
+ *           ...
+ *       ];
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
+
+
 
 echo "generate language dictionaries\n";
 
@@ -132,4 +173,3 @@ writeLang('ru', $translations, $outRu, $view_name);
 writeLang('uk', $translations, $outUk, $view_name);
 
 echo "Cleaned source written to: $outClean\n";
-
