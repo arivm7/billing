@@ -28,21 +28,21 @@ $attr_off  = (!$data[Abon::F_DUTY_AUTO_OFF] || is_null($data[AbonRest::F_PREPAYE
 ?>
 <table class='table table-sm table-bordered table-hover small' style="table-layout: fixed; width: 100pt; max-width: 100%;">
 <tr>
-    <td style="text-align: center;" colspan="2">
+    <td nowrap style="text-align: center;" colspan="2">
         <font <?=$attr;?> title='<?=__('Остаток на лицевом счету.') . CR . '----' . CR . AbonController::get_description_by_warn($warn);?>'><?=number_format($data[AbonRest::F_REST],2,","," ");?></font>
     </td>
-    <td style="width: 33%; text-align: center;">
+    <td nowrap style="width: 33%; text-align: center;">
         <font color=gray title='<?=__('Количество предоплаченных дней');?>' ><?=$prepayed;?></font>
     </td>
 </tr>
 <tr>
-    <td style="width: 34%; text-align: center;" <?=($data[AbonRest::F_SUM_PPMA] ? "" : "class='text-secondary'");?> title='<?=__('Абонплата за месяц');?>'><?=number_format($data[AbonRest::F_SUM_PPMA],(abs($data[AbonRest::F_SUM_PPMA]) < 10 ? 2 : 0),","," ");?></td>
-    <td style="width: 33%; text-align: center;" <?=($data[AbonRest::F_SUM_PPDA] ? "" : "class='text-secondary'");?> title='<?=__('Абонплата за сутки');?>'><?=number_format($data[AbonRest::F_SUM_PPDA],(abs($data[AbonRest::F_SUM_PPDA]) < 10 ? 2 : 0),","," ");?></td>
-    <td style="width: 33%; text-align: center;" <?=($data[AbonRest::F_SUM_PP30A] ? "" : "class='text-secondary'");?> title='<?=__('Сумарная абонплата за месяц');?>'><?=number_format($data[AbonRest::F_SUM_PP30A],(abs($data[AbonRest::F_SUM_PP30A]) < 10 ? 2 : 0),","," ");?></td>
+    <td nowrap style="width: 34%; text-align: center;" <?=($data[AbonRest::F_SUM_PPMA] ? "" : "class='text-secondary'");?> title='<?=__('Абонплата за месяц');?>'><?=number_format($data[AbonRest::F_SUM_PPMA],(abs($data[AbonRest::F_SUM_PPMA]) < 10 ? 2 : 0),","," ");?></td>
+    <td nowrap style="width: 33%; text-align: center;" <?=($data[AbonRest::F_SUM_PPDA] ? "" : "class='text-secondary'");?> title='<?=__('Абонплата за сутки');?>'><?=number_format($data[AbonRest::F_SUM_PPDA],(abs($data[AbonRest::F_SUM_PPDA]) < 10 ? 2 : 0),","," ");?></td>
+    <td nowrap style="width: 33%; text-align: center;" <?=($data[AbonRest::F_SUM_PP30A] ? "" : "class='text-secondary'");?> title='<?=__('Сумарная абонплата за месяц');?>'><?=number_format($data[AbonRest::F_SUM_PP30A],(abs($data[AbonRest::F_SUM_PP30A]) < 10 ? 2 : 0),","," ");?></td>
 </tr>
 <tr>
-    <td style="width: 34%; text-align: center;" title='<?=__('Число оплаченных дней, %s при пересечении котрого нужно уведомлять', CR);?>'><span <?=$attr_warn;?>><?=$data[Abon::F_DUTY_MAX_WARN];?></span></td>
-    <td style="width: 33%; text-align: center;" title='<?=__('Число оплаченных дней, %s при пересечении котрого нужно отключать', CR);?>'><span <?=$attr_off;?>><?=$data[Abon::F_DUTY_MAX_OFF];?></span></td>
-    <td style="width: 33%; text-align: center;" title='<?=__('Автоматически отключать');?>'><?=get_html_CHECK($data[Abon::F_DUTY_AUTO_OFF]);?></td>
+    <td nowrap style="width: 34%; text-align: center;" title='<?=__('Число оплаченных дней, %s при пересечении котрого нужно уведомлять', CR);?>'><span <?=$attr_warn;?>><?=$data[Abon::F_DUTY_MAX_WARN];?></span></td>
+    <td nowrap style="width: 33%; text-align: center;" title='<?=__('Число оплаченных дней, %s при пересечении котрого нужно отключать', CR);?>'><span <?=$attr_off;?>><?=$data[Abon::F_DUTY_MAX_OFF];?></span></td>
+    <td nowrap style="width: 33%; text-align: center;" title='<?=__('Автоматически отключать');?>'><?=get_html_CHECK($data[Abon::F_DUTY_AUTO_OFF]);?></td>
 </tr>
 </table>

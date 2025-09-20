@@ -17,7 +17,9 @@ class MsgQueue {
 
     public static function msg(MsgType $type, string|array $message): void
     {
-        $_SESSION[$type->value][] = $message;
+        if (!empty($message)) {
+            $_SESSION[$type->value][] = $message;
+        }
     }
 
 }

@@ -98,7 +98,7 @@ class Perm {
                 . "END AS abon_role "
                 . "FROM " . Abon::TABLE . " "
                 . "WHERE " . Abon::F_USER_ID . " = {$user_id}";
-        $abon_role = $model->query(sql: $sql, fetchColumn: 0);
+        $abon_role = $model->query(sql: $sql, fetchCell: 0);
 
 
         /*

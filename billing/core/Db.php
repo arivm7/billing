@@ -34,16 +34,20 @@ class Db {
 
 
 
-    public function query(string $sql, ?array $params = [], int|string|null $fetchColumn = null): array|int|string {
+    public function query(string $sql, ?array $params = [], int|null $fetchCell = null, int|null $fetchVector = null): array|int|string {
         self::$countSql++;
         $stmt = $this->pdo->prepare($sql);
         self::$queriesSql[] = ['sql' => $sql, 'params' => $params];
         $res = $stmt->execute($params);
         if ($res !== false) {
-            if (is_null($fetchColumn)) {
-                return $stmt->fetchAll();
+            if (is_null($fetchCell)) {
+                if (is_null($fetchVector)) {
+                    return $stmt->fetchAll();
+                } else {
+                    return $stmt->fetchAll(\PDO::FETCH_COLUMN, (int)$fetchVector);
+                }
             } else {
-                return $stmt->fetchColumn($fetchColumn);
+                return $stmt->fetchColumn($fetchCell);
             }
         }
         return [];

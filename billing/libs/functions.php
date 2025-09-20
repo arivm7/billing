@@ -1,8 +1,11 @@
 <?php
 
+use app\controllers\ApiController;
 use app\models\AbonModel;
+use app\models\AppBaseModel;
 use app\models\PAStatus;
 use config\tables\Firm;
+use config\tables\PA;
 use config\Icons;
 use config\tables\Perm;
 use config\SessionFields;
@@ -71,8 +74,8 @@ const LEN_DOG_NUM_MAX = 12; // Максимальное количество з�
 
 
 
-define('CHECK0', "<font size=-2 face=monospace color=gray>[&nbsp;]</font>");
-define('CHECK1', "<font size=-2 face=monospace color=gray>[<font color=green>x</font>]</font>");
+define('CHECK0', "<font size=-1 face=monospace color=gray>[&nbsp;]</font>");
+define('CHECK1', "<font size=-1 face=monospace color=gray>[<font color=green>x</font>]</font>");
 
 function get_html_CHECK(bool $has_check, string $title="", string $title_on="", string $title_off="", $check0 = CHECK0, $check1 = CHECK1): string {
     if (strlen($title_on) > 0)  { $c1 = "<font title='".$title_on."'>".$check1."</font>"; }  else { $c1 = $check1; }
@@ -117,24 +120,10 @@ function get_permission_value(bool $view = false, bool $edit = false, bool $add 
 
 
 
-$ICON_SIZE              = 18; // размер иконок
-define("ICON_WIDTH_DEF",  $ICON_SIZE);
-define("ICON_HEIGHT_DEF", $ICON_SIZE);
-$ICON_WIDTH_DEF         = ICON_WIDTH_DEF;
-$ICON_HEIGHT_DEF        = ICON_HEIGHT_DEF;
-
-
-
-enum DebugView: string
+function debug(mixed $value, string $comment = '', DebugView $debug_view = DebugView::PRINTR, int $die = 0): void
 {
-    case ECHO = '1';
-    case PRINTR = '2';
-    case DUMP = '3';
-}
-
-function debug(mixed $value, string $comment = '', DebugView $debug_view = DebugView::DUMP, int $die = 0): void
-{
-    echo "<b>$comment:</b><pre>";
+    echo "<b>$comment:</b>";
+    echo "<pre>";
     if (is_null($value)) {
         echo "NULL";
     } else {
@@ -1534,5 +1523,173 @@ function ip_in_range(string $ip, string $cidr): bool {
 
     return true;
 }
+
+
+
+define("SIGN_MINUS", -1);
+define("SIGN_NUL",    0);
+define("SIGN_PLUS",  +1);
+
+/**
+ * Возвращает знак числа
+ * @param type $value
+ * @return -1 или 0 или 1 (SIGN_MINUS, SIGN_NUL, SIGN_PLUS)
+ */
+function sign($value) {
+    return (($value < 0)
+            ? SIGN_MINUS
+            : (($value > 0)
+                ? SIGN_PLUS
+                : SIGN_NUL
+              )
+           );
+}
+
+
+
+function get_this_by_sign($value, $minus="red", $nul="gray", $plus="green") {
+
+    switch (sign($value)) {
+        case SIGN_MINUS:
+            return $minus;
+            //break;
+        case SIGN_PLUS:
+            return $plus;
+            //break;
+        case SIGN_NUL:
+        default:
+            return $nul;
+            //break;
+    }
+}
+
+
+
+function validate_ip(string|null $ip): bool {
+    if (empty($ip)) {
+        return false;
+    } else {
+        return filter_var($ip, FILTER_VALIDATE_IP);
+    }
+}
+
+
+
+function validate_mac(string|null $mac) {
+    if (is_empty($mac)) {
+        return false;
+    } else {
+        return filter_var($mac, FILTER_VALIDATE_MAC);
+    }
+}
+
+
+
+function is_ip_net(string|null $ip_net) {
+    if (is_empty($ip_net)) {
+        return false;
+    } else {
+        $pos_slash = strpos($ip_net, "/");
+        $pos_minus = strpos($ip_net, "-");
+        if ($pos_slash === false && $pos_minus === false) {
+            return false;
+        } else {
+            if ($pos_slash > 0) {
+                $rec = explode("/", $ip_net);
+                if (count($rec) == 2) {
+                    if (!is_numeric($rec[1])) { return false; }
+                    if ((intval($rec[1]) < 0) || (intval($rec[1]) > 255)) { return false; }
+                    return filter_var($rec[0], FILTER_VALIDATE_IP);
+                } else {
+                    return false;
+                }
+            } else {
+                $rec = explode("-", $ip_net);
+                if (count($rec) > 1) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }
+    }
+    throw new \Exception('Этого не должно быть. function is_ip_net()');
+}
+
+
+
+/*
+ * Возвращае true если запись
+ * НЕ запрещена (['disabled'] != "true") и
+ * НЕ заблокирована (['blocked'] != "true")
+ */
+function has_enabled_rec($rec) {
+    return  !isset($rec['disabled']) ||
+            (
+                ($rec['disabled'] != "true") && (isset($rec['blocked'])
+                    ? ($rec['blocked'] != "true")
+                    : true)
+            );
+}
+
+
+
+function get_str_cut(string|null $text, int $max_length=20, string $encoding="UTF-8") {
+    if (is_empty($text)) {
+        return "";
+    }
+
+    if (mb_strlen($text) == strlen($text)) {
+        $text = mb_convert_encoding($text, $encoding, "cp1251, KOI8-R, UTF-8");
+    }
+
+    $text_dec = html_entity_decode($text);
+    if(iconv_strlen($text_dec, $encoding)>$max_length) {
+        $text_cut  = htmlentities(mb_substr($text_dec, 0, ($max_length-1), $encoding));
+        return paint($text_cut . paint(CH_TRIANGLE, BLUE), face: 'monospace', title: $text);
+    } else {
+        return paint($text, face: 'monospace');
+    }
+}
+
+
+
+/**
+ * Возвращает текстовую строку-ссылку на страницу абонента (пользователя
+ * @param int $abon_id
+ * @return string -- Строка с html-кодом
+ */
+function url_abon_form(int $abon_id): string {
+    // !!! Убрать обращение к базе
+    $model = new AbonModel();
+    if (is_null($abon_id) || $abon_id == 0 || !$model->validate_id("abons", $abon_id)) { return $abon_id; }
+    $c = $model->get_html_chek_payer(aid: $abon_id);
+    return "<a href=/ad_abon1_card.php?abon_id={$abon_id} target=_blank title='".$model->get_abon_address($abon_id)."' >{$abon_id}</a>&nbsp;{$c}";
+}
+
+
+
+function url_pa_form($pa_id, int $icon_width = Icons::ICON_WIDTH_DEF, int $icon_height = Icons::ICON_HEIGHT_DEF): string {
+    // !!! Вызов кэшируется. Но всё равно нужно как-то обойтись без вызова базы.
+    $model = new AbonModel();
+    $pa = $model->get_row_by_id(PA::TABLE, $pa_id);
+    return "<a href=/pa_form.php?pa_id=".$pa_id." target=_blank title='Редактировать прикрепленный прайсовый фрагмент \n[{$pa_id}] {$pa['net_name']}'><img src='/img/icon_pa_edit.png' width=$icon_width height=$icon_height /></a>";
+}
+
+
+function url_pa_form_22($pa_id): string {
+    return url_pa_form(pa_id: $pa_id, icon_width: 22, icon_height: 22);
+}
+
+
+
+function price_frm(int $price_id, bool $has_img = true, int $icon_width = 22, int $icon_height = 22, string $target = "_self"): string {
+    // !!! Убрать обращение к базе
+    $model = new AbonModel();
+    $price = $model->get_price($price_id);
+    return "<a href='/price_form.php?id={$price_id}' title='Редактировать прайс \n[".$price_id."] ".$price['title']."\n{$price['description']}' target={$target}>".($has_img?"<img src=/img/price_edit.png alt='[edit]' width=$icon_width height=$icon_height>":$price['title'])."</a>";
+}
+
+
 
 

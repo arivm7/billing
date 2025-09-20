@@ -65,10 +65,12 @@ $num = 0;
                                 <img src="<?= Icons::SRC_ICON_MIK_GRAY;?>" height="22rem" title="<?= __('ТП Не управляемая') ?>">
                             </div>
                             <?php endif; ?>
-                            <a href="<?= TP::URI_EDIT;?>/<?= (int)$tp[TP::F_ID] ?>" class="btn btn-sm btn-warning">
-                                <img src="<?= Icons::SRC_EDIT_REC;?>" height="22rem" title="<?= __('Редактировать параметры ТП') ?>">
+                            <a href="<?=$tp[TP::F_WEB_MANAGEMENT];?>" target="_blank" class="btn btn-sm btn-primary" title="<?= __('Управление ТП с помощью web-интерфейса') ?>">
+                                <img src="<?= Icons::SRC_ICON_HTTP;?>" height="22rem">
                             </a>
-
+                            <a href="<?= TP::URI_EDIT;?>/<?= (int)$tp[TP::F_ID] ?>" class="btn btn-sm btn-warning" title="<?= __('Редактировать параметры ТП') ?>">
+                                <img src="<?= Icons::SRC_EDIT_REC;?>" height="22rem">
+                            </a>
                             <?php if ($tp[TP::F_COUNT_PA]) : ?>
                             <div class="btn btn-sm btn-secondary"
                                  title="<?=__('Удалить нельзя, &#10;посколкьу есть полключённые прайсовые фрагменты');?>">

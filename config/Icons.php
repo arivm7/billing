@@ -40,6 +40,16 @@ class Icons {
     const SRC_A_OFF           = '/img/icon_btn_abon_gray.svg';
     const SRC_ABON            = '/img/icon_abon.svg';
 
+    const SRC_ABON_0          = '/img/icon_valid_id_0.svg';
+    const SRC_ABON_NA         = '/img/icon_valid_id_xz.svg';
+    const SRC_SW              = '/img/icon_sw_01.svg';
+    const SRC_ABON_OFF        = '/img/icon_abon_off.svg';
+    const SRC_ABON_LONG       = '/img/icon_abon_long_paused.svg';
+    const SRC_ABON_PAUSED     = '/img/icon_abon_paused.svg';
+    const SRC_ABON_WARN       = '/img/icon_abon_warn.svg';
+    const SRC_ABON_WARN2      = '/img/icon_abon_warn2.svg';
+    const SRC_ABON_OK         = '/img/icon_abon_ok.svg';
+
     const SRC_LEASES_ACT      = '/img/icon_dhcp_ok.svg';
     const SRC_LEASES_OFF      = '/img/icon_dhcp_gray.svg';
 
@@ -59,6 +69,7 @@ class Icons {
     const SRC_GW_ACT          = '/img/icon_btn_gw_green.svg';
     const SRC_GW_OFF          = '/img/icon_btn_gw_gray.svg';
 
+    const SRC_ICON_HTTP       = '/img/icon_http_64.png';
     const SRC_ICON_SMS        = '/img/icon_sms.svg';
     const SRC_ICON_MAIL       = '/img/icon_mail_32.png';
     const SRC_ICON_EMAIL      = '/img/icon_email.svg';

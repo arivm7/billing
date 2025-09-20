@@ -14,27 +14,27 @@ if (!is_file($input)) {
     exit(1);
 }
 
-enum DebugView: string
+enum _DebugView: string
 {
     case ECHO = '1';
     case PRINTR = '2';
     case DUMP = '3';
 }
 
-function debug(mixed $value, string $comment = '', DebugView $debug_view = DebugView::DUMP, int $die = 0): void
+function _debug(mixed $value, string $comment = '', _DebugView $debug_view = _DebugView::DUMP, int $die = 0): void
 {
     echo "<b>$comment:</b><pre>";
     if (is_null($value)) {
         echo "NULL";
     } else {
         switch ($debug_view) {
-            case DebugView::ECHO:
+            case _DebugView::ECHO:
                 echo "$value";
                 break;
-            case DebugView::DUMP:
+            case _DebugView::DUMP:
                 var_dump($value);
                 break;
-            case DebugView::PRINTR:
+            case _DebugView::PRINTR:
             default:
                 echo print_r($value, true);
                 break;
