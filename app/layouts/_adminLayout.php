@@ -1,4 +1,17 @@
+<!DOCTYPE html>
 <?php
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : _adminLayout.php
+ *  Path    : app/layouts/_adminLayout.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 20 Sep 2025 20:22:31
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
+
 /**
  * @var array  $meta
  * @var string $content
@@ -7,7 +20,6 @@ use billing\core\Db;
 use billing\core\Timers;
 use app\widgets\menu\Menu;
 ?>
-<!DOCTYPE html>
 <html lang="ru" data-bs-theme="dark">
     <head>
         <meta charset="utf-8">

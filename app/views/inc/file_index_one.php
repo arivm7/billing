@@ -1,4 +1,22 @@
 <?php
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : file_index_one.php
+ *  Path    : app/views/inc/file_index_one.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 20 Sep 2025 20:22:31
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
+
+/**
+ * Description of file_index_one.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
+
 use config\MimeTypes;
 use config\tables\File;
 use config\Icons;
@@ -58,4 +76,3 @@ if (MimeTypes::MIME_TYPES[$file[File::F_MIME]][MimeTypes::F_BROWSABLE]) {
         </div>
     </div>
 </div>
-

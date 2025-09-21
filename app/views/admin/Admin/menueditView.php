@@ -1,4 +1,22 @@
 <?php
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : menueditView.php
+ *  Path    : app/views/admin/Admin/menueditView.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 20 Sep 2025 20:22:31
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
+
+/**
+ * Description of menueditView.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
+
 use app\models\MenuModel;
 use config\tables\Menu;
 use config\tables\Module;
@@ -139,4 +157,3 @@ $model = new MenuModel();
         <button type="submit" class="btn btn-primary"><?=__('Send');?></button>
     </div>
 </form>
-

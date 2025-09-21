@@ -1,4 +1,22 @@
 <?php
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : editView.php
+ *  Path    : app/views/News/editView.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 20 Sep 2025 20:22:31
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
+
+/**
+ * Description of editView.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
+
 use config\SessionFields;
 use config\tables\News;
 use config\tables\User;
@@ -143,5 +161,4 @@ if (isset($_SESSION[SessionFields::FORM_DATA]) && is_array($_SESSION[SessionFiel
         license_key: 'gpl' // gpl for open source, T8LK:... for commercial
     });
 </script>
-
 

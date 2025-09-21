@@ -10,12 +10,14 @@
  *
  *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
  */
+declare(strict_types=1);
 
 
 namespace app\controllers;
 
 
 use app\models\AbonModel;
+use billing\core\App;
 use billing\core\base\View;
 use billing\core\MsgQueue;
 use billing\core\MsgType;
@@ -968,75 +970,145 @@ class AbonController extends AppBaseController {
 //        debug($_GET, '_GET:', debug_view: DebugView::PRINTR);
 //        debug($_POST, '_POST:', debug_view: DebugView::PRINTR);
 
-        $model = new AbonModel();
-
-        /**
-         * Если пришёл только ID  и не пришли user_id и abon_id
-         * то user_id и abon_id = id
-         */
-        if  (
-                isset($_GET['id']) &&
-                !isset($_GET[User::F_GET_ID]) &&
-                !isset($_GET[Abon::F_GET_ID]) &&
-                is_numeric($_GET['id'])
-            )
+        if (App::$auth->isAuth)
         {
-            $_GET[Abon::F_GET_ID] = $_GET['id'];
-            $_GET[User::F_GET_ID] = $_GET['id'];
-        }
-
-
-        /**
-         * Проверяем наличие
-         * сперва abon_id
-         * за тем user_id
-         * В любоом случае заполняем данные пользователя
-         */
-        if      (
-                    isset($_GET[Abon::F_GET_ID]) &&
-                    is_numeric($_GET[Abon::F_GET_ID]) &&
-                    $model->validate_id(table_name: Abon::TABLE, field_id: Abon::F_ID, id_value: intval($_GET[Abon::F_GET_ID]))
-                )
-        {
-            $U = $model->get_user_by_abon_id(intval($_GET[Abon::F_GET_ID]));
-        }
-        elseif  (
-                    isset($_GET[User::F_GET_ID]) &&
-                    is_numeric($_GET[User::F_GET_ID]) &&
-                    $model->validate_id(table_name: User::TABLE, field_id: User::F_ID, id_value: intval($_GET[User::F_GET_ID]))
-                )
-        {
-            $U = $model->get_user(intval($_GET[User::F_GET_ID]));
-        }
-        else
-        {
-            MsgQueue::msg(MsgType::ERROR, 'UID/AID ' . __('Не указаны или не верны'));
-            redirect();
-        }
-
-        if (can_view(Module::MOD_MY_CONTACTS)) {
-            $U[Contacts::TABLE] = $model->get_contacts($U[User::F_ID], null);
-        }
-
-        $U[Firm::TABLE] = $model->get_rows_by_sql(sql: "SELECT ".Firm::TABLE.".* FROM `".TSUserFirm::TABLE."` LEFT JOIN ".Firm::TABLE." ON ".Firm::TABLE.".".Firm::F_ID." = ".TSUserFirm::TABLE.".".TSUserFirm::F_FIRM_ID." WHERE (`".TSUserFirm::TABLE."`.`".TSUserFirm::F_USER_ID."`=".$U[User::F_ID].")");
-        $U[Abon::TABLE] = $model->get_rows_by_field(table: Abon::TABLE, field_name: Abon::F_USER_ID, field_value: $U[User::F_ID]);
-
-        foreach ($U[Abon::TABLE] as &$abon) {
-            $abon[PA::TABLE]  = $model->get_rows_by_field(table:  PA::TABLE, field_name:  PA::F_ABON_ID, field_value: $abon[Abon::F_ID], order_by: "`".PA::F_ID."` DESC");
-            foreach ($abon[PA::TABLE] as &$pa_item) {
-                $pa_item[PA::F_PRICE_TITLE] = $model->get_row_by_id(table_name: Price::TABLE, field_id: Price::F_ID, id_value: $pa_item[PA::F_PRICE_ID])[Price::F_TITLE];
+            /**
+             * Проверяем права доступа к модлю
+             */
+            if (!can_use(Module::MOD_ABON))
+            {
+                // !!! Возможно это надо это писать в логи и сообщать
+                MsgQueue::msg(MsgType::ERROR, 'Нет прав');
+                redirect();
             }
-            $abon[Notify::TABLE] = $model->get_rows_by_field(table: Notify::TABLE, field_name: Notify::F_ABON_ID, field_value: $abon[Abon::F_ID], order_by: "`".Notify::F_DATE."` DESC");
+
+            $model = new AbonModel();
+            /**
+             * Если пришёл запрос на abon_id, то тут запоминаем на какого абонента был адресован запрос,
+             * чтобы его открыть, по возможности, если у пользователя несколько абонентов.
+             */
+            $for_abon_id = -1;
+
+            if  (
+                    (isset($this->route[F_ALIAS]) && is_numeric($this->route[F_ALIAS])) ||
+                    (isset($_GET['id']) && is_numeric($_GET['id']))
+                )
+            {
+                /**
+                 * Если пришёл ALIAS или id
+                 */
+                $id = (int)($this->route[F_ALIAS] ?? $_GET['id']);
+                if ($model->validate_id(table_name: Abon::TABLE, field_id: Abon::F_ID, id_value: $id))
+                {
+                    $for_abon_id = $id;
+                    $user = $model->get_user_by_abon_id($id);
+                }
+                elseif ($model->validate_id(table_name: User::TABLE, field_id: User::F_ID, id_value: $id))
+                {
+                    $user = $model->get_user($id);
+                }
+                else
+                {
+                    // !!! Возможно это надо это писать в логи и сообщать
+                    MsgQueue::msg(MsgType::ERROR, 'ALIAS ID не верен');
+                    redirect();
+                }
+                unset($id);
+            }
+            else
+            {
+                /**
+                 * Проверяем наличие
+                 * сперва abon_id
+                 * за тем user_id
+                 * В любоом случае заполняем данные пользователя
+                 */
+                if      (
+                            isset($_GET[Abon::F_GET_ID]) &&
+                            is_numeric($_GET[Abon::F_GET_ID]) &&
+                            $model->validate_id(table_name: Abon::TABLE, field_id: Abon::F_ID, id_value: intval($_GET[Abon::F_GET_ID]))
+                        )
+                {
+                    $for_abon_id = intval($_GET[Abon::F_GET_ID]);
+                    $user = $model->get_user_by_abon_id(intval($_GET[Abon::F_GET_ID]));
+                }
+                elseif  (
+                            isset($_GET[User::F_GET_ID]) &&
+                            is_numeric($_GET[User::F_GET_ID]) &&
+                            $model->validate_id(table_name: User::TABLE, field_id: User::F_ID, id_value: intval($_GET[User::F_GET_ID]))
+                        )
+                {
+                    $user = $model->get_user(intval($_GET[User::F_GET_ID]));
+                }
+                else
+                {
+                    // !!! Возможно это надо это писать в логи и сообщать
+                    MsgQueue::msg(MsgType::ERROR, '?UID/?AID ' . __('Не указаны или не верны'));
+                    redirect();
+                }
+            }
+
+            /**
+             * Если дошли сюда, значит пользователь идентифицирован и загружен
+             * Загружаем абонентов
+             */
+            $user[Abon::TABLE] = $model->get_rows_by_field(table: Abon::TABLE, field_name: Abon::F_USER_ID, field_value: $user[User::F_ID]);
+
+            foreach ($user[Abon::TABLE] as &$abon) {
+                /**
+                 * Подгружаем прайсовые фрагенты
+                 */
+                $abon[PA::TABLE]  = $model->get_rows_by_field(table:  PA::TABLE, field_name:  PA::F_ABON_ID, field_value: $abon[Abon::F_ID], order_by: "`".PA::F_ID."` DESC");
+
+                /**
+                 * Подгружаем названия прайсов, для простоты отображения
+                 */
+                foreach ($abon[PA::TABLE] as &$pa_item) {
+                    $pa_item[PA::F_PRICE_TITLE] = $model->get_row_by_id(table_name: Price::TABLE, field_id: Price::F_ID, id_value: $pa_item[PA::F_PRICE_ID])[Price::F_TITLE];
+                }
+
+                /**
+                 * Подгружаем уведомления, если есть права
+                 */
+                if (can_use(Module::MOD_NOTIFY)) {
+
+                    /** Общее количество записей в базе */
+                    $abon[Notify::F_COUNT] = $model->get_count_by_sql($model->get_sql_notify_by_abon_id($abon[Abon::F_ID]));
+
+                    /** Отображаемые записи */
+                    $abon[Notify::TABLE] = $model->get_notify_by_abon_id($abon[Abon::F_ID], App::$app->get_config('notify_list_limit'));
+
+                }
+            }
+
+            /**
+             * Подгружаем контакты, если есть права
+             */
+            if (can_use(Module::MOD_CONTACTS)) {
+                $user[Contacts::TABLE] = $model->get_contacts($user[User::F_ID], null);
+            }
+
+            /**
+             * Подгружаем предприятия, если есть права
+             */
+            if (can_use(Module::MOD_FIRM)) {
+                $user[Firm::TABLE] = $model->get_firms($user[User::F_ID]);
+            }
+
+
+            View::setMeta(
+                    title: __('Форма данных абонента'),
+                    descr: __('Форма просмотра и редактирования данных абонента, и всего, что связано с абонентом: пользователя, прайсов, контактов, СМС')
+                );
+
+            $this->setVariables([
+                'user' => $user,
+            ]);
+
+        } else {
+            MsgQueue::msg(MsgType::ERROR, __('Авторизуйтесь, пожалуйста'));
+            redirect('/auth/login');
         }
-
-        View::setMeta(
-                title: __('Форма данных абонента'),
-                descr: __('Форма просмотра и редактирования данных абонента, и всего, что связано с абонентом: пользователя, прайсов, контактов, СМС')
-            );
-
-        $this->setVariables([
-            'user' => $U,
-        ]);
 
     }
 

@@ -53,5 +53,14 @@ class App {
         return App::$app->get_config($name);
     }
 
+    /**
+     * Обёртка для App::$auth->isAuth;
+     * @param string $name
+     * @return mixed
+     */
+    static function isAuth(): bool {
+        return App::$auth->isAuth;
+    }
+
 
 }

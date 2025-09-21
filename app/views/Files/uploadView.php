@@ -1,4 +1,22 @@
-    <?php
+<?php
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : uploadView.php
+ *  Path    : app/views/Files/uploadView.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 21 Sep 2025 00:25:06
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
+
+/**
+ * Description of uploadView.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
+
 use billing\core\App;
 use config\SessionFields;
 use config\tables\File;

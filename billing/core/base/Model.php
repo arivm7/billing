@@ -388,7 +388,7 @@ abstract class Model {
      * @param int|string|null $limit
      * @return array -- массив с найденными строками
      */
-    function get_rows_by_field(string $table, string $field_name = "1", string $field_value = "1", string $id_alias="", string $order_by = null, int|string|null $limit = null): array {
+    function get_rows_by_field(string $table, string $field_name = "1", int|string $field_value = "1", string $id_alias="", string $order_by = null, int|string|null $limit = null): array {
         return $this->get_rows_by_where(table: $table, where: "$field_name=".$this->quote($field_value), id_alias: $id_alias, order_by: $order_by, limit: $limit);
     }
 

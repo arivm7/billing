@@ -1,8 +1,17 @@
 <?php
-
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : AppBaseModel.php
+ *  Path    : app/models/AppBaseModel.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 20 Sep 2025 20:22:31
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
 
 namespace app\models;
-
 
 use billing\core\base\Lang;
 use billing\core\base\Model;
@@ -17,6 +26,11 @@ use config\tables\User;
 
 require_once DIR_LIBS . '/datetime_functions.php';
 
+/**
+ * Description of AppBaseModel.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
 class AppBaseModel extends Model
 {
 

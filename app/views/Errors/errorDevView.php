@@ -1,4 +1,23 @@
+<!DOCTYPE html>
 <?php
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : errorDevView.php
+ *  Path    : app/views/Errors/errorDevView.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 20 Sep 2025 20:22:31
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
+
+/**
+ * Description of errorDevView.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
+
 use billing\core\ErrorHandler;
 /** @var int|string $errno */
 /** @var string $errstr */
@@ -7,7 +26,6 @@ use billing\core\ErrorHandler;
 /** @var array $errcontext */
 /** @var ErrorHandler self */
 ?>
-<!DOCTYPE html>
 <html lang="ru">
     <head>
         <title>Ошибка</title>

@@ -1,12 +1,27 @@
 <?php
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : AuthModel.php
+ *  Path    : app/models/AuthModel.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 20 Sep 2025 20:22:31
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
 
 namespace app\models;
+
 use billing\core\base\Model;
 use PHPMailer\PHPMailer\Exception;
 use config\tables\User;
 
-
-
+/**
+ * Description of AuthModel.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
 class AuthModel extends UserModel {
 
     public bool $isAuth = false;

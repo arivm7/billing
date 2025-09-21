@@ -1,5 +1,17 @@
 <!DOCTYPE html>
 <?php
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : defaultLayout.php
+ *  Path    : app/layouts/defaultLayout.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 21 Sep 2025 00:19:28
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
+
 /**
  * @var array  $meta
  * @var string $content

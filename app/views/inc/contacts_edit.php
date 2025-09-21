@@ -1,5 +1,22 @@
-<!--contacts_edit.php-->
 <?php
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : contacts_edit.php
+ *  Path    : app/views/inc/contacts_edit.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 21 Sep 2025 00:28:16
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
+
+/**
+ * Description of contacts_edit.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
+
 use config\tables\Contacts;
 use config\tables\Module;
 use config\tables\User;

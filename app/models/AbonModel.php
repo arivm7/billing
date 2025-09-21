@@ -1,10 +1,17 @@
 <?php
-
-
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : AbonModel.php
+ *  Path    : app/models/AbonModel.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 20 Sep 2025 20:22:31
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
 
 namespace app\models;
-
-
 
 use AbonStatus;
 use AbonStatusTitle;
@@ -22,8 +29,11 @@ use config\tables\TP;
 use config\tables\AbonRest;
 use config\tables\PA;
 
-
-
+/**
+ * Description of AbonModel.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
 class AbonModel extends UserModel {
 
 

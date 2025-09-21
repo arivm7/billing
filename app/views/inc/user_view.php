@@ -1,5 +1,21 @@
-<!-- user_view.php -->
 <?php
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : user_view.php
+ *  Path    : app/views/inc/user_view.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 21 Sep 2025 00:28:50
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
+
+/**
+ * Description of user_view.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
 use config\Icons;
 use config\tables\User;
 use billing\core\base\Lang;

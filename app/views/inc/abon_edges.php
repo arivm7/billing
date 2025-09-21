@@ -1,4 +1,22 @@
 <?php
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : abon_edges.php
+ *  Path    : app/views/inc/abon_edges.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 20 Sep 2025 20:22:31
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
+
+/**
+ * Description of abon_edges.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
+
 use app\controllers\AbonController;
 use app\controllers\DutyWarn;
 use config\tables\Abon;

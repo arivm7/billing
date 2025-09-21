@@ -1,4 +1,22 @@
 <?php
+/*
+ *  Project : s1.ri.net.ua
+ *  File    : module_form.php
+ *  Path    : app/views/inc/module_form.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 20 Sep 2025 20:22:31
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
+
+/**
+ * Description of module_form.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
+
 use config\SessionFields;
 use config\tables\Module;
 use billing\core\base\Lang;
@@ -68,6 +86,5 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
             </div>
         </div>
     </form>
-
 
 

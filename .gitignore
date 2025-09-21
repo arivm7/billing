@@ -6,7 +6,6 @@ add_php_header.php
 add_php_header.sh
 watch_and_deploy.sh
 deploy.sh
-organize_folders.sh
 
 # submodule
 dcjqaccordion
