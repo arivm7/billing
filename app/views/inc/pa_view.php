@@ -17,7 +17,6 @@
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
 
-use PAStatus;
 use config\tables\PA;
 use billing\core\base\Lang;
 Lang::load_inc(__FILE__);
@@ -57,7 +56,7 @@ Lang::load_inc(__FILE__);
                                     <td><?= number_format($item[PA::F_COST_VALUE], 2, ',', ' ') . ' грн' ?></td>
                                 </tr>
 
-                                <?php if (__pa_age($item) == PAStatus::CURRENT) : ?>
+                                <?php if (__pa_age($item) == \PAStatus::CURRENT) : ?>
                                     <tr>
                                         <td><?= __('Абонплата'); ?>:</td>
                                         <td>

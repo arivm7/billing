@@ -17,7 +17,6 @@
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
 
-use PAStatus;
 use config\tables\Abon;
 use config\tables\PA;
 use billing\core\base\Lang;

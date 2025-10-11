@@ -97,7 +97,7 @@ abstract class Model {
 
 
 
-    public function errorsToSession() {
+    public function errorsToSession(string $session_field = SessionFields::ERROR) {
 //        $errors = '<ul>';
 //        foreach ($this->errors as $validator_name => $rows) {
 //            foreach ($rows as $item) {
@@ -106,7 +106,7 @@ abstract class Model {
 //        }
 //        $errors .= '</ul>';
 //        $_SESSION[SessionFields::ERROR] = $errors;
-        $_SESSION[SessionFields::ERROR] = parce_msg($this->errors);
+        $_SESSION[$session_field] = parce_msg($this->errors);
         $this->errors = [];
     }
 
@@ -131,6 +131,11 @@ abstract class Model {
 
 
 
+    /**
+     * Возвращает ошибки в записи этого объекта и ошибки базы.
+     * (self::$errors + $this->db->errorInfo()
+     * @return array
+     */
     public function errorInfo(): array {
         $err = array_merge(self::$errors, $this->db->errorInfo());
         self::$errors = [];
@@ -209,7 +214,7 @@ abstract class Model {
         if (is_empty($id_value)) { return false; }
         if (!((array_key_exists($table_name, self::$CACHE_ID_BY_TABLE)) and (array_key_exists($id_value, self::$CACHE_ID_BY_TABLE[$table_name])))) {
             try {
-                $rez = $this->findBySql("SELECT * FROM `{$table_name}` WHERE `{$field_id}` = {$id_value}");
+                $rez = $this->findBySql("SELECT `{$field_id}` FROM `{$table_name}` WHERE `{$field_id}` = {$id_value}");
                 self::$CACHE_ID_BY_TABLE[$table_name][$id_value] = (count($rez)==1);
             } catch (\Exception $exc) {
                 echo "<pre>" . $exc->getTraceAsString()."</pre><hr>";
@@ -526,11 +531,11 @@ abstract class Model {
             /* string */ $user[User::F_SURNAME]          = (string)$user[User::F_SURNAME];
             /* string */ $user[User::F_FAMILY]           = (string)$user[User::F_FAMILY];
             /* string */ $user[User::F_PHONE_MAIN]       = (string)$user[User::F_PHONE_MAIN];
-            /* int    */ $user[User::F_DO_SEND_SMS]      = (int)   $user[User::F_DO_SEND_SMS];
-            /* string */ $user[User::F_MAIL_MAIN]        = (string)$user[User::F_MAIL_MAIN];
-            /* int    */ $user[User::F_DO_SEND_MAIL]     = (int)   $user[User::F_DO_SEND_MAIL];
+            /* int    */ $user[User::F_SMS_DO_SEND]      = (int)   $user[User::F_SMS_DO_SEND];
+            /* string */ $user[User::F_EMAIL_MAIN]        = (string)$user[User::F_EMAIL_MAIN];
+            /* int    */ $user[User::F_EMAIL_DO_SEND]     = (int)   $user[User::F_EMAIL_DO_SEND];
             /* string */ $user[User::F_ADDRESS_INVOICE]  = (string)$user[User::F_ADDRESS_INVOICE];
-            /* int    */ $user[User::F_DO_SEND_INVOICE]  = (int)   $user[User::F_DO_SEND_INVOICE];
+            /* int    */ $user[User::F_INVOICE_DO_SEND]  = (int)   $user[User::F_INVOICE_DO_SEND];
             /* string */ $user[User::F_JABBER]           = (string)$user[User::F_JABBER];
             /* int    */ $user[User::F_JABBER_DO_SEND]   = (int)   $user[User::F_JABBER_DO_SEND];
             /* string */ $user[User::F_VIBER]            = (string)$user[User::F_VIBER];

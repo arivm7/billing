@@ -15,6 +15,7 @@ namespace billing\core\base;
 
 use billing\core\App;
 use billing\core\base\Lang;
+use billing\core\base\View;
 
 /**
  * Description of Controller.php
@@ -68,7 +69,7 @@ abstract class Controller
 
 
     public function getView() {
-        $viewObj = new \billing\core\base\View(route: $this->route, layout: $this->layout, view: $this->view);
+        $viewObj = new View(route: $this->route, layout: $this->layout, view: $this->view);
         $viewObj->render($this->variables);
     }
 

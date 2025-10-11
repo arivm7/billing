@@ -65,7 +65,7 @@ class UserModel extends AppBaseModel{
             [User::F_PHONE_MAIN]
         ],
         'email' => [
-            [User::F_MAIL_MAIN],
+            [User::F_EMAIL_MAIN],
         ],
         'lengthMin' => [
             [User::F_LOGIN, 2],
@@ -216,10 +216,10 @@ class UserModel extends AppBaseModel{
             User::F_NAME_FULL => $this->attributes[User::F_NAME_FULL],
             User::F_NAME_SHORT => $this->attributes[User::F_NAME_SHORT],
             User::F_PHONE_MAIN => $this->attributes[User::F_PHONE_MAIN],
-            User::F_MAIL_MAIN  => $this->attributes[User::F_MAIL_MAIN],
+            User::F_EMAIL_MAIN  => $this->attributes[User::F_EMAIL_MAIN],
             User::F_PRAVA => '0',
-            User::F_DO_SEND_SMS => '1',
-            User::F_DO_SEND_MAIL => '0',
+            User::F_SMS_DO_SEND => '1',
+            User::F_EMAIL_DO_SEND => '0',
             User::F_CREATION_UID => User::UID_BILLING,
             User::F_CREATION_DATE => time(),
             User::F_MODIFIED_UID => User::UID_BILLING,
@@ -238,7 +238,7 @@ class UserModel extends AppBaseModel{
                 $this->success['signUp'][] = "ID: {$id}";
                 $this->success['signUp'][] = "Login: {$row[User::F_LOGIN]}";
                 $this->success['signUp'][] = "Phone: {$row[User::F_PHONE_MAIN]}";
-                $this->success['signUp'][] = "Email: {$row[User::F_MAIL_MAIN]}";
+                $this->success['signUp'][] = "Email: {$row[User::F_EMAIL_MAIN]}";
                 return true;
             } else {
                 $this->success = [];

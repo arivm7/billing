@@ -99,7 +99,8 @@ foreach ($LeftFields as $key => $value) {
 
             <div class="input-group mb-3">
                 <span class="input-group-text font-monospace">&nbsp;&nbsp;<?=$LeftFields[labelName];?>&nbsp;</span>
-                <input type="text" class="form-control" placeholder="<?= __('Short name');?>"
+                <input type="text" class="form-control"
+                       placeholder="<?= __('Short name');?>"
                        value="<?= isset($_SESSION[SessionFields::FORM_DATA][User::F_NAME_SHORT]) ? h($_SESSION[SessionFields::FORM_DATA][User::F_NAME_SHORT]) : "";?>"
                        name="<?=User::POST_REC;?>[<?=User::F_NAME_SHORT;?>]"
                        id="<?=User::POST_REC;?>[<?=User::F_NAME_SHORT;?>]">
@@ -111,10 +112,11 @@ foreach ($LeftFields as $key => $value) {
 
             <div class="input-group mb-3">
                 <span class="input-group-text font-monospace" id="mail_main-label">&nbsp;&nbsp;<?=$LeftFields[labelEmail];?>&nbsp;</span>
-                <input type="text" class="form-control" placeholder="email@domain.com"
-                       value="<?= isset($_SESSION[SessionFields::FORM_DATA][User::F_MAIL_MAIN]) ? h($_SESSION[SessionFields::FORM_DATA][User::F_MAIL_MAIN]) : "";?>"
-                       name="<?=User::POST_REC;?>[<?=User::F_MAIL_MAIN;?>]"
-                       id="<?=User::POST_REC;?>[<?=User::F_MAIL_MAIN;?>]">
+                <input type="text" class="form-control"
+                       placeholder="email@domain.com"
+                       value="<?= isset($_SESSION[SessionFields::FORM_DATA][User::F_EMAIL_MAIN]) ? h($_SESSION[SessionFields::FORM_DATA][User::F_EMAIL_MAIN]) : "";?>"
+                       name="<?=User::POST_REC;?>[<?=User::F_EMAIL_MAIN;?>]"
+                       id="<?=User::POST_REC;?>[<?=User::F_EMAIL_MAIN;?>]">
             </div>
 
             <div class="col-auto">

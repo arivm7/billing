@@ -13,7 +13,6 @@
 
 
 use app\models\AbonModel;
-use PAStatus;
 use config\tables\Firm;
 use config\tables\PA;
 use config\Icons;
@@ -1094,19 +1093,19 @@ function get_html_pa_status_attr(PAStatus $status): string {
     // "<span class='badge rounded-pill text-bg-dark'>Dark</span>"
 
     switch ($status) {
-        case PAStatus::FUTURE:
+        case \PAStatus::FUTURE:
             return "class='badge rounded-pill text-bg-secondary'";
             //break;
-        case PAStatus::CURRENT:
+        case \PAStatus::CURRENT:
             return "class='badge rounded-pill text-bg-success'";
             //break;
-        case PAStatus::CLOSE_TODAY:
+        case \PAStatus::CLOSE_TODAY:
             return "class='badge rounded-pill text-bg-warning'";
             //break;
-        case PAStatus::CLOSED:
+        case \PAStatus::CLOSED:
             return "class='badge rounded-pill text-bg-secondary'";
             //break;
-        case PAStatus::FULL_CLOSED:
+        case \PAStatus::FULL_CLOSED:
             return "class='badge rounded-pill text-bg-secondary'";
             //break;
         default:
@@ -1122,28 +1121,28 @@ function get_html_pa_status_badge(PAStatus $status, ?array $messages = null): st
 
     if (!$messages) {
         $messages = [
-            PAStatus::FUTURE->name      => __('Будущий'),
-            PAStatus::CURRENT->name     => __('Текущий'),
-            PAStatus::CLOSE_TODAY->name => __('На паузе сегодня'),
-            PAStatus::CLOSED->name      => __('Пауза'),
-            PAStatus::FULL_CLOSED->name => __('Закрыт'),
+            \PAStatus::FUTURE->name      => __('Будущий'),
+            \PAStatus::CURRENT->name     => __('Текущий'),
+            \PAStatus::CLOSE_TODAY->name => __('На паузе сегодня'),
+            \PAStatus::CLOSED->name      => __('Пауза'),
+            \PAStatus::FULL_CLOSED->name => __('Закрыт'),
         ];
     }
 
     switch ($status) {
-        case PAStatus::FUTURE:
+        case \PAStatus::FUTURE:
             return "<span ".get_html_pa_status_attr($status).">{$messages[PAStatus::FUTURE->name]}</span>";
             //break;
-        case PAStatus::CURRENT:
+        case \PAStatus::CURRENT:
             return "<span ".get_html_pa_status_attr($status).">{$messages[PAStatus::CURRENT->name]}</span>";
             //break;
-        case PAStatus::CLOSE_TODAY:
+        case \PAStatus::CLOSE_TODAY:
             return "<span ".get_html_pa_status_attr($status).">{$messages[PAStatus::CLOSE_TODAY->name]}</span>";
             //break;
-        case PAStatus::CLOSED:
+        case \PAStatus::CLOSED:
             return "<span ".get_html_pa_status_attr($status).">{$messages[PAStatus::CLOSED->name]}</span>";
             //break;
-        case PAStatus::FULL_CLOSED:
+        case \PAStatus::FULL_CLOSED:
             return "<span ".get_html_pa_status_attr($status).">{$messages[PAStatus::FULL_CLOSED->name]}</span>";
             //break;
         default:
@@ -1698,5 +1697,46 @@ function price_frm(int $price_id, bool $has_img = true, int $icon_width = 22, in
     $model = new AbonModel();
     $price = $model->get_price($price_id);
     return "<a href='/price_form.php?id={$price_id}' title='Редактировать прайс \n[".$price_id."] ".$price['title']."\n{$price['description']}' target={$target}>".($has_img?"<img src=/img/price_edit.png alt='[edit]' width=$icon_width height=$icon_height>":$price['title'])."</a>";
+}
+
+
+
+function isPhone(string $value): bool {
+    // оставляем только цифры и плюс
+    return preg_match('/^\+?\d{5,15}$/', preg_replace('/[^\d\+]/', '', $value));
+}
+
+
+
+function isUsername(string $value): bool {
+    // начинается с буквы, длина 5-32, допустимы буквы, цифры и _
+    return preg_match('/^[a-zA-Z][\w_]{4,31}$/', $value);
+}
+
+
+
+function isTelegramWeb(string $value): bool {
+    /*
+     * Поддерживает: http://t.me/username или https://t.me/username
+     * Длина username 5–32 символа
+     * Регистронезависимо
+     */
+    return preg_match('#^https?://(www\.)?t\.me/[\w_]{5,32}$#i', $value);
+}
+
+
+function isJabberFull(string $value): bool {
+    /**
+     * Jabber (XMPP) обычно логин имеет вид: user@domain
+     * Иногда с портом или ресурсом: user@domain/resource
+     * проверяем: user@domain/resource
+     *
+     * [a-z]{2,} — доменная зона минимум 2 символа
+     * i — регистр не важен
+     * Допускаются буквы, цифры, _, -, . в имени и домене
+     * Ресурс (/resource) опционален
+     *  — ресурс может содержать буквы, цифры, -, ., _
+     */
+    return preg_match('/^[\w\.\-]+@[\w\.\-]+\.[a-z]{2,}(\/[\w\-\.]+)?$/i', $value);
 }
 

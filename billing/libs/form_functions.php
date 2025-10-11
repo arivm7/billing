@@ -108,8 +108,14 @@ function get_html_accordion(
     string $file_view,
     string|null $field_title = null,
     ?callable $func_get_title = null,
-    int|string|null $open_index = null // индекс элемента, который открыть по умолчанию
+    int|string|null $open_index = null, // индекс элемента, который открыть по умолчанию
+    array $variables = [] // Дополнительные переменные, переаваемые в функцию, для использования в include-файлах
 ): string {
+    /**
+     * Распаковка переданных переменных
+     */
+    if (is_array($variables)) { extract($variables); }
+
     $acc_id = __accordion_id();
     $html = "<div class='accordion' id='accordion_{$acc_id}'>";
 

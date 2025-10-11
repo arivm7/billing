@@ -110,6 +110,14 @@ $config = [
     'LONG_PAUSED_DAYS' => 180,
 
 
+    'login_length_min' => 2,
+    'login_length_max' => 25,
+    'login_content' => '^[a-zA-Z0-9_.-]+$',
+
+    'pass_length_min' => 3,
+    'pass_length_max' => 35,
+
+
 ];
 
 return $config;

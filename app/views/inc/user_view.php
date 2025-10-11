@@ -64,42 +64,74 @@ $col3_attr = 'class="text-center align-middle font-monospace text-sm-start ps-3 
                                         right: url_tel(h($user[User::F_PHONE_MAIN])) . "&nbsp;" . url_sms(h($user[User::F_PHONE_MAIN])));
                                 ?>
                             </td>
-                            <td <?=$col3_attr;?>><input title="<?=__('Send SMS notifications');?>" type="checkbox" disabled <?= $user[User::F_DO_SEND_SMS] ? 'checked' : '' ?>></td>
+                            <td <?=$col3_attr;?>>
+                                <input title="<?=__('Send SMS notifications');?>"
+                                       type="checkbox" disabled <?= $user[User::F_SMS_DO_SEND] ? 'checked' : '' ?>></td>
                         </tr>
                         <tr>
                             <th <?=$col1_attr;?>><?=__('Email');?></th>
                             <td <?=$col2_attr;?>>
                                 <?php
-                                    if ($user[User::F_MAIL_MAIN]) {
+                                    if ($user[User::F_EMAIL_MAIN]) {
                                         echo get_html_content_left_right
                                         (
-                                                left:  h($user[User::F_MAIL_MAIN]),
-                                                right: url_email(email: $user[User::F_MAIL_MAIN], src: Icons::SRC_ICON_EMAIL)
+                                                left:  h($user[User::F_EMAIL_MAIN]),
+                                                right: url_email(email: $user[User::F_EMAIL_MAIN], src: Icons::SRC_ICON_EMAIL)
                                         );
                                     }
                                 ?>
                             </td>
-                            <td <?=$col3_attr;?>><input title="<?=__('Send email notifications');?>" type="checkbox" disabled <?= $user[User::F_DO_SEND_MAIL] ? 'checked' : '' ?>></td>
+                            <td <?=$col3_attr;?>>
+                                <input title="<?=__('Send email notifications');?>"
+                                       type="checkbox" disabled <?= $user[User::F_EMAIL_DO_SEND] ? 'checked' : '' ?>></td>
                         </tr>
                         <tr>
                             <th <?=$col1_attr;?>><?=__('Address for invoices');?></th>
                             <td <?=$col2_attr;?>><?= cleaner_html($user[User::F_ADDRESS_INVOICE]) ?></td>
-                            <td <?=$col3_attr;?>><input title="<?=__('Send paper documents');?>" type="checkbox" disabled <?= $user[User::F_DO_SEND_INVOICE] ? 'checked' : '' ?>></td>
+                            <td <?=$col3_attr;?>><input title="<?=__('Send paper documents');?>"
+                                                        type="checkbox" disabled <?= $user[User::F_INVOICE_DO_SEND] ? 'checked' : '' ?>></td>
                         </tr>
                         <?php if ($user[User::F_TELEGRAM]) : ?>
                         <tr>
                             <th <?=$col1_attr;?>>Telegram</th>
                             <td <?=$col2_attr;?>><?= h($user[User::F_TELEGRAM]) ?></td>
-                            <td <?=$col3_attr;?>><input title="<?=__('Use for correspondence and notifications');?>" type="checkbox" disabled <?= $user[User::F_TELEGRAM_DO_SEND] ? 'checked' : '' ?>></td>
+                            <td <?=$col3_attr;?>>
+                                <input title="<?=__('Use for correspondence and notifications');?>"
+                                       type="checkbox" disabled <?= $user[User::F_TELEGRAM_DO_SEND] ? 'checked' : '' ?>></td>
                         </tr>
                         <?php endif; ?>
                         <?php if ($user[User::F_VIBER]) : ?>
                         <tr>
                             <th <?=$col1_attr;?>>Viber</th>
                             <td <?=$col2_attr;?>><?= h($user[User::F_VIBER]) ?></td>
-                            <td <?=$col3_attr;?>><input title="<?=__('Use for correspondence and notifications');?>" type="checkbox" disabled <?= $user[User::F_VIBER_DO_SEND] ? 'checked' : '' ?>></td>
+                            <td <?=$col3_attr;?>>
+                                <input title="<?=__('Use for correspondence and notifications');?>"
+                                       type="checkbox" disabled <?= $user[User::F_VIBER_DO_SEND] ? 'checked' : '' ?>></td>
                         </tr>
                         <?php endif; ?>
+
+                        <?php if ($user[User::F_SIGNAL]) : ?>
+                        <tr>
+                            <th <?=$col1_attr;?>>Signal</th>
+                            <td <?=$col2_attr;?>><?= h($user[User::F_SIGNAL]) ?></td>
+                            <td <?=$col3_attr;?>>
+                                <input title="<?=__('Use for correspondence and notifications');?>"
+                                       type="checkbox" disabled <?= $user[User::F_SIGNAL_DO_SEND] ? 'checked' : '' ?>>
+                            </td>
+                        </tr>
+                        <?php endif; ?>
+
+                        <?php if ($user[User::F_WHATSAPP]) : ?>
+                        <tr>
+                            <th <?=$col1_attr;?>>WhatsApp</th>
+                            <td <?=$col2_attr;?>><?= h($user[User::F_WHATSAPP]) ?></td>
+                            <td <?=$col3_attr;?>>
+                                <input title="<?=__('Use for correspondence and notifications');?>"
+                                       type="checkbox" disabled <?= $user[User::F_WHATSAPP_DO_SEND] ? 'checked' : '' ?>>
+                            </td>
+                        </tr>
+                        <?php endif; ?>
+
                         <?php if ($user[User::F_JABBER]) : ?>
                         <tr>
                             <th <?=$col1_attr;?>>XMPP/Jabber</th>

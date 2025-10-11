@@ -46,7 +46,10 @@ require DIR_LIBS . '/form_functions.php';
 
                 <!-- Контент Вкладки пользователя -->
                 <div class="tab-pane fade show active" id="tab_user_<?=$user[User::F_ID];?>" role="tabpanel">
-                    <?php if (can_view(Module::MOD_MY_USER_CARD)) require DIR_INC . '/user_view.php'; ?>
+                    <!--
+                    < ?php if (can_view(Module::MOD_MY_USER_CARD)) require DIR_INC . '/user_view.php'; ?>
+                    -->
+                    <?php require DIR_INC . '/user_view.php'; ?>
                     <hr>
                     <?php if (can_view([Module::MOD_MY_CONTACTS, Module::MOD_CONTACTS])) : ?>
                         <h3 class="fs-3 text-center"><?=__('Additional contacts');?></h3>
@@ -88,7 +91,8 @@ require DIR_LIBS . '/form_functions.php';
                                                         : "<span class='badge bg-secondary'>".__('Not used')."</span>"
                                                     ) . '&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;',
                                             add_class: 'w-100');
-                                        }
+                                        },
+                                variables:  ['user' => $user]
                                 );
                         ?>
                     <?php endif; ?>
@@ -111,12 +115,12 @@ require DIR_LIBS . '/form_functions.php';
                                                             : "<span class='badge bg-secondary'>".__('Off')."</span>"
                                                         ) . '&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;',
                                                 add_class: 'w-100');
-                                    }
+                                    },
+                                    variables:  ['user' => $user]
                             );
                         ?>
                     <?php else: ?>
-                        <br>
-                        <div class='alert alert-info' role='alert'><?=__('There is no list of abonent connections to display');?></div>
+                        <div class='alert alert-info mt-3' role='alert'><?=__('There is no list of abonent connections to display');?></div>
                     <?php endif; ?>
                     </div>
                 </div>

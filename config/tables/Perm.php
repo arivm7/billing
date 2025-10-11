@@ -112,6 +112,7 @@ class Perm {
                 . "END AS abon_role "
                 . "FROM " . Abon::TABLE . " "
                 . "WHERE " . Abon::F_USER_ID . " = {$user_id}";
+//        debug($sql, '$sql1');
         $abon_role = $model->query(sql: $sql, fetchCell: 0);
 
 
@@ -136,7 +137,7 @@ class Perm {
                         . ") "
                 . "GROUP BY ".TSRoleModulePerm::F_MODULE_ID.";";
 
-//        debug($sql, '$sql', die: 1);
+//        debug($sql, '$sql2', die: 0);
         $list = $model->get_rows_by_sql(sql: $sql); // , row_id_by: TSRoleModelePerm::F_MODULE_ID, unset_row_id_by: true
         $permissions = [];
         foreach ($list as $row) {

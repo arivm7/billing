@@ -42,7 +42,8 @@ $can_admin = can_view(Module::MOD_NOTIFY);
 /**
  * Проверка личного разрешения
  */
-$can_my    = ($notify[Notify::F_USER_ID] == $_SESSION[User::SESSION_USER_REC][User::F_ID]) && can_view(Module::MOD_MY_NOTIFY);
+$can_my    = ($user[User::F_ID] == $_SESSION[User::SESSION_USER_REC][User::F_ID]) && can_view(Module::MOD_MY_NOTIFY);
+//$can_my    = ($notify[Notify::F_USER_ID] == $_SESSION[User::SESSION_USER_REC][User::F_ID]) && can_view(Module::MOD_MY_NOTIFY);
 
 ?>
 <?php if ($can_my || $can_admin) : ?>

@@ -21,6 +21,8 @@ namespace config\tables;
  */
 class User {
 
+    const URI_USER_UPDATE = '/user/update';
+
     /**
      * Имя массива для сохранения авторизованной сессии
      */
@@ -57,33 +59,61 @@ class User {
     const F_SURNAME             = 'surname';
     const F_FAMILY              = 'family';
     const F_PHONE_MAIN          = 'phone_main';
-    const F_DO_SEND_SMS         = 'do_send_sms';
-    const F_MAIL_MAIN           = 'mail_main';
-    const F_DO_SEND_MAIL        = 'do_send_mail';
+    const F_SMS_DO_SEND         = 'do_send_sms';
+    const F_EMAIL_MAIN          = 'mail_main';
+    const F_EMAIL_DO_SEND       = 'do_send_mail';
     const F_ADDRESS_INVOICE     = 'address_invoice';
-    const F_DO_SEND_INVOICE     = 'do_send_invoice';
+    const F_INVOICE_DO_SEND     = 'do_send_invoice';
     const F_JABBER              = 'jabber_main';
     const F_JABBER_DO_SEND      = 'jabber_do_send';
     const F_VIBER               = 'viber';
     const F_VIBER_DO_SEND       = 'viber_do_send';
     const F_TELEGRAM            = 'telegram';
     const F_TELEGRAM_DO_SEND    = 'telegram_do_send';
+    const F_SIGNAL              = 'signal_messenger';
+    const F_SIGNAL_DO_SEND      = 'signal_do_send';
+    const F_WHATSAPP            = 'whatsapp';
+    const F_WHATSAPP_DO_SEND    = 'whatsapp_do_send';
     const F_PRAVA               = 'prava';
     const F_CREATION_UID        = 'creation_uid';
     const F_CREATION_DATE       = 'creation_date';
     const F_MODIFIED_UID        = 'modified_uid';
     const F_MODIFIED_DATE       = 'modified_date';
 
-
-    const F_FORM_PASS     = 'password';
-    const F_FORM_PASS2    = 'confirm_password';
+    /**
+     * Поля, которые есть в форме но нет в базе
+     */
+    const F_FORM_PASS           = 'password_new';
+    const F_FORM_PASS2          = 'password_confirm';
 
     /**
      * Поля формы
      */
     const FORM_FIELDS = [
+        self::F_ID               => null,
+        self::F_LOGIN            => null,
         self::F_FORM_PASS        => '',
         self::F_FORM_PASS2       => '',
+        self::F_NAME_SHORT       => '',
+        self::F_NAME_FULL        => '',
+        self::F_SURNAME          => '',
+        self::F_FAMILY           => '',
+        self::F_PHONE_MAIN       => '',
+        self::F_SMS_DO_SEND      => 1,
+        self::F_EMAIL_MAIN       => '',
+        self::F_EMAIL_DO_SEND    => 0,
+        self::F_ADDRESS_INVOICE  => '',
+        self::F_INVOICE_DO_SEND  => 0,
+        self::F_JABBER           => '',
+        self::F_JABBER_DO_SEND   => 0,
+        self::F_VIBER            => '',
+        self::F_VIBER_DO_SEND    => 0,
+        self::F_TELEGRAM         => '',
+        self::F_TELEGRAM_DO_SEND => 0,
+        self::F_SIGNAL           => '',
+        self::F_SIGNAL_DO_SEND   => 0,
+        self::F_WHATSAPP         => '',
+        self::F_WHATSAPP_DO_SEND => 0,
         ];
 
     /**
@@ -100,21 +130,55 @@ class User {
         self::F_SURNAME          => '',
         self::F_FAMILY           => '',
         self::F_PHONE_MAIN       => '',
-        self::F_DO_SEND_SMS      => 1,
-        self::F_MAIL_MAIN        => '',
-        self::F_DO_SEND_MAIL     => 0,
+        self::F_SMS_DO_SEND      => 1,
+        self::F_EMAIL_MAIN       => '',
+        self::F_EMAIL_DO_SEND    => 0,
         self::F_ADDRESS_INVOICE  => '',
-        self::F_DO_SEND_INVOICE  => 0,
+        self::F_INVOICE_DO_SEND  => 0,
         self::F_JABBER           => '',
         self::F_JABBER_DO_SEND   => 0,
         self::F_VIBER            => '',
         self::F_VIBER_DO_SEND    => 0,
         self::F_TELEGRAM         => '',
         self::F_TELEGRAM_DO_SEND => 0,
+        self::F_SIGNAL           => '',
+        self::F_SIGNAL_DO_SEND   => 0,
+        self::F_WHATSAPP         => '',
+        self::F_WHATSAPP_DO_SEND => 0,
         self::F_CREATION_UID     => 0,
         self::F_CREATION_DATE    => 0,
         self::F_MODIFIED_UID     => 0,
         self::F_MODIFIED_DATE    => 0,
         ];
+
+    const T_FLAGS = [
+        self::F_SMS_DO_SEND      => 1,
+        self::F_EMAIL_DO_SEND    => 0,
+        self::F_INVOICE_DO_SEND  => 0,
+        self::F_JABBER_DO_SEND   => 0,
+        self::F_VIBER_DO_SEND    => 0,
+        self::F_TELEGRAM_DO_SEND => 0,
+        self::F_SIGNAL_DO_SEND   => 0,
+        self::F_WHATSAPP_DO_SEND => 0,
+        ];
+
+    /* =========================
+       Каналы связи (messengers)
+       ========================= */
+
+    /**
+     * Список всех поддерживаемых мессенджеров.
+     * Каждый элемент — массив с полями:
+     *   - field : имя поля с идентификатором/адресом
+     *   - send  : имя поля-флага "отправлять ли"
+     */
+    const MESSENGERS = [
+        self::F_JABBER   => [ 'field' => self::F_JABBER,   'send' => self::F_JABBER_DO_SEND ],
+        self::F_VIBER    => [ 'field' => self::F_VIBER,    'send' => self::F_VIBER_DO_SEND ],
+        self::F_TELEGRAM => [ 'field' => self::F_TELEGRAM, 'send' => self::F_TELEGRAM_DO_SEND ],
+        self::F_SIGNAL   => [ 'field' => self::F_SIGNAL,   'send' => self::F_SIGNAL_DO_SEND ],
+        self::F_WHATSAPP => [ 'field' => self::F_WHATSAPP, 'send' => self::F_WHATSAPP_DO_SEND ],
+    ];
+
 
 }

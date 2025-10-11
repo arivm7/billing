@@ -60,6 +60,7 @@ foreach ($LeftFields as $key => $value) {
                 <input type="text" class="form-control"
                        placeholder="<?= __('Login');?>"
                        value="<?=(isset($_SESSION[SessionFields::FORM_DATA][User::F_LOGIN]) ? $_SESSION[SessionFields::FORM_DATA][User::F_LOGIN] : "");?>"
+                       autocomplete="username"
                        name="<?=User::POST_REC;?>[<?= User::F_LOGIN; ?>]"
                        id="login-label" required>
             </div>

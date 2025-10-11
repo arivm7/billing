@@ -211,7 +211,9 @@ class ContactController extends AppBaseController {
                                                 ? $rec[Contacts::F_TYPE_ID]
                                                 : Contacts::autoType($rec[Contacts::F_TYPE_ID]));
                 $row[Contacts::F_TITLE]   = cleaner_html($_POST[Contacts::POST_REC][Contacts::F_TITLE]);
-                $row[Contacts::F_VALUE]   = PhoneTools::simpleCleaning($_POST[Contacts::POST_REC][Contacts::F_VALUE]);
+                if ($row[Contacts::F_TYPE_ID] == Contacts::T_PHONE) {
+                    $row[Contacts::F_VALUE]   = PhoneTools::simpleCleaning($_POST[Contacts::POST_REC][Contacts::F_VALUE]);
+                }
                 if ($this->validate($row)) {
                     if ($model->update_row_by_id(table: Contacts::TABLE, row: $row, field_id: Contacts::F_ID)) {
                         MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Data updated successfully | Данные обновлены успешно'));

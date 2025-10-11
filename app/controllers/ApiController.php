@@ -21,7 +21,6 @@ namespace app\controllers;
 
 use app\models\AbonModel;
 use app\models\AppBaseModel;
-use PAStatus;
 use billing\core\base\View;
 use billing\core\MsgQueue;
 use billing\core\MsgType;

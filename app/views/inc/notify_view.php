@@ -38,7 +38,8 @@ Lang::load_inc(__FILE__);
                 file_view: DIR_INC . '/notify_card.php',
                 func_get_title: function(array $item) {
                                     return '<span class="text-secondary">' . date('Y-m-d H:i:s', $item[Notify::F_DATE]) . ' :</span>&nbsp;' . h($item[Notify::F_TEXT]);
-                        }
+                },
+                variables:  ['user' => $user]
         );?>
     <?php if (empty($pager)) : ?>
         <div class="text-center mt-3">
