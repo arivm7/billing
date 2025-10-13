@@ -70,6 +70,7 @@ define('MODEL_SUFFIX',          'Model');
 $ALLOWED_ADDRES = false;
 $ALLOWED_ADDRESSES = [
     '176.36.12.167',
+    '176.105.102.234',
     //'176.105.102.234/29',
     //'213.111.124.217/29',
     '95.158.32.243',
@@ -113,9 +114,9 @@ new billing\core\App;
 
 // Свои правила
 
-Router::add('^dogovir/?$', [F_CONTROLLER => 'docs', F_ACTION => 'view', 'docs_id' => 1]);
-Router::add('^rules/?$',   [F_CONTROLLER => 'docs', F_ACTION => 'view', 'docs_id' => 2]);
-Router::add('^flood/?$',   [F_CONTROLLER => 'docs', F_ACTION => 'view', 'docs_id' => 3]);
+Router::add('^dogovir/?$', [F_CONTROLLER => 'docs', F_ACTION => 'view', F_ALIAS => 1]);
+Router::add('^rules/?$',   [F_CONTROLLER => 'docs', F_ACTION => 'view', F_ALIAS => 2]);
+Router::add('^flood/?$',   [F_CONTROLLER => 'docs', F_ACTION => 'view', F_ALIAS => 3]);
 
 Router::add('^abon/?\?id=[0-9]+$', [F_CONTROLLER => 'abon', F_ACTION => 'form']);
 Router::add('^page/(?P<'.F_ACTION.'>[0-9a-z-]+)/(?P<'.F_ALIAS.'>[0-9a-z-]+)$', [F_CONTROLLER => CTR_PAGE]);

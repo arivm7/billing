@@ -41,6 +41,8 @@
  */
 
 
+require_once __DIR__ . '/gen_lang_lib.php';
+
 
 echo "generate language dictionaries\n";
 
@@ -49,71 +51,37 @@ if ($argc < 2) {
     exit(1);
 }
 
-$input = $argv[1];
-if (!is_file($input)) {
-    fwrite(STDERR, "File not found: $input\n");
+$inputFileName = $argv[1];
+if (!is_file($inputFileName)) {
+    fwrite(STDERR, "File not found: $inputFileName\n");
     exit(1);
 }
 
-enum _DebugView: string
-{
-    case ECHO = '1';
-    case PRINTR = '2';
-    case DUMP = '3';
-}
-
-function _debug(mixed $value, string $comment = '', _DebugView $debug_view = _DebugView::DUMP, int $die = 0): void
-{
-    echo "<b>$comment:</b><pre>";
-    if (is_null($value)) {
-        echo "NULL";
-    } else {
-        switch ($debug_view) {
-            case _DebugView::ECHO:
-                echo "$value";
-                break;
-            case _DebugView::DUMP:
-                var_dump($value);
-                break;
-            case _DebugView::PRINTR:
-            default:
-                echo print_r($value, true);
-                break;
-        }
-    }
-    echo "</pre>";
-    echo "<hr>";
-    if ($die) die();
-}
 
 
-
-$lines = file($input, FILE_IGNORE_NEW_LINES);
-$basename = basename($input, '.php');
+$lines = file($inputFileName, FILE_IGNORE_NEW_LINES);
+$basename = basename($inputFileName, '.php');
 
 // Определяем имя вида: ищем в первых строках
-$view_name = null;
-foreach (array_slice($lines, 0, 3) as $line) {
-    if (preg_match('/(?:<!--\s*|\/\*\s*|\*+\s*|\/\/\s*)([^>\s]+\.php)/', $line, $m)) {
-        $view_name = $m[1];
-        // $view_name = basename($m[1], '.php');
-        break;
-    }
-}
-
-if (!$view_name) {
-    $view_name = $basename;
-}
+$helperStr = $inputFileName;
 
 
 
 // Выходные файлы
-$outClean = "__{$basename}_clean.php";
-$outEn    = "__{$basename}_en.php";
-$outRu    = "__{$basename}_ru.php";
-$outUk    = "__{$basename}_uk.php";
+$baseNameDict = preg_replace('/View$/', '', $basename);
 
-$code = file_get_contents($input);
+$outClean = GEN_LANGS . "/__{$basename}_clean.php";
+$outEn    = GEN_LANGS . "/__{$baseNameDict}_en.php";
+$outRu    = GEN_LANGS . "/__{$baseNameDict}_ru.php";
+$outUk    = GEN_LANGS . "/__{$baseNameDict}_uk.php";
+
+echo "outClean : $outClean\n";
+echo "outEn    : $outEn\n";
+echo "outRu    : $outRu\n";
+echo "outUk    : $outUk\n";
+
+
+$code = file_get_contents($inputFileName);
 
 $translations = [];
 $clean = $code;
@@ -146,30 +114,14 @@ if (preg_match_all($regex, $code, $matches, PREG_SET_ORDER)) {
     }
 }
 
+
 // Пишем clean-файл
 file_put_contents($outClean, $clean);
 
-// Пишем словари
-function writeLang(string $lang, array $trs, string $file, string $view_name): void {
-    $out = "<?php\n"
-            . "/**\n"
-            . " * {$lang}\n"
-            . " * for {$view_name}\n"
-            . " */\n"
-            . "\n"
-            . "return [\n";
-    foreach ($trs as $key => $row) {
-        $k = addslashes($key);
-        $v = addslashes($row[$lang]);
-        $out .= "    '$k' => '$v',\n";
-    }
-    $out .= "];\n";
-    file_put_contents($file, $out);
-    echo "Generated: {$file}\n";
-}
 
-writeLang('en', $translations, $outEn, $view_name);
-writeLang('ru', $translations, $outRu, $view_name);
-writeLang('uk', $translations, $outUk, $view_name);
+// Пишем языковые файлы
+writeLang('en', $translations, $outEn, $helperStr);
+writeLang('ru', $translations, $outRu, $helperStr);
+writeLang('uk', $translations, $outUk, $helperStr);
 
 echo "Cleaned source written to: $outClean\n";

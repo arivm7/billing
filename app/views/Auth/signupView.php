@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  *  Project : s1.ri.net.ua
  *  File    : signupView.php
  *  Path    : app/views/Auth/signupView.php
@@ -8,11 +8,11 @@
  *  Created : 20 Sep 2025 20:22:31
  *  License : GPL v3
  *
- *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ *  @copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
  */
 
 /**
- * Description of signupView.php
+ * Форма регистрации нового пользователя
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
@@ -120,7 +120,7 @@ foreach ($LeftFields as $key => $value) {
             </div>
 
             <div class="col-auto">
-                <button type="submit" class="btn btn-primary mb-3"><?= __('Register');?></button>
+                <button type="submit" class="btn btn-primary mb-3 disabled"><?= __('Register');?></button>
             </div>
 
         </form>

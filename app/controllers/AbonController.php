@@ -20,6 +20,7 @@ use billing\core\base\View;
 use billing\core\MsgQueue;
 use billing\core\MsgType;
 use billing\core\Pagination;
+use Config\Auth;
 use config\tables\Abon;
 use config\tables\AbonRest;
 use config\tables\Contacts;
@@ -236,7 +237,12 @@ class AbonController extends AppBaseController {
     function indexAction() {
         if (!App::isAuth()) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('Авторизуйтесь, пожалуйста'));
-            redirect('/auth/login');
+            redirect(Auth::URI_LOGIN);
+        }
+
+        if (!can_use(Module::MOD_ABON)) {
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('У вас нет прав для работы с абонентами'));
+            redirect();
         }
 
         $model = new AbonModel();
@@ -244,10 +250,11 @@ class AbonController extends AppBaseController {
         /**
          * Обновление остатков на ЛС всех абонентов (формируется в отдельной таблице `abon_rest`)
          */
-        $model->update_abon_rest(force: true);
+        $model->update_abon_rest(force: false);
 
         /**
          * Список ТП прикреплённых к авторизованному пользователю
+         * чтобы получить абонентов только со своих ТП
          */
         $tp_list = $model->get_my_tp_list();
 
@@ -305,10 +312,9 @@ class AbonController extends AppBaseController {
         ]);
 
         View::setMeta(
-            title: __("Список абонентов по ТП"),
-            descr: "",
-            keywords: ""
-            );
+            title: __("List of subscribers by technical platforms | Список абонентов по техническим площадкам | Список абонентів за технічними майданчиками"),
+            descr: __("The list of subscribers by technical sites attached to the current authorized user | Список абонентов по техплощадкам, прикреплённым к текущему авторизованному пользователю | Список абонентів по техмайданчиках, прикріплених до поточного авторизованого користувача"),
+        );
 
     }
 
@@ -318,8 +324,8 @@ class AbonController extends AppBaseController {
 
         if (!App::$auth->isAuth)
         {
-            MsgQueue::msg(MsgType::ERROR, __('Авторизуйтесь, пожалуйста'));
-            redirect('/auth/login');
+            MsgQueue::msg(MsgType::ERROR, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
+            redirect(Auth::URI_LOGIN);
         }
 
         define('ROUTE_NAME', 'abon/list');
@@ -360,7 +366,7 @@ class AbonController extends AppBaseController {
         /**
          * Считывание и запоминание параметров отображения
          */
-        $show_tp = (isset($_GET[CMD_SHOW_TP]) && $model->validate_id("tp_list", $_GET[CMD_SHOW_TP])
+        $show_tp = (isset($_GET[CMD_SHOW_TP]) && $model->validate_id(TP::TABLE, $_GET[CMD_SHOW_TP])
                         ? $_GET[CMD_SHOW_TP]
                         : null
                     ); // echo "show_tp: $show_tp<br>";
@@ -630,7 +636,7 @@ class AbonController extends AppBaseController {
             echo "<a href=" . make_url(
                     use: $FLAG_ALL & ~$FLAG_URL_SHOW_AB_PAY,
                     flag_field: $FLAG_URL_SHOW_AB_PAY,
-                    value: intval(!$show_ab_pay)
+                    value: strval(intval(!$show_ab_pay))
             ) . " title='Показать плательщиков.'>Переключить плательщиков " . (!$show_ab_pay ? CHECK1 : CHECK0) . "</a><br><br>";
             echo "<a href=" . make_url(
                     use: $FLAG_URL_CURRENT | $FLAG_URL_TP
@@ -976,7 +982,7 @@ class AbonController extends AppBaseController {
         if (!App::$auth->isAuth)
         {
             MsgQueue::msg(MsgType::ERROR, __('Авторизуйтесь, пожалуйста'));
-            redirect('/auth/login');
+            redirect(Auth::URI_LOGIN);
         }
 
         /**

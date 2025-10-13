@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  *  Project : s1.ri.net.ua
  *  File    : Docs.php
  *  Path    : config/tables/Docs.php
@@ -8,7 +8,7 @@
  *  Created : 16 Sep 2025 12:49:54
  *  License : GPL v3
  *
- *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ *  @copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
  */
 
 namespace config\tables;
@@ -33,7 +33,7 @@ class Docs {
     /**
      * Имя массива в POST-запросе, в котором приходят данные формы
      */
-    public const POST_REC = 'post';
+    public const POST_REC = 'postDoc';
 
     /**
      * Имя таблицы

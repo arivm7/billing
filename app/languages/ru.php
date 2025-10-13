@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  *  Project : s1.ri.net.ua
  *  File    : ru.php
  *  Path    : app/languages/ru.php
@@ -12,7 +12,7 @@
  */
 
 /**
- * ru
+ * dict ru
  * for Layouts
  */
 
@@ -30,5 +30,15 @@ return [
     'Data rendering time'   => 'Время отрисовки данных.....',
     'Page rendering time'   => 'Время отрисовки страницы...',
     'TOTAL time'            => 'Время ВСЕГО:...............',
+
+    /**
+     * Для виджета переключения языков
+     */
+    'Site language'=> 'Язык сайта',
+
+    /**
+     * Для виджета переключения темы оформления
+     */
+    'Color Theme'=> 'Цветовая Тема',
 
 ];

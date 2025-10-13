@@ -1,4 +1,7 @@
 <?php
+
+use billing\core\App;
+use config\tables\Module;
 /*
  *  Project : s1.ri.net.ua
  *  File    : indexView.php
@@ -20,11 +23,13 @@
 /** @var array $t */
 ?>
 <div class="container">
-    <h3>Список Абонентов</h3>
-    <br>
-    <?php include DIR_VIEWS . '/inc/pager.php'; ?>
-    <?= get_html_table(t: $t); ?>
-    <?php include DIR_VIEWS . '/inc/pager.php'; ?>
+    <?php if (App::isAuth()) : ?>
+        <?php if (can_use(Module::MOD_ABON)) : ?>
+            <h3>Список Абонентов</h3>
+            <br>
+            <?php include DIR_VIEWS . '/inc/pager.php'; ?>
+            <?= get_html_table(t: $t); ?>
+            <?php include DIR_VIEWS . '/inc/pager.php'; ?>
+        <?php endif; ?>
+    <?php endif; ?>
 </div>
-<br>
-

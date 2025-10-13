@@ -15,6 +15,7 @@ namespace app\controllers;
 
 use app\models\AbonModel;
 use billing\core\App;
+use config\Auth;
 use config\tables\Abon;
 use config\tables\Contacts;
 use config\tables\Firm;
@@ -94,7 +95,7 @@ class MyController extends AppBaseController  {
                 'user' => $my,
             ]);
         } else {
-            redirect('/auth/login');
+            redirect(Auth::URI_LOGIN);
         }
 
         View::setMeta(

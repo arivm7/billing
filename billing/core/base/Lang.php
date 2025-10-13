@@ -43,6 +43,7 @@ class Lang {
 
     public static $lang_data = [];
     public static $lang_layout = [];
+    public static $lang_controller = [];
     public static $lang_view = [];
 
 
@@ -57,7 +58,14 @@ class Lang {
     public static function load(array $lang_curr, array $route): void {
         if (empty(self::$lang_data)) {
             $lang_layout_file = DIR_LANG . "/{$lang_curr[self::F_CODE]}.php";
+            $lang_controller_file = DIR_LANG . "/{$lang_curr[self::F_CODE]}".(empty($route[F_PREFIX]) ? "" : "/{$route[F_PREFIX]}")."/{$route[F_CONTROLLER]}/{$lang_curr[self::F_CODE]}.php";
             $lang_view_file   = DIR_LANG . "/{$lang_curr[self::F_CODE]}".(empty($route[F_PREFIX]) ? "" : "/{$route[F_PREFIX]}")."/{$route[F_CONTROLLER]}/{$route[F_ACTION]}.php";
+
+
+            
+            /**
+             * Загрузка языкового файла макета
+             */
             if (file_exists($lang_layout_file)) {
                 self::$lang_layout = require $lang_layout_file;
             } else {
@@ -66,7 +74,7 @@ class Lang {
                         break;
                     case 1:
                         error_log(
-                            message: "Route: [" . array_key_first($_GET) . "] :: Lang: [". self::code() . "] :: Lang File not found: [{$lang_layout_file}]\n",
+                            message: "Route: [" . implode("/", $route) . "] :: Lang: [". self::code() . "] :: Lang File not found: [{$lang_layout_file}]\n",
                             message_type: 3,
                             destination: DIR_LOG . '/' . self::LOG_FILE,
                         );
@@ -76,6 +84,36 @@ class Lang {
                         throw new Exception("Не найден языковой файл Макета | Layout Language file not found: '{$lang_layout_file}'");
                 }
             }
+
+
+
+            /**
+             * Загрузка языкового файла контроллера
+             */
+            if (file_exists($lang_controller_file)) {
+                self::$lang_controller = require $lang_controller_file;
+            } else {
+                switch (ErrorHandler::DEBUG && App::$app->get_config('lang_strong_file_existence')) {
+                    case 0:
+                        break;
+                    case 1:
+                        error_log(
+                            message: "Route: [" . implode("/", $route) . "] :: Lang: [". self::code() . "] :: Lang File not found: [{$lang_controller_file}]\n",
+                            message_type: 3,
+                            destination: DIR_LOG . '/' . self::LOG_FILE,
+                        );
+                        break;
+                    case 2:
+                    default:
+                        throw new Exception("Не найден языковой файл Контроллера | Controller Language file not found: '{$lang_controller_file}'");
+                }
+            }
+
+
+
+            /**
+             * Загрузка языкового файла вида
+             */
             if (file_exists($lang_view_file)) {
                 self::$lang_view = require $lang_view_file;
             } else {
@@ -84,7 +122,7 @@ class Lang {
                         break;
                     case 1:
                         error_log(
-                            message: "Route: [" . array_key_first($_GET) . "] :: Lang: [". self::code() . "] :: Lang File not found: [{$lang_view_file}]\n",
+                            message: "Route: [" . implode("/", $route) . "] :: Lang: [". self::code() . "] :: Lang File not found: [{$lang_view_file}]\n",
                             message_type: 3,
                             destination: DIR_LOG . '/' . self::LOG_FILE,
                         );
@@ -145,6 +183,7 @@ class Lang {
             }
         }
     }
+
 
 
     /**

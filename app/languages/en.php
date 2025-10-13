@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  *  Project : s1.ri.net.ua
  *  File    : en.php
  *  Path    : app/languages/en.php
@@ -12,7 +12,7 @@
  */
 
 /**
- * en
+ * dict en
  * for Layouts
  */
 
@@ -30,4 +30,15 @@ return [
     'Data rendering time'   => 'Data rendering time.....',
     'Page rendering time'   => 'Page rendering time.....',
     'TOTAL time'            => 'TOTAL time:.............',
+
+    /**
+     * Для виджета переключения языков
+     */
+    'Site language'=> 'Site language',
+
+    /**
+     * Для виджета переключения темы оформления
+     */
+    'Color Theme'=> 'Color Theme',
+
 ];

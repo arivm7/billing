@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  *  Project : s1.ri.net.ua
  *  File    : indexView.php
  *  Path    : app/views/Docs/indexView.php
@@ -8,11 +8,11 @@
  *  Created : 20 Sep 2025 20:22:31
  *  License : GPL v3
  *
- *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ * @copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
  */
 
 /**
- * Description of indexView.php
+ * Список документов (карточки)
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
@@ -20,6 +20,7 @@
 use config\Icons;
 use config\tables\Docs;
 use billing\core\base\Lang;
+use config\tables\Module;
 
 // текущий язык
 $lang = Lang::code();
@@ -31,8 +32,10 @@ $textField        = Docs::F_TEXTS[$lang];
 ?>
 <div class="container my-4">
     <div class='d-flex justify-content-between align-items-center'>
-        <h2 class="display-6 mb-4"><?=__('Rilan') . ' :: '. __('Документы');?></h2>
-        <a href="/docs/edit" class="btn btn-secondary"><?=__('Создать новый документ');?></a>
+        <h2 class="display-6 mb-4"><?=__('Rilan') . ' :: '. __('Documents');?></h2>
+        <?php if (can_add(module: Module::MOD_DOCS)) : ?>
+        <a href="/docs/edit" class="btn btn-secondary"><?=__('Create a new document');?></a>
+        <?php endif; ?>
     </div>
     <div class="row">
         <?php include DIR_INC . '/pager.php'; ?>
@@ -64,12 +67,15 @@ $textField        = Docs::F_TEXTS[$lang];
                             <div class="d-flex justify-content-between align-items-center">
                                 <!-- Кнопка "Подробнее" -->
                                 <div class="mt-auto">
-                                    <a href="/docs/view?<?= Docs::F_GET_ID ?>=<?= $docs_one[Docs::F_ID] ?>"
-                                       class="btn btn-primary btn-sm">
-                                        <?= __('Читать') ?>
+                                    <a href="<?= Docs::URI_VIEW ?>/<?= (int) $docs_one[Docs::F_ID] ?>"
+                                       class="btn btn-primary btn-sm"
+                                       title="<?= __('Read the document') ?>">
+                                        <?= __('Read') ?>
                                     </a>
-                                    <a href="/docs/edit?<?= Docs::F_GET_ID ?>=<?= $docs_one[Docs::F_ID] ?>"
-                                       class="btn btn-primary btn-sm" title="<?= __('Редактировать документ') ?>"><img src="<?= Icons::SRC_EDIT;?>" height="<?= Icons::ICON_SIZE;?>" ></a>
+                                    <?php if (can_edit(module: Module::MOD_DOCS)) : ?>
+                                    <a href="<?= Docs::URI_EDIT ?>/<?= (int) $docs_one[Docs::F_ID] ?>"
+                                       class="btn btn-primary btn-sm" title="<?= __('Edit a document') ?>"><img src="<?= Icons::SRC_EDIT;?>" height="<?= Icons::ICON_SIZE;?>" ></a>
+                                    <?php endif; ?>
                                 </div>
                                 <div>
                                 <!-- Дата публикации -->

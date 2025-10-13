@@ -14,6 +14,8 @@
 namespace billing\core\base;
 
 use billing\core\Db;
+use billing\core\MsgQueue;
+use billing\core\MsgType;
 use config\tables\Abon;
 use config\SessionFields;
 use config\tables\User;
@@ -113,19 +115,7 @@ abstract class Model {
 
 
     public function successToSession() {
-//        $success = '<ul>';
-//        foreach (self::$success as $title => $rows) {
-//            if (is_array($rows)) {
-//                foreach ($rows as $str) {
-//                    $success .= "<li>{$str}</li>";
-//                }
-//            } else {
-//                $success .= "<li>{$rows}</li>";
-//            }
-//        }
-//        $success .= '</ul>';
-//        $_SESSION[SessionFields::SUCCESS] = $success;
-        $_SESSION[SessionFields::SUCCESS] = parce_msg(self::$success);
+        MsgQueue::msg(MsgType::SUCCESS_AUTO, self::$success);
         self::$success = [];
     }
 

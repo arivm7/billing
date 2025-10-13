@@ -22,12 +22,14 @@
  * для виджета LangSelector
  * @returns {undefined}
  */
-$(function () {
-    $('#lang').change(function() {
-        window.location = '/language/change?lang=' + $(this).val();
+ $(function () {
+     $('#lang_changer').change(function() {
+        window.location = '/lang-switch/change?lang=' + $(this).val();
         // console.log($(this).val());
-    });
-} );
+     });
+ } );
+
+
 
 /**
  * для виджета ThemeSelector

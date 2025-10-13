@@ -17,12 +17,25 @@
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
 
+use billing\core\App;
 use config\SessionFields;
 use config\tables\Docs;
+use config\tables\Module;
 use config\tables\User;
 /** @var array $doc */
 
+
+
+/**
+ * Форма только для авторизованных пользователей с правами на редактирование
+ */
+if (!App::isAuth() || !can_edit(Module::MOD_DOCS)) { exit; }
+
+
 if (empty($doc)) {
+    /**
+     * Создание нового документа
+     */
     $doc = Docs::POST_FIELDS;
 }
 
@@ -36,7 +49,7 @@ $doc[Docs::F_DATE_PUBLICATION_STR] = (!empty($doc[Docs::F_DATE_PUBLICATION]) ? d
 
 ?>
 <div class="container py-4">
-    <h2 class="mb-4"><?=(isset($doc[Docs::F_ID]) ? __('Редактирование') : __('Создание')) . ' ' . __('документа');?></h2>
+    <h2 class="mb-4"><?=(isset($doc[Docs::F_ID]) ? __('Document Editing') : __('Creating Document'));?></h2>
     <form action="" method="post">
         <?php if (isset($doc[Docs::F_ID])) : ?>
             <input  type="hidden"
@@ -48,7 +61,7 @@ $doc[Docs::F_DATE_PUBLICATION_STR] = (!empty($doc[Docs::F_DATE_PUBLICATION]) ? d
                 name="<?= Docs::POST_REC ?>[<?= Docs::F_AUTHOR_ID ?>]">
         <ul class="nav nav-tabs" id="docsTab" role="tablist">
             <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="common-tab" data-bs-toggle="tab" data-bs-target="#common" type="button" role="tab"><?=__('Общая информация');?></button>
+                <button class="nav-link active" id="common-tab" data-bs-toggle="tab" data-bs-target="#common" type="button" role="tab"><?=__('General information');?></button>
             </li>
             <?php foreach (Docs::SUPPORTED_LANGS as $lang): ?>
                 <li class="nav-item" role="presentation">
@@ -68,28 +81,28 @@ $doc[Docs::F_DATE_PUBLICATION_STR] = (!empty($doc[Docs::F_DATE_PUBLICATION]) ? d
                           <input class="form-check-input" type="checkbox" value="1" id="auto_visible"
                             name="<?= Docs::POST_REC; ?>[<?= Docs::F_AUTO_VISIBLE; ?>]"
                             <?= !empty($doc[Docs::F_AUTO_VISIBLE]) ? 'checked' : '' ?>>
-                          <label class="form-check-label" for="auto_visible"><?=__('Автоматически показывать с даты публикации');?></label>
+                          <label class="form-check-label" for="auto_visible"><?=__('Automatically show from the date of publication');?></label>
                         </div>
 
                         <div class="form-check">
                           <input class="form-check-input" type="checkbox" value="1" id="is_visible"
                             name="<?= Docs::POST_REC; ?>[<?= Docs::F_IS_VISIBLE; ?>]"
                             <?= !empty($doc[Docs::F_IS_VISIBLE]) ? 'checked' : '' ?>>
-                          <label class="form-check-label" for="is_visible"><?=__('Видима для всех');?></label>
+                          <label class="form-check-label" for="is_visible"><?=__('Visible to all');?></label>
                         </div>
 
                         <div class="form-check">
                           <input class="form-check-input" type="checkbox" value="1" id="auto_del"
                             name="<?= Docs::POST_REC; ?>[<?= Docs::F_AUTO_DEL; ?>]"
                             <?= !empty($doc[Docs::F_AUTO_DEL]) ? 'checked' : '' ?>>
-                          <label class="form-check-label" for="auto_del"><?=__('Автоматически скрывать по дате окончания');?></label>
+                          <label class="form-check-label" for="auto_del"><?=__('Automatically hide by end date');?></label>
                         </div>
 
                         <div class="form-check mb-3">
                           <input class="form-check-input" type="checkbox" value="1" id="is_deleted"
                             name="<?= Docs::POST_REC; ?>[<?= Docs::F_IS_DELETED; ?>]"
                             <?= !empty($doc[Docs::F_IS_DELETED]) ? 'checked' : '' ?>>
-                          <label class="form-check-label" for="is_deleted"><?=__('Пометить как удалённую');?></label>
+                          <label class="form-check-label" for="is_deleted"><?=__('Mark as deleted');?></label>
                         </div>
 
                         <!-- Параметры отображение при просмотре -->
@@ -97,32 +110,32 @@ $doc[Docs::F_DATE_PUBLICATION_STR] = (!empty($doc[Docs::F_DATE_PUBLICATION]) ? d
                           <input class="form-check-input" type="checkbox" value="1" id="in_view_title"
                             name="<?= Docs::POST_REC; ?>[<?= Docs::F_IN_VIEW_TITLE; ?>]"
                             <?= !empty($doc[Docs::F_IN_VIEW_TITLE]) ? 'checked' : '' ?>>
-                          <label class="form-check-label" for="in_view_title"><?=__('Отображать _title при просмотре');?></label>
+                          <label class="form-check-label" for="in_view_title"><?=__('Display [title] when viewed');?></label>
                         </div>
 
                         <div class="form-check">
                           <input class="form-check-input" type="checkbox" value="1" id="in_view_description"
                             name="<?= Docs::POST_REC; ?>[<?= Docs::F_IN_VIEW_DESCRIPTION; ?>]"
                             <?= !empty($doc[Docs::F_IN_VIEW_DESCRIPTION]) ? 'checked' : '' ?>>
-                          <label class="form-check-label" for="in_view_description"><?=__('Отображать _description при просмотре');?></label>
+                          <label class="form-check-label" for="in_view_description"><?=__('Display [description] when viewed');?></label>
                         </div>
 
                         <div class="form-check mb-3">
                           <input class="form-check-input" type="checkbox" value="1" id="in_view_text"
                             name="<?= Docs::POST_REC; ?>[<?= Docs::F_IN_VIEW_TEXT; ?>]"
                             <?= !empty($doc[Docs::F_IN_VIEW_TEXT]) ? 'checked' : '' ?>>
-                          <label class="form-check-label" for="in_view_text"><?=__('Отображать _text при просмотре');?></label>
+                          <label class="form-check-label" for="in_view_text"><?=__('Display [text] when viewed');?></label>
                         </div>
 
                     </div>
                     <div class="col-3 mb-3">
-                        <label class="form-label"><?=__('Дата публикации');?></label>
+                        <label class="form-label"><?=__('Date of publication');?></label>
                         <input type="datetime-local"
                             name="<?= Docs::POST_REC ?>[<?= Docs::F_DATE_PUBLICATION_STR ?>]"
                             class="form-control"
                             value="<?=$doc[Docs::F_DATE_PUBLICATION_STR];?>">
                         <br>
-                        <label class="form-label"><?=__('Дата окончания публикации');?></label>
+                        <label class="form-label"><?=__('Publication end date');?></label>
                         <input type="datetime-local"
                             name="<?= Docs::POST_REC ?>[<?= Docs::F_DATE_EXPIRATION_STR ?>]"
                             class="form-control"
@@ -149,7 +162,7 @@ $doc[Docs::F_DATE_PUBLICATION_STR] = (!empty($doc[Docs::F_DATE_PUBLICATION]) ? d
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label"><?=__('Текст новости');?> (<?= $lang ?>)</label>
+                    <label class="form-label"><?=__('The text of the document');?> (<?= $lang ?>)</label>
                     <textarea class="form-control editor-text"
                         name="<?= Docs::POST_REC ?>[<?= Docs::F_TEXTS[$lang] ?>]"><?= cleaner_html($doc[Docs::F_TEXTS[$lang]] ?? '') ?></textarea>
                 </div>
@@ -159,17 +172,17 @@ $doc[Docs::F_DATE_PUBLICATION_STR] = (!empty($doc[Docs::F_DATE_PUBLICATION]) ? d
         </div>
 
         <div class="mt-4">
-            <button type="submit" class="btn btn-primary">💾<?=__('Сохранить');?></button>
+            <button type="submit" class="btn btn-primary">💾<?=__('Save');?></button>
             <?php if (isset($doc[Docs::F_ID])) : ?>
-            <a href="<?=Docs::URI_VIEW . '?' . Docs::F_GET_ID . '=' . $doc[Docs::F_ID];?>" class="btn btn-secondary"><?=__('Смотреть');?></a>
-            <a href="<?=Docs::URI_DEL . '?' . Docs::F_GET_ID . '=' . $doc[Docs::F_ID];?>" class="btn btn-secondary" title="<?=__('ВНИМАНИЕ: Удаление из базы.');?>" onclick="return confirm('Удалить запись?');"  ><?=__('Удалить');?></a>
+            <a href="<?=Docs::URI_VIEW . '?' . Docs::F_GET_ID . '=' . $doc[Docs::F_ID];?>" class="btn btn-secondary"><?=__('View');?></a>
+            <a href="<?=Docs::URI_DEL . '?' . Docs::F_GET_ID . '=' . $doc[Docs::F_ID];?>" class="btn btn-secondary" title="<?=__('WARNING: Deletion from the database.');?>" onclick="return confirm('<?=__('Are you sure you want to delete this document?');?>');"  ><?=__('Delete');?></a>
             <?php endif; ?>
-            <a href="<?=Docs::URI_LIST;?>" class="btn btn-secondary"><?=__('Вернутся к списку');?></a>
+            <a href="<?=Docs::URI_LIST;?>" class="btn btn-secondary"><?=__('Return to the list');?></a>
         </div>
 
     </form>
 </div>
-<!-- TinyMCE (для текстов новостей) -->
+<!-- TinyMCE (для текстов документов) -->
 <script src="/public/tinymce/js/tinymce/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
 <script>
     tinymce.init({

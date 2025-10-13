@@ -81,7 +81,6 @@ use billing\core\base\View;
     <body>
         <div class="my-content container-fluid">
             <?php include DIR_INC . '/menuTopView.php'; ?>
-            <!--< ?php include DIR_INC . '/nav.php'; ?>-->
             <div class="my-layout">
 
                 <aside class="my-left-menu">
@@ -176,10 +175,10 @@ use billing\core\base\View;
         </div>
 
         <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
-        <script type='text/javascript' src='/public/js/main.js'></script>
         <script type='text/javascript' src='/public/dcjqaccordion/js/jquery.cookie.js'></script>
         <script type='text/javascript' src='/public/dcjqaccordion/js/jquery.hoverIntent.minified.js'></script>
         <script type='text/javascript' src='/public/dcjqaccordion/js/jquery.dcjqaccordion.2.7.min.js'></script>
+        <script type='text/javascript' src='/public/js/main.js'></script>
         <?php
             if (!empty($scripts)) {
                 foreach ($scripts[0] as $script_one) {

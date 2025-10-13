@@ -16,6 +16,7 @@ use app\models\AuthModel;
 use billing\core\MsgQueue;
 use billing\core\MsgType;
 
+use config\Auth;
 use config\tables\User;
 use config\SessionFields;
 use billing\core\base\View;
@@ -46,7 +47,7 @@ class AuthController extends AppBaseController{
             $userModel->attributes[User::DB_PASS_HASH] = $userModel->get_hash_pass($userModel->attributes[User::FORM_PASS]);
             if ($userModel->userSave()) {
                 $userModel->successToSession();
-                redirect('/auth/login');
+                redirect(Auth::URI_LOGIN);
             } else {
                 $_SESSION[SessionFields::ERROR] = "Что-то пошло не так: Ошибка записи в базу.";
             }
@@ -80,7 +81,7 @@ class AuthController extends AppBaseController{
 
     function logoutAction() {
         AuthModel::session_clear();
-        redirect('/auth/login');
+        redirect(Auth::URI_LOGIN);
     }
 
 

@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  *  Project : s1.ri.net.ua
  *  File    : uk.php
  *  Path    : app/languages/uk.php
@@ -12,7 +12,7 @@
  */
 
 /**
- * uk
+ * dict uk
  * for Layouts
  */
 
@@ -30,4 +30,15 @@ return [
     'Data rendering time'   => 'Час відображення даних.....',
     'Page rendering time'   => 'Час відображення сторінки..',
     'TOTAL time'            => 'Час всього:................',
+
+    /**
+     * Для виджета переключения языков
+     */
+    'Site language'=> 'Мова сайту',
+
+    /**
+     * Для виджета переключения темы оформления
+     */
+    'Color Theme'=> 'Кольорова Тема',
+
 ];

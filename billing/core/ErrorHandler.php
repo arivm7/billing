@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  *  Project : s1.ri.net.ua
  *  File    : ErrorHandler.php
  *  Path    : billing/core/ErrorHandler.php
@@ -25,7 +25,7 @@ use Monolog\Level;
  */
 class ErrorHandler {
 
-    public const DEBUG                  = 1;            // Выводить ошибки на страницу: 1 -- debug | 0 -- Prodaction
+    public const DEBUG                  = 1;            // Выводить ошибки на страницу: 2 -- Exception | 1 -- Лог файл | 0 -- Prodaction
     public const DUMP_ECHO              = 1;            // Выводить var_dump() ошибки на страницу
     public const DUMP__TO_LOG_FILE      = 1;            // Выводить var_dump() в лог-файл
     public const ERROR_TO_LOG_FILE      = 1;            // Писать ошибки в лог-файл

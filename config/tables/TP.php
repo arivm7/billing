@@ -108,7 +108,7 @@ class TP {
     const TYPE_NA           = 0;    // N/A 	N/A
     const TYPE_ABON         = 1;    // Абон. узел 	1 — Абонентский узел (station/client/router)
     const TYPE_NAT          = 2;    // Маршрутизатор 	2 — Точка доступа, Узел подключения абонентов, упр...
-    const TYPE_AG           = 3;    // Агрегатор 	3 — Агрегатор узлов подключения (WR)
+    const TYPE_AG           = 3;    // Агрегатор 	3 — Aggregation router — маршрутизатор агрегации (собирает трафик от множества абонентов).
     const TYPE_BRIDGE       = 4;    // ТД Мост          4 — Bridge AP. ТД Радиоудлинитель
     const TYPE_CLI_BRIDGE   = 5;    // Абон. Мост 	5 — Client Bridge. Оборудование в режиме Мост на с...
     const TYPE_HOSTIG       = 10;   // Хостинг          10 -- Хостинговая тех. площадка
@@ -116,6 +116,8 @@ class TP {
     const TYPE_MON_PROXI    = 91;   // Прокси мониторинга  100 — Сервер прокси-мониторинга
     const TYPE_BILLIG       = 100;  // Биллинг 	100 — Сервер биллинга
 
+
+    
     const TYPES = [
         self::TYPE_NA => [
             Lang::C_EN => 'N/A',
@@ -123,34 +125,34 @@ class TP {
             Lang::C_UK => 'N/A',
         ],
         self::TYPE_ABON => [
-            Lang::C_EN => 'Subscriber node',
+            Lang::C_EN => 'Subscriber unit (CPE)',
             Lang::C_RU => 'Абонентский узел',
             Lang::C_UK => 'Абонентський вузол',
         ],
         self::TYPE_NAT => [
-            Lang::C_EN => 'Router, NAT',
-            Lang::C_RU => 'Маршрутизатор, NAT',
-            Lang::C_UK => 'Маршрутизатор, NAT',
+            Lang::C_EN => 'Network gateway (NAT router)',
+            Lang::C_RU => 'Маршрутизатор (NAT-шлюз)',
+            Lang::C_UK => 'Маршрутизатор (NAT-шлюз)',
         ],
         self::TYPE_AG => [
-            Lang::C_EN => 'Aggregator',
-            Lang::C_RU => 'Агрегатор',
-            Lang::C_UK => 'Агрегатор',
+            Lang::C_EN => 'Aggregation router',
+            Lang::C_RU => 'Агрегирующий маршрутизатор',
+            Lang::C_UK => 'Агрегуючий маршрутизатор',
         ],
         self::TYPE_BRIDGE => [
-            Lang::C_EN => 'Bridge, access point',
-            Lang::C_RU => 'Мост, точка доступа',
-            Lang::C_UK => 'Міст, точка доступу',
+            Lang::C_EN => 'Bridge / Access point',
+            Lang::C_RU => 'Мост / Точка доступа',
+            Lang::C_UK => 'Міст / Точка доступу',
         ],
         self::TYPE_CLI_BRIDGE => [
-            Lang::C_EN => 'Subscriber bridge',
-            Lang::C_RU => 'Абонентский мост',
-            Lang::C_UK => 'Абонентський міст',
+            Lang::C_EN => 'Client bridge (subscriber bridge)',
+            Lang::C_RU => 'Клиентский мост (абонентский)',
+            Lang::C_UK => 'Клієнтський міст (абонентський)',
         ],
         self::TYPE_HOSTIG => [
-            Lang::C_EN => 'Hosting site',
+            Lang::C_EN => 'Hosting platform',
             Lang::C_RU => 'Хостинговая площадка',
-            Lang::C_UK => 'Хостингова площадка',
+            Lang::C_UK => 'Хостингова платформа',
         ],
         self::TYPE_MONITOR => [
             Lang::C_EN => 'Monitoring system',
@@ -158,9 +160,9 @@ class TP {
             Lang::C_UK => 'Система моніторингу',
         ],
         self::TYPE_MON_PROXI => [
-            Lang::C_EN => 'Monitoring proxy',
-            Lang::C_RU => 'Прокси мониторинга',
-            Lang::C_UK => 'Проксі моніторингу',
+            Lang::C_EN => 'Monitoring proxy node',
+            Lang::C_RU => 'Прокси-узел мониторинга',
+            Lang::C_UK => 'Проксі-вузол моніторингу',
         ],
         self::TYPE_BILLIG => [
             Lang::C_EN => 'Billing system',

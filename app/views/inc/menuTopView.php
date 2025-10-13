@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  *  Project : s1.ri.net.ua
  *  File    : menuTopView.php
  *  Path    : app/views/inc/menuTopView.php
@@ -8,17 +8,18 @@
  *  Created : 20 Sep 2025 20:22:31
  *  License : GPL v3
  *
- *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ * @copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
  */
 
 /**
- * Description of menuTopView.php
+ * Верхняя навигационная панель
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
 
 use app\widgets\Theme\ThemeSelector;
 use billing\core\App;
+use config\Auth;
 use config\tables\Module;
 use config\tables\User;
 use app\widgets\LangSelector\LangSelector;
@@ -27,7 +28,7 @@ Lang::load_inc(__FILE__);
 if (App::$auth->isAuth) {
     $user = $_SESSION[User::SESSION_USER_REC];
 }
-$path=strtolower(($this->route[F_PREFIX] ? $this->route[F_PREFIX] . '/' : "") . $this->route[F_CONTROLLER] . '/' . $this->route[F_ACTION]);
+$path=strtolower('/' . ($this->route[F_PREFIX] ? $this->route[F_PREFIX] . '/' : "") . $this->route[F_CONTROLLER] . '/' . $this->route[F_ACTION]);
 ?>
 <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid align-items-center text-end">
@@ -71,7 +72,7 @@ $path=strtolower(($this->route[F_PREFIX] ? $this->route[F_PREFIX] . '/' : "") . 
                             <div class="btn btn-outline-success btn-sm disabled">@</div>
                             <!--<div class="input-group-text input-group-sm">@</div>-->
                             <span class="form-control form-control-sm" id="authTopForm" title="<?=$user[User::F_NAME_FULL];?>"><?=$user[User::F_NAME_SHORT];?></span>
-                            <form action="/auth/logout" >
+                            <form action="<?=Auth::URI_LOGOUT;?>" method="post">
                                 <button type="submit" class="btn btn-outline-success btn-sm">Logout</button>
                                 <!--<button type="submit" class="input-group-text input-group-sm">Logout</button>-->
                             </form>
@@ -84,10 +85,10 @@ $path=strtolower(($this->route[F_PREFIX] ? $this->route[F_PREFIX] . '/' : "") . 
 <?php else : ?>
             <ul class="nav nav-pills">
                 <li class="nav-item pe-2 d-flex align-items-center">
-                    <a class="btn btn-outline-success btn-sm <?=($path == 'auth/signup' ? "active" : "");?>" href="/auth/signup"><?=__('Register');?></a>
+                    <a class="btn btn-outline-success btn-sm <?=($path == Auth::URI_SIGNUP ? "active" : "");?>" href="<?=Auth::URI_SIGNUP;?>"><?=__('Register');?></a>
                 </li>
                 <li class="nav-item pe-2 d-flex align-items-center">
-                    <a class="btn btn-outline-success btn-sm <?=($path == 'auth/login'  ? "active" : "");?>" href="/auth/login"><?=__('Login');?></a>
+                    <a class="btn btn-outline-success btn-sm <?=($path == Auth::URI_LOGIN  ? "active" : "");?>" href="<?=Auth::URI_LOGIN;?>"><?=__('Login');?></a>
                 </li>
                 <li class="nav-item pe-2"><?php new LangSelector(); ?></li>
                 <li class="nav-item pe-2"><?php new ThemeSelector(); ?></li>

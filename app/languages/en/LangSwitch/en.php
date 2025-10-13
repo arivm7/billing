@@ -1,8 +1,8 @@
 <?php
 /*
  *  Project : s1.ri.net.ua
- *  File    : change.php
- *  Path    : app/languages/en/Language/change.php
+ *  File    : en.php
+ *  Path    : app/languages/en/LangSwitch/en.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
  *  Org     : RI-Network, Kiev, UK
  *  Created : 20 Sep 2025 20:22:31
@@ -12,7 +12,7 @@
  */
 
 /**
- * ru
- * for Language/change
+ * en
+ * for LangSwitch/change
  */
 return [];

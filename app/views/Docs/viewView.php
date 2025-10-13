@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  *  Project : s1.ri.net.ua
  *  File    : viewView.php
  *  Path    : app/views/Docs/viewView.php
@@ -8,7 +8,7 @@
  *  Created : 20 Sep 2025 20:22:31
  *  License : GPL v3
  *
- *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ *  @copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
  */
 
 /**
@@ -20,7 +20,6 @@
 
 use config\tables\Docs;
 use config\tables\Module;
-
 use billing\core\base\Lang;
 
 /**
@@ -28,6 +27,7 @@ use billing\core\base\Lang;
  *                  ключи соответствуют полям таблицы (см. Docs::*).
  * Требуется: Lang::code() -> 'ru' | 'uk' | 'en'
  */
+
 // Текущий язык интерфейса
 $lang = Lang::code();
 
@@ -62,34 +62,34 @@ $isDeleted = (int) ($doc[Docs::F_IS_DELETED] ?? 0);
 
 // Если тело новости хранится с доверенным HTML (из админки и уже очищено),
 // можно вывести без экранирования. Иначе — экранировать.
-$renderTrustedHtml = true;
+$renderTrustedHtml = true; // пока не задействовано
 ?>
 
 <div class="container my-4">
     <div class='d-flex justify-content-between align-items-center'>
         <div>
             <?php if ($doc[Docs::F_IN_VIEW_TITLE]) : ?>
-                <h1 class="h3 mb-0"><?= cleaner_html($title ?: 'Без заголовка') ?></h1>
+                <h1 class="h3 mb-0"><?= cleaner_html($title ?: __('Document without a title')) ?></h1>
             <?php endif; ?>
         </div>
         <div>
             <div class="d-flex flex-wrap gap-2">
                 <?php if ($isDeleted): ?>
-                    <span class="badge bg-danger"><?= __('Удалено'); ?></span>
+                    <span class="badge bg-danger"><?= __('Deleted'); ?></span>
                 <?php endif; ?>
 
                 <?php if ($isVisible): ?>
-                    <span class="badge bg-success"><?= __('Опубликовано'); ?></span>
+                    <span class="badge bg-success"><?= __('Published'); ?></span>
                 <?php else: ?>
-                    <span class="badge bg-secondary"><?= __('Скрыто'); ?></span>
+                    <span class="badge bg-secondary"><?= __('Hidden'); ?></span>
                 <?php endif; ?>
 
                 <?php if ($autoVisible): ?>
-                    <span class="badge bg-info text-dark"><?= __('Автопубликация'); ?></span>
+                    <span class="badge bg-info text-dark"><?= __('Auto-published'); ?></span>
                 <?php endif; ?>
 
                 <?php if ($expTs): ?>
-                    <span class="badge bg-warning text-dark"><?= __('Действует до'); ?> <?= date('d.m.Y H:i', (int) $expTs) ?></span>
+                    <span class="badge bg-warning text-dark"><?= __('Valid until'); ?> <?= date('d.m.Y H:i', (int) $expTs) ?></span>
                 <?php endif; ?>
             </div>
         </div>
@@ -109,13 +109,13 @@ $renderTrustedHtml = true;
 
     <div class='d-flex justify-content-between align-items-center'>
         <div>
-            <?php if (can_edit(Module::MOD_DOCS)) : ?>
+            <?php if (can_edit(module: Module::MOD_DOCS)) : ?>
             <div class="mt-3 d-flex gap-2">
                 <a
-                    href="<?= Docs::URI_EDIT ?>?<?= Docs::F_GET_ID ?>=<?= (int) $doc[Docs::F_ID] ?>"
-                    class="btn btn-primary">✏️ <?= __('Редактировать'); ?>
+                    href="<?= Docs::URI_EDIT ?>/<?= (int) $doc[Docs::F_ID] ?>"
+                    class="btn btn-primary">✏️ <?= __('Edit'); ?>
                 </a>
-                <a href="<?= Docs::URI_LIST ?>" class="btn btn-outline-secondary">← <?= __('К списку'); ?></a>
+                <a href="<?= Docs::URI_LIST ?>" class="btn btn-outline-secondary">← <?= __('Back to list'); ?></a>
             </div>
             <?php endif; ?>
         </div>
@@ -123,11 +123,11 @@ $renderTrustedHtml = true;
             <?php if ($pubTs || $creTs || $modTs): ?>
                 <p class="text-muted small text-end">
                     <?php if ($pubTs): ?>
-                        <?= __('Опубликовано'); ?>: <?= date('d.m.Y H:i', (int) $pubTs) ?>
+                        <?= __('Published'); ?>: <?= date('d.m.Y H:i', (int) $pubTs) ?>
                     <?php else: ?>
-                        <?= __('Создано'); ?>: <?= $creTs ? date('d.m.Y H:i', (int) $creTs) : '-' ?>
+                        <?= __('Created'); ?>: <?= $creTs ? date('d.m.Y H:i', (int) $creTs) : '-' ?>
                     <?php endif; ?>
-                    <?php if ($modTs): ?><br><?= __('Обновлено'); ?>: <?= date('d.m.Y H:i', (int) $modTs) ?><?php endif; ?>
+                    <?php if ($modTs): ?><br><?= __('Updated'); ?>: <?= date('d.m.Y H:i', (int) $modTs) ?><?php endif; ?>
                 </p>
             <?php endif; ?>
         </div>

@@ -17,9 +17,13 @@ namespace app\controllers;
 use billing\core\App;
 use billing\core\base\Lang;
 use billing\core\base\View;
+use billing\core\MsgQueue;
+use billing\core\MsgType;
+use Config\Auth;
 use config\SessionFields;
 use config\tables\Abon;
 use config\tables\Docs;
+use config\tables\Module;
 use config\tables\User;
 use app\models\DocsModel;
 use billing\core\Pagination;
@@ -35,10 +39,15 @@ use DateTime;
  */
 class DocsController extends AppBaseController {
 
-    function indexAction() {
+    public function indexAction() {
+
+        if (!App::isAuth()) {
+            redirect(Auth::URI_LOGIN);
+        }
+
         $pager = new Pagination(
                 sql: "SELECT * FROM `". Docs::TABLE."` WHERE 1 OR `".Docs::F_IS_VISIBLE."`=1 ORDER BY `".Docs::F_DATE_PUBLICATION."` DESC",
-                per_page: 5
+                per_page: 6
         );
         $docs = $pager->get_rows();
 
@@ -48,7 +57,7 @@ class DocsController extends AppBaseController {
         ]);
 
         View::setMeta(
-            title: __("Документы"),
+            title: __('Rilan') . " :: " . __('Documents')
         );
     }
 
@@ -61,7 +70,7 @@ class DocsController extends AppBaseController {
      * @param array $data Данные для подстановки
      * @return string
      */
-    function render_template(string $template, array $data): string {
+    public function render_template(string $template, array $data): string {
         // Обработка блоков FOREACH
         $template = preg_replace_callback(
             '/\{FOREACH\.([A-Z0-9_]+)\}(.*?)\{FOREACH\.END\}/s',
@@ -111,56 +120,13 @@ class DocsController extends AppBaseController {
 
 
 
-    function render_template_(string $template, array $data): string {
-        // Обработка блоков FOREACH
-        $template = preg_replace_callback(
-            '/\{FOREACH\.([A-Z0-9_]+)\}(.*?)\{FOREACH\.END\}/s',
-            function($matches) use ($data) {
-                $arrayKey = $matches[1];
-                $block = $matches[2];
-
-                if (!isset($data[$arrayKey]) || !is_array($data[$arrayKey])) {
-                    return '';
-                }
-
-                $result = '';
-                foreach ($data[$arrayKey] as $row) {
-                    $newData = $data;
-                    $newData[$arrayKey] = $row;  // теперь {ABON.PORT} найдёт $row['PORT']
-                    $result .= $this->render_template($block, $newData);
-                }
-                return $result;
-            },
-            $template
-        );
-
-        // Подстановка одиночных плейсхолдеров
-        $template = preg_replace_callback(
-            '/\{([A-Z0-9_.]+)(?:\|(.*?))?\}/',
-            function($matches) use ($data) {
-                $path = explode('.', $matches[1]);
-                $value = $data;
-                foreach ($path as $key) {
-                    if (is_array($value) && array_key_exists($key, $value)) {
-                        $value = $value[$key];
-                    } else {
-                        $value = null;
-                        break;
-                    }
-                }
-                return ($value === null || $value === '') ? ($matches[2] ?? '') : $value;
-            },
-            $template
-        );
-
-        return $template;
-    }
-
-
-
-
-
-    function untemplate(string $template): string {
+    /**
+     * Компиляция шаблонов в отображаемый документ
+     *
+     * @param string $template Шаблон
+     * @return string
+     */
+    public function untemplate(string $template): string {
         $model = new DocsModel();
         if (App::$auth->isAuth) {
             $my = $_SESSION[User::SESSION_USER_REC];
@@ -194,56 +160,79 @@ class DocsController extends AppBaseController {
     }
 
 
-    function viewAction() {
+
+    public function viewAction() {
         $model = new DocsModel();
-        if (isset($_GET[Docs::F_GET_ID]) &&
+
+        if      (!empty($this->route[F_ALIAS]) &&
+                 is_numeric($this->route[F_ALIAS]) &&
+                 $model->validate_id(table_name: Docs::TABLE, field_id: Docs::F_ID, id_value: (int)$this->route[F_ALIAS]))
+        {
+            $doc_id = (int)$this->route[F_ALIAS];
+        }
+        elseif (isset($_GET[Docs::F_GET_ID]) &&
                 is_numeric($_GET[Docs::F_GET_ID]) &&
                 $model->validate_id(table_name: Docs::TABLE, field_id: Docs::F_ID, id_value: (int)$_GET[Docs::F_GET_ID]))
         {
-            $doc = $model->get_row_by_id(
-                    table_name: Docs::TABLE,
-                    field_id: Docs::F_ID,
-                    id_value: (int)$_GET[Docs::F_GET_ID]
-            );
-
-            /**
-             * Заполнить шаблонные элементы
-             */
-            foreach (Docs::TEMPLATE_FIELDS as $field) {
-                $doc[$field] = $this->untemplate($doc[$field]);
-            }
-
-            $this->setVariables([
-                'doc' => $doc,
-            ]);
-
-            View::setMeta(
-                title: __('Rilan') . " :: " . __("Документы") . " :: " . $doc[Docs::F_TITLES[Lang::code()]],
-                descr: "",
-                keywords: ""
-            );
-
-        } else {
+            $doc_id = (int)$_GET[Docs::F_GET_ID];
+        }
+        else 
+        {
+            MsgQueue::msg(MsgType::ERROR, __('404: Document not specified or not found'));
             redirect();
         }
+
+        $doc = $model->get_row_by_id(
+                table_name: Docs::TABLE,
+                field_id: Docs::F_ID,
+                id_value: $doc_id
+        );
+
+        /**
+         * Заполнить шаблонные элементы
+         */
+        foreach (Docs::TEMPLATE_FIELDS as $field) {
+            $doc[$field] = $this->untemplate($doc[$field]);
+        }
+
+        $this->setVariables([
+            'doc' => $doc,
+        ]);
+
+        View::setMeta(
+            title: __('Rilan') . " :: " . __('Documents') . " :: " . $doc[Docs::F_TITLES[Lang::code()]],
+            descr: cleaner_html(mb_substr($doc[Docs::F_DESCRIPTIONS[Lang::code()]], 0, 200))
+        );
+
     }
 
 
-    function deleteAction() {
+    public function deleteAction() {
         $model = new DocsModel();
         if (isset($_GET[Docs::F_GET_ID]) && $model->validate_id(table_name: Docs::TABLE, field_id: Docs::F_ID, id_value: (int)$_GET[Docs::F_GET_ID])) {
             if ($model->delete_rows_by_field(table: Docs::TABLE, field_id: Docs::F_ID, value_id: (int)$_GET[Docs::F_GET_ID])) {
-                $_SESSION[SessionFields::SUCCESS] = __('Документ удалён');
+                $_SESSION[SessionFields::SUCCESS] = __('The document was deleted');
             } else {
-                $_SESSION[SessionFields::ERROR] = __('Ошибка удаления');
+                $_SESSION[SessionFields::ERROR] = __('Deletion error');
             }
             redirect(Docs::URI_LIST);
         }
         redirect();
     }
 
-    function editAction() {
-        $model = new DocsModel();
+    public function editAction() {
+
+        if (!App::$auth->isAuth) {
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in'));
+            redirect(Auth::URI_LOGIN);
+        }
+
+        if (!can_edit(Module::MOD_DOCS)) {
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('You do not have permission for this action'));
+            redirect();
+        }
+
+
 
         /**
          * Если есть данные формы, то обработать и сохранить
@@ -253,14 +242,31 @@ class DocsController extends AppBaseController {
         }
 
 
-        if (isset($_GET[Docs::F_GET_ID]) &&
+        $model = new DocsModel();
+
+        if      (!empty($this->route[F_ALIAS]) &&
+                 is_numeric($this->route[F_ALIAS]) &&
+                 $model->validate_id(table_name: Docs::TABLE, field_id: Docs::F_ID, id_value: (int)$this->route[F_ALIAS]))
+        {
+            $doc_id = (int)$this->route[F_ALIAS];
+        }
+        elseif (isset($_GET[Docs::F_GET_ID]) &&
                 is_numeric($_GET[Docs::F_GET_ID]) &&
                 $model->validate_id(table_name: Docs::TABLE, field_id: Docs::F_ID, id_value: (int)$_GET[Docs::F_GET_ID]))
+        {
+            $doc_id = (int)$_GET[Docs::F_GET_ID];
+        }
+        else 
+        {
+            $doc_id = null; // создание нового документа
+        }
+
+        if ($doc_id)
         {
             $document = $model->get_row_by_id(
                     table_name: Docs::TABLE,
                     field_id: Docs::F_ID,
-                    id_value: (int)$_GET[Docs::F_GET_ID]
+                    id_value: $doc_id
             );
 
             $this->setVariables([
@@ -268,19 +274,19 @@ class DocsController extends AppBaseController {
             ]);
 
             View::setMeta(
-                title: __('Rilan') . " :: " . __("Редактирование документа") . " :: " . cleaner_html($document[Docs::F_TITLES[Lang::code()]])
+                title: __('Rilan') . " :: " . __('Document Editing') . " :: " . cleaner_html($document[Docs::F_TITLES[Lang::code()]])
             );
         } else {
-            $_SESSION[SessionFields::INFO] = __("Создание нового документа");
+            MsgQueue::msg(MsgType::INFO_AUTO, __('Creating a new document'));
             View::setMeta(
-                title: __('Rilan') . " :: " . __("Создание нового документа")
+                title: __('Rilan') . " :: " . __('Creating a new document')
             );
         }
     }
 
 
 
-    function validate(array $rec): bool {
+    public function validate(array $rec): bool {
 
         Validator::lang(Lang::code());
         $validator = new Validator($rec);
@@ -314,7 +320,7 @@ class DocsController extends AppBaseController {
             }
         }
         if (!$hasText) {
-            $validator->error('texts', __('Необходимо заполнить текст хотя бы на одном языке'));
+            $validator->error('texts', __('It is necessary to fill in the text in at least one language | Необходимо заполнить текст хотя бы на одном языке | Необхідно заповнити текст хоча б на одній мові'));
         }
 
         if(!$validator->validate() || !$hasText) {
@@ -327,7 +333,7 @@ class DocsController extends AppBaseController {
 
 
 
-    function parce_post_rec(array $post_rec): array {
+    public function parce_post_rec(array $post_rec): array {
 
         $model = new DocsModel();
 
@@ -393,7 +399,7 @@ class DocsController extends AppBaseController {
 
 
 
-    function save() {
+    public function save() {
 
         $model = new DocsModel();
 
@@ -422,21 +428,18 @@ class DocsController extends AppBaseController {
             if (isset($docs_rec[Docs::F_ID])) {
                 // обновление
                 $model->update_row_by_id(table: Docs::TABLE, field_id: Docs::F_ID, row: $docs_rec);
-                $model->add_success_info(__('Исправления успешно внесены'));
-                $model->successToSession();
+                MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Corrections have been successfully made'));
                 redirect(Docs::URI_EDIT . "?".Docs::F_GET_ID.'='.$docs_rec[Docs::F_ID]);
             } else {
                 // новая новость
                 $model->insert_row(table: Docs::TABLE, row: $docs_rec);
                 $docs_id = $model->lastInsertId();
-                $model->add_success_info(__('Новая запись %s успешно добавлена', $docs_id));
-                $model->successToSession();
+                MsgQueue::msg(MsgType::SUCCESS_AUTO, __('New %s entry added successfully', $docs_id));
                 redirect(Docs::URI_EDIT . "?".Docs::F_GET_ID.'='.$docs_id);
             }
 
         } else {
-            $model->add_error_info(__('Нет данных'));
-            $model->errorsToSession();
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('No data available'));
         }
         redirect();
     }
