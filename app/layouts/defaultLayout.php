@@ -48,12 +48,15 @@ use billing\core\base\View;
             .min-w-15  { min-width:  15% !important; }
             .min-w-10  { min-width:  10% !important; }
 
+            .w-10 { width: 10% !important; }
+            .w-90 { width: 90% !important; }
+
             /* размер текста */
-            .fs-7  {font-size:0.75rem!important}
-            .fs-8  {font-size:0.5rem!important}
-            .fs-9  {font-size:0.25rem!important}
-            .fs-10 {font-size:0.15rem!important}
-            .fs-11 {font-size:0.1rem!important}
+            .fs-7  {font-size:0.8rem!important}
+            .fs-8  {font-size:0.65rem!important}
+            .fs-9  {font-size:0.5rem!important}
+            .fs-10 {font-size:0.4rem!important}
+            .fs-11 {font-size:0.3rem!important}
 
             /* Лэйаут страницы */
             .my-layout {
@@ -142,7 +145,7 @@ use billing\core\base\View;
                     </div>
 
                     <!-- Блок с копирайтом -->
-                    <div class="text-start small mt-2 mt-sm-0">
+                    <div class="text-start fs-6 mt-2 mt-sm-0">
                         © RI-Network 2006-<?=date('Y');?>.<br>
                         Контакти:<br>
                         <a href="tel:+380983633578">+38 (098) 363-35-78</a>, <a href="tel:+380936480009">+38 (093) 648-00-09</a><br>

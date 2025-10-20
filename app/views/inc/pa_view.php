@@ -31,7 +31,7 @@ Lang::load_inc(__FILE__);
         <div class="card-body">
             <table <?= TABLE_ATTRIBUTES; ?> >
                 <tr>
-                    <td align='right'>AID:</td><td><span class="text text-secondary small"><?= h($item[PA::F_ABON_ID]); ?></span><?= ' | ' . __user(abon_id: $item[PA::F_ABON_ID]) . ' | ' . __abon(abon_id: $item[PA::F_ABON_ID]); ?></td>
+                    <td class="text-end">AID:</td><td><span class="text text-secondary small"><?= h($item[PA::F_ABON_ID]); ?></span><?= ' | ' . __user(abon_id: $item[PA::F_ABON_ID]) . ' | ' . __abon(abon_id: $item[PA::F_ABON_ID]); ?></td>
                 </tr>
                 <tr>
                     <td></td>
@@ -45,9 +45,13 @@ Lang::load_inc(__FILE__);
                                             <?= $item[PA::F_DATE_END] ? date(DATE_FORMAT, $item[PA::F_DATE_END]) : '____-__-__' ?>
                                         </span>
                                     </td>
-                                    <td align='right'>
+                                    <td class="text-end">
                                         <span class="text font-monospace">
-                                            <?= $item[PA::F_CLOSED] ? '<span class="badge bg-secondary">[x]</span>' : '<span class="badge bg-success">[ ]</span>' ?>
+                                            <?php if ($item[PA::F_CLOSED]) : ?>
+                                                <span class='badge bg-secondary' title='<?=__('Период начисления полностью закрыт');?>'>[x]</span>
+                                            <?php else : ?>
+                                                <span class='badge bg-success' title='<?=__('Начисление активно или на паузе');?>'>[ ]</span>
+                                            <?php endif; ?>
                                         </span>
                                     </td>
                                 </tr>

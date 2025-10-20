@@ -27,7 +27,7 @@ require DIR_LIBS . '/form_functions.php';
 ?>
 <div class="container">
     <?php if (App::$auth->isAuth) : ?>
-        <h2 class="fs-3 text-center"><?=__('Abonent personal account');?></h2>
+        <h2 class="fs-3 text-center"><?=$title;?></h2>
         <div class="container-fluid">
 
             <!-- Грлавный список вкладок -->
@@ -38,7 +38,7 @@ require DIR_LIBS . '/form_functions.php';
                 </li>
                 <!-- Вкладка Абонентов -->
                 <li class="nav-item" role="presentation">
-                  <a class="nav-link" data-bs-toggle="tab" href="#tab_abons_<?=$user[User::F_ID];?>" role="tab"><small><?=__('Abonent services');?></small></a>
+                    <a class="nav-link" data-bs-toggle="tab" href="#tab_abons_<?=$user[User::F_ID];?>" role="tab"><small><?=__('Abonent services');?></small></a>
                 </li>
             </ul>
 
@@ -46,36 +46,9 @@ require DIR_LIBS . '/form_functions.php';
 
                 <!-- Контент Вкладки пользователя -->
                 <div class="tab-pane fade show active" id="tab_user_<?=$user[User::F_ID];?>" role="tabpanel">
-                    <!--
-                    < ?php if (can_view(Module::MOD_MY_USER_CARD)) require DIR_INC . '/user_view.php'; ?>
-                    -->
-                    <?php require DIR_INC . '/user_view.php'; ?>
+                    <?php require DIR_INC . '/user_tabs.php'; ?>
                     <hr>
-                    <?php if (can_view([Module::MOD_MY_CONTACTS, Module::MOD_CONTACTS])) : ?>
-                        <h3 class="fs-3 text-center"><?=__('Additional contacts');?></h3>
-                        <div class="container-fluid">
-                            <ul class="nav nav-tabs justify-content-end" id="my_tab_contacts" role="tablist">
-                                <li class="nav-item" role="presentation">
-                                    <a class="nav-link py-1 px-2 active" data-bs-toggle="tab" href="#tab_view_contacts_<?=$user[User::F_ID];?>" role="tab"><small><?=__('View');?></small></a>
-                                </li>
-                                <?php if (can_edit([Module::MOD_MY_CONTACTS, Module::MOD_CONTACTS]) || can_add([Module::MOD_MY_CONTACTS, Module::MOD_CONTACTS])) : ?>
-                                <li class="nav-item" role="presentation">
-                                  <a class="nav-link py-1 px-2" data-bs-toggle="tab" href="#tab_edit_contacts_<?=$user[User::F_ID];?>" role="tab"><small><?=__('Edit');?></small></a>
-                                </li>
-                                <?php endif; ?>
-                            </ul>
-                            <div class="tab-content">
-                                <div class="tab-pane fade show active" id="tab_view_contacts_<?=$user[User::F_ID];?>" role="tabpanel">
-                                    <?php require DIR_INC . '/contacts_view.php'; ?>
-                                </div>
-                                <?php if (can_edit([Module::MOD_MY_CONTACTS, Module::MOD_CONTACTS]) || can_add([Module::MOD_MY_CONTACTS, Module::MOD_CONTACTS])) : ?>
-                                <div class="tab-pane fade" id="tab_edit_contacts_<?=$user[User::F_ID];?>" role="tabpanel">
-                                    <?php require DIR_INC . '/contacts_edit.php'; ?>
-                                </div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    <?php endif; ?>
+                    <?php require DIR_INC . '/contacts_tabs.php'; ?>
 
                     <!--Просмотр предприятий-->
                     <?php if (can_view(Module::MOD_MY_FIRM) && !empty($user[Firm::TABLE])) : ?>

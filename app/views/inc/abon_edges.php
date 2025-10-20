@@ -12,13 +12,14 @@
  */
 
 /**
- * Description of abon_edges.php
+ * Используется в контроллере просмотра списка абонентов AbonController.php,
+ * при формировании списка абонентов,
+ * для отображения остатков на ЛС и границ обслуживания абонента.
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
 
 use app\controllers\AbonController;
-use app\controllers\DutyWarn;
 use config\tables\Abon;
 use config\tables\AbonRest;
 use billing\core\base\Lang;
@@ -47,7 +48,7 @@ $attr_off  = (!$data[Abon::F_DUTY_AUTO_OFF] || is_null($data[AbonRest::F_PREPAYE
 <table class='table table-sm table-bordered table-hover small' style="table-layout: fixed; width: 100pt; max-width: 100%;">
 <tr>
     <td nowrap style="text-align: center;" colspan="2">
-        <font <?=$attr;?> title='<?=__('Остаток на лицевом счету.') . CR . '----' . CR . AbonController::get_description_by_warn($warn);?>'><?=number_format($data[AbonRest::F_REST],2,","," ");?></font>
+        <font <?=$attr;?> title='<?=__('Остаток на лицевом счету.') . CR . '----' . CR . get_description_by_warn($warn);?>'><?=number_format($data[AbonRest::F_REST],2,","," ");?></font>
     </td>
     <td nowrap style="width: 33%; text-align: center;">
         <font color=gray title='<?=__('Количество предоплаченных дней');?>' ><?=$prepayed;?></font>

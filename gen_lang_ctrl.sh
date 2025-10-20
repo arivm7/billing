@@ -1,4 +1,16 @@
 #!/usr/bin/env bash
+#
+# Project : s1.ri.net.ua
+# File    : gen_lang_ctrl.sh
+# Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+# Org     : RI-Network, Kiev, UK
+# Created : 10 Oct 2025 18:30:48
+# License : GPL v3
+#
+# Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+#
+# Обёртка для Генератора языковых словарей для контроллеров gen_lang_ctrl.php
+#
 set -euo pipefail
 
 # Папка для вывода (если не задана)

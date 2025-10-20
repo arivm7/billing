@@ -19,7 +19,7 @@ use billing\core\base\Lang;
 use billing\core\base\View;
 use billing\core\MsgQueue;
 use billing\core\MsgType;
-use Config\Auth;
+use config\Auth;
 use config\SessionFields;
 use config\tables\Abon;
 use config\tables\Docs;

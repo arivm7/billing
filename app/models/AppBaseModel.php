@@ -17,12 +17,14 @@ use billing\core\base\Lang;
 use billing\core\base\Model;
 use config\Icons;
 use config\tables\Module;
+use config\tables\Pay;
 use config\tables\Ppp;
 use config\tables\PppType;
 use config\tables\Price;
 use config\tables\TP;
 use config\tables\TSUserTp;
 use config\tables\User;
+use PAStatus;
 
 require_once DIR_LIBS . '/datetime_functions.php';
 
@@ -43,7 +45,7 @@ class AppBaseModel extends Model
     /**
      * Возвращает запись прайса их кэша $CASHE_PRICE_LIST.
      * Если в кэше записи нет, то записывает туда, а за тем возвращает.
-     * @global type $CASHE_PRICE_LIST
+     * @global array $CASHE_PRICE_LIST
      * @param int $id
      * @return array
      */
@@ -340,14 +342,14 @@ class AppBaseModel extends Model
      *                          В запись этого абонента будут добавлены поля
      * @param string $self_url -- http url указывающий на этот скрипт для формирование html ссылок
      */
-    function update_abon_list_TP(array &$A, string $self_url = null) /* void */ {
+    function update_abon_list_TP(array &$A, string|null $self_url = null) /* void */ {
         if (is_null($self_url)) {
             $self_url = get_http_script(false);
         }
 
         $A['TP'] = array();
         foreach ($A['PA'] as &$PA) {
-            if ($this->get_prices_apply_age($PA) <> PRICES_APPLY_CLOSED) {
+            if (AbonModel::get_price_apply_age($PA) <> PAStatus::CLOSED) {
                 $tp_title = $this->get_tp($PA['net_router_id'])['title'];
                 $A['TP'][$PA['net_router_id']] = [
                     $this->url_tp_mik(tp_id: $PA['net_router_id'], icon_width: 16, icon_height: 16, show_gray: true),
@@ -357,7 +359,7 @@ class AppBaseModel extends Model
             }
         }
         if (count($A['TP']) == 0) {
-            $last = $this->get_last_PA($A['id'], $A['PA']);
+            $last = AbonModel::get_last_PA($A['id'], $A['PA']);
             foreach ($last['off'] as $PA) {
                 $tp_title = $this->get_tp($PA['net_router_id'])['title'];
                 $A['TP'][$PA['net_router_id']] = [
@@ -428,8 +430,9 @@ class AppBaseModel extends Model
 
 
     function url_pay_form(int $id): string {
-        $pay = $this->get_pay_by_id($id);
-        return "<a title='PAY: ". htmlentities(print_r($pay, true))."' href='/ad_abon1_pay.php?edit_pay={$id}' target=_blank ><img src='/img/icon_uah.svg' alt=CALL width=16 height=16 style='".ICON_STYLE."' ></a>";
+        // !!! требуется переписать
+        $pay = $this->get_row_by_id(table_name: Pay::TABLE, id_value: $id, field_id: Pay::F_ID);
+        return "<a title='PAY: ". htmlentities(print_r($pay, true))."' href='/ad_abon1_pay.php?edit_pay={$id}' target=_blank ><img src='/img/icon_uah.svg' alt=CALL width=16 height=16></a>";
     }
 
 

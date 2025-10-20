@@ -11,6 +11,8 @@
  *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
  */
 
+use \billing\core\base\Lang;
+
 define('NA',      -1); // N/A -- Значение не определено
 define('CR', '&#10;');
 
@@ -109,4 +111,68 @@ class MikAbonStatus {
 }
 
 
-define('MAX_COMMENT_LENGTH', 20);
+
+/**
+ * Cтатус для предупреждения абонента
+ * в завиимости от оставшихся предоплаченных дней и статуса услуги
+ */
+enum DutyWarn {
+    case NA;        // "Статус не понятен, этого не должно быть."
+    case ON_PAUSE;  // "Услуга на паузе."
+    case NORMAL;    // "Оплата есть. Услуга подключена."
+    case WARN;      // "Требуется оплата. Услуга подключена"
+    case NEED_OFF;  // "Оплаты давно нет, нужно отключать. Услуга подключена"
+    case INFO;     // "INFO. Услуга подключена"
+}
+
+
+
+/**
+ * Типы сервисов, предоствляемых абонентам
+ */
+enum ServiceType {
+    case INTERNET;
+    case TV;
+    case CCTV; // Видеонаблюдение
+    case OTHER;
+}
+
+
+/**
+ * Массив названий сервисов по языкам
+ */
+class ServiceTitles
+{
+    public static array $MAP = [
+        ServiceType::INTERNET->name => [
+            Lang::C_RU => 'Интернет',
+            Lang::C_UK => 'Інтернет',
+            Lang::C_EN => 'Internet',
+        ],
+        ServiceType::TV->name => [
+            Lang::C_RU => 'Телевидение',
+            Lang::C_UK => 'Телебачення',
+            Lang::C_EN => 'TV',
+        ],
+        ServiceType::CCTV->name => [
+            Lang::C_RU => 'Видеонаблюдение',
+            Lang::C_UK => 'Відеоспостереження',
+            Lang::C_EN => 'CCTV',
+        ],
+        ServiceType::OTHER->name => [
+            Lang::C_RU => 'Подключенная услуга',
+            Lang::C_UK => 'Підключена послуга',
+            Lang::C_EN => 'Connected service',
+        ],
+    ];
+
+    public static function get(ServiceType|string $type, ?string $lang = null): string
+    {
+        $lang = $lang ?? Lang::code();
+        $key  = $type instanceof ServiceType ? $type->name : (string)$type;
+        return self::$MAP[$key][$lang] ?? self::$MAP[$key][Lang::C_EN] ?? '';
+    }
+}
+
+
+// define('MAX_COMMENT_LENGTH', 20);

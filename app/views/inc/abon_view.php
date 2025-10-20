@@ -12,31 +12,102 @@
  */
 
 /**
- * Description of abon_view.php
+ * Карточка абонента
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
 
+use app\controllers\AbonController;
 use config\tables\Abon;
 use config\tables\Module;
+use config\tables\AbonRest;
 use billing\core\base\Lang;
 Lang::load_inc(__FILE__);
 
-/**
- * @var array $abon — массив с данными абонента
- *  Ключи соответствуют названиям колонок таблицы `abons`
- */
-
-/** @var array $abon */
+/** @var array $abon — массив с данными абонента. Ключи соответствуют названиям колонок таблицы `abons` */
 /** @var array $item */
 
 /**
- * Поддержка функции Аккордеона
- * в ней передаваемый элемент $item
+ * Поддержка функции Аккордеона, в ней передаваемый элемент $item
  */
 if (isset($item) && !isset($abon)) {
     $abon = $item;
 }
+
+$rest = $abon[AbonRest::TABLE];
+
+/**
+ * Добавляет в ассоциативный массив записи абонента поля:
+ *   PP30A    -- Активная абонплата за 30 дней
+ *   PP01A    -- Активная абонплата за 1 день
+ *   REST     -- Остаток на лицевом счету
+ *   PREPAYED -- Количество предоплаченных дней
+ */
+update_rest_fields($rest);
+
+/**
+ * Возвращает статус для предупреждения абонента
+ * в зависимости от оставшихся предоплаченных дней
+ */
+$dutyWarn = get_abon_warn_status($rest, $abon);
+
+/**
+ * html-атрибуты статуса абонента
+ */
+$abon_attr = AbonController::attribute_warning[$dutyWarn->name];
+
+
+/**
+ * Формирование отображения предоплаченных дней
+ * - если NULL, то "-"
+ * - если меньше -1095 (3 года), то "<<<" с подсказкой
+ * - если больше +1095 (3 года), то ">>>" с подсказкой
+ * - иначе просто число
+ */
+$prepayed_html = 
+    (is_null($rest[AbonRest::F_PREPAYED])
+        ?   "-"
+        :   ($rest[AbonRest::F_PREPAYED] < -(365*3)
+                ? "<span class='small' title='{$rest[AbonRest::F_PREPAYED]} ".__('дней')."'>&lt;&lt;&lt;</span>"
+                :   ($rest[AbonRest::F_PREPAYED] > (365*3)
+                        ? "<span class='small' title='{$rest[AbonRest::F_PREPAYED]} ".__('дней')."'>&gt;&gt;&gt;</span>"
+                        : $rest[AbonRest::F_PREPAYED]
+                    )
+            )
+    );
+
+/**
+ * Формирование атрибутов для отображения остатков и границ **обслуживания**
+ * - если автоотключение отключено или предоплаченные дни NULL, то серый цвет
+ * - если предоплаченные дни меньше границы предупреждения, то цвет INFO
+ * - если предоплаченные дни меньше границы отключения, то цвет WARNING
+ */
+// $attr_warn = 
+//     (!$abon[Abon::F_DUTY_AUTO_OFF] || is_null($rest[AbonRest::F_PREPAYED])
+//         ? "class='text-secondary'"
+//         : ($abon[Abon::F_DUTY_MAX_WARN] > $rest[AbonRest::F_PREPAYED] ? AbonController::attribute_warning[DutyWarn::INFO->name] : "")
+//     );
+$attr_warn = ($abon[Abon::F_DUTY_MAX_WARN] > $rest[AbonRest::F_PREPAYED] ? AbonController::attribute_warning[DutyWarn::INFO->name] : "");
+
+/**
+ * Формирование атрибута для отображения границы **отключения**
+ * - если автоотключение отключено или предоплаченные дни NULL, то серый цвет
+ * - если предоплаченные дни меньше границы отключения, то цвет WARNING
+ */
+// $attr_off  = 
+//     (!$abon[Abon::F_DUTY_AUTO_OFF] || is_null($rest[AbonRest::F_PREPAYED])
+//         ?   "class='text-secondary'"
+//         :   ( $abon[Abon::F_DUTY_MAX_OFF] > $rest[AbonRest::F_PREPAYED] 
+//                 ? AbonController::attribute_warning[DutyWarn::NEED_OFF->name] 
+//                 : ""
+//             )
+//     );
+$attr_off  = 
+        ( $abon[Abon::F_DUTY_MAX_OFF] > $rest[AbonRest::F_PREPAYED] 
+                ? AbonController::attribute_warning[DutyWarn::NEED_OFF->name] 
+                : ""
+        );
+
 ?>
 <div class="container mt-4">
 
@@ -76,6 +147,39 @@ if (isset($item) && !isset($abon)) {
                     <td><?= date('d.m.Y', $abon[Abon::F_DATE_JOIN]); ?></td>
                 </tr>
                 <?php endif; ?>
+                <?php if ($abon[Abon::F_IS_PAYER]): ?>
+                <!-- Остаток на лицевом счете -->
+                <tr>
+                    <td><strong><?=__('Balance');?>:</strong></td>
+                    <td><span <?=$abon_attr;?> title='<?=__('Остаток на лицевом счету.') . CR . '----' . CR . get_description_by_warn($dutyWarn);?>'><?=number_format($rest[AbonRest::F_REST], 2, ",", " ");?></span></td>
+                </tr>
+                <!-- Количество предоплаченных дней -->
+                <tr>
+                    <td><strong><?=__('Prepaid days');?>:</strong></td>
+                    <td>
+                        <span class='text-secondary' title='<?=__('Количество предоплаченных дней');?>' ><?=$prepayed_html;?></span>
+                    </td>
+                </tr>
+                <!-- Сумарная абонплата за месяц -->
+                <tr>
+                    <td><strong><?=__('Текущая абонплата');?>:</strong></td>
+                    <td>
+                        <span 
+                            <?=($rest[AbonRest::F_SUM_PP30A] ? "" : "class='text-secondary'");?> 
+                            title='<?=__('Сумарная абонплата за месяц, включает подневную и помесячную абонплату');?>' >
+                            <?=number_format(
+                                $rest[AbonRest::F_SUM_PP30A],
+                                (abs($rest[AbonRest::F_SUM_PP30A]) < 1 
+                                            ? 4 
+                                            : (abs($rest[AbonRest::F_SUM_PP30A]) < 10 
+                                                ? 2 
+                                                : 0)),
+                                ",",
+                                " ");?> <span class="text-secondary"><?=__('грн/30 дней');?></span>
+                        </span>
+                    </td>
+                </tr>
+                <?php endif; ?>
             </table>
         </div>
         <div class="card-footer">
@@ -93,23 +197,24 @@ if (isset($item) && !isset($abon)) {
                     <!-- Настройки задолженности -->
                     <?php if ($abon[Abon::F_IS_PAYER]): ?>
                         <div class="row">
-                            <div class="col small text-end font-monospace text-nowrap">
+                            <div class="col text-end font-monospace text-nowrap">
                                 <?=__('Service boundaries');?>:
                             </div>
-                            <div class="col small border text-center font-monospace"  title="<?=__('Number of prepaid days, upon crossing which send warning');?>." >
-                                <?= $abon[Abon::F_DUTY_MAX_WARN] ?>
+                            <div class="col border text-center font-monospace"  title="<?=__('Number of prepaid days, upon crossing which send warning');?>." >
+                                <span <?=$attr_warn;?>><?=$abon[Abon::F_DUTY_MAX_WARN];?></span>
                             </div>
-                            <div class="col small border text-center font-monospace" title="<?=__('Number of prepaid days, upon crossing which disable service');?>." >
-                                <?= $abon[Abon::F_DUTY_MAX_OFF] ?>
+                            <div class="col border text-center font-monospace" title="<?=__('Number of prepaid days, upon crossing which disable service');?>." >
+                                <span <?=$attr_off;?>><?=$abon[Abon::F_DUTY_MAX_OFF];?></span>
                             </div>
-                            <div class="col small border text-center font-monospace" title="<?=__('Automatically disable service');?>." >
-                                <?= $abon[Abon::F_DUTY_AUTO_OFF] ? '[x]' : '[&nbsp;]' ?>
+                            <div class="col border text-center font-monospace" title="<?=__('Automatically disable service');?>." >
+                                <?= $abon[Abon::F_DUTY_AUTO_OFF] ? "[<span class='text-info'>x</span>]" : '[&nbsp;]' ?>
                             </div>
-                            <div class="col small border text-center font-monospace" title="<?=__('Number of waiting days before disabling');?>." >
+                            <div class="col border text-center font-monospace" title="<?=__('Number of waiting days before disabling');?>." >
                                 <?= $abon[Abon::F_DUTY_WAIT_DAYS] ?>
                             </div>
                         </div>
                     <?php endif; ?>
+
                 </div>
             </div>
         </div>

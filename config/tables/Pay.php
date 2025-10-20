@@ -20,16 +20,22 @@ namespace config\tables;
  */
 class Pay {
 
+    /*
+     * URI для пользовательских платежей
+     */
 
+    const URI_PAY = '/pay';
+    
 
     /*
-     * URI для админгистративного управления платежами
+     * URI для административного управления платежами
      */
 
     const URI_ADM_LIST      = '/admin/payments/list';
     const URI_ADM_FORM      = '/admin/payments/form';
     const URI_ADM_DEL       = '/admin/payments/delete';
     const URI_ADM_ACCESS    = '/admin/payments/access';
+
 
     /*
      * URI для личного кабинета абонента

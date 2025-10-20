@@ -17,6 +17,7 @@ use app\models\AuthModel;
 use app\widgets\LangSelector\LangSelector;
 use app\widgets\Theme\ThemeSelector;
 use config\tables\Perm;
+use config\tables\User;
 
 /**
  * Description of App.php
@@ -62,5 +63,16 @@ class App {
         return App::$auth->isAuth;
     }
 
+
+    /**
+     * Обёртка для $_SESSION[User::SESSION_USER_REC][User::F_ID]
+     * @return int|null
+     */
+    static function get_user_id(): int|null {
+        return 
+            App::$auth->isAuth 
+                ? $_SESSION[User::SESSION_USER_REC][User::F_ID]
+                : null;
+    }
 
 }

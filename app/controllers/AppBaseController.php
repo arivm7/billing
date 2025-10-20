@@ -21,7 +21,7 @@ use config\tables\User;
 
 
 /**
- * Description of AppBaseController.php
+ * Базовый контроллер для приложения
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */

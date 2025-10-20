@@ -25,6 +25,12 @@
 		"phpmailer/phpmailer": "^6.10",
 		"vlucas/valitron": "^1.4",
 		"ezyang/htmlpurifier": "^4.18",
-		"imafaz/mikrolink": "^1.0"
-	}
+		"imafaz/mikrolink": "^1.0",
+		"liqpay/liqpay": "^1.4"
+	},
+    "config": {
+        "platform": {
+            "php": "8.2.0"
+        }
+    }
 }

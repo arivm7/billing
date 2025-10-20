@@ -65,6 +65,10 @@ EXEC_SCRIPTS=(
     "$(realpath "$0")"
     "deploy.sh"
     "watch_and_deploy.sh"
+    "add_php_header.sh"
+    "gen_search_unheaded.sh"
+    "gen_lang_ctrl.sh"
+    "gen_lang_dict.sh"
 )
 
 for f in "${EXEC_SCRIPTS[@]}"; do

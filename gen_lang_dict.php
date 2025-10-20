@@ -1,6 +1,6 @@
 #!/usr/bin/env php
 <?php
-/*
+/**
  *  Project : s1.ri.net.ua
  *  File    : gen_lang_dict.php
  *  Path    : gen_lang_dict.php

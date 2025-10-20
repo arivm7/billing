@@ -1,4 +1,22 @@
 <?php
+/**
+ *  Project : s1.ri.net.ua
+ *  File    : AdminUsersController.php
+ *  Path    : app/controllers/admin/AdminUsersController.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 13 Oct 2025 22:38:53
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
+
+/**
+ * Description of AdminUsersController.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
+
 
 
 namespace app\controllers\admin;
@@ -29,10 +47,10 @@ class AdminUsersController extends AdminBaseController {
             'users' => $users,
             'params' => [
                 'pre_align' => true,
-                                     // id    login    password2    password    salt    name_short   name     surname    family    phone_main    do_send_sms    mail_main    do_send_mail    address_invoice    do_send_invoice    jabber_main    jabber_do_send    viber    viber_do_send    telegram    telegram_do_send    prava    creation_uid    creation_date    modified_uid    modified_date    _x_reg_date    reg_user_id    act
-                'col_titles' =>       ["id", "login", "password2", "password", "salt", "name_short", "name", "surname", "family", "phone_main", "do_send_sms", "mail_main", "do_send_mail", "address_invoice", "do_send_invoice", "jabber_main", "jabber_do_send", "viber", "viber_do_send", "telegram", "telegram_do_send", "prava", "creation_uid", "creation_date", "modified_uid", "modified_date", "_x_reg_date", "reg_user_id", "act"],
+                                     // id    login    password2    password    salt    name_short   name     surname    family    phone_main    do_send_sms    mail_main    do_send_mail    address_invoice    do_send_invoice    jabber_main    jabber_do_send    viber    viber_do_send    telegram    telegram_do_send    signal_messenger    signal_do_send    whatsapp    whatsapp_do_send    prava    creation_uid    creation_date    modified_uid    modified_date    act
+                'col_titles' =>       ["id", "login", "password2", "password", "salt", "name_short", "name", "surname", "family", "phone_main", "do_send_sms", "mail_main", "do_send_mail", "address_invoice", "do_send_invoice", "jabber_main", "jabber_do_send", "viber", "viber_do_send", "telegram", "telegram_do_send", "signal_messenger", "signal_do_send", "whatsapp", "whatsapp_do_send", "prava", "creation_uid", "creation_date", "modified_uid", "modified_date", "act"],
                 'child_col_titles' =>  true,
-                'cell_attributes' =>  ["id", "login", "hidden",    "hidden", "hidden", "name_short", "name", "hidden",  "hidden", "phone_main", "do_send_sms", "hidden",    "hidden",       "hidden",          "hidden",          "hidden",      "hidden",        "hidden", "hidden",        "hidden",   "hidden",           "prava", "hidden",       "hidden",        "hidden",       "hidden",        "hidden",      "hidden",      "act"],
+                'cell_attributes' =>  ["id", "login", "hidden",    "hidden", "hidden", "name_short", "name", "hidden",  "hidden", "phone_main", "do_send_sms", "hidden",    "hidden",       "hidden",          "hidden",          "hidden",      "hidden",        "hidden", "hidden",        "hidden",   "hidden",           "hidden",           "hidden",         "hidden",   "hidden",           "prava", "hidden",       "hidden",        "hidden",       "hidden",        "act"],
                 'child_cell_attributes' => true,
             ],
             'pager' => $pager,

@@ -307,7 +307,7 @@ abstract class Model {
      * @param string|null $row_id_by
      * @return array -- результат выборки таблицы
      */
-    function get_rows_by_where(string $table, string|null $where = null, string|int|null $limit = '', string $id_alias="", string $order_by = null, string|null $row_id_by = null): array {
+    function get_rows_by_where(string $table, string|null $where = null, string|int|null $limit = '', string $id_alias="", string|null $order_by = null, string|null $row_id_by = null): array {
         $sql = "SELECT "
                 . "*"
                 . (is_empty($id_alias) ? "" : ", " . self::F_ID . " AS {$id_alias}")

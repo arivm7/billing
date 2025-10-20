@@ -24,6 +24,7 @@ use config\tables\Notify;
 use config\tables\User;
 use config\tables\PA;
 use billing\core\base\View;
+use config\tables\AbonRest;
 
 /**
  * Description of MyController.php
@@ -46,57 +47,73 @@ class MyController extends AppBaseController  {
 
     function indexAction() {
 
-        if (App::$auth->isAuth) {
-            $my = $_SESSION[User::SESSION_USER_REC];
+        if (!App::$auth->isAuth) {
+            redirect(Auth::URI_LOGIN);
+        }
 
-            if (can_use([Module::MOD_MY_CONTACTS, Module::MOD_CONTACTS])) {
-                $my[Contacts::TABLE] = (can_del([Module::MOD_MY_CONTACTS, Module::MOD_CONTACTS])
-                        ? $this->model->get_contacts(user_id: $my[User::F_ID], has_deleted: null)
-                        : $this->model->get_contacts(user_id: $my[User::F_ID], has_deleted: 0));
-            }
+        $my = $_SESSION[User::SESSION_USER_REC];
 
-            if (can_use([Module::MOD_MY_FIRM, Module::MOD_FIRM])) {
-                $my[Firm::TABLE] = $this->model->get_firms($my[User::F_ID]);
-            }
+        /**
+         * Module::MOD_MY_CONTACTS исключил, поскольку дополнительные контакты -- это служебная таблица.
+         * Абоненты могут заполнять свои контакты, в форме пользователя.
+         */
+        if (can_use([Module::MOD_CONTACTS])) {
+            $my[Contacts::TABLE] = (can_del([Module::MOD_CONTACTS])
+                    ? $this->model->get_contacts(user_id: $my[User::F_ID], has_deleted: null)
+                    : $this->model->get_contacts(user_id: $my[User::F_ID], has_deleted: 0));
+        }
 
-            if (can_view(Module::MOD_MY_ABON)) {
-                $my[Abon::TABLE] = $this->model->get_rows_by_where(
-                        table: Abon::TABLE,
-                        where: '('.Abon::F_USER_ID.'='.$my[User::F_ID].')'
-                                . (can_view(Module::MOD_ABON) ? '' : ' AND ('.Abon::F_IS_PAYER.')'),
-                        order_by: Abon::F_DATE_JOIN . ' DESC',
+        if (can_use([Module::MOD_MY_FIRM, Module::MOD_FIRM])) {
+            $my[Firm::TABLE] = $this->model->get_firms($my[User::F_ID]);
+        }
 
-                );
+        if (can_use(Module::MOD_MY_ABON)) {
+            $my[Abon::TABLE] = $this->model->get_rows_by_where(
+                    table: Abon::TABLE,
+                    where: '('.Abon::F_USER_ID.'='.$my[User::F_ID].')'
+                            . (can_view(Module::MOD_ABON) ? '' : ' AND ('.Abon::F_IS_PAYER.')'),
+                    order_by: Abon::F_DATE_JOIN . ' DESC',
+            );
 
-                if (can_view(Module::MOD_MY_PA)) {
-                    foreach ($my[Abon::TABLE] as &$abon) {
+            foreach ($my[Abon::TABLE] as &$abon) {
 
-                        $abon[PA::TABLE] = $this->model->get_pa_by_abon_id($abon[Abon::F_ID]);
+                /**
+                 * Получение остатков по абоненту и сумм активных прайсовых фрагментов
+                 */
+                $abon[AbonRest::TABLE] = $this->model->get_row_by_id(table_name: AbonRest::TABLE, id_value: $abon[Abon::F_ID], field_id: AbonRest::F_ABON_ID);
 
-                        /** Для передачи USER_ID в PA */
-                        foreach ($abon[PA::TABLE] as &$pa_one) {
-                            $pa_one[PA::F_USER_ID] = $my[User::F_ID];
-                        }
+                if (can_use([Module::MOD_MY_PA, Module::MOD_PA])) {
 
+                    /**
+                     * Получение подключенных прайсовых фрагментов
+                     */
+                    $abon[PA::TABLE] = $this->model->get_pa_by_abon_id($abon[Abon::F_ID]);
+
+                    // /** Для передачи USER_ID в PA */
+                    // foreach ($abon[PA::TABLE] as &$pa_one) {
+                    //     $pa_one[PA::F_USER_ID] = $my[User::F_ID];
+                    // }
+
+                    if (can_use([Module::MOD_MY_NOTIFY, Module::MOD_NOTIFY])) {
                         /** Общее количество записей в базе */
                         $abon[Notify::F_COUNT] = $this->model->get_count_by_sql($this->model->get_sql_notify_by_abon_id($abon[Abon::F_ID]));
                         /** Отображаемые записи */
                         $abon[Notify::TABLE] = $this->model->get_notify_by_abon_id($abon[Abon::F_ID], App::$app->get_config('notify_list_limit'));
 
-                        /** Для передачи USER_ID в Notify */
-                        foreach ($abon[Notify::TABLE] as &$notify_one) {
-                            $notify_one[Notify::F_USER_ID] = $my[User::F_ID];
-                        }
+                        // /** Для передачи USER_ID в Notify */
+                        // foreach ($abon[Notify::TABLE] as &$notify_one) {
+                        //     $notify_one[Notify::F_USER_ID] = $my[User::F_ID];
+                        // }
                     }
                 }
             }
 
-            $this->setVariables([
-                'user' => $my,
-            ]);
-        } else {
-            redirect(Auth::URI_LOGIN);
         }
+
+        $this->setVariables([
+            'title'=> __('Abonent personal account'),
+            'user' => $my,
+        ]);
 
         View::setMeta(
             title: __('Rilan') . " :: " . __('Abonent personal account'),

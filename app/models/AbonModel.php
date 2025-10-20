@@ -1,4 +1,4 @@
-<?php
+<?php 
 /*
  *  Project : s1.ri.net.ua
  *  File    : AbonModel.php
@@ -19,15 +19,20 @@ use billing\core\App;
 use config\Icons;
 use config\Mik;
 use config\tables\Abon;
+use config\tables\User;
 use config\tables\Notify;
 use config\tables\Pay;
+use config\tables\Ppp;
 use config\tables\Price;
+use config\tables\TSUserTp;
 use MikAbonStatus;
 use PAStatus;
 use config\SessionFields;
 use config\tables\TP;
 use config\tables\AbonRest;
 use config\tables\PA;
+use ServiceType;
+use billing\core\base\Lang;
 
 /**
  * Description of AbonModel.php
@@ -97,7 +102,7 @@ class AbonModel extends UserModel {
 
 
 
-    function get_tp_list_with_abon(int $abon_id, int|null $closed = null): array {
+    function get_tp_list_with_abon(int $abon_id, int|null $closed = null): array|null {
         if (!$this->validate_id(table_name: Abon::TABLE, field_id: Abon::F_ID, id_value: $abon_id)) { return null; }
         $sql = "SELECT "
                 . "`".PA::F_TP_ID."` "
@@ -138,11 +143,11 @@ class AbonModel extends UserModel {
     /**
      * Возвращает статус прайсового фрагмента, относительно указанной даты
      * Статусы: закрытый, текущий, будущий.
-     * @param  int $price_apply
+     * @param  array $price_apply
      * @param  int $today
-     * @return int -- PRICES_APPLY_FUTURE, PRICES_APPLY_CURRENT, PRICES_APPLY_CLOSED
+     * @return PAStatus -- PRICES_APPLY_FUTURE, PRICES_APPLY_CURRENT, PRICES_APPLY_CLOSED
      */
-    public static function get_price_apply_age(array $price_apply, int $today = NA): \PAStatus {
+    public static function get_price_apply_age(array $price_apply, int $today = NA): PAStatus {
 
         if($today === NA) { $today = TODAY(); } else { $today = get_date($today); }
 //        $yesterday  = mktime(0, 0, 0, month($today), day($today)-1, year($today));
@@ -207,11 +212,11 @@ class AbonModel extends UserModel {
 
     /**
      * Считает стоимость прайсового фрагмента с помощью механизма пормесячной разбивки и точного рассчёта
-     * @param type $price_apply
-     * @param type $today
-     * @return type
+     * @param array $price_apply
+     * @param int $today
+     * @return float
      */
-    public static function get_price_apply_cost_2023($price_apply, $today=NA) { //2023
+    public static function get_price_apply_cost_2023(array $price_apply, int $today=NA): float { //2023
         if($today == NA) { $today = TODAY(); } else { $today = get_date($today); }
         $pa_monthly_parts = self::get_price_apply_cost_per_montch($price_apply, $today);
         $cost = 0;
@@ -465,11 +470,11 @@ class AbonModel extends UserModel {
 
     /**
     * Возвращает активную месячную абонплату
-    * @param type $pricess_apply_list -- все прикрепленные прайсы абонента
-    * @param type $today -- день, который считается "сегодняшним" для определения активности прайса
+    * @param array $pricess_apply_list -- все прикрепленные прайсы абонента
+    * @param int $today -- день, который считается "сегодняшним" для определения активности прайса
     * @return float -- сумма прайсов за месяц
     */
-    public static function get_ppma(array $pricess_apply_list, $today = NA): float {
+    public static function get_ppma(array $pricess_apply_list, int $today = NA): float {
 
        if ($today == NA) { $today = TODAY(); } else { $today = get_date($today); }
 
@@ -513,6 +518,59 @@ class AbonModel extends UserModel {
 
 
     /**
+     * Возвращает активные или последние закрытые прайсовые фрагменты абонента.
+     *
+     * @param int $abon_id
+     * @return array
+     */
+    function get_pa_active_or_last(int $abon_id): array
+    {
+        // 1. Попытка найти активные прайсовые фрагменты
+        $sql_active = "
+            SELECT *
+            FROM `" . PA::TABLE . "`
+            WHERE `" . PA::F_ABON_ID . "` = {$abon_id}
+            AND (`" . PA::F_DATE_END . "` IS NULL OR `" . PA::F_DATE_END . "` = 0)
+            ORDER BY `" . PA::F_ID . "` ASC
+        ";
+
+        // debug($sql_active, '$sql_active');
+
+        $rows = $this->get_rows_by_sql($sql_active);
+
+        // 2. Если активных нет — ищем последние закрытые (по максимальному дню закрытия)
+        if (empty($rows)) {
+            $sql_closed = "
+                SELECT *
+                FROM `" . PA::TABLE . "`
+                WHERE `" . PA::F_ABON_ID . "` = {$abon_id}
+                AND DATE(FROM_UNIXTIME(`" . PA::F_DATE_END . "`)) = (
+                    SELECT DATE(FROM_UNIXTIME(MAX(`" . PA::F_DATE_END . "`)))
+                    FROM `" . PA::TABLE . "`
+                    WHERE `" . PA::F_ABON_ID . "` = {$abon_id}
+                        AND `" . PA::F_DATE_END . "` IS NOT NULL
+                        AND `" . PA::F_DATE_END . "` > 0
+                )
+                ORDER BY `" . PA::F_DATE_END . "` DESC
+            ";
+
+            // debug($sql_closed, '$sql_closed');
+
+            $rows = $this->get_rows_by_sql($sql_closed);
+        }
+        
+
+        // foreach ($rows as &$row) {
+        //     $row[PA::FF_DATE_START_STR] = date('Y-m-d H:i:s', (int)$row[PA::F_DATE_START]);
+        //     $row[PA::FF_DATE_END_STR]   = ($row[PA::F_DATE_START] ? date('Y-m-d H:i:s', (int)$row[PA::F_DATE_END]) : "-");
+        // }
+
+        return $rows ?: [];
+    }
+
+
+
+    /**
      * Список прикрепленных прайсвых фрагментов, включая название прикрепленного прайса
      * @param int $abon_id
      * @return array
@@ -531,6 +589,16 @@ class AbonModel extends UserModel {
                     . "`".PA::TABLE."`.`".PA::F_DATE_START."` DESC";        //  -- потом по убыванию date_start
         return $this->get_rows_by_sql($sql);
     }
+    
+
+    function get_srvice_type_by_pa(array $pa): ServiceType
+    {
+        if ($pa[PA::F_NET_IP_SERVICE]) {
+            return ServiceType::INTERNET;
+        } else {
+            return ServiceType::OTHER;
+        }
+    }
 
 
     function get_abons_by_uid(int $user_id): array {
@@ -541,10 +609,11 @@ class AbonModel extends UserModel {
 
     /**
      * Возвращает список активных прайсовых фрагментов на указанной ТП
-     * @param type $tp_id -- ID ТП
+     * @param int $tp_id -- ID ТП
+     * @param int|null $PA_AGE
      * @return array массив прайсовых фрагментов
      */
-    function get_prices_apply_by_tp(int $tp_id, int|null $PA_AGE = (\PAStatus::CURRENT->value | \PAStatus::CLOSE_TODAY->value)): array {
+    function get_prices_apply_by_tp(int $tp_id, int|null $PA_AGE = (PAStatus::CURRENT->value | PAStatus::CLOSE_TODAY->value)): array {
         $pa_list_raw = $this-> get_rows_by_field(
                             table: PA::TABLE,
                             field_name: PA::F_TP_ID,
@@ -914,19 +983,19 @@ class AbonModel extends UserModel {
         foreach ($pa_list as $pa_id => $pa_item) {
             if ($pa_item['abon_id'] == $abon_id) {
                 switch (self::get_price_apply_age($pa_item)) {
-                    case \PAStatus::FULL_CLOSED:
-                    case \PAStatus::CLOSED:
+                    case PAStatus::FULL_CLOSED:
+                    case PAStatus::CLOSED:
                         if ($pa_item['date_end'] > $last['off_time']) {
                             $last['off_time'] = $pa_item['date_end'];
                         }
                         break;
-                    case \PAStatus::CURRENT:
-                    case \PAStatus::CLOSE_TODAY:
+                    case PAStatus::CURRENT:
+                    case PAStatus::CLOSE_TODAY:
                         if ($pa_item['date_start'] > $last['cur_time']) {
                             $last['cur_time'] = $pa_item['date_start'];
                         }
                         break;
-                    case \PAStatus::FUTURE:
+                    case PAStatus::FUTURE:
                         if ($pa_item['date_start'] > $last['fut_time']) {
                             $last['fut_time'] = $pa_item['date_start'];
                         }
@@ -940,15 +1009,15 @@ class AbonModel extends UserModel {
         foreach ($pa_list as $pa_id => $pa_item) {
             if ($pa_item['abon_id'] == $abon_id) {
                 switch (self::get_price_apply_age($pa_item)) {
-                    case \PAStatus::FULL_CLOSED:
-                    case \PAStatus::CLOSED:
+                    case PAStatus::FULL_CLOSED:
+                    case PAStatus::CLOSED:
                         if ($pa_item['date_end'] == $last['off_time']) { $last['off'][] = $pa_item; }
                         break;
-                    case \PAStatus::CURRENT:
-                    case \PAStatus::CLOSE_TODAY:
+                    case PAStatus::CURRENT:
+                    case PAStatus::CLOSE_TODAY:
                         $last['cur'][] = $pa_item;
                         break;
-                    case \PAStatus::FUTURE:
+                    case PAStatus::FUTURE:
                         $last['fut'][] = $pa_item;
                         break;
                 }
@@ -1018,6 +1087,12 @@ class AbonModel extends UserModel {
     }
 
 
+    function get_abon_rest(int $abon_id): array|null {
+        $rest = $this->get_row_by_id(AbonRest::TABLE, $abon_id, AbonRest::F_ABON_ID);
+        return $rest ?: null;
+    }
+
+
 
     /**
      * Возвращает html строку '[x]' флажка, показывающую является ли абонент или пользователь плательщиком
@@ -1046,7 +1121,30 @@ class AbonModel extends UserModel {
 
 
 
-
+    function get_ppp_my(int|null $active = null, int|null $type_id = null, int|null $abon_payments = null): array {
+        $user_id = $_SESSION[User::SESSION_USER_REC][User::F_ID];
+        $sql = "SELECT 
+                * 
+                FROM 
+                `".Ppp::TABLE."` 
+                WHERE 
+                `".Ppp::F_FIRM_ID."` in 
+                (
+                    SELECT 
+                    `".TP::F_FIRM_ID."` 
+                    FROM `".TP::TABLE."` 
+                    WHERE 
+                    `".TP::F_ID."` in (SELECT `".TSUserTp::F_TP_ID."` FROM `".TSUserTp::TABLE."` WHERE `".TSUserTp::F_USER_ID."`={$user_id})
+                    AND (`".TP::F_STATUS."`=1)
+                    GROUP BY `".TP::F_FIRM_ID."`
+                ) "
+                .(!is_null($active) ? "AND (`active`=$active) " : "")
+                .(!is_null($type_id) ? "AND (`type_id`=$type_id) " : "")
+                .(!is_null($abon_payments) ? "AND (`abon_payments`=$abon_payments) " : "")
+                ."ORDER BY `".Ppp::TABLE."`.`".Ppp::F_TITLE."` ASC";
+        // debug($sql, '$sql');
+        return $this->get_rows_by_sql($sql);
+    }
 
 
 

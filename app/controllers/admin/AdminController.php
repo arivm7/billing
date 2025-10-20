@@ -1,4 +1,22 @@
 <?php
+/**
+ *  Project : s1.ri.net.ua
+ *  File    : AdminController.php
+ *  Path    : app/controllers/admin/AdminController.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 14 Oct 2025 01:45:35
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
+
+/**
+ * Description of AdminController.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
+
 
 
 
@@ -113,9 +131,13 @@ class AdminController extends AdminBaseController {
 
 
 
-    function delete_item($id): bool {
+    function delete_item($id) {
         $db = new MenuModel();
-        $db->delete_rows_by_field(Menu::TABLE, Menu::F_ID, $id);
+        if ($db->delete_rows_by_field(Menu::TABLE, Menu::F_ID, $id)) {
+            MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Элемент успешно удалён'));
+        } else {
+            MsgQueue::msg(MsgType::ERROR, __('Ошибка удаления элемента'));
+        }
         redirect('/admin/admin/menuedit#MENU');
     }
 

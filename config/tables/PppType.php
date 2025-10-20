@@ -60,18 +60,18 @@ class PppType {
      * Поля названий по языкам
      */
     public const F_TITLE = [
-        'uk' => self::F_UK_TITLE,
-        'ru' => self::F_RU_TITLE,
         'en' => self::F_EN_TITLE,
+        'ru' => self::F_RU_TITLE,
+        'uk' => self::F_UK_TITLE,
     ];
 
     /**
      * Поля описаний по языкам
      */
     public const F_DESCR = [
-        'uk' => self::F_UK_DESCR,
-        'ru' => self::F_RU_DESCR,
         'en' => self::F_EN_DESCR,
+        'ru' => self::F_RU_DESCR,
+        'uk' => self::F_UK_DESCR,
     ];
 
 

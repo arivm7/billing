@@ -34,4 +34,8 @@ return [
     'Deliver documents and invoices in paper/digital form' => 'Deliver documents and invoices in paper/digital form',
     'To correspond through this messenger' => 'To correspond through this messenger',
     'Save' => 'Save',
+    'Send' => 'Send',
+    'Deliver' => 'Deliver',
+    'Use' => 'Use',
+
 ];

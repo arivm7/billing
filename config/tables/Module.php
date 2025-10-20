@@ -42,7 +42,7 @@ class Module {
      * в случае изменения номера модуля в базе нужно изменить тут
      *
      */
-    const MOD_USER_CARD     = '';   const MOD_MY_USER_CARD    = 23;
+    const MOD_USER_CARD     = 42;   const MOD_MY_USER_CARD    = 23;
     const MOD_CONTACTS      =  3;   const MOD_MY_CONTACTS     = 24;
     const MOD_ABON          = 28;   const MOD_MY_ABON         = 25;
     const MOD_PA            =  6;   const MOD_MY_PA           = 26;
@@ -56,6 +56,7 @@ class Module {
     const MOD_TP            = 29;
     const MOD_SEARCH        = 36;
     const MOD_WEB_DEBUG     = 39;
+    const MOD_PPP           = 43;
 
 
 

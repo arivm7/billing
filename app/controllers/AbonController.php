@@ -20,7 +20,8 @@ use billing\core\base\View;
 use billing\core\MsgQueue;
 use billing\core\MsgType;
 use billing\core\Pagination;
-use Config\Auth;
+use DutyWarn;
+use config\Auth;
 use config\tables\Abon;
 use config\tables\AbonRest;
 use config\tables\Contacts;
@@ -36,14 +37,7 @@ use config\tables\User;
 require_once DIR_LIBS . '/datetime_functions.php';
 require_once DIR_LIBS . '/compare_functions.php';
 
-enum DutyWarn {
-    case NA;
-    case ON_PAUSE;
-    case NORMAL;
-    case WARN;
-    case NEED_OFF;
-    case INFO;
-}
+
 
 /**
  * Description of AbonController.php
@@ -52,41 +46,7 @@ enum DutyWarn {
  */
 class AbonController extends AppBaseController {
 
-
-    /**
-     * Добавляет в ассоциативный массив записи абонента поля:
-     *   PP30A    -- Активная абонплата за 30 дней
-     *   PP01A    -- Активная абонплата за 1 день
-     *   REST     -- Остаток на лицевом счету
-     *   PREPAYED -- Количество предоплаченных дней
-     * @param array $data -- Ассоциативный массив записи абонента с добюавленными базовыми границами (abon_rest)
-     * @return void
-     */
-    function update_rest_fields(array &$data): void {
-
-        /**
-         * Активная абонплата за 30 дней
-         */
-        $data[AbonRest::F_SUM_PP30A] = floatval($data[AbonRest::F_SUM_PPDA] * 30.0 + $data[AbonRest::F_SUM_PPDA]);
-
-        /**
-         * Активная абонплата за 1 день
-         */
-        $data[AbonRest::F_SUM_PP01A] = floatval($data[AbonRest::F_SUM_PPMA] / 30.0 + $data[AbonRest::F_SUM_PPDA]);
-
-        /**
-         * Остаток на лицевом счету
-         */
-        $data[AbonRest::F_REST] = floatval($data[AbonRest::F_SUM_PAY] - $data[AbonRest::F_SUM_COST]);
-
-        /**
-         * Количество предоплаченных дней
-         */
-        $data[AbonRest::F_PREPAYED] = (cmp_float($data[AbonRest::F_SUM_PP01A], 0) == 0 ? null : intval($data[AbonRest::F_REST] / $data[AbonRest::F_SUM_PP01A]));
-
-    }
-
-
+    
 
     /**
      * Возвращает статус для предупреждения абонента
@@ -135,35 +95,7 @@ class AbonController extends AppBaseController {
     ];
 
 
-
-    public static function get_description_by_warn(DutyWarn $status): string {
-        switch ($status) {
-            case DutyWarn::NA:
-                return __("Статус не понятен, этого не должно быть.");
-                // break;
-            case DutyWarn::ON_PAUSE:
-                return __("Услуга на паузе.");
-                // break;
-            case DutyWarn::NORMAL:
-                return __("Оплата есть. Услуга подключена.");
-                // break;
-            case DutyWarn::WARN:
-                return __("Требуется оплата. %s Услуга подключена", CR);
-                // break;
-            case DutyWarn::NEED_OFF:
-                return __("Оплаты давно нет, нужно отключать. %s Услуга подключена", CR);
-                // break;
-            case DutyWarn::INFO:
-                return __("INFO. %s Услуга подключена", CR);
-                // break;
-            default:
-                return "";
-                // break;
-        }
-    }
-
-
-
+    
     public static function get_html_actions(array &$data): string {
         return  '[&nbsp;+PAY&nbsp;]&nbsp; &nbsp;[&nbsp;PAYS&nbsp;]&nbsp; &nbsp;[&nbsp;SMS&nbsp;]&nbsp; &nbsp;[&nbsp;СФ2&nbsp;]';
     }
@@ -206,10 +138,10 @@ class AbonController extends AppBaseController {
             . "<tr><td valign=top>:::</td><td>{$U1[User::F_NAME_SHORT]} | {$U1[User::F_NAME_FULL]}</td></tr>"
             . "<tr><td valign=top>".($U1['do_send_sms']?CHECK1:CHECK0)."</td><td>{$U1['phone_main']}</td></tr>"
             . ((mb_strlen($U1['mail_main']) > 0) || ($U1['do_send_mail'])
-                    ? "<tr><td valign=top>".get_html_CHECK($U1['do_send_mail'])."</td><td>{$U1['mail_main']}</td></tr>"
+                    ? "<tr><td valign=top>".get_html_CHECK( boolval($U1['do_send_mail']))."</td><td>{$U1['mail_main']}</td></tr>"
                     : "")
             . ((mb_strlen($U1['address_invoice']) > 0) || ($U1['do_send_invoice'])
-                    ? "<tr><td valign=top>".get_html_CHECK($U1['do_send_invoice'])."</td><td>{$U1['address_invoice']}</td></tr>"
+                    ? "<tr><td valign=top>".get_html_CHECK( boolval($U1['do_send_invoice']))."</td><td>{$U1['address_invoice']}</td></tr>"
                     : "")
             . "</table>";
 
@@ -295,7 +227,7 @@ class AbonController extends AppBaseController {
 
         foreach ($rows as $abon) {
 
-            $this->update_rest_fields($abon);
+            update_rest_fields($abon);
 
             $t[] = [
                 'act'     => self::get_html_actions($abon),
@@ -327,6 +259,12 @@ class AbonController extends AppBaseController {
             MsgQueue::msg(MsgType::ERROR, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
             redirect(Auth::URI_LOGIN);
         }
+
+        if (!can_use(Module::MOD_ABON)) {
+            MsgQueue::msg(MsgType::ERROR, __('You do not have permission to work with subscribers | У вас нет прав для работы с абонентами | У вас немає прав для роботи з абонентами'));
+            redirect();
+        }
+
 
         define('ROUTE_NAME', 'abon/list');
 
@@ -819,12 +757,12 @@ class AbonController extends AppBaseController {
                                 paint($A1['PP30A'], color: GREEN, title: "Price Per 30 Days Active \nПрайс за 30 дней Активный")],
                             [paint($A1['duty_max_warn'], title: "Остаток оплаченных дней, \nпри пересечении которого УВЕДОМЛЯТЬ абонента. \nСпособы уведомления берутся из ABON"),
                                 paint($A1['duty_max_off'], title: "Остаток оплаченных дней, \nпри пересечении которого ОТКЛЮЧАТЬ абонента"),
-                                paint(($A1['duty_auto_off'] ? CHECK1 : CHECK0), face: 'monospace', size: -1, title: "[X] -- отключать автоматически \n[_] -- не отключать при уходе в минус.")]
+                                paint(($A1['duty_auto_off'] ? CHECK1 : CHECK0), face: 'monospace', size: "-1", title: "[X] -- отключать автоматически \n[_] -- не отключать при уходе в минус.")]
                                 ],
                                 table_attributes: "width=100% border=0 align='center' cellpadding=3 cellspacing=3",
                                 cell_attributes: ["width=33% align=right", "width=33% align=right", "width=33% align=right"],
-                                bk_fill: 0,
-                                show_header: 0);
+                                bk_fill: false,
+                                show_header: false);
                 $row['TP'] = get_html_table(t: $A1['TP'], show_header: false, bk_fill: false);
 
                 /**
@@ -932,7 +870,7 @@ class AbonController extends AppBaseController {
         $filter_buttons['PAY'] = "<a href=" . make_url(
                         use: $FLAG_ALL & ~$FLAG_URL_SHOW_AB_PAY,
                         flag_field: $FLAG_URL_SHOW_AB_PAY,
-                        value: intval(!$show_ab_pay)
+                        value: strval(intval(!$show_ab_pay))
                 ) . " title='Показать плательщиков.'>" . ($show_ab_pay ? CHECK1 : CHECK0) . "</a>";
         // * Если разрешен показ отключенных абонентов, то отображается выключатель показа активных абонентов
         $filter_buttons['ACT'] = ($show_ab_off && $show_ab_pay ? "<a href="
@@ -1068,6 +1006,12 @@ class AbonController extends AppBaseController {
         $user[Abon::TABLE] = $model->get_rows_by_field(table: Abon::TABLE, field_name: Abon::F_USER_ID, field_value: $user[User::F_ID]);
 
         foreach ($user[Abon::TABLE] as &$abon) {
+
+            /**
+             * Получение остатков по абоненту и сумм активных прайсовых фрагментов
+             */
+            $abon[AbonRest::TABLE] = $model->get_row_by_id(table_name: AbonRest::TABLE, id_value: $abon[Abon::F_ID], field_id: AbonRest::F_ABON_ID);
+
             /**
              * Подгружаем прайсовые фрагенты
              */
@@ -1108,6 +1052,13 @@ class AbonController extends AppBaseController {
             $user[Firm::TABLE] = $model->get_firms($user[User::F_ID]);
         }
 
+        /**
+         * Подключение формы из модуля My
+         * В ней реализовано отображение и редактирование данных пользователя и его абонентов
+         * и всего остального, что связано с пользователем
+         * с учётом прав доступа  
+         */
+        $this->view = '../My/index';
 
         View::setMeta(
                 title: __('Форма данных абонента'),
@@ -1115,6 +1066,7 @@ class AbonController extends AppBaseController {
             );
 
         $this->setVariables([
+            'title'=> __('Карта Пользователя/Абонента'),
             'user' => $user,
         ]);
     }

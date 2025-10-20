@@ -34,4 +34,8 @@ return [
     'Deliver documents and invoices in paper/digital form' => 'Доставлять документы и счета в бумажном/цифровом виде',
     'To correspond through this messenger' => 'Вести переписку через этот мессенджер',
     'Save' => 'Сохранить',
+    'Send' => 'Отправлять',
+    'Deliver' => 'Доставлять',
+    'Use' => 'Использовать',
+
 ];

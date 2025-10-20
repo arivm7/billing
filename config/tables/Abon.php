@@ -21,6 +21,10 @@ namespace config\tables;
 class Abon {
 
     /**
+     * Не определённый абонент
+     */
+    const NA = -1;
+    /**
      * Имя поля с ID, передаваемого в _GET запросе
      */
     const F_GET_ID                  = 'abon_id';

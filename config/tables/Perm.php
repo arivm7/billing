@@ -113,8 +113,7 @@ class Perm {
                 . "FROM " . Abon::TABLE . " "
                 . "WHERE " . Abon::F_USER_ID . " = {$user_id}";
 //        debug($sql, '$sql1');
-        $abon_role = $model->query(sql: $sql, fetchCell: 0);
-
+        $abon_role = (int)$model->query(sql: $sql, fetchCell: 0);
 
         /*
          * Альтернативный select
@@ -137,7 +136,7 @@ class Perm {
                         . ") "
                 . "GROUP BY ".TSRoleModulePerm::F_MODULE_ID.";";
 
-//        debug($sql, '$sql2', die: 0);
+        // debug($sql, '$sql2', die: 1);
         $list = $model->get_rows_by_sql(sql: $sql); // , row_id_by: TSRoleModelePerm::F_MODULE_ID, unset_row_id_by: true
         $permissions = [];
         foreach ($list as $row) {

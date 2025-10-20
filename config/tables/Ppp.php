@@ -20,6 +20,12 @@ namespace config\tables;
  */
 class Ppp {
 
+    const URI_INDEX = "/ppp";
+    const URI_EDIT = "/ppp/edit";
+    const URI_DELETE = "/ppp/delete";
+
+    const POST_REC = "ppp_item";
+
     /**
      * Имя таблицы в базе данных
      */
@@ -30,6 +36,7 @@ class Ppp {
        ========================= */
 
     public const F_ID                      = 'id';                  // ID записи
+    public const F_ORDER_NUM                = 'order_num';          // Порядок сортировки
     public const F_FIRM_ID                 = 'firm_id';             // ID предприятия
     public const F_TITLE                   = 'title';               // Название источника приема платежей
     public const F_OWNER_ID                = 'owner_id';            // ID владельца счета/кассы
@@ -79,15 +86,150 @@ class Ppp {
      * Поля с денежными/комиссионными значениями
      */
     public const F_COMMISSIONS = [
-        self::F_RKO_PERCENT,
-        self::F_RKO_FIXED_PM,
-        self::F_TAX_PERCENT,
-        self::F_TAX_FIXED_PM,
-        self::F_CASHING_COMMISSION,
-        self::F_API_AUTO_RET_COMM,
-        self::F_API_LIQPAY_RET_COMM,
+        /**
+         * Расчетно-кассовое обслуживание счёта, процентное значение
+         */
+        self::F_RKO_PERCENT=>['title'=>[
+            'ru'=>'РКО: процент от платежа',
+            'ua'=>'РКО: відсоток від платежу',
+            'en'=>'RKO: percent of payment',
+        ],'suffix'=>'%'],
+        
+        /**
+         * Расчетно-кассовое обслуживание счёта: фиксированный платеж, грн/мес
+         */
+        self::F_RKO_FIXED_PM=>['title'=>[
+            'ru'=>'РКО: фиксированный платёж / мес',
+            'ua'=>'РКО: фіксований платіж / міс',
+            'en'=>'RKO: fixed payment / month',
+        ],'suffix'=>'грн/мес'],
+
+        /**
+         * Налог, процентное значение
+         */
+        self::F_TAX_PERCENT=>['title'=>[
+            'ru'=>'Налог: процент от платежей',
+            'ua'=>'Податок: відсоток від платежів',
+            'en'=>'Tax: percent of payments',
+        ],'suffix'=>'%'],
+
+        /**
+         * Налог: фиксированный платеж, грн/мес
+         */
+        self::F_TAX_FIXED_PM=>['title'=>[
+            'ru'=>'Налог: фиксированный платёж / мес',
+            'ua'=>'Податок: фіксований платіж / міс',
+            'en'=>'Tax: fixed payment / month',
+        ],'suffix'=>'грн/мес'],
+
+        /**
+         * Комиссия при обналичивании
+         */
+        self::F_CASHING_COMMISSION=>['title'=>[
+            'ru'=>'Комиссия при обналичивании',
+            'ua'=>'Комісія при обналичуванні',
+            'en'=>'Commission for cashing out',
+        ],'suffix'=>'%'],
+
+        /**
+         * Округление комиссии до указанного коэффициента
+         */
+        self::F_API_AUTO_RET_COMM=>['title'=>[
+            'ru'=>'Округление комиссии до указанного коэффициента',
+            'ua'=>'Округлення комісії до вказаного коефіцієнта',
+            'en'=>'Rounding of commission to the specified coefficient',
+        ],'suffix'=>'Koef.'],
+
+        /**
+         * Коэффициент возврата комиссии LiqPay
+         */
+        self::F_API_LIQPAY_RET_COMM=>['title'=>[
+            'ru'=>'Коэффициент возврата комиссии LiqPay',
+            'ua'=>'Коефіцієнт повернення комісії LiqPay',
+            'en'=>'LiqPay Commission Refund Rate',
+        ],'suffix'=>'Koef.'],
     ];
 
+    /**
+     * Список полей-флагов (boolean) для обработки из POST данных
+     */
+    public const FLAGS = [
+        self::F_ACTIVE,
+        self::F_ABON_PAYMENTS,
+        self::F_API_AUTO_PAY_REG,
+    ];
+
+    /**
+     * Список поле с URL адресами, для корректного сохранения в базе
+     */
+    public const URLS = [
+        self::F_API_URL,             // api_url
+        self::F_API_LIQPAY_URL,      // LiqPay URL
+        self::F_API_24PAY_URL,       // URL формы Приват24
+    ];  
+
+    /**
+     * Шаблоны для подстановки в тексты
+     * 
+     * IBAN: {NUMBER}\nОтримувач: {NUMBER_INFO}\nПризначення платежу: За послуги доступу до мережі інтернет, дог. {PORT}
+     * May contain placeholders    {PORT}, {LOGIN}, {SUM} 
+     * Может содержать подстановки {PORT}, {LOGIN}, {SUM}
+     * Може містити підстановки    {PORT}, {LOGIN}, {SUM}
+    */
+
+    const TMPL_NUMBER = 'NUMBER';
+    const TMPL_NUMBER_INFO = 'NUMBER_INFO';
+    const TMPL_PORT = 'PORT';
+    const TMPL_LOGIN = 'LOGIN';
+    const TMPL_SUM = 'SUM';
+
+    public const TEMPLATES = [
+        self::TMPL_NUMBER,
+        self::TMPL_NUMBER_INFO,
+        self::TMPL_PORT,
+        self::TMPL_LOGIN,
+        self::TMPL_SUM,
+    ];
+
+    /**
+     * Заменяет шаблоны вида {NUMBER}, {NUMBER_INFO}, {PORT}, {LOGIN}, {SUM}
+     * на значения из массива $options. Ключи в $options могут быть в верхнем
+     * или нижнем регистре (например: 'NUMBER' или 'number').
+     *
+     * @param string $text    Текст с шаблонами
+     * @param array  $options Ассоциативный массив значений для подстановки
+     * @return string Текст с подставленными значениями
+     */
+    public static function applyTemplates(string $text, array $options = []): string
+    {
+        if ($text === '' || empty(self::TEMPLATES)) {
+            return $text;
+        }
+
+        $replacements = [];
+        foreach (self::TEMPLATES as $token) {
+            $placeholder = '{' . $token . '}';
+
+            if (array_key_exists($token, $options)) {
+                $value = $options[$token];
+            } elseif (array_key_exists(mb_strtolower($token), $options)) {
+                $value = $options[mb_strtolower($token)];
+            } else {
+                $value = '';
+            }
+
+            if (is_array($value) || is_object($value)) {
+                $value = json_encode($value, JSON_UNESCAPED_UNICODE);
+            } else {
+                $value = (string) $value;
+            }
+
+            $replacements[$placeholder] = $value;
+        }
+
+        // mb-safe замена через str_replace (т.к. токены ASCII)
+        return str_replace(array_keys($replacements), array_values($replacements), $text);
+    }
 
 
 }

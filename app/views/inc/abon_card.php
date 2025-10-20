@@ -12,7 +12,11 @@
  */
 
 /**
- * Description of abon_card.php
+ * Карточка абонента с вкладками
+ * Включает в себя: 
+ * - Карточку абонента (abon_view.php)
+ * - Таб прайсовых фрагментов (pa_view.php)
+ * - Таб уведомлений (notify_view.php)
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
@@ -22,11 +26,7 @@ use config\tables\PA;
 use billing\core\base\Lang;
 Lang::load_inc(__FILE__);
 
-/**
- * @var $item -- Поддержка функции Аккордеона в ней передаваемый элемент
- */
-
-/** @var array $item */
+/** @var array $item -- Поддержка функции Аккордеона в ней передаваемый элемент */
 /** @var array $abon */
 
 if (isset($item) && !isset($abon)) { $abon = $item; }
@@ -34,21 +34,26 @@ if (isset($item) && !isset($abon)) { $abon = $item; }
 ?>
 <div class="container-fluid">
     <ul class="nav nav-tabs justify-content-end" id="my_tab_abon_data<?=$abon[Abon::F_ID]?>" role="tablist">
-      <li class="nav-item" role="presentation">
-          <a class="nav-link active" data-bs-toggle="tab" href="#tab_abon_<?=$abon[Abon::F_ID]?>" role="tab"><small><?=__('Abonent connections');?></small></a>
-      </li>
-      <li class="nav-item" role="presentation">
-        <a class="nav-link" data-bs-toggle="tab" href="#tab_pa_<?=$abon[Abon::F_ID]?>" role="tab"><small><?=__('Price charges');?></small></a>
-      </li>
-      <li class="nav-item" role="presentation">
-        <a class="nav-link" data-bs-toggle="tab" href="#tab_notify_<?=$abon[Abon::F_ID]?>" role="tab"><small><?=__('Notifications');?></small></a>
-      </li>
+        <!-- Таб абонентских подключенй -->
+        <li class="nav-item" role="presentation">
+            <a class="nav-link active" data-bs-toggle="tab" href="#tab_abon_<?=$abon[Abon::F_ID]?>" role="tab"><small><?=__('Abonent connections');?></small></a>
+        </li>
+        <!-- Таб прайсовых фрагментов -->
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" data-bs-toggle="tab" href="#tab_pa_<?=$abon[Abon::F_ID]?>" role="tab"><small><?=__('Price charges');?></small></a>
+        </li>
+        <!-- Таб уведомлений -->
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" data-bs-toggle="tab" href="#tab_notify_<?=$abon[Abon::F_ID]?>" role="tab"><small><?=__('Notifications');?></small></a>
+        </li>
     </ul>
 
     <div class="tab-content" id="myTabContent">
+        <!-- Контент вкладки абонентского подключения -->
         <div class="tab-pane fade show active" id="tab_abon_<?=$abon[Abon::F_ID]?>" role="tabpanel">
             <?php require DIR_INC . '/abon_view.php'; ?>
         </div>
+        <!-- Контент вкладки прайсовых фрагментов -->
         <div class="tab-pane fade" id="tab_pa_<?=$abon[Abon::F_ID]?>" role="tabpanel">
             <!-- Перебор подключенных прайсовых фрагментов -->
             <div class="container-fluid mt-4">
@@ -77,6 +82,7 @@ if (isset($item) && !isset($abon)) { $abon = $item; }
             ?>
             </div>
         </div>
+        <!-- Контент вкладки уведомлений -->
         <div class="tab-pane fade" id="tab_notify_<?=$abon[Abon::F_ID]?>" role="tabpanel">
             <div class="container-fluid mt-4">
             <?php require DIR_INC . '/notify_view.php'; ?>

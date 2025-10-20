@@ -21,8 +21,10 @@ use config\SessionFields;
 use config\Sym;
 use config\tables\User;
 use config\tables\Abon;
+use config\tables\AbonRest;
 use billing\core\App;
 
+require_once DIR_LIBS . '/compare_functions.php';
 
 
 /**
@@ -624,6 +626,22 @@ function url_tel(string $phone_number): string {
     return "<a href='tel:$phone_number' rel=nofollow title='Позвонить по номеру $phone_number' target=_blank><img src=". Icons::SRC_ICON_PHONE." alt=CALL width=16 height=16></a>";
 }
 
+/**
+ * Заменяет все номера телефонов в тексте на HTML-ссылки tel:
+ *
+ * @param string $text Текст, содержащий телефоны
+ * @return string Текст с HTML-ссылками
+ */
+function url_tel_all(string $text): string {
+    // Регекс телефонов в формате +XXXXXXXXXXXX
+    $pattern = '/\+\d{12,14}/';
+
+    // Заменяем каждый номер на ссылку
+    return preg_replace_callback($pattern, function($matches) {
+        $number = $matches[0];
+        return '<a href="tel:' . h($number) . '">' . h($number) . '</a>';
+    }, $text);
+}
 
 
 /**
@@ -827,11 +845,33 @@ function redirect_to(string $host = URL_HOST, string $path = "/") {
 
 
 
-function redirect(string | false $url = false) {
+function redirect_(string | false $url = false) {
     if ($url) {
         $redirect = $url;
     } else {
         $redirect = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : "/";
+    }
+    header("Location: {$redirect}");
+    exit;
+}
+
+
+
+function redirect(string | false $url = false) {
+    if ($url) {
+        $redirect = $url;
+    } else {
+        // Получаем текущий URL и реферер
+        $current_url = $_SERVER['REQUEST_URI'] ?? '/';
+        $referer = $_SERVER['HTTP_REFERER'] ?? '/';
+        
+        // Если реферер совпадает с текущим URL или реферер отсутствует,
+        // перенаправляем на главную
+        if (parse_url($referer, PHP_URL_PATH) === parse_url($current_url, PHP_URL_PATH)) {
+            $redirect = '/';
+        } else {
+            $redirect = $referer;
+        }
     }
     header("Location: {$redirect}");
     exit;
@@ -970,7 +1010,7 @@ function get_uri(array $excludes = null): string {
  * @param string|null $default -- значение "по умолчанию" если в словаре нет записи
  * @return string
  */
-function  __(string $key, mixed $param = null, string|null $default = null): string {
+function  __(string $key, $param = null, string|null $default = null): string {
     return \billing\core\base\Lang::get(key: $key, param: $param, default: $default);
 }
 
@@ -1151,6 +1191,115 @@ function get_html_pa_status_badge(PAStatus $status, ?array $messages = null): st
     }
 
 
+}
+
+
+
+/**
+ * Добавляет в ассоциативный массив записи поля:
+ *   F_SUM_PP30A    -- Активная абонплата за 30 дней
+ *   F_SUM_PP01A    -- Активная абонплата за 1 день
+ *   F_REST         -- Остаток на лицевом счету
+ *   F_PREPAYED     -- Количество предоплаченных дней
+ * @param array $rest -- Ассоциативный массив записи абонента с добавленными базовыми границами (abon_rest)
+ * @return void
+ */
+function update_rest_fields(array &$rest): void {
+
+    /**
+     * Активная абонплата за 30 дней
+     */
+    $rest[AbonRest::F_SUM_PP30A] = floatval($rest[AbonRest::F_SUM_PPDA] * 30.0 + $rest[AbonRest::F_SUM_PPMA]);
+
+    /**
+     * Активная абонплата за 1 день
+     */
+    $rest[AbonRest::F_SUM_PP01A] = floatval($rest[AbonRest::F_SUM_PPMA] / 30.0 + $rest[AbonRest::F_SUM_PPDA]);
+
+    /**
+     * Остаток на лицевом счету
+     */
+    $rest[AbonRest::F_REST] = floatval($rest[AbonRest::F_SUM_PAY] - $rest[AbonRest::F_SUM_COST]);
+
+    /**
+     * Количество предоплаченных дней
+     */
+    $rest[AbonRest::F_PREPAYED] = (cmp_float($rest[AbonRest::F_SUM_PP01A], 0) == 0 ? 0 : intval($rest[AbonRest::F_REST] / $rest[AbonRest::F_SUM_PP01A]));
+
+    /**
+     * Рекомендуемая к оплате сумма
+     */
+    $rest[AbonRest::F_AMOUNT] = 
+        (
+            $rest[AbonRest::F_PREPAYED] >= 0
+                ? round(floatval($rest[AbonRest::F_SUM_PP01A] * days_of_month()), -1, PHP_ROUND_HALF_UP) // округление до 10-ти
+                : round(floatval($rest[AbonRest::F_SUM_PP01A] * days_of_month()) - $rest[AbonRest::F_REST], -1, PHP_ROUND_HALF_UP) // округление до 10-ти
+        );
+}
+
+
+
+/**
+ * Возвращает статус для предупреждения абонента
+ * в зависимости от оставшихся предоплаченных дней
+ * @param array $rest -- Ассоциативный масив записи остатков и границ обслуживания абонента
+ * @param array $abon -- Ассоциативный масив записи абонента
+ * @return DutyWarn -- статус предупреждения абонента
+ */
+function get_abon_warn_status(array $rest, array $abon): DutyWarn {
+    if  (
+            !isset($rest[AbonRest::F_PREPAYED]) || !isset($rest[AbonRest::F_SUM_PP30A]) || 
+            !isset($rest[AbonRest::F_SUM_PP01A]) || !isset($rest[AbonRest::F_REST])
+        ) 
+    {
+        update_rest_fields($rest);
+    }
+
+    switch (true) {
+        case (is_null($rest[AbonRest::F_PREPAYED])):
+            return DutyWarn::ON_PAUSE;
+            // break;
+        case ($rest[AbonRest::F_PREPAYED] > $abon[Abon::F_DUTY_MAX_WARN]):
+            return DutyWarn::NORMAL;
+            // break;
+        case (($rest[AbonRest::F_PREPAYED] <= $abon[Abon::F_DUTY_MAX_WARN]) && ($rest[AbonRest::F_PREPAYED] > $abon[Abon::F_DUTY_MAX_OFF])):
+            return DutyWarn::WARN;
+            // break;
+        case ($rest[AbonRest::F_PREPAYED] <= $abon[Abon::F_DUTY_MAX_OFF]):
+            return DutyWarn::NEED_OFF;
+            // break;
+        default:
+            return DutyWarn::NA;
+            // break;
+    }
+}
+
+
+
+function get_description_by_warn(DutyWarn $status): string {
+    switch ($status) {
+        case DutyWarn::NA:
+            return __("Статус не понятен, этого не должно быть.");
+            // break;
+        case DutyWarn::ON_PAUSE:
+            return __("Услуга на паузе.");
+            // break;
+        case DutyWarn::NORMAL:
+            return __("Оплата есть. Услуга подключена.");
+            // break;
+        case DutyWarn::WARN:
+            return __("Требуется оплата. %s Услуга подключена", CR);
+            // break;
+        case DutyWarn::NEED_OFF:
+            return __("Оплаты давно нет, нужно отключать. %s Услуга подключена", CR);
+            // break;
+        case DutyWarn::INFO:
+            return __("INFO. %s Услуга подключена", CR);
+            // break;
+        default:
+            return "";
+            // break;
+    }
 }
 
 
