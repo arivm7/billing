@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : ApiController.php
  *  Path    : app/controllers/ApiController.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -24,7 +24,7 @@ use app\models\AppBaseModel;
 use billing\core\base\View;
 use billing\core\MsgQueue;
 use billing\core\MsgType;
-use config\Api;
+use billing\core\Api;
 use config\Icons;
 use config\Mik;
 use config\tables\PA;
@@ -55,12 +55,12 @@ class ApiController extends AppBaseController {
 
     /**
      * Сборка выходной таблицы прайсовых фрагментов PRICES_APPLY из биллинга для просмотра и управления
-     * @param type $bil_pa_list
-     * @param type $mik_ip_addresses
-     * @param type $mik_abon_list
-     * @param type $mik_nat_list
-     * @param type $mik_trusted_list
-     * @param type $mik_arp_list
+     * @param array $bil_pa_list
+     * @param array $mik_ip_addresses
+     * @param array $mik_abon_list
+     * @param array $mik_nat_list
+     * @param array $mik_trusted_list
+     * @param array $mik_arp_list
      * @return array
      */
     function make_pa_out(array &$bill_tables, array &$mik_tables, int $tp_id): array {

@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : MyController.php
  *  Path    : app/controllers/MyController.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -81,6 +81,7 @@ class MyController extends AppBaseController  {
                  * Получение остатков по абоненту и сумм активных прайсовых фрагментов
                  */
                 $abon[AbonRest::TABLE] = $this->model->get_row_by_id(table_name: AbonRest::TABLE, id_value: $abon[Abon::F_ID], field_id: AbonRest::F_ABON_ID);
+                update_rest_fields($abon[AbonRest::TABLE]);
 
                 if (can_use([Module::MOD_MY_PA, Module::MOD_PA])) {
 

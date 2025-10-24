@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : PhoneTools.php
  *  Path    : billing/core/PhoneTools.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7

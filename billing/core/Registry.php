@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : Registry.php
  *  Path    : billing/core/Registry.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -81,8 +81,8 @@ class Registry {
         if (isset(self::$config[$name])) {
             return self::$config[$name];
         }
-        throw new \Exception("Не верный config-ключ [{$name}] ");
-//        return null;
+        throw new Exception("Не верный config-ключ [{$name}] ");
+//        return nx ull;
     }
 
 

@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : functions.php
  *  Path    : billing/libs/functions.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -25,6 +25,7 @@ use config\tables\AbonRest;
 use billing\core\App;
 
 require_once DIR_LIBS . '/compare_functions.php';
+require_once DIR_LIBS . '/billing_functions.php';
 
 
 /**
@@ -158,7 +159,7 @@ function debug(mixed $value, string $comment = '', DebugView $debug_view = Debug
 
 
 
-function debug_msg(string $text, string $color = null): void
+function debug_msg(string $text, string|null $color = null): void
 {
     echo (is_null($color) ? "" : "<font color=$color>") . str_replace("\n", "<br>", $text) . (is_null($color) ? "<br>" : "</font>");
 }
@@ -230,24 +231,24 @@ function get_aligned_table(array|null $table): array|null {
  */
 function get_html_table(
         array|null  $t,
-        bool   $pre_align = false,      // Предварительное выравнивание таблицы по ширине
-        string $table_attributes = TABLE_ATTRIBUTES,
-        string $caption = null,
-        array  $col_titles = null,
-        bool   $child_col_titles = false,
-        array  $cell_attributes = null,
-        bool   $child_cell_attributes = false,
-        array  $cell_format_valuues = null,
-        bool   $show_header = true,
-        bool   $show_key = false,
-        bool   $show_No = false,
-        string $obj_id = null,
-        bool   $hidden = false,
-        bool   $bk_fill = false,
-        string $bk_color_title = null,
-        string $bk_color1 = COLOR1_VALUE,
-        string $bk_color2 = COLOR2_VALUE,
-        string $anchor = null           // установка якоря для #anchor (<a name={$anchor}></a>)
+        bool        $pre_align = false,      // Предварительное выравнивание таблицы по ширине
+        string      $table_attributes = TABLE_ATTRIBUTES,
+        string|null $caption = null,
+        array|null  $col_titles = null,
+        bool        $child_col_titles = false,
+        array|null  $cell_attributes = null,
+        bool        $child_cell_attributes = false,
+        array|null  $cell_format_valuues = null,
+        bool        $show_header = true,
+        bool        $show_key = false,
+        bool        $show_No = false,
+        string|null $obj_id = null,
+        bool        $hidden = false,
+        bool        $bk_fill = false,
+        string|null $bk_color_title = null,
+        string      $bk_color1 = COLOR1_VALUE,
+        string      $bk_color2 = COLOR2_VALUE,
+        string|null $anchor = null           // установка якоря для #anchor (<a name={$anchor}></a>)
         ): string {
     global $I_COLOR_STEP;
     if (is_null($t)) { $t = []; }
@@ -567,7 +568,7 @@ function paint(
         string|null $size=null,
         bool        $b=false,
         bool        $u=false,
-        string      $face=null,
+        string|null $face=null,
         bool        $span=false
         ): string {
     if (is_null($s)) { return ""; }
@@ -964,7 +965,7 @@ function sort_assoc_by_field(array &$array, string $field, bool $asc = true): vo
  * пагинации (?page=2, ?page=3 и т.д.), не дублируя параметр page.
  * @return string
  */
-function get_uri(array $excludes = null): string {
+function get_uri(array $excludes = []): string {
     if (!$excludes) {
         return $_SERVER['REQUEST_URI'];
     }
@@ -1027,12 +1028,12 @@ function __L(): string {
 
 
 /**
- * Обёртка для AbonModel->get_price_apply_age();
+ * Обёртка для get_price_apply_age();
  * @param array $pa
  * @return PAStatus
  */
 function __pa_age(array $pa): PAStatus {
-    return AbonModel::get_price_apply_age(price_apply: $pa);
+    return get_price_apply_age(price_apply: $pa);
 }
 
 
@@ -1083,7 +1084,7 @@ function __user(?int $user_id = null, ?int $abon_id = null, string $field = User
  * @param string $field
  * @return string
  */
-function __abon(int $abon_id = null, string $field = Abon::F_ADDRESS): string {
+function __abon(int|null $abon_id = null, string $field = Abon::F_ADDRESS): string {
     $model = new AbonModel();
     return $model->get_abon($abon_id)[$field];
 }
@@ -1093,7 +1094,7 @@ function __abon(int $abon_id = null, string $field = Abon::F_ADDRESS): string {
 const MSG_HAS_ERROR   = 1;
 const MSG_HAS_SUCCESS = 2;
 
-function msg_to_session(string|array $msg = null, int $status = MSG_HAS_ERROR): void {
+function msg_to_session(string|array|null $msg = null, int $status = MSG_HAS_ERROR): void {
     if (is_array($msg)) {
         $s  = "<ul>";
         foreach ($msg as $value) {
@@ -1120,122 +1121,75 @@ function msg_to_session(string|array $msg = null, int $status = MSG_HAS_ERROR): 
 }
 
 
-function get_html_pa_status_attr(PAStatus $status): string {
+// function get_html_pa_status_attr(PAStatus $status): string {
 
-    // bootstrap 5
-    // "<span class='badge rounded-pill text-bg-primary'>Primary</span>"
-    // "<span class='badge rounded-pill text-bg-secondary'>Secondary</span>"
-    // "<span class='badge rounded-pill text-bg-success'>Success</span>"
-    // "<span class='badge rounded-pill text-bg-danger'>Danger</span>"
-    // "<span class='badge rounded-pill text-bg-warning'>Warning</span>"
-    // "<span class='badge rounded-pill text-bg-info'>Info</span>"
-    // "<span class='badge rounded-pill text-bg-light'>Light</span>"
-    // "<span class='badge rounded-pill text-bg-dark'>Dark</span>"
+//     // bootstrap 5
+//     // "<span class='badge rounded-pill text-bg-primary'>Primary</span>"
+//     // "<span class='badge rounded-pill text-bg-secondary'>Secondary</span>"
+//     // "<span class='badge rounded-pill text-bg-success'>Success</span>"
+//     // "<span class='badge rounded-pill text-bg-danger'>Danger</span>"
+//     // "<span class='badge rounded-pill text-bg-warning'>Warning</span>"
+//     // "<span class='badge rounded-pill text-bg-info'>Info</span>"
+//     // "<span class='badge rounded-pill text-bg-light'>Light</span>"
+//     // "<span class='badge rounded-pill text-bg-dark'>Dark</span>"
 
-    switch ($status) {
-        case \PAStatus::FUTURE:
-            return "class='badge rounded-pill text-bg-secondary'";
-            //break;
-        case \PAStatus::CURRENT:
-            return "class='badge rounded-pill text-bg-success'";
-            //break;
-        case \PAStatus::CLOSE_TODAY:
-            return "class='badge rounded-pill text-bg-warning'";
-            //break;
-        case \PAStatus::CLOSED:
-            return "class='badge rounded-pill text-bg-secondary'";
-            //break;
-        case \PAStatus::FULL_CLOSED:
-            return "class='badge rounded-pill text-bg-secondary'";
-            //break;
-        default:
-            return "class='badge rounded-pill text-bg-danger'";
-            //break;
-    }
-}
-
-
-
-function get_html_pa_status_badge(PAStatus $status, ?array $messages = null): string
-{
-
-    if (!$messages) {
-        $messages = [
-            \PAStatus::FUTURE->name      => __('Будущий'),
-            \PAStatus::CURRENT->name     => __('Текущий'),
-            \PAStatus::CLOSE_TODAY->name => __('На паузе сегодня'),
-            \PAStatus::CLOSED->name      => __('Пауза'),
-            \PAStatus::FULL_CLOSED->name => __('Закрыт'),
-        ];
-    }
-
-    switch ($status) {
-        case \PAStatus::FUTURE:
-            return "<span ".get_html_pa_status_attr($status).">{$messages[PAStatus::FUTURE->name]}</span>";
-            //break;
-        case \PAStatus::CURRENT:
-            return "<span ".get_html_pa_status_attr($status).">{$messages[PAStatus::CURRENT->name]}</span>";
-            //break;
-        case \PAStatus::CLOSE_TODAY:
-            return "<span ".get_html_pa_status_attr($status).">{$messages[PAStatus::CLOSE_TODAY->name]}</span>";
-            //break;
-        case \PAStatus::CLOSED:
-            return "<span ".get_html_pa_status_attr($status).">{$messages[PAStatus::CLOSED->name]}</span>";
-            //break;
-        case \PAStatus::FULL_CLOSED:
-            return "<span ".get_html_pa_status_attr($status).">{$messages[PAStatus::FULL_CLOSED->name]}</span>";
-            //break;
-        default:
-            return "<span ".get_html_pa_status_attr($status).">ERROR</span>";
-            //break;
-    }
-
-
-}
+//     switch ($status) {
+//         case \PAStatus::FUTURE:
+//             return "class='badge rounded-pill text-bg-secondary'";
+//             //break;
+//         case \PAStatus::CURRENT:
+//             return "class='badge rounded-pill text-bg-success'";
+//             //break;
+//         case \PAStatus::PAUSE_TODAY:
+//             return "class='badge rounded-pill text-bg-warning'";
+//             //break;
+//         case \PAStatus::PAUSE:
+//             return "class='badge rounded-pill text-bg-secondary'";
+//             //break;
+//         case \PAStatus::CLOSED:
+//             return "class='badge rounded-pill text-bg-secondary'";
+//             //break;
+//         default:
+//             return "class='badge rounded-pill text-bg-danger'";
+//             //break;
+//     }
+// }
 
 
 
-/**
- * Добавляет в ассоциативный массив записи поля:
- *   F_SUM_PP30A    -- Активная абонплата за 30 дней
- *   F_SUM_PP01A    -- Активная абонплата за 1 день
- *   F_REST         -- Остаток на лицевом счету
- *   F_PREPAYED     -- Количество предоплаченных дней
- * @param array $rest -- Ассоциативный массив записи абонента с добавленными базовыми границами (abon_rest)
- * @return void
- */
-function update_rest_fields(array &$rest): void {
+// function get_html_pa_status_badge(PAStatus $status, ?array $messages = null): string
+// {
+//     if (!$messages) {
+//         $messages = [
+//             \PAStatus::FUTURE->name      => __('Будущий'),
+//             \PAStatus::CURRENT->name     => __('Текущий'),
+//             \PAStatus::PAUSE_TODAY->name => __('На паузе сегодня'),
+//             \PAStatus::PAUSE->name      => __('Пауза'),
+//             \PAStatus::CLOSED->name => __('Закрыт'),
+//         ];
+//     }
+//     switch ($status) {
+//         case \PAStatus::FUTURE:
+//             return "<span ".get_html_pa_status_attr($status).">{$messages[PAStatus::FUTURE->name]}</span>";
+//             //break;
+//         case \PAStatus::CURRENT:
+//             return "<span ".get_html_pa_status_attr($status).">{$messages[PAStatus::CURRENT->name]}</span>";
+//             //break;
+//         case \PAStatus::PAUSE_TODAY:
+//             return "<span ".get_html_pa_status_attr($status).">{$messages[PAStatus::PAUSE_TODAY->name]}</span>";
+//             //break;
+//         case \PAStatus::PAUSE:
+//             return "<span ".get_html_pa_status_attr($status).">{$messages[PAStatus::PAUSE->name]}</span>";
+//             //break;
+//         case \PAStatus::CLOSED:
+//             return "<span ".get_html_pa_status_attr($status).">{$messages[PAStatus::CLOSED->name]}</span>";
+//             //break;
+//         default:
+//             return "<span ".get_html_pa_status_attr($status).">ERROR</span>";
+//             //break;
+//     }
+// }
 
-    /**
-     * Активная абонплата за 30 дней
-     */
-    $rest[AbonRest::F_SUM_PP30A] = floatval($rest[AbonRest::F_SUM_PPDA] * 30.0 + $rest[AbonRest::F_SUM_PPMA]);
-
-    /**
-     * Активная абонплата за 1 день
-     */
-    $rest[AbonRest::F_SUM_PP01A] = floatval($rest[AbonRest::F_SUM_PPMA] / 30.0 + $rest[AbonRest::F_SUM_PPDA]);
-
-    /**
-     * Остаток на лицевом счету
-     */
-    $rest[AbonRest::F_REST] = floatval($rest[AbonRest::F_SUM_PAY] - $rest[AbonRest::F_SUM_COST]);
-
-    /**
-     * Количество предоплаченных дней
-     */
-    $rest[AbonRest::F_PREPAYED] = (cmp_float($rest[AbonRest::F_SUM_PP01A], 0) == 0 ? 0 : intval($rest[AbonRest::F_REST] / $rest[AbonRest::F_SUM_PP01A]));
-
-    /**
-     * Рекомендуемая к оплате сумма
-     */
-    $rest[AbonRest::F_AMOUNT] = 
-        (
-            $rest[AbonRest::F_PREPAYED] >= 0
-                ? round(floatval($rest[AbonRest::F_SUM_PP01A] * days_of_month()), -1, PHP_ROUND_HALF_UP) // округление до 10-ти
-                : round(floatval($rest[AbonRest::F_SUM_PP01A] * days_of_month()) - $rest[AbonRest::F_REST], -1, PHP_ROUND_HALF_UP) // округление до 10-ти
-        );
-}
 
 
 
@@ -1311,7 +1265,7 @@ function get_description_by_warn(DutyWarn $status): string {
  * @param string $attributes
  * @return string
  */
-function get_html_content_left_right_(string|null $left, string|null $right, string $attributes = null): string {
+function get_html_content_left_right_(string|null $left, string|null $right, string $attributes = ''): string {
     return  "<div ".($attributes ?: "")." style='display: flex; justify-content: space-between; align-items: center;'>"
                 . "<div>{$left}</div>"
                 . "<div>{$right}</div>"
@@ -1690,10 +1644,10 @@ define("SIGN_PLUS",  +1);
 
 /**
  * Возвращает знак числа
- * @param type $value
- * @return -1 или 0 или 1 (SIGN_MINUS, SIGN_NUL, SIGN_PLUS)
+ * @param int|float $value
+ * @return int -1 или 0 или 1 (SIGN_MINUS, SIGN_NUL, SIGN_PLUS)
  */
-function sign($value) {
+function sign(int|float $value): int {
     return (($value < 0)
             ? SIGN_MINUS
             : (($value > 0)
@@ -1771,7 +1725,6 @@ function is_ip_net(string|null $ip_net) {
             }
         }
     }
-    throw new \Exception('Этого не должно быть. function is_ip_net()');
 }
 
 
@@ -1822,7 +1775,7 @@ function url_abon_form(int $abon_id): string {
     $model = new AbonModel();
     if (is_null($abon_id) || $abon_id == 0 || !$model->validate_id("abons", $abon_id)) { return $abon_id; }
     $c = $model->get_html_chek_payer(aid: $abon_id);
-    return "<a href=/ad_abon1_card.php?abon_id={$abon_id} target=_blank title='".$model->get_abon_address($abon_id)."' >{$abon_id}</a>&nbsp;{$c}";
+    return "<a href='".Abon::URI_VIEW."/{$abon_id}' target=_blank title='".$model->get_abon_address($abon_id)."' >{$abon_id}</a>&nbsp;{$c}";
 }
 
 

@@ -1,6 +1,6 @@
 <?php
 /**
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : view.php
  *  Path    : app/languages/ru/Docs/view.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7

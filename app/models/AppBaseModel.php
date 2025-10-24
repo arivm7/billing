@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : AppBaseModel.php
  *  Path    : app/models/AppBaseModel.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -16,6 +16,7 @@ namespace app\models;
 use billing\core\base\Lang;
 use billing\core\base\Model;
 use config\Icons;
+use config\tables\Abon;
 use config\tables\Module;
 use config\tables\Pay;
 use config\tables\Ppp;
@@ -27,6 +28,7 @@ use config\tables\User;
 use PAStatus;
 
 require_once DIR_LIBS . '/datetime_functions.php';
+require_once DIR_LIBS . '/billing_functions.php';
 
 /**
  * Description of AppBaseModel.php
@@ -349,7 +351,7 @@ class AppBaseModel extends Model
 
         $A['TP'] = array();
         foreach ($A['PA'] as &$PA) {
-            if (AbonModel::get_price_apply_age($PA) <> PAStatus::CLOSED) {
+            if (get_price_apply_age($PA) <> PAStatus::PAUSE) {
                 $tp_title = $this->get_tp($PA['net_router_id'])['title'];
                 $A['TP'][$PA['net_router_id']] = [
                     $this->url_tp_mik(tp_id: $PA['net_router_id'], icon_width: 16, icon_height: 16, show_gray: true),
@@ -410,7 +412,7 @@ class AppBaseModel extends Model
      */
     function url_user_form(int $user_id): string {
         $c = $this->get_html_chek_payer(uid: $user_id);
-        return "<a href=/abon/form?user_id=$user_id target=_blank title='". $this->get_user_name($user_id)."' >$user_id</a>&nbsp;{$c}";
+        return "<a href='".Abon::URI_VIEW."/{$user_id}' target=_blank title='". $this->get_user_name($user_id)."' >$user_id</a>&nbsp;{$c}";
     }
 
 
@@ -423,7 +425,7 @@ class AppBaseModel extends Model
     function url_abon_form(int $abon_id): string {
         if (is_null($abon_id) || $abon_id == 0 || !$this->validate_id("abons", $abon_id)) { return $abon_id; }
         $c = $this->get_html_chek_payer(aid: $abon_id);
-        return a(href: "/abon/form?abon_id={$abon_id}", text: "{$abon_id}", title: $this->get_abon_address($abon_id), target: "_blank") . "&nbsp;{$c}";
+        return a(href: Abon::URI_VIEW . "/{$abon_id}", text: "{$abon_id}", title: $this->get_abon_address($abon_id), target: "_blank") . "&nbsp;{$c}";
      // return "<a href=/abon/form?abon_id={$abon_id} title='". $this->get_abon_address($abon_id)."' target=_blank >{$abon_id}</a>&nbsp;{$c}";
     }
 

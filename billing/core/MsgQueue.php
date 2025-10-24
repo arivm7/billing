@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : MsgQueue.php
  *  Path    : billing/core/MsgQueue.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -33,9 +33,22 @@ class MsgQueue {
 
     public static function msg(MsgType $type, string|array $message): void
     {
-        if (!empty($message)) {
+        if (empty($message)) {
+            return;
+        }
+
+        if (!isset($_SESSION[$type->value]) || !is_array($_SESSION[$type->value])) {
+            $_SESSION[$type->value] = [];
+        }
+
+        if (is_array($message)) {
+            // объединяем массивы
+            $_SESSION[$type->value] = array_merge($_SESSION[$type->value], $message);
+        } else {
+            // добавляем строку в конец очереди
             $_SESSION[$type->value][] = $message;
         }
     }
+
 
 }

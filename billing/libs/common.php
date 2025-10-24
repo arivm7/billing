@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : common.php
  *  Path    : billing/libs/common.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -44,18 +44,6 @@ enum DebugView: string
 }
 
 
-
-/**
- * Статус прикрепленных прайсовых фрагментов
- * CLOSED, CURRENT, FUTURE
- */
-enum PAStatus: int  {
-    case FUTURE         = 0b00000001;
-    case CURRENT        = 0b00000010;
-    case CLOSE_TODAY    = 0b00000100;
-    case CLOSED         = 0b00001000;
-    case FULL_CLOSED    = 0b10000000;
-}
 
 
 

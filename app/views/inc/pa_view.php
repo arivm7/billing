@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : pa_view.php
  *  Path    : app/views/inc/pa_view.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -17,6 +17,7 @@
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
 
+use config\tables\Module;
 use config\tables\PA;
 use billing\core\base\Lang;
 Lang::load_inc(__FILE__);
@@ -115,9 +116,13 @@ Lang::load_inc(__FILE__);
 
         <!-- Панель действий -->
         <div class="card-footer d-flex gap-2">
-            <a href="?<?= PA::F_ID ?>=<?= $item[PA::F_ID] ?>&action=pause"
-               class="btn btn-secondary btn-sm"
-               onclick="return confirm(__('Отправить запрос на остановку услуги?'))">&#9208; <?= __('Поставить на паузу'); ?></a>
+            <?php if (can_edit(Module::MOD_PA)) : ?>
+                <a href="<?=PA::URI_EDIT;?>/<?=$item[PA::F_ID];?>"
+                    class="btn btn-info btn-sm"></i><i class="bi bi-pencil-square"></i> <?= __('Редактировать'); ?></a>
+                <a href="?<?= PA::F_ID ?>=<?= $item[PA::F_ID] ?>&action=pause"
+                    class="btn btn-secondary btn-sm"
+                    onclick="return confirm(__('Отправить запрос на остановку услуги?'))">&#9208; <?= __('Поставить на паузу'); ?></a>
+            <?php endif; ?>
         </div>
     </div>
 </div>

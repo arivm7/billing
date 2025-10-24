@@ -48,16 +48,16 @@ echo -e ""
 echo -e "Текущая папака: ${COLOR_FILENAME}$(pwd)${COLOR_OFF}"
 echo -e ""
 
-echo "===> Watching for changes in:"
-printf "     %s\n" "${WATCH_DIRS[@]}"
-echo "===> Ctrl+C to stop."
+echo -e "===> Следим за изменениями тут:"
+printf  "     %s\n" "${WATCH_DIRS[@]}"
+echo -e "===> ${COLOR_USAGE}Ctrl+C${COLOR_OFF} to stop."
 
 # Главный цикл
 inotifywait -r -m -e modify,create,delete,move --format '%w|%e|%f' "${WATCH_DIRS[@]}" | while IFS='|' read -r path action file; do
-    echo -e "🟡 Change detected"
+    echo -e "🟡 Замечены изменения"
     echo -e "${COLOR_FILENAME}${path}${COLOR_OFF}"
     echo -e "${COLOR_USAGE}$(date +%F\ %T)${COLOR_OFF} | ${COLOR_INFO}${action}${COLOR_OFF} on ${COLOR_FILENAME}${file}${COLOR_OFF}"
-    echo -e "==== Start deploy..."
+    echo -e "==== Запуск deploy..."
     "${DEPLOY_SCRIPT}"
-    echo -e "==== ${COLOR_OK}End deploy${COLOR_OFF}  [ ${COLOR_USAGE}Ctrl+C${COLOR_OFF} to stop ]"
+    echo -e "==== ${COLOR_OK}Завершение deploy${COLOR_OFF}  [ ${COLOR_USAGE}Ctrl+C${COLOR_OFF} для остановки слежения ]"
 done

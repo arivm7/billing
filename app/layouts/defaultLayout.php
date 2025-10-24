@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : defaultLayout.php
  *  Path    : app/layouts/defaultLayout.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -21,7 +21,6 @@ use billing\core\Db;
 use billing\core\ErrorHandler;
 use billing\core\Timers;
 use config\tables\Module;
-
 use config\tables\User;
 use app\widgets\menu\Menu;
 use billing\core\base\View;
@@ -33,10 +32,13 @@ use billing\core\base\View;
         <link rel="icon" href="/public/favicon.ico" type="image/x-icon" />
         <link rel="shortcut icon" href="/public/favicon.ico" type="image/x-icon" />
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <!--<meta http-equiv="X-UA-Compatible" content="IE=edge">-->
-        <link href="/public/bootstrap/css/bootstrap.css" rel="stylesheet">
+        <!-- <meta http-equiv="X-UA-Compatible" content="IE=edge"> -->
+        <link rel="stylesheet" href="/public/bootstrap/css/bootstrap.css">
+        <link rel="stylesheet" href="/public/bootstrap/icons/font/bootstrap-icons.css">
+        <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"> -->
+        <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"> -->
+
         <script src="/public/bootstrap/js/bootstrap.bundle.js"></script>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
         <?=View::getMeta();?>
         <style>
 
@@ -79,6 +81,12 @@ use billing\core\base\View;
             .accordion-button.no-arrow::after {
               display: none !important;
             }
+
+            /* Минимальная ширина страницы */
+            body {
+                min-width: 600px;
+            }
+
         </style>
     </head>
     <body>
@@ -101,15 +109,6 @@ use billing\core\base\View;
                 </aside>
 
                 <div class="my-content container-fluid">
-                    <!--
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="#">Home</a></li>
-                            <li class="breadcrumb-item"><a href="#">Library</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Data</li>
-                        </ol>
-                    </nav>
-                    -->
                     <?php include DIR_INC . '/alerts.php'; ?>
                     <?= $content ?>
                     <hr>

@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : abon_edges.php
  *  Path    : app/views/inc/abon_edges.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -12,6 +12,8 @@
  */
 
 /**
+ * Маленькая таблица 3х3 
+ * показывает граничные значения остатков и параметров обслуживания.
  * Используется в контроллере просмотра списка абонентов AbonController.php,
  * при формировании списка абонентов,
  * для отображения остатков на ЛС и границ обслуживания абонента.

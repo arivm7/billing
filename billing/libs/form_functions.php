@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : form_functions.php
  *  Path    : billing/libs/form_functions.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -230,6 +230,7 @@ function dateRow(
         int $label_col = DEFAULT_LABEL_COL,
         int $input_col = DEFAULT_INPUT_COL,
         LabelLayout $l_layout = LabelLayout::V,
+        string $post_rec = 'item',
         string|null $options = "class='mb-3 row'")
 {
     inputRow(label: $label, name: $name, value: $timestamp ? date(DATE_FORMAT, $timestamp) : '',
@@ -237,6 +238,7 @@ function dateRow(
             label_col: $label_col,
             input_col: $input_col,
             l_layout: $l_layout,
+            post_rec: $post_rec,
             options:  $options
     );
 }

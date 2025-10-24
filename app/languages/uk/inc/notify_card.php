@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : notify_card.php
  *  Path    : app/languages/uk/inc/notify_card.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7

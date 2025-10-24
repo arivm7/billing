@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : contacts_view.php
  *  Path    : app/languages/ru/inc/contacts_view.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7

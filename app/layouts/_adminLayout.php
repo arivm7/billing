@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : _adminLayout.php
  *  Path    : app/layouts/_adminLayout.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7

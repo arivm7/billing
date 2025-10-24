@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : def_template.php
  *  Path    : app/widgets/Theme/templates/def_template.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7

@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : abon_view.php
  *  Path    : app/languages/en/inc/abon_view.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -23,8 +23,8 @@ return [
     'Coordinates' => 'Coordinates',
     'Connection date' => 'Connection date',
     'Service status' => 'Service status',
-    'Enabled' => 'Enabled',
-    'Disabled' => 'Disabled',
+    'Abonent' => 'Abonent',
+    'Not Abonent' => 'Not Abonent',
     'Service boundaries' => 'Service boundaries',
     'Number of prepaid days, upon crossing which send warning' => 'Number of prepaid days, upon crossing which send warning',
     'Number of prepaid days, upon crossing which disable service' => 'Number of prepaid days, upon crossing which disable service',

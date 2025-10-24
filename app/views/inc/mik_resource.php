@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : mik_resource.php
  *  Path    : app/views/inc/mik_resource.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -69,7 +69,7 @@ $mik_resource = $mik_rec['resourse'];
                 <span class="text-success"><?=$mik_resource[Mik::RES_BOARD_NAME];?></span>,
                 <?=$mik_resource[Mik::RES_ARCHITECTURE_NAME];?> |
                 CPU: <span class="text-primary"><?=$mik_resource[Mik::RES_CPU];?></span> x<span class="text-success"><?=$mik_resource[Mik::RES_CPU_COUNT];?></span>, <span class="text-success"><?=$mik_resource[Mik::RES_CPU_FREQUENCY];?></span>MHz |
-                OS: <font class="text-primary"><?=$mik_resource[Mik::RES_VERSION];?></font> | Factory: <span class="text-success"><?=$mik_resource[Mik::RES_FACTORY_SOFTWARE];?></span>
+                OS: <font class="text-primary"><?=$mik_resource[Mik::RES_VERSION];?></font> | Factory: <span class="text-success"><?=$mik_resource[Mik::RES_FACTORY_SOFTWARE] ?? "N/A";?></span>
             </th>
         </tr>
         <tr>

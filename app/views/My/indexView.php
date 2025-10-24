@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : indexView.php
  *  Path    : app/views/My/indexView.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -22,7 +22,13 @@ use config\tables\Abon;
 use config\tables\Firm;
 use config\tables\Module;
 use config\tables\User;
-require DIR_LIBS . '/form_functions.php';
+use config\tables\PA;
+
+require_once DIR_LIBS . '/form_functions.php';
+require_once DIR_LIBS . '/billing_functions.php';
+require_once DIR_LIBS . '/inc_functions.php';
+
+
 /** @var array $user */
 ?>
 <div class="container">
@@ -46,7 +52,8 @@ require DIR_LIBS . '/form_functions.php';
 
                 <!-- Контент Вкладки пользователя -->
                 <div class="tab-pane fade show active" id="tab_user_<?=$user[User::F_ID];?>" role="tabpanel">
-                    <?php require DIR_INC . '/user_tabs.php'; ?>
+                    <?php require DIR_INC . '/user_view.php'; ?>
+                    <!-- < ?php require DIR_INC . '/user_tabs.php'; ?> -->
                     <hr>
                     <?php require DIR_INC . '/contacts_tabs.php'; ?>
 
@@ -83,10 +90,7 @@ require DIR_LIBS . '/form_functions.php';
                                     func_get_title: function(array $abon) {
                                             return get_html_content_left_right(
                                                 left:   " :: " . $abon[Abon::F_ADDRESS] . "",
-                                                right:  ($abon['is_payer']
-                                                            ? "<span class='badge bg-success'>".__('Abonent')."</span>"
-                                                            : "<span class='badge bg-secondary'>".__('Off')."</span>"
-                                                        ) . '&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;',
+                                                right:  get_html_pa_status(get_pa_list_age($abon[PA::TABLE])),
                                                 add_class: 'w-100');
                                     },
                                     variables:  ['user' => $user]

@@ -88,11 +88,15 @@ DEPLOY=(
 
 # --- что исключаем ---
 EXCLUDES=(
+    "nbproject"
+    ".vscode"
     ".git"
     ".gitignore"
     "storage/*"
     "public/uploads/*"
     "public/phpinfo.php"
+    "add_php_header.php"
+    "add_php_header.sh"
 )
 
 
@@ -125,6 +129,29 @@ SSH_CMD+=(-p "${SSH_PORT}")
 
 
 # ==============================
+# Выполнить локальный pre-deploy скрипт (если указан)
+# ==============================
+if [[ -n "${LOCAL_RUN:-}" ]]; then
+    echo "→ Запуск локального pre-deploy скрипта: ${LOCAL_RUN}"
+    # если путь абсолютный или относительный и файл исполняемый — запускаем напрямую
+    if [[ -x "${LOCAL_RUN}" ]]; then
+        "./${LOCAL_RUN}"
+    # если файл в текущей директории и исполняемый
+    elif [[ -x "./${LOCAL_RUN}" ]]; then
+        "./${LOCAL_RUN}"
+    # если файл существует, но не помечен как исполняемый — запустим через bash
+    elif [[ -f "${LOCAL_RUN}" || -f "./${LOCAL_RUN}" ]]; then
+        bash "${LOCAL_RUN}"
+    else
+        echo "Ошибка: локальный скрипт '${LOCAL_RUN}' не найден." >&2
+        exit 1
+    fi
+    echo "→ Локальный pre-deploy скрипт выполнен."
+fi
+
+
+
+# ==============================
 # Запускаем rsync
 # ==============================
 echo "→ Deploying..."
@@ -143,10 +170,9 @@ rsync \
 # ==============================
 # Post-deploy на сервере
 # ==============================
-echo "Выполняем post-deploy скрипт..."
+echo "Выполняем скрипт пост-публикации (post-deploy)..."
 "${SSH_CMD[@]}" "${CLOUD_HOST}" "bash -l -c 'bash ${CLOUD_PATH}/${CLOUD_RUN}'"
-echo "...end post-deploy."
-echo "→ Deploy completed successfully!"
+echo "...post-deploy завернён."
 
 
 

@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : PA.php
  *  Path    : config/tables/PA.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -20,10 +20,16 @@ namespace config\tables;
  */
 class PA {
 
+    const URI_CREATE = "/pa/new";
+    const URI_EDIT = "/pa/edit";
+    const URI_CLONE = "/pa/clone";
+    const URI_DELETE = "/pa/delete";
+    const URI_CLOSE = "/pa/close";
+
     /**
      * имя массива в котором в пост-запрове хранятся данные формы
      */
-    const POST_REC              = 'PA';
+    const POST_REC              = 'post_PA';
 
     const TABLE                 = 'prices_apply';
 
@@ -51,9 +57,9 @@ class PA {
     const F_NET_MAC             = 'net_mac';            // MAC абонентского устройства
     const F_TP_ID               = 'net_router_id';      // ID маршрутизатора к которому подключён абонент
     const F_COORD_GMAP          = 'coord_gmap';         // Координаты точки предоставления услуги на Гугл-карте
-//  const F_NET_IP_STATUS       = 'net_ip_status';      // 0 - ничего не делалли; 1 - ИП запись создана; 2 - ИП заморожен; 3 - ИП активен; 4 - ИП удалён.
     const F_COST_VALUE          = 'cost_value';         // Стоимость прайсового фрагмента
     const F_COST_DATE           = 'cost_date';          // дата пересчёта начисления по этайсовуму фрагментуому пр
+    const F_COST_DATE_STR       = 'cost_date_str';      // prices_apply.cost_date), '%Y-%m-%d')
     const F_PPMA_VALUE          = 'PPMA_value';         // Price Per Montch - Значение активной абонплаты
     const F_PPDA_VALUE          = 'PPDA_value';         // Price Per Day - Текущая абонплата в день
     const F_CREATION_UID        = 'creation_uid';       // ID пользователя, создавшего запись
@@ -61,16 +67,45 @@ class PA {
     const F_MODIFIED_UID        = 'modified_uid';       // Кто изменил запись
     const F_MODIFIED_DATE       = 'modified_date';      // Дата изменения записи в базе
 
+
+
+    const FLAGS = [
+        self::F_CLOSED,
+        self::F_NET_IP_SERVICE,
+        self::F_NET_IP_TRUSTED,
+    ];
+
+    const STR_TYPES = [
+        self::F_NET_NAME,
+        self::F_NET_ON_ABON_IP,
+        self::F_NET_ON_ABON_MASK,
+        self::F_NET_ON_ABON_GATE,
+        self::F_NET_NAT11,
+        self::F_NET_IP,
+        self::F_NET_MASK,
+        self::F_NET_GATEWAY,
+        self::F_NET_DNS1,
+        self::F_NET_DNS2,
+        self::F_NET_MAC,
+        self::F_COORD_GMAP,
+    ];
+
+
+    const NUM_TYPES = [
+        self::F_ID,
+        self::F_ABON_ID,
+        self::F_PRICE_ID,
+        self::F_TP_ID,
+        self::F_DATE_START,
+        self::F_DATE_END,
+    ];
+
+    
+
     /* ----------------
      * вычисляемые поля
      * ---------------- */
 
-    const F_USER_ID             = 'user_id';            // Пользоватеь, к которому относится Абонент, которому назначен прайс
-    const FF_PA_ID              = 'prices_apply_id';    // prices_apply.id
-    const FF_DATE_START_STR     = 'date_start_str';     // prices_apply.date_start),'%Y-%m-%d')
-    const FF_DATE_END_STR       = 'date_end_str';       // prices_apply.date_end),  '%Y-%m-%d')
-    const FF_COST_DATE_STR      = 'cost_date_str';      // prices_apply.cost_date), '%Y-%m-%d')
-    const FF_MODIFIED_DATE_STR  = 'modified_date_str';  // prices_apply.modified_date), '%Y-%m-%d')
     const FF_P_TITLE            = 'title';              // prices.title,
     const FF_P_PPD              = 'pay_per_day';        // prices.pay_per_day,
     const FF_P_PPM              = 'pay_per_month';      // prices.pay_per_month,

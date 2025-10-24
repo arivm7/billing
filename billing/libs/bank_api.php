@@ -1,6 +1,6 @@
 <?php
 /**
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : bank_api.php
  *  Path    : billing/libs/bank_api.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7

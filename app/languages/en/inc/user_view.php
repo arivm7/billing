@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : user_view.php
  *  Path    : app/languages/en/inc/user_view.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -20,10 +20,15 @@ return [
     'Login'                     => 'Login',
     'Name Short'                => 'Name Short',
     'Name Full'                 => 'Name Full',
+    'Surname'                   => 'Surname',
+    'Family'                    => 'Family',
     'Contacts'                  => 'Contacts',
     'Phone'                     => 'Phone',
     'Send SMS notifications'    => 'Send SMS notifications',
+    'Address for invoices'      => 'Address for invoices',
+    'Send paper documents'      => 'Send paper documents',
     'Email'                     => 'Email',
     'Send email notifications'  => 'Send email notifications',
-    'Send paper documents'      => 'Send paper documents',
+    'Use for correspondence and notifications'      => 'Use for correspondence and notifications',
+    'Edit'                      => 'Edit',
 ];

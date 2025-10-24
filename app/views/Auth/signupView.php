@@ -1,6 +1,6 @@
 <?php
 /**
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : signupView.php
  *  Path    : app/views/Auth/signupView.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7

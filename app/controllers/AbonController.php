@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : AbonController.php
  *  Path    : app/controllers/AbonController.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -16,6 +16,7 @@ namespace app\controllers;
 
 use app\models\AbonModel;
 use billing\core\App;
+use billing\core\base\Lang;
 use billing\core\base\View;
 use billing\core\MsgQueue;
 use billing\core\MsgType;
@@ -33,6 +34,8 @@ use config\tables\TP;
 use config\tables\TSUserFirm;
 use config\tables\PA;
 use config\tables\User;
+use Valitron\Validator;
+use config\SessionFields;
 
 require_once DIR_LIBS . '/datetime_functions.php';
 require_once DIR_LIBS . '/compare_functions.php';
@@ -149,17 +152,17 @@ class AbonController extends AppBaseController {
 
 
 
-    public static function get_html_url_aid_uid(array &$data): string {
+    public static function get_html_url_aid_uid(array &$abon): string {
         $model = new AbonModel();
         return
             '<table width=100%>'
             . '<tr>'
                 . '<td align=left><span class="text-secondary small">U:</span></td>'
-                . '<td align=right>'.$model->url_user_form($data[Abon::F_USER_ID]).'</td>'
+                . '<td align=right>'.$model->url_user_form($abon[Abon::F_USER_ID]).'</td>'
             . '</tr>'
             . '<tr>'
                 . '<td align=left><span class="text-secondary small">A:</span></td>'
-                . '<td align=right>'.$model->url_abon_form($data[Abon::F_ID]).'</td>'
+                . '<td align=right>'.$model->url_abon_form($abon[Abon::F_ID]).'</td>'
             . '</tr>'
             . '</table>';
     }
@@ -200,7 +203,7 @@ class AbonController extends AppBaseController {
          */
         $filters = [
             'per_page' => 20,
-//            'is_payer' => 1,
+            'is_payer' => 1,
             'order_by' => "(".AbonRest::TABLE.".".AbonRest::F_SUM_PAY." - ".AbonRest::TABLE.".".AbonRest::F_SUM_COST.") ASC"
         ];
 
@@ -913,7 +916,180 @@ class AbonController extends AppBaseController {
 
 
 
-    function formAction() {
+    public function validate_deep(array $data): bool {
+        $rezult = true;
+        $model = new AbonModel();
+
+        if (!$model->validate_id(Abon::TABLE, $data[Abon::F_ID], Abon::F_ID)) {
+            MsgQueue::msg(MsgType::ERROR, __('ID бонента не верен'));
+            $rezult = false;
+        }
+
+        if (!$model->validate_id(User::TABLE, $data[Abon::F_USER_ID], User::F_ID)) {
+            MsgQueue::msg(MsgType::ERROR, __('ID пользователя не верен'));
+            $rezult = false;
+        }
+
+        return $rezult;
+    }
+
+
+
+    /**
+     * Проверяет данные перед сохранением пользователя
+     * Ошибки пишутся в очередь сообщений в сессию
+     * @param array $data  Входные данные (например, $_POST['userRec'])
+     * @param bool  $isNew true — при создании, false — при обновлении
+     * @return boolean
+     */
+    public function validate(array $data): bool
+    {
+        Validator::lang(Lang::code());
+
+        $v = new Validator($data);
+
+        // --- ОБЯЗАТЕЛЬНЫЕ ПОЛЯ ---
+        $v->rule('required', [Abon::F_ID, Abon::F_USER_ID]);
+        $v->rule('integer', [Abon::F_ID, Abon::F_USER_ID]);
+
+        // --- Проверка ---
+        if (!$v->validate() || !$this->validate_deep($data)) {
+            MsgQueue::msg(MsgType::ERROR, $v->errors());
+            return false;
+        }
+
+        return true;
+    }
+
+
+
+    public function normalize(array &$data) {
+
+        // Убираем лишние пробелы
+        foreach (Abon::FORM_FIELDS as $field) {
+            if (isset($data[$field]) && is_string($data[$field])) {
+                $data[$field] = trim($data[$field]);
+            }
+        }
+
+        // Устанавливаем Флаги: если чекбокс не пришёл — ставим 0
+        foreach (Abon::T_FLAGS as $field=>$def_value) {
+            if (!array_key_exists($field, $data)) {
+                $data[$field] = 0;
+            } else {
+                $data[$field] = ((($data[$field] == 'on') || ($data[$field] == '1') || $data[$field]) ? 1 : 0);
+            }
+        }
+
+        // Преобразуем дату из строки в timestamp
+        if (isset($data[Abon::F_DATE_JOIN_STR]) && $data[Abon::F_DATE_JOIN_STR] !== '') {
+            $timestamp = strtotime($data[Abon::F_DATE_JOIN_STR]);
+            if ($timestamp !== false) {
+                $data[Abon::F_DATE_JOIN] = $timestamp;
+            } else {
+                $data[Abon::F_DATE_JOIN] = null;
+            }
+        }
+        unset($data[Abon::F_DATE_JOIN_STR]);
+
+    }
+    
+    
+
+    function updateAction() {
+        // debug($_GET, '$_GET');
+        // debug($_POST, '$_POST');
+        // debug($this->route, '$this->route', die: 0);
+
+        $model = new AbonModel();
+
+        if  (
+                isset($_POST[Abon::POST_REC]) && is_array($_POST[Abon::POST_REC]) &&
+                ((int)$_POST[Abon::POST_REC][Abon::F_ID] == (int)$this->route[F_ALIAS]) &&
+                $model->validate_id(table_name: Abon::TABLE, field_id: Abon::F_ID, id_value: (int)$this->route[F_ALIAS])
+            ) 
+        {
+
+            $abon = $model->get_abon((int)$this->route[F_ALIAS]);
+
+            // Копируем только разрешённые поля
+            foreach (Abon::FORM_FIELDS as $field=>$def_value) {
+                if (array_key_exists($field, $_POST[Abon::POST_REC])) {
+                    $post_rec[$field] = $_POST[Abon::POST_REC][$field];
+                }
+            }
+
+            // Нормализация (очистка и форматирование данных)
+            $this->normalize($post_rec);
+
+            // Проверка
+            if ($this->validate($post_rec)) {
+
+                // сравнение новой записи и старой
+                $equals = true;
+                foreach ($post_rec as $field => $value) {
+                    if ($abon[$field] != $value) {
+                        $equals = false;
+                        break;
+                    }
+                }
+
+                if ($equals) {
+                    // Новые данные равны старым данным
+                    MsgQueue::msg(MsgType::INFO_AUTO, 'Изменений нет. Нечего вносить в базу.');
+
+                } else {
+                    // Данные различаются
+                    if ($model->update_row_by_id(table: Abon::TABLE, row: $post_rec, field_id: Abon::F_ID)) {
+                        MsgQueue::msg(MsgType::SUCCESS_AUTO, 'Данные внесены');
+                    } else {
+                        $_SESSION[SessionFields::FORM_DATA][Abon::POST_REC] = $post_rec;
+                        MsgQueue::msg(MsgType::ERROR, $model->errorInfo());
+                    }
+                }
+            } else {
+                $_SESSION[SessionFields::FORM_DATA][User::POST_REC] = $post_rec;
+            }
+        } else {
+            MsgQueue::msg(MsgType::ERROR, 'Данные не переданы или не верны');
+        }
+        redirect();
+    }
+
+
+
+    function editAction() {
+        if (!App::isAuth()) {
+            MsgQueue::msg(MsgType::ERROR,__('Авторизуйтесь, пожалуйста'));
+            redirect(Auth::URI_LOGIN);
+        }
+
+        if (!can_edit([Module::MOD_ABON])) {
+            MsgQueue::msg(MsgType::ERROR,__('Нет прав'));
+            redirect();
+        }
+
+        $model = new AbonModel();
+
+        if  (
+                isset($this->route[F_ALIAS]) && is_numeric($this->route[F_ALIAS]) &&
+                $model->validate_id(Abon::TABLE, intval($this->route[F_ALIAS]), Abon::F_ID)
+            )
+        {
+            $abon = $model->get_row_by_id(Abon::TABLE, intval($this->route[F_ALIAS]), Abon::F_ID);
+            View::setMeta(__('Редактирование карточки пользователя'));
+            $this->setVariables([
+                'abon'=> $abon,
+            ]);
+        } else {    
+            MsgQueue::msg(MsgType::ERROR, __('ID не верен или не указан'));
+            redirect();
+        }
+    }
+
+
+
+    function viewAction() {
 //        debug($_GET, '_GET:', debug_view: DebugView::PRINTR);
 //        debug($_POST, '_POST:', debug_view: DebugView::PRINTR);
 
@@ -1011,6 +1187,7 @@ class AbonController extends AppBaseController {
              * Получение остатков по абоненту и сумм активных прайсовых фрагментов
              */
             $abon[AbonRest::TABLE] = $model->get_row_by_id(table_name: AbonRest::TABLE, id_value: $abon[Abon::F_ID], field_id: AbonRest::F_ABON_ID);
+            update_rest_fields($abon[AbonRest::TABLE]);
 
             /**
              * Подгружаем прайсовые фрагенты

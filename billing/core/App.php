@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : App.php
  *  Path    : billing/core/App.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -65,6 +65,7 @@ class App {
 
 
     /**
+     * Djpdhfoftn ID пользователя
      * Обёртка для $_SESSION[User::SESSION_USER_REC][User::F_ID]
      * @return int|null
      */
@@ -75,4 +76,15 @@ class App {
                 : null;
     }
 
+    /**
+     * Возвращает ассоциативный массив карточки пользователя
+     * Обёртка для $_SESSION[User::SESSION_USER_REC]
+     * @return int|null
+     */
+    static function get_user(): array|null {
+        return 
+            App::$auth->isAuth 
+                ? $_SESSION[User::SESSION_USER_REC]
+                : null;
+    }
 }

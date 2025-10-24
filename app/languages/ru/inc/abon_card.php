@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : abon_card.php
  *  Path    : app/languages/ru/inc/abon_card.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -18,6 +18,7 @@
 
 return [
     'Abonent connections' => 'Абонентские подключения',
+    'Abonent connection' => 'Абонентское подключение',
     'Price charges' => 'Прайсовые начисления',
     'Notifications' => 'Уведомления',
     'No active prices' => 'Активных прайсов нет',

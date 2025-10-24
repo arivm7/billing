@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : user_view.php
  *  Path    : app/languages/uk/inc/user_view.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -29,6 +29,6 @@ return [
     'Send paper documents'      => 'Надсилати паперові документи',
     'Email'                     => 'Ел. пошта',
     'Send email notifications'  => 'Надсилати повідомлення по Email',
-
     'Use for correspondence and notifications'      => 'Використовувати для листування та повідомлень',
+    'Edit'                      => 'Редагувати',
 ];

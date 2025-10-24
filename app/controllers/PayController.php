@@ -1,6 +1,6 @@
 <?php
 /**
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : PayController.php
  *  Path    : app/controllers/PayController.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -75,9 +75,17 @@ class PayController extends AppBaseController
     public function indexAction(){
         // debug($_GET, '$_GET');
         // debug($_POST, '$_POST');
+        // debug($this->route, '$this->route');
         $model = new AbonModel();
         $phase = $_POST[Pay::POST_REC]['phase'] ?? 0;
 
+        if (isset($this->route[F_ALIAS]) && ($model->validate_id(Abon::TABLE, intval($this->route[F_ALIAS]), Abon::F_ID))) {
+            // Переход по ссылке типа /pay/12345
+            $abon_id = intval($this->route[F_ALIAS]);
+            $phase++;
+        } else {
+            $abon_id = Abon::NA;
+        }
 
         switch ($phase) {
 
@@ -116,14 +124,17 @@ class PayController extends AppBaseController
                  *         (поскольку, возможно, прайсовые фрагменты (ПФ) найдены из закрытых, то нужно убедиться, что абонент хочет опачивать именно за них)
                  */
 
-                $abon_id = 
-                        (isset($_POST[Pay::POST_REC]['option_abon_id']) && (intval($_POST[Pay::POST_REC]['option_abon_id'] > 0)) 
-                            ?   intval($_POST[Pay::POST_REC]['option_abon_id']) 
-                            :   (isset($_POST[Pay::POST_REC]['custom_abon_id']) && (intval($_POST[Pay::POST_REC]['custom_abon_id'] > 0)) 
-                                    ? intval($_POST[Pay::POST_REC]['custom_abon_id']) 
-                                    : Abon::NA
-                                )
+                if (empty($abon_id) || $abon_id == Abon::NA) {
+                    $abon_id = 
+                        (   
+                            isset($_POST[Pay::POST_REC]['option_abon_id']) && (intval($_POST[Pay::POST_REC]['option_abon_id'] > 0))
+                                ?   intval($_POST[Pay::POST_REC]['option_abon_id'])
+                                :   (isset($_POST[Pay::POST_REC]['custom_abon_id']) && (intval($_POST[Pay::POST_REC]['custom_abon_id'] > 0))
+                                        ? intval($_POST[Pay::POST_REC]['custom_abon_id'])
+                                        : Abon::NA
+                                    )
                         );
+                }   
                 
                 /**
                  * Проверка правильности введённого или выбранного номера договора
@@ -154,9 +165,6 @@ class PayController extends AppBaseController
 
                 $rest = $model->get_abon_rest($abon_id);
                 update_rest_fields($rest);
-
-
-                // debug($pa_list, '$pa_list', die: 0);
 
                 $title = __('Please confirm the services you are paying for');
                 View::setMeta(__('Payment for services') . ' :: ' . $title);

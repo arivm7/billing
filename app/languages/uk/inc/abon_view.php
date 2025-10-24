@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : abon_view.php
  *  Path    : app/languages/uk/inc/abon_view.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -22,9 +22,9 @@ return [
     'Connection address' => 'Адрес підключення',
     'Coordinates' => 'Координати',
     'Connection date' => 'Дата підключення',
-    'Service status' => 'Статус послуги',
-    'Enabled' => 'Підключена',
-    'Disabled' => 'Відключено',
+    'Service status' => 'Статус обслуговування',
+    'Abonent' => 'Абонент',
+    'Not Abonent' => 'Не абонент',
     'Service boundaries' => 'Межі обслуговування',
     'Number of prepaid days, upon crossing which send warning' => 'Кількість передплачених днів, при перетині яких, відправляти попередження про необхідність платежу',
     'Number of prepaid days, upon crossing which disable service' => 'Кількість передплачених днів, при перетині яких відключати послугу',

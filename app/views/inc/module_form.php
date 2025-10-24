@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : module_form.php
  *  Path    : app/views/inc/module_form.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7

@@ -1,5 +1,5 @@
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : main.js
  *  Path    : public/js/main.js
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7

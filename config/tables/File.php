@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : File.php
  *  Path    : config/tables/File.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7

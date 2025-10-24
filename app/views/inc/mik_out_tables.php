@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : mik_out_tables.php
  *  Path    : app/views/inc/mik_out_tables.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -18,7 +18,7 @@
  */
 
 declare(strict_types=1);
-use config\Api;
+use billing\core\Api;
 use config\Mik;
 use config\tables\TP;
 

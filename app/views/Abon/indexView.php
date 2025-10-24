@@ -3,7 +3,7 @@
 use billing\core\App;
 use config\tables\Module;
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : indexView.php
  *  Path    : app/views/Abon/indexView.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7

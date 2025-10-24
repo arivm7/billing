@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : User.php
  *  Path    : config/tables/User.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -21,7 +21,8 @@ namespace config\tables;
  */
 class User {
 
-    const URI_USER_UPDATE = '/user/update';
+    const URI_EDIT = '/user/edit';
+    const URI_UPDATE = '/user/update';
 
     /**
      * Имя массива для сохранения авторизованной сессии
@@ -170,7 +171,7 @@ class User {
      * Список всех поддерживаемых мессенджеров.
      * Каждый элемент — массив с полями:
      *   - field : имя поля с идентификатором/адресом
-     *   - send  : имя поля-флага "отправлять ли"
+     *   - send  : имя поля-флага "отправлять"
      */
     const MESSENGERS = [
         self::F_JABBER   => [ 'field' => self::F_JABBER,   'send' => self::F_JABBER_DO_SEND ],

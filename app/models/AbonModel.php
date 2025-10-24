@@ -1,6 +1,6 @@
 <?php 
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : AbonModel.php
  *  Path    : app/models/AbonModel.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -33,6 +33,9 @@ use config\tables\AbonRest;
 use config\tables\PA;
 use ServiceType;
 use billing\core\base\Lang;
+
+require_once DIR_LIBS . '/billing_functions.php';
+
 
 /**
  * Description of AbonModel.php
@@ -141,76 +144,6 @@ class AbonModel extends UserModel {
 
 
     /**
-     * Возвращает статус прайсового фрагмента, относительно указанной даты
-     * Статусы: закрытый, текущий, будущий.
-     * @param  array $price_apply
-     * @param  int $today
-     * @return PAStatus -- PRICES_APPLY_FUTURE, PRICES_APPLY_CURRENT, PRICES_APPLY_CLOSED
-     */
-    public static function get_price_apply_age(array $price_apply, int $today = NA): PAStatus {
-
-        if($today === NA) { $today = TODAY(); } else { $today = get_date($today); }
-//        $yesterday  = mktime(0, 0, 0, month($today), day($today)-1, year($today));
-//        $tomorrow   = mktime(0, 0, 0, month($today), day($today)+1, year($today));
-
-        // убрать время, оставить только дату
-        $price_apply[PA::F_DATE_START] = date_only($price_apply[PA::F_DATE_START]);
-        $price_apply[PA::F_DATE_END]   = (($price_apply[PA::F_DATE_END] > 0) ? date_only($price_apply[PA::F_DATE_END]) : 0);
-
-//        debug([
-//            'today' => $today,
-//            'START' => $price_apply[PA::F_DATE_START],
-//            '__END' => $price_apply[PA::F_DATE_END]
-//        ], '$today', debug_view: DebugView::PRINTR);
-
-        if  (   // залочка "закрыт"
-                $price_apply[PA::F_CLOSED]
-            )
-        {
-            return \PAStatus::FULL_CLOSED;
-        }
-
-        if  (   // завтра
-                $price_apply[PA::F_DATE_START] > $today
-            )
-        {
-            return \PAStatus::FUTURE;
-        }
-
-        if  (   // сегодня поставлен на паузу
-                ($price_apply[PA::F_DATE_END] == $today) &&
-                ($price_apply[PA::F_DATE_START] <= $today)
-            )
-        {
-            return \PAStatus::CLOSE_TODAY;
-        }
-
-        if  (   // сегодня
-                ($price_apply[PA::F_DATE_END] >= $today) ||
-                (($price_apply[PA::F_DATE_START] <= $today) && is_empty($price_apply[PA::F_DATE_END]))
-            )
-        {
-            return \PAStatus::CURRENT;
-        }
-
-        if  (   // вчера
-                ($price_apply[PA::F_DATE_START] < $today) &&
-                ($price_apply[PA::F_DATE_END]   >  0) && ($price_apply[PA::F_DATE_END] < $today)
-            )
-        {
-            return \PAStatus::CLOSED;
-        }
-
-        echo "get_prices_apply_age:<br>этого не должно быть<br><pre>". print_r($price_apply, true)."</pre><hr>";
-        echo "start: ".$price_apply['date_start']." ".date("Y-m-d H:i:s", $price_apply['date_start'])."<br>";
-        echo "end: ".$price_apply['date_end']." >= ".date("Y-m-d H:i:s", $price_apply['date_end'])."<br>";
-        throw new \Exception("get_prices_apply_age:<br>этого не должно быть<br><pre>". print_r($price_apply, true)."</pre>");
-        // return NA;
-    }
-
-
-
-    /**
      * Считает стоимость прайсового фрагмента с помощью механизма пормесячной разбивки и точного рассчёта
      * @param array $price_apply
      * @param int $today
@@ -251,14 +184,14 @@ class AbonModel extends UserModel {
         if($today == NA) { $today = TODAY(); } else { $today = get_date($today); }
         $cost = 0.0;
         // echo "<pre>prices_apply:<br>".print_r($price_apply, true)."</pre>" ;
-        switch (self::get_price_apply_age($price_apply, $today)) {
+        switch (get_price_apply_age($price_apply, $today)) {
 
-          case \PAStatus::CURRENT:
-          case \PAStatus::CLOSE_TODAY:
+          case PAStatus::CURRENT:
+          case PAStatus::PAUSE_TODAY:
             $price_apply[PA::F_DATE_END] = $today;                                //echo "Активный прайсовый фрагмент<br>";
 
-          case \PAStatus::CLOSED:
-          case \PAStatus::FULL_CLOSED:
+          case PAStatus::PAUSE:
+          case PAStatus::CLOSED:
             if(abs($price_apply[PA::FF_P_PPD]) > 0) {
 
                 /*
@@ -306,7 +239,7 @@ class AbonModel extends UserModel {
             return $cost;
             //break;
 
-          case \PAStatus::FUTURE:
+          case PAStatus::FUTURE:
             return 0;
             //break;
 
@@ -327,19 +260,19 @@ class AbonModel extends UserModel {
     public static function get_price_apply_cost_per_montch(array $price_apply, int $today): array {
         $struct = array();
 
-        $pa_age = self::get_price_apply_age($price_apply, $today);
+        $pa_age = get_price_apply_age($price_apply, $today);
         switch ($pa_age) {
-            case \PAStatus::FUTURE:
+            case PAStatus::FUTURE:
                 return $struct;
                 // break;
 
-            case \PAStatus::CURRENT:
-            case \PAStatus::CLOSE_TODAY:
+            case PAStatus::CURRENT:
+            case PAStatus::PAUSE_TODAY:
                 $price_apply[PA::F_DATE_END] = $today;
                 $price_apply[PA::F_DATE_END_STR] = date("Y-m-d", $price_apply[PA::F_DATE_END]);
 
-            case \PAStatus::CLOSED:
-            case \PAStatus::FULL_CLOSED:
+            case PAStatus::PAUSE:
+            case PAStatus::CLOSED:
                 // считаем
                 break;
 
@@ -481,7 +414,7 @@ class AbonModel extends UserModel {
        $PPDA = 0.0;
        $PPMA = 0.0;
        foreach ($pricess_apply_list as $PA) {
-           if (self::get_price_apply_age($PA, $today)->value & (PAStatus::CURRENT->value | PAStatus::CLOSE_TODAY->value)) {
+           if (get_price_apply_age($PA, $today)->value & (PAStatus::CURRENT->value | PAStatus::PAUSE_TODAY->value)) {
                $PPDA += $PA['pay_per_day'];
                $PPMA += $PA['pay_per_month'];
            }
@@ -613,7 +546,7 @@ class AbonModel extends UserModel {
      * @param int|null $PA_AGE
      * @return array массив прайсовых фрагментов
      */
-    function get_prices_apply_by_tp(int $tp_id, int|null $PA_AGE = (PAStatus::CURRENT->value | PAStatus::CLOSE_TODAY->value)): array {
+    function get_prices_apply_by_tp(int $tp_id, int|null $PA_AGE = (PAStatus::CURRENT->value | PAStatus::PAUSE_TODAY->value)): array {
         $pa_list_raw = $this-> get_rows_by_field(
                             table: PA::TABLE,
                             field_name: PA::F_TP_ID,
@@ -624,7 +557,7 @@ class AbonModel extends UserModel {
         } else {
             $pa_list = array();
             foreach ($pa_list_raw as $pa_one) {
-                if ($PA_AGE & self::get_price_apply_age($pa_one)->value) {
+                if ($PA_AGE & get_price_apply_age($pa_one)->value) {
                     $pa_list[] = $pa_one;
                 }
             }
@@ -982,15 +915,15 @@ class AbonModel extends UserModel {
          */
         foreach ($pa_list as $pa_id => $pa_item) {
             if ($pa_item['abon_id'] == $abon_id) {
-                switch (self::get_price_apply_age($pa_item)) {
-                    case PAStatus::FULL_CLOSED:
+                switch (get_price_apply_age($pa_item)) {
                     case PAStatus::CLOSED:
+                    case PAStatus::PAUSE:
                         if ($pa_item['date_end'] > $last['off_time']) {
                             $last['off_time'] = $pa_item['date_end'];
                         }
                         break;
                     case PAStatus::CURRENT:
-                    case PAStatus::CLOSE_TODAY:
+                    case PAStatus::PAUSE_TODAY:
                         if ($pa_item['date_start'] > $last['cur_time']) {
                             $last['cur_time'] = $pa_item['date_start'];
                         }
@@ -1008,13 +941,13 @@ class AbonModel extends UserModel {
          */
         foreach ($pa_list as $pa_id => $pa_item) {
             if ($pa_item['abon_id'] == $abon_id) {
-                switch (self::get_price_apply_age($pa_item)) {
-                    case PAStatus::FULL_CLOSED:
+                switch (get_price_apply_age($pa_item)) {
                     case PAStatus::CLOSED:
+                    case PAStatus::PAUSE:
                         if ($pa_item['date_end'] == $last['off_time']) { $last['off'][] = $pa_item; }
                         break;
                     case PAStatus::CURRENT:
-                    case PAStatus::CLOSE_TODAY:
+                    case PAStatus::PAUSE_TODAY:
                         $last['cur'][] = $pa_item;
                         break;
                     case PAStatus::FUTURE:

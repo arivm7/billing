@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : combineView.php
  *  Path    : app/views/Api/combineView.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -17,7 +17,7 @@
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
 
-use config\Api;
+use billing\core\Api;
 use config\Mik;
 use config\tables\TP;
 

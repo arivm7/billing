@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : abon_card.php
  *  Path    : app/views/inc/abon_card.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -34,9 +34,9 @@ if (isset($item) && !isset($abon)) { $abon = $item; }
 ?>
 <div class="container-fluid">
     <ul class="nav nav-tabs justify-content-end" id="my_tab_abon_data<?=$abon[Abon::F_ID]?>" role="tablist">
-        <!-- Таб абонентских подключенй -->
+        <!-- Таб абонентского подключения -->
         <li class="nav-item" role="presentation">
-            <a class="nav-link active" data-bs-toggle="tab" href="#tab_abon_<?=$abon[Abon::F_ID]?>" role="tab"><small><?=__('Abonent connections');?></small></a>
+            <a class="nav-link active" data-bs-toggle="tab" href="#tab_abon_<?=$abon[Abon::F_ID]?>" role="tab"><small><?=__('Abonent connection');?></small></a>
         </li>
         <!-- Таб прайсовых фрагментов -->
         <li class="nav-item" role="presentation">
@@ -68,7 +68,7 @@ if (isset($item) && !isset($abon)) { $abon = $item; }
                                                 . ($pa[PA::F_DATE_END] ? date(DATE_FORMAT, $pa[PA::F_DATE_END]) : '____-__-__') . ' | '
                                             . "</span>"
                                             . $pa[PA::F_NET_NAME];
-                                    $right = get_html_pa_status_badge(__pa_age($pa)) . "&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;";
+                                    $right = get_html_pa_status(__pa_age($pa)) . "&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;";
                                     $title = get_html_content_left_right(
                                                 left:  $left,
                                                 right: $right,

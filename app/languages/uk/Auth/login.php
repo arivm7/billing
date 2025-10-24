@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : login.php
  *  Path    : app/languages/uk/Auth/login.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7

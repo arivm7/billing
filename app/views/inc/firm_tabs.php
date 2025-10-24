@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : firm_tabs.php
  *  Path    : app/views/inc/firm_tabs.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7

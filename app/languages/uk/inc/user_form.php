@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : user_form.php
  *  Path    : app/languages/uk/inc/user_form.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -18,7 +18,7 @@
  */
 
 return [
-    'Edit user' => 'Редагувати користувача',
+    'Edit user card' => 'Редагувати параметри звернень та техпідтримки',
     'Login' => 'Логін',
     'Password' => 'Пароль',
     'New password' => 'Новий пароль',

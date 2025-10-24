@@ -1,6 +1,6 @@
 <?php
 /**
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : contacts_tabs.php
  *  Path    : app/views/inc/contacts_tabs.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7

@@ -1,6 +1,6 @@
 <?php
 /**
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : menuTopView.php
  *  Path    : app/views/inc/menuTopView.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -20,6 +20,7 @@
 use app\widgets\Theme\ThemeSelector;
 use billing\core\App;
 use config\Auth;
+use config\tables\Abon;
 use config\tables\Module;
 use config\tables\User;
 use app\widgets\LangSelector\LangSelector;
@@ -35,7 +36,7 @@ $path=strtolower('/' . ($this->route[F_PREFIX] ? $this->route[F_PREFIX] . '/' : 
         <a class="navbar-brand" href="/" title="<?=__('To the main page');?>" >
             <img src="/public/img/ri_logo2.svg" alt="[RILAN-admin]" title="<?=__('Rilan');?>. <?=__('Subscriber personal cabinet');?>." height="75" class="d-inline-block align-text-top">
         </a>
-        <a class="navbar-brand" href="https://my.ri.net.ua/" title="<?=__('Rilan');?>. <?=__('Old version of personal cabinet');?>." >
+        <a class="navbar-brand" href="https://prev.ri.net.ua/" title="<?=__('Rilan');?>. <?=__('Old version of personal cabinet');?>." >
             <img src="/public/img/ri_icon.ico" alt="[RI-network]" height="40" class="d-inline-block align-text-top">
         </a>
         <div class="ms-auto">
@@ -49,7 +50,7 @@ $path=strtolower('/' . ($this->route[F_PREFIX] ? $this->route[F_PREFIX] . '/' : 
                     <a class="btn btn-outline-success btn-sm disabled" href="/help">Help</a>
                 </li>
                 <li class="nav-item pe-2">
-                    <form class="d-flex" role="search" method="get" action="/abon/form">
+                    <form class="d-flex" role="search" method="get" action="<?=Abon::URI_VIEW;?>">
                         <div class="input-group input-group-sm w-auto" style="max-width: 120px;">
                             <input class="form-control form-control-sm" type="search" placeholder="AID/UID" aria-label="Search" name="id" title="<?=__('Contract number (subscriber ID) or user ID');?>." >
                             <button class="btn btn-outline-success btn-sm" type="submit">></button>

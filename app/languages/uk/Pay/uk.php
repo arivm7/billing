@@ -1,6 +1,6 @@
 <?php
 /**
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : uk.php
  *  Path    : app/languages/uk/Pay/uk.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -26,7 +26,6 @@ return [
     'Specify the personal account number that needs to be replenished' => 'Вкажіть номер особового рахунку який потрібно поповнити',
     'Payment for services' => 'Оплата послуг',
     'The contract number is incorrect' => 'Невірно вказано номер договору',
-    'There are no connected services under your agreement' => 'По вашому договору немає підключених послуг',
     'Please confirm the services you are paying for' => 'Підтвердьте, будь ласка, послуги, за які ви сплачуєте',
     'Phase 3: The contract number is incorrect' => 'Фаза 3: невірно вказано номер договору',
     'Phase 3: The payment amount is incorrect' => 'Фаза 3: Невірно вказана сума для оплати',

@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : firm_edit.php
  *  Path    : app/languages/en/inc/firm_edit.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7

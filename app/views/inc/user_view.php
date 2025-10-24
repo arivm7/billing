@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : user_view.php
  *  Path    : app/views/inc/user_view.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -17,6 +17,7 @@
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
 use config\Icons;
+use config\tables\Module;
 use config\tables\User;
 use billing\core\base\Lang;
 Lang::load_inc(__FILE__);
@@ -57,7 +58,7 @@ $col3_attr = 'class="text-center align-middle font-monospace text-sm-start ps-3 
                     <?=__('Contacts');?>
                     <table class="table table-hover table-bordered table-striped mt-3">
                         <tr>
-                            <th <?=$col1_attr;?>><?=__('Phone');?></th>
+                            <th <?=$col1_attr;?>><?=__('Phone');?>&nbsp;<span class="badge text-bg-secondary"><img src="/public/bootstrap/icons/icons/telephone.svg"></span></th>
                             <td <?=$col2_attr;?>>
                                 <?= get_html_content_left_right(
                                         left: h($user[User::F_PHONE_MAIN]),
@@ -69,7 +70,7 @@ $col3_attr = 'class="text-center align-middle font-monospace text-sm-start ps-3 
                                        type="checkbox" disabled <?= $user[User::F_SMS_DO_SEND] ? 'checked' : '' ?>></td>
                         </tr>
                         <tr>
-                            <th <?=$col1_attr;?>><?=__('Email');?></th>
+                            <th <?=$col1_attr;?>><?=__('Email');?>&nbsp;<span class="badge text-bg-secondary"><img src="/public/bootstrap/icons/icons/envelope-at.svg"></span></th>
                             <td <?=$col2_attr;?>>
                                 <?php
                                     if ($user[User::F_EMAIL_MAIN]) {
@@ -86,7 +87,7 @@ $col3_attr = 'class="text-center align-middle font-monospace text-sm-start ps-3 
                                        type="checkbox" disabled <?= $user[User::F_EMAIL_DO_SEND] ? 'checked' : '' ?>></td>
                         </tr>
                         <tr>
-                            <th <?=$col1_attr;?>><?=__('Address for invoices');?></th>
+                            <th <?=$col1_attr;?>><?=__('Address for invoices');?>&nbsp;<span class="badge text-bg-secondary"><img src="/public/bootstrap/icons/icons/mailbox.svg"></span></th>
                             <td <?=$col2_attr;?>><?= cleaner_html($user[User::F_ADDRESS_INVOICE]) ?></td>
                             <td <?=$col3_attr;?>><input title="<?=__('Send paper documents');?>"
                                                         type="checkbox" disabled <?= $user[User::F_INVOICE_DO_SEND] ? 'checked' : '' ?>></td>
@@ -140,6 +141,16 @@ $col3_attr = 'class="text-center align-middle font-monospace text-sm-start ps-3 
                         </tr>
                         <?php endif; ?>
                     </table>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <!-- Панель действий -->
+                    <div class="card-footer d-flex gap-2">
+                        <?php if (can_edit([Module::MOD_MY_USER_CARD, Module::MOD_USER_CARD])) : ?>
+                            <a href="<?=User::URI_EDIT;?>/<?=$user[User::F_ID];?>" class="btn btn-info btn-sm"><i class="bi bi-pencil-square"></i> <?= __('Edit'); ?></a>
+                        <?php endif; ?>
+                    </div>
                 </td>
             </tr>
         </tbody>

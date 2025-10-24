@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : config.php
  *  Path    : config/config.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -110,10 +110,21 @@ $config = [
     'LONG_PAUSED_DAYS' => 180,
 
 
+    /**
+     * Параметры логина, если логин отличается от номера договора
+     */
     'login_length_min' => 2,
     'login_length_max' => 25,
-    'login_content' => '^[a-zA-Z0-9_.-]+$',
+    /**
+     * ВАЖНО: 
+     * в фрагменте {1,24} долны быть значения на 1 меньше чем в предыдущих полях 'login_length_min' и 'login_length_max'
+     */
+    'login_content' => '^[A-Za-z][A-Za-z0-9._-]{1,24}$',
 
+
+    /**
+     * Параметры пароля
+     */
     'pass_length_min' => 3,
     'pass_length_max' => 35,
 

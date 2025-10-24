@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : ts-usersView.php
  *  Path    : app/views/admin/Roles/ts-usersView.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7

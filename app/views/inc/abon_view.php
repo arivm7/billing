@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : abon_view.php
  *  Path    : app/views/inc/abon_view.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -19,10 +19,14 @@
 
 use app\controllers\AbonController;
 use config\tables\Abon;
+use config\tables\PA;
 use config\tables\Module;
 use config\tables\AbonRest;
 use billing\core\base\Lang;
 Lang::load_inc(__FILE__);
+
+require_once DIR_LIBS . '/billing_functions.php';
+require_once DIR_LIBS . '/inc_functions.php';
 
 /** @var array $abon — массив с данными абонента. Ключи соответствуют названиям колонок таблицы `abons` */
 /** @var array $item */
@@ -34,16 +38,14 @@ if (isset($item) && !isset($abon)) {
     $abon = $item;
 }
 
-$rest = $abon[AbonRest::TABLE];
-
 /**
- * Добавляет в ассоциативный массив записи абонента поля:
+ * Уже должен быть обновлён update_rest_fields() и иметь установленные поля:
  *   PP30A    -- Активная абонплата за 30 дней
  *   PP01A    -- Активная абонплата за 1 день
  *   REST     -- Остаток на лицевом счету
  *   PREPAYED -- Количество предоплаченных дней
  */
-update_rest_fields($rest);
+$rest = $abon[AbonRest::TABLE];
 
 /**
  * Возвращает статус для предупреждения абонента
@@ -188,10 +190,11 @@ $attr_off  =
                     <!-- Флаг "Плательщик" -->
                     <strong><?=__('Service status');?>:&nbsp;</strong>
                     <?php if ($abon[Abon::F_IS_PAYER]): ?>
-                        <span class="badge bg-success"><?=__('Enabled');?></span>
+                        <span class="badge bg-success"><?=__('Abonent');?></span>
                     <?php else: ?>
-                        <span class="badge bg-secondary"><?=__('Disabled');?></span>
+                        <span class="badge bg-secondary"><?=__('Not Abonent');?></span>
                     <?php endif; ?>
+                    <?= get_html_pa_status(get_pa_list_age($abon[PA::TABLE])); ?>
                 </div>
                 <div class="col justify-content-end">
                     <!-- Настройки задолженности -->
@@ -217,6 +220,14 @@ $attr_off  =
 
                 </div>
             </div>
+            <?php if (can_edit(Module::MOD_ABON)) : ?>
+            <!-- Панель действий -->
+            <div class="row container-fluid mt-4">
+                <div class="col justify-content-start">
+                    <a href="<?=Abon::URI_EDIT;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-info btn-sm"><i class="bi bi-pencil-square"></i> <?= __('Edit'); ?></a>
+                </div>
+            </div>
+            <?php endif; ?>
         </div>
     </div>
 </div>

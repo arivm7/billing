@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : menu_template_bootstrap.php
  *  Path    : app/widgets/menu/templates/menu_template_bootstrap.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7

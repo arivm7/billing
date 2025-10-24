@@ -1,6 +1,6 @@
 <?php
 /**
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : en.php
  *  Path    : app/languages/en/Pay/en.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -26,7 +26,6 @@ return [
     'Specify the personal account number that needs to be replenished' => 'Specify the personal account number that needs to be replenished',
     'Payment for services' => 'Payment for services',
     'The contract number is incorrect' => 'The contract number is incorrect',
-    'There are no connected services under your agreement' => 'There are no connected services under your agreement',
     'Please confirm the services you are paying for' => 'Please confirm the services you are paying for',
     'Phase 3: The contract number is incorrect' => 'Phase 3: The contract number is incorrect',
     'Phase 3: The payment amount is incorrect' => 'Phase 3: The payment amount is incorrect',

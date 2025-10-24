@@ -1,6 +1,6 @@
 <?php
 /*
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : Model.php
  *  Path    : billing/core/base/Model.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -431,7 +431,7 @@ abstract class Model {
      */
     public function get_abon(int $id): array {
         if ($id === 0) {
-            return get_abon_0();
+            return $this->get_abon_0();
         }
         if ($this->validate_id(Abon::TABLE, $id, Abon::F_ID)) {
             return $this->get_row_by_id(Abon::TABLE, $id, Abon::F_ID);

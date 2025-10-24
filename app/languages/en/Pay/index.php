@@ -1,6 +1,6 @@
 <?php
 /**
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : index.php
  *  Path    : app/languages/en/Pay/index.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -28,4 +28,5 @@ return [
     'Choose a payment method' => 'Choose a payment method',
     'Contact the foreman who handles your contract' => 'Contact the foreman who handles your contract',
     'There are no serviced enterprises under your agreement' => 'There are no serviced enterprises under your agreement',
+    'There are no connected services under your agreement' => 'There are no connected services under your agreement',
 ];

@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 /**
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : gen_lang_dict.php
  *  Path    : gen_lang_dict.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7

@@ -1,6 +1,6 @@
 <?php
 /**
- *  Project : s1.ri.net.ua
+ *  Project : my.ri.net.ua
  *  File    : pay_phase_01.php
  *  Path    : app/languages/en/inc/pay_phase_01.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
