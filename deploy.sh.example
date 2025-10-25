@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-trap 'logger -p error -t "S1_DEPLOY" "[$(date)] Ошибка в строке $LINENO: команда \"$BASH_COMMAND\""' ERR
+trap 'logger -p error -t "MY_DEPLOY" "[$(date)] Ошибка в строке $LINENO: команда \"$BASH_COMMAND\""' ERR
 
 
 

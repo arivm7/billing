@@ -27,6 +27,6 @@ ini_set('display_startup_errors', 1);
  * используются только в функции get_http_script()
  */
 const REQUEST_SCHEME_DEFAULT = 'https';
-const SERVER_NAME_DEFAULT    = 's1.ri.net.ua';
+const SERVER_NAME_DEFAULT    = 'my.ri.net.ua';
 const SERVER_PORT_DEFAULT    = '443';
 

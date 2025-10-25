@@ -18,7 +18,7 @@
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
 
-define('DIR_ROOT',              '/var/www/s1.ri.net.ua');
+define('DIR_ROOT',              '/var/www/my.ri.net.ua');
 define('DIR_WWW',               DIR_ROOT  . '/public');
 define('DIR_APP',               DIR_ROOT  . '/app');
 define('DIR_CONTROLLERS',       DIR_APP   . '/controllers');
