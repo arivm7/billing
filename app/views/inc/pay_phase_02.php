@@ -43,6 +43,7 @@ require_once DIR_LIBS . '/bank_api.php';
 /**
  * @var int $phase -- Фаза проведения платежа
  * @var string $title -- Заголовок формы
+ * @var int $user_id -- ID пользователя, которому оплачивается счёт
  * @var int $abon_id -- ID абонента
  * @var array $pa_list -- оплачиваемые прайсовые фрагмернты
  * @var array $rest -- информация о платёжном состоянии абонента
@@ -75,6 +76,12 @@ require_once DIR_LIBS . '/bank_api.php';
             </tbody>
         </table>
     <?php endif ?>
+
+    <?php if (App::isAuth() && (App::get_user_id() != $user_id)): ?>
+        <div class="alert alert-warning" role="alert">
+            <h3 class="alert-heading fs-5"><?=__('The contract number you specified for payment is not yours');?></h3>
+        </div>
+    <?php endif; ?>
 
     <div class="alert alert-info" role="alert">
         <h4 class="alert-heading"><?=__('Information about the status of the personal account');?></h4>

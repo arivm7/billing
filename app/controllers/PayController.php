@@ -169,11 +169,12 @@ class PayController extends AppBaseController
                 $title = __('Please confirm the services you are paying for');
                 View::setMeta(__('Payment for services') . ' :: ' . $title);
                 $this->setVariables([
-                    'title'=> $title,
-                    'abon_id'=>$abon_id,
-                    'pa_list'=>$pa_list,
-                    'rest'=>$rest,
-                    'phase' => ++$phase,
+                    'title'     => $title,
+                    'user_id'   => $model->get_abon($abon_id)[Abon::F_USER_ID],
+                    'abon_id'   =>$abon_id,
+                    'pa_list'   =>$pa_list,
+                    'rest'      =>$rest,
+                    'phase'     => ++$phase,
                 ]);
                 break;
 
@@ -311,14 +312,14 @@ class PayController extends AppBaseController
 
                 $phase++;
                 $title = __('Choose a payment method');
-                View::setMeta(__('Payment for services') . ' :: ' . $title);
+                View::setMeta(__('Rilan') . ' :: ' . __('Payment for services') . ' :: ' . $title);
                 $this->setVariables([
-                    'phase' => $phase,
-                    'title'=> $title,
-                    'abon_id'=> $abon_id,
-                    'amount'=> $amount,
-                    'firm_list'=> $firm_list,
-                    'ppp_list'=> $ppp_list,
+                    'phase'     => $phase,
+                    'title'     => $title,
+                    'abon_id'   => $abon_id,
+                    'amount'    => $amount,
+                    'firm_list' => $firm_list,
+                    'ppp_list'  => $ppp_list,
                 ]);
                 break;
             

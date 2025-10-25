@@ -37,4 +37,5 @@ return [
     'Continue' => 'Continue',
     'Personal account balance' => 'Personal account balance',
     'Prepaid days' => 'Prepaid days',
+    'The contract number you specified for payment is not yours' => 'The contract number you specified for payment is not yours. Make sure that you definitely want to top up this contract number. Or go back and enter the correct contract number.',
 ];

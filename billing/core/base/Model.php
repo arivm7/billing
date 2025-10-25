@@ -522,8 +522,8 @@ abstract class Model {
             /* string */ $user[User::F_FAMILY]           = (string)$user[User::F_FAMILY];
             /* string */ $user[User::F_PHONE_MAIN]       = (string)$user[User::F_PHONE_MAIN];
             /* int    */ $user[User::F_SMS_DO_SEND]      = (int)   $user[User::F_SMS_DO_SEND];
-            /* string */ $user[User::F_EMAIL_MAIN]        = (string)$user[User::F_EMAIL_MAIN];
-            /* int    */ $user[User::F_EMAIL_DO_SEND]     = (int)   $user[User::F_EMAIL_DO_SEND];
+            /* string */ $user[User::F_EMAIL_MAIN]       = (string)$user[User::F_EMAIL_MAIN];
+            /* int    */ $user[User::F_EMAIL_DO_SEND]    = (int)   $user[User::F_EMAIL_DO_SEND];
             /* string */ $user[User::F_ADDRESS_INVOICE]  = (string)$user[User::F_ADDRESS_INVOICE];
             /* int    */ $user[User::F_INVOICE_DO_SEND]  = (int)   $user[User::F_INVOICE_DO_SEND];
             /* string */ $user[User::F_JABBER]           = (string)$user[User::F_JABBER];
