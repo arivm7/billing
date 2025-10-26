@@ -32,6 +32,8 @@ use config\tables\TP;
 use DebugView;
 use MikrotikApi\MikroLink;
 
+require_once DIR_LIBS ."/lang_functions.php";
+
 /**
  * Description of ApiController.php
  *
@@ -92,10 +94,10 @@ class ApiController extends AppBaseController {
                         $status_ip_on_abon_str .= " "
                             . "Активного IP [".$pa_one['net_ip']."] нет в MIK:ABON<br>"
                             // Очистить поле BIL:PA:net_ip
-                            . (!is_empty($pa_one[PA::F_NET_IP])
+                            . (!empty($pa_one[PA::F_NET_IP])
                                 ?   "<a href=/api_run.php"
                                         . "?cmd=set_price_apply_net_ip"
-                                        . "&prices_apply_id=".$pa_one['prices_apply_id']
+                                        . "&prices_apply_id=".$pa_one['id']
                                         . "&net_ip="
                                         . "><font face=monospace>[-]</font> Очистить поле IP ".$pa_one[PA::F_NET_IP]." в биллинге</a><br>"
                                 :   "" )
@@ -142,14 +144,14 @@ class ApiController extends AppBaseController {
                         $status_ip_on_abon = true;
                     } else {
                         $status_ip_on_abon = false;
-                        $status_ip_on_abon_str .= get_html_img(src: SRC_WARN, alt: '[WARN]', title: 'В таблице MIK:ABON найдено '.count($addr_list_records).' IP-адресов. Так не должно быть. Должен быть только 1 адрес');
+                        $status_ip_on_abon_str .= get_html_img(src: Icons::SRC_WARN, alt: '[WARN]', title: 'В таблице MIK:ABON найдено '.count($addr_list_records).' IP-адресов. Так не должно быть. Должен быть только 1 адрес');
                     }
                     foreach ($addr_list_records as $rec) {
                         $status_ip_on_abon_str .= Api::get_status_ip_from_abon_rec($rec);
                     }
 
                 } else {
-                    $status_ip_on_abon_str = get_html_img(src: SRC_ERROR, alt: '[ERROR]', title: 'IP-адрес не указан в биллинге в PRICES_APPLY');
+                    $status_ip_on_abon_str = get_html_img(src: Icons::SRC_ERROR, alt: '[ERROR]', title: 'IP-адрес не указан в биллинге в PRICES_APPLY');
                 }
 
                 /**
@@ -181,7 +183,7 @@ class ApiController extends AppBaseController {
                                         ?   (!is_empty($pa_one['net_nat11'])
                                                 ? "<font face=monospace title='&laquo;Белый&raquo; IP-адрес'>{$pa_one['net_nat11']}</font><br>"
                                                     . get_html_check_img(
-                                                            status: has_ip_in_ip_address_list($mik_ip_addresses, ip: $pa_one['net_nat11'], disabled: "false"),
+                                                            status: Api::has_ip_in_address_list($mik_ip_addresses, ip: $pa_one['net_nat11'], disabled: "false"),
                                                             title_true: "Есть в таблице /IP ADDRESS",
                                                             title_false: "НЕТ в таблице /IP ADDRESS")
                                                     . get_html_check_img(
@@ -210,7 +212,7 @@ class ApiController extends AppBaseController {
 
             if ($pa_one['net_ip_service']) {
                 $pa_mac_update_act = "";
-                $arp_rec = Api::get_mac_from_arp_by_ip(mik_arp_list: $mik_arp_list, ip: $pa_one['net_ip']);
+                $arp_rec = Api::get_mac_from_arp_list_by_ip(mik_arp_list: $mik_arp_list, ip: $pa_one['net_ip']);
                 if (is_array($arp_rec)) {
                     if ($arp_rec['mac-address'] != $pa_one['net_mac']) {
                         if (validate_mac($arp_rec['mac-address'])) {
@@ -376,7 +378,7 @@ class ApiController extends AppBaseController {
         $ssl = true;
         $port = 18729;
 
-        $router = $this->mik_connector($ip, $login, $pass, $port, $ssl);
+        $mik = Api::mik_connector($ip, $login, $pass, $port, $ssl);
 
 
 //        $response = $router->exec('/ip/firewall/address-list/print',
@@ -385,7 +387,7 @@ class ApiController extends AppBaseController {
 //                ]
 //        );
 
-        $response = $router->exec(
+        $response = $mik->exec(
                 '/ip/firewall/address-list/add',
                 [
                     "list"=>"ABON",
@@ -404,7 +406,7 @@ class ApiController extends AppBaseController {
 
         debug($response, '$response');
 
-        $router->disconnect();
+        $mik->disconnect();
 
         debug('end', 'end', die: 1);
     }

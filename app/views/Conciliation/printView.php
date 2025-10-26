@@ -100,7 +100,7 @@ if(isset($_GET['debug']) && ($_GET['debug']=='1')) {
 </h1>
 
 <p style='text-indent:1cm; text-align:justify; font-size:12pt;'>
-    Акт складено між <nobr><u>&nbsp;<?=$agents[0]['name_long'];?>&nbsp;</u></nobr> з одного боку,
+    Акт складено між <nobr><u>&nbsp;<?=$agents[0]['name_long'] ?? '';?>&nbsp;</u></nobr> з одного боку,
     та <nobr><u>&nbsp;<?= $contragents[0]['name_long']; ?>&nbsp;</u></nobr> з іншого,
     за період з <nobr><u>&nbsp;<?= date("d.m.Y р.", $date1); ?>&nbsp;</u></nobr>
     по <nobr><u>&nbsp;<?= date("d.m.Y р.", $today); ?>&nbsp;</u></nobr> включно.</p>
@@ -110,12 +110,12 @@ if(isset($_GET['debug']) && ($_GET['debug']=='1')) {
     за порт <b><?= Sym::CH_NUMERO;?>&nbsp;<?=$abon[Abon::F_ID];?></b>,
     підключений за адресою: <b><u>&nbsp;<?=$abon[Abon::F_ADDRESS];?>&nbsp;</u></b></p>
 <p style='text-indent:1cm; text-align:justify; font-size:12pt;'>
-    &laquo;Сплати&raquo; <?=Sym::CH_DASH;?> суми платежів від <u>&nbsp;<?=$contragents[0]['name_short'];?>&nbsp;</u>
-    на р/р <u>&nbsp;<?=$agents[0]['name_short'];?>&nbsp;</u>
+    &laquo;Сплати&raquo; <?=Sym::CH_DASH;?> суми платежів від <u>&nbsp;<?=$contragents[0]['name_short'] ?? '';?>&nbsp;</u>
+    на р/р <u>&nbsp;<?=$agents[0]['name_short'] ?? 'Провайдера';?>&nbsp;</u>
     для сплати полуг доступу до мережі інтренет</p>
 <p style='text-indent:1cm; text-align:justify; font-size:12pt;'>
-    &laquo;Сальдо&raquo; <?= Sym::CH_DASH;?> залишок коштів <u>&nbsp;<?=$contragents[0]['name_short'];?>&nbsp;</u>
-    на р/р <u>&nbsp;<?=$agents[0]['name_short'];?>&nbsp;</u>
+    &laquo;Сальдо&raquo; <?= Sym::CH_DASH;?> залишок коштів <u>&nbsp;<?=$contragents[0]['name_short'] ?? 'Абонента';?>&nbsp;</u>
+    на р/р <u>&nbsp;<?=$agents[0]['name_short'] ?? 'Провайдера';?>&nbsp;</u>
     для сплати полуг. Коли залишок від'ємний <?= Sym::CH_DASH;?> це сума заборгованності при нестачі сплачених коштів за вже надані послуги.</p>
 <?php
     /**
@@ -139,7 +139,7 @@ if(isset($_GET['debug']) && ($_GET['debug']=='1')) {
 <!-- вывод таблицы по месяцам -->
 <hr>
 <p style='text-indent:1cm; text-align:justify; font-size:12pt;'>
-    За данними білінгової системи <nobr><u>&nbsp;<?=$agents[0]['name_short'];?>&nbsp;</u></nobr>
+    За данними білінгової системи <nobr><u>&nbsp;<?=$agents[0]['name_short'] ?? 'Провайдера';?>&nbsp;</u></nobr>
     сальдо на початок звіряємого періода складає <b><u>&nbsp;<?=number_format(floatval($balance),2,","," ");?>&nbsp;грн&nbsp;</u></b>
 </p>
 <table width=100% align=center border=1 cellpadding=7 cellspacing=0>
@@ -160,8 +160,8 @@ if(isset($_GET['debug']) && ($_GET['debug']=='1')) {
                 . "<tr bgcolor='".COLOR1_VALUE."'>"
                     . "<td rowspan=2 align=center>". Sym::CH_NUMERO."</td>"
                     . "<td rowspan=2 align=center>Розрахунковий місяць</td>"
-                    . "<td colspan=3 align=center>За данними білінгової системи<br><nobr><u>&nbsp;".$agents[0]['name_short']."&nbsp;</u></nobr></td>"
-                    . "<td rowspan=2 align=center>Розбіжності за данними<br><u>&nbsp;".$contragents[0]['name_short']."&nbsp;</u></td>"
+                    . "<td colspan=3 align=center>За данними білінгової системи<br><nobr><u>&nbsp;".($agents[0]['name_short'] ?? 'Провайдера')."&nbsp;</u></nobr></td>"
+                    . "<td rowspan=2 align=center>Розбіжності за данними<br><u>&nbsp;".($contragents[0]['name_short'] ?? 'Абонента')."&nbsp;</u></td>"
                 . "</tr>"
                 . "<tr bgcolor='".COLOR1_VALUE."'>"
                     . "<td style='width:21mm;' align=center><font size=-1>Нарахування</font></td>"
@@ -190,14 +190,14 @@ if(isset($_GET['debug']) && ($_GET['debug']=='1')) {
         if($balance >= 0) {
             echo "<p style='text-indent:1cm; text-align:justify; font-size:12pt;'>"
                     . "Станом на ".date("d.m.Y", $today)." "
-                    . "заборгованність <u>&nbsp;".$contragents[0]['name_long']."&nbsp;</u> "
-                    . "перед <u>&nbsp;".$agents[0]['name_short']."&nbsp;</u> відсутня. "
+                    . "заборгованність <u>&nbsp;".($contragents[0]['name_long'] ?? '')."&nbsp;</u> "
+                    . "перед <u>&nbsp;".($agents[0]['name_short'] ?? '')."&nbsp;</u> відсутня. "
                     . "</p>";
         } else {
             echo "<p style='text-indent:1cm; text-align:justify; font-size:12pt;'>"
                     . "Станом на ".date("d.m.Y", $today)." "
-                    . "заборгованність <u>&nbsp;".$contragents[0]['name_long']."&nbsp;</u> "
-                    . "перед <u>&nbsp;".$agents[0]['name_short']."&nbsp;</u> "
+                    . "заборгованність <u>&nbsp;".($contragents[0]['name_long'] ?? '')."&nbsp;</u> "
+                    . "перед <u>&nbsp;".($agents[0]['name_short'] ?? '')."&nbsp;</u> "
                     . "за надані послуги складає <nobr><u>&nbsp;".number_format(floatval(abs($balance)),2,","," ")."&nbsp;</u></nobr> грн. "
                     . "</p>";
         }
@@ -210,12 +210,12 @@ if(isset($_GET['debug']) && ($_GET['debug']=='1')) {
         . "<table width=100% align=center border=1 cellpadding=7 cellspacing=0>"
         . "<tr>"
                 . "<td width=50% align=left valign=top>"
-                . "Представник <u>&nbsp;".$agents[0]['name_short']."&nbsp;</u>"
-                . "<br><br><br><br>__________________ &nbsp;&nbsp;/ ".(isset($_GET['shtamp'])?"<u>&nbsp;".$agents[0]['manager_name_short']."&nbsp;</u>":"___________")." /"
+                . "Представник <u>&nbsp;".($agents[0]['name_short'] ?? '')."&nbsp;</u>"
+                . "<br><br><br><br>__________________ &nbsp;&nbsp;/ ".(isset($_GET['shtamp'])?"<u>&nbsp;".($agents[0]['manager_name_short'] ?? '')."&nbsp;</u>":"___________")." /"
                 . "<font size=-2><br>мп".str_repeat("&nbsp;", 20)."підпис".str_repeat("&nbsp;", 45)."ФІО</font>"
                 . "</td>"
                 . "<td width=50% align=left valign=top>"
-                . "Представник <u>&nbsp;".$contragents[0]['name_short']."&nbsp;</u>"
+                . "Представник <u>&nbsp;".($contragents[0]['name_short'] ?? '')."&nbsp;</u>"
                 . "<br><br><br><br>__________________ &nbsp;&nbsp;/ ___________ /"
                 . "<font size=-2><br>мп".str_repeat("&nbsp;", 20)."підпис".str_repeat("&nbsp;", 45)."ФІО</font>"
                 . "</td>"

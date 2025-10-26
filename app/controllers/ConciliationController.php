@@ -98,7 +98,7 @@ class ConciliationController extends AbonController {
 
 
         $events = array();
-        $index = 0;
+        // $index = 0;
         $pa_list = $model->get_prices_apply_by_abon($A[Abon::F_ID]);
 //        debug($pa_list, '$prices', die: 1);
         foreach ($pa_list as $pa) {

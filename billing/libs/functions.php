@@ -13,6 +13,7 @@
 
 
 use app\models\AbonModel;
+use billing\core\base\Lang;
 use config\tables\Firm;
 use config\tables\PA;
 use config\Icons;
@@ -1890,3 +1891,4 @@ function isJabberFull(string $value): bool {
  * <a href="https://www.messenger.com/t/jack.malbon.3">Facebook Messenger</a>
  *
  */
+

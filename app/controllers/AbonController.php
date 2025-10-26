@@ -1090,8 +1090,9 @@ class AbonController extends AppBaseController {
 
 
     function viewAction() {
-//        debug($_GET, '_GET:', debug_view: DebugView::PRINTR);
-//        debug($_POST, '_POST:', debug_view: DebugView::PRINTR);
+        // debug($_GET, '_GET:');
+        // debug($_POST, '_POST:');
+        // debug($this->route, '$this->route:');
 
         if (!App::$auth->isAuth)
         {
@@ -1125,6 +1126,7 @@ class AbonController extends AppBaseController {
              * Если пришёл ALIAS или id
              */
             $id = (int)($this->route[F_ALIAS] ?? $_GET['id']);
+
             if ($model->validate_id(table_name: Abon::TABLE, field_id: Abon::F_ID, id_value: $id))
             {
                 $for_abon_id = $id;

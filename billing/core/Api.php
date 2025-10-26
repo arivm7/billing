@@ -16,6 +16,7 @@ namespace billing\core;
 use app\models\AppBaseModel;
 use billing\core\MsgQueue;
 use billing\core\MsgType;
+use config\Icons;
 use config\tables\TP;
 use MikrotikApi\MikroLink;
 use config\Mik;
@@ -62,14 +63,22 @@ class Api {
 
 
 
+    /**
+     * Создаёт объект подключения к микротику
+     * Для подключения нужно передать или ID ехплощадки или массив параметров техплощадки.
+     * @param int|null $tp_id -- ID техплощадки
+     * @param array|null $tp -- Массив с параметрами техплощадки
+     * @throws \Exception
+     * @return bool|MikroLink -- Возвращаемій объект.
+     */
     public static function tp_connector(int|null $tp_id = null, array|null $tp = null): MikroLink|bool  {
         if (is_null($tp_id) && is_null($tp)) {
             throw new \Exception('Нужно указать или ID ТП или массив TP');
         }
 
         if (is_null($tp)) {
-            $db = new AppBaseModel();
-            $tp = $db->get_tp($tp_id);
+            $model = new AppBaseModel();
+            $tp = $model->get_tp($tp_id);
         }
         return self::mik_connector(
                 ip:     $tp[TP::F_MIK_IP],
@@ -81,7 +90,7 @@ class Api {
 
 
 
-    public static function mik_connector(string $ip, string $login, string $pass, int $port, bool $ssl): MikroLink|bool {
+    public static function mik_connector(string $ip, string $login, string $pass, int $port, bool $ssl): MikroLink|false {
         $router = new MikroLink(
             timeout:  1, // Ожидание ответа при подключении
             attempts: 2, // количество попыток подключения
@@ -357,7 +366,7 @@ class Api {
 
 
 
-    public static function get_mac_from_arp_by_ip(array &$mik_arp_list, null|string $ip): array|string|null {
+    public static function get_mac_from_arp_list_by_ip(array &$mik_arp_list, null|string $ip): array|string|null {
         if (is_empty($ip)) { return null; }
         if (!validate_ip($ip)) { return "IP [{$ip}] не верен."; }
 
@@ -373,6 +382,32 @@ class Api {
         return self::$CASHE_MAC_IN_ARP_BY_IP[$ip];
     }
 
+
+    public static function get_mac_from_arp_by_ip(MikroLink $mik, null|string $ip, bool $disconect_on_end = false): array|string|null {
+
+        /**
+         * Выполним команду print с фильтром адреса
+         * В параметрах массива мы указываем фильтр вида '=address=192.168.88.50', 
+         * что аналогично where address=192.168.88.50.
+         */
+        $response = $mik->exec('/ip/arp/print', ['?address' => $ip]);
+
+        if (!empty($response) && is_array($response)) {
+            // Обычно возвращается массив строк-массивов
+            $entry = $response[0];
+            // echo "IP: " . ($entry['address'] ?? '') . "\n";
+            // echo "MAC: " . ($entry['mac-address'] ?? '') . "\n";
+            // echo "Interface: " . ($entry['interface'] ?? '') . "\n";
+            // echo "Dynamic: " . ($entry['dynamic'] ?? '') . "\n";
+        } else {
+            $entry = null;
+            // echo "Запись ARP по адресу {$ip} не найдена.\n";
+        }
+
+        if($disconect_on_end) { $mik->disconnect(); }
+        return $entry;
+    }
+    
 
 
     /**
@@ -415,7 +450,7 @@ class Api {
      *
      * @param $mik класс, подключенный к микротику
      * @param boolean $disconect_on_end
-     * @return Array
+     * @return array
      */
     static function get_tp_resource(MikroLink $mik, bool $disconect_on_end = false): array|null {
         $rez = $mik->exec('/system/resource/print');
@@ -444,7 +479,6 @@ class Api {
     /**
      * Возвращает список указанной таблицы на микротике
      * Возвращает список из адресной таблицы микротика
-     * @global type $api_error
      * @param MikroLink $mik -- подключенный АПИ микротика
      * @param string|null $address_list -- строка имена адресного листа
      * @param bool $disconect_on_end -- закрыть подключение к микротику по завершению
@@ -594,7 +628,7 @@ class Api {
         if (!is_empty($ip)) {
             if (validate_ip($ip)) {
                 // ARP: .id	address	mac-address	interface	published	invalid	DHCP	dynamic	complete	disabled
-                $mac_rec = self::get_mac_from_arp_by_ip($mik_arp_list, $ip);
+                $mac_rec = self::get_mac_from_arp_list_by_ip($mik_arp_list, $ip);
                 if ($mac_rec) {
                     return (validate_mac($mac_rec['mac-address'])
                             ? self::get_status_mac_from_arp_rec($mac_rec)
@@ -602,7 +636,7 @@ class Api {
                 } else {
                     return $on_not_found;
                 }
-                unset($mac_rec);
+                // unset($mac_rec);
             } else {
                 if (is_ip_net($ip)) {
                     return "IP-подсеть";
@@ -654,7 +688,7 @@ class Api {
          *  [disabled] => false
          *  все поля строковые.
          */
-        if (!is_empty($arp_rec['mac-address'])) {
+        if (!empty($arp_rec['mac-address'])) {
             if (validate_mac($arp_rec['mac-address'])) {
                 $title = "[ I|V ] Invalid|Valid \n[ D|S ] Dynamic|Static \n[ C ] Complete \n[ X|E ] Disabled|Enabled";
                 //debug("_R:", $arp_rec, "<hr>");
@@ -700,10 +734,10 @@ class Api {
                         title: "{$title_prefix}IP: {$arp_rec['address']}\nMAC: {$arp_rec['mac-address']}\n{$title}",
                         face: 'monospace');
             } else {
-                return paint(paint("Ошибка:", RED)." MAC-адрес не верен", title: "*  [address] => {$arp_rec['address']}\n*  [mac-address] => {$arp_rec['mac-address']}\n*  [interface] => {$arp_rec['interface']}" );
+                return paint(paint("Ошибка:", RED)." MAC-адрес не верен", title: "*  [address] => ".($arp_rec['address'] ?? '')."\n*  [mac-address] => ".($arp_rec['mac-address'] ?? '')."\n*  [interface] => ".($arp_rec['interface'] ?? '')."" );
             }
         } else {
-            return paint(paint("Ошибка:", RED)." MAC-адреса нет", title: "*  [address] => {$arp_rec['address']}\n*  [mac-address] => {$arp_rec['mac-address']}\n*  [interface] => {$arp_rec['interface']}" );
+            return paint(paint("Ошибка:", RED)." MAC-адреса нет", title: "*  [address] => ".($arp_rec['address'] ?? '')."\n*  [mac-address] => ".($arp_rec['mac-address'] ?? '')."\n*  [interface] => ".($arp_rec['interface'] ?? '')."" );
         }
     }
 

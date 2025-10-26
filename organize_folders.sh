@@ -41,7 +41,15 @@ PURIFIER="htmlpurifier"
 mkdir -p \
     "${TMP}/${CACHE}" \
     "${TMP}/${LOG}" \
-    "${TMP}/${PURIFIER}"
+    "${TMP}/${PURIFIER}" \
+    "storage/files" \
+    "public/uploads" \
+    "public/uploads/archives" \
+    "public/uploads/docs" \
+    "public/uploads/icons" \
+    "public/uploads/images" \
+    "public/uploads/media"
+
 
 # -----------------------------
 # 1️⃣ Установить владельца и группу для всех файлов и папок

@@ -21,6 +21,7 @@
 namespace app\controllers;
 
 use app\models\AbonModel;
+use billing\core\Api;
 use billing\core\App;
 use billing\core\base\View;
 use billing\core\MsgQueue;
@@ -186,6 +187,36 @@ class PaController extends AppBaseController {
 
         $pa = $model->get_row_by_id(PA::TABLE, $pa_id, PA::F_ID);
 
+        $tp = $model->get_tp($pa[PA::F_TP_ID]);
+
+        $arp = null;
+        if  (
+                $tp[TP::F_STATUS] &&                    // ТП активна
+                $tp[TP::F_IS_MANAGED] &&                // ТП управляемая
+                ($pa[PA::F_NET_IP_SERVICE] == 1) &&     // это IP услуга
+                !empty($pa[PA::F_NET_IP]) &&            // IP-адрес указан
+                validate_ip($pa[PA::F_NET_IP])      // IP-адрес валидный
+            ) 
+        {
+            /**
+             * Получение данных с микротика
+             * Запись из таблицы ARP микротика со статусом IP-адреса
+             */
+            $mik = Api::tp_connector(tp: $tp);
+            if ($mik !== false) {
+                /**
+                 * Соединение с миротиком установлено
+                 */
+                $arp = Api::get_mac_from_arp_by_ip(
+                    $mik,
+                    $pa[PA::F_NET_IP], 
+                    true);
+            } else {
+                MsgQueue::msg(MsgType::ERROR, Api::$errors);
+            }
+        }
+
+
         $prices_list = array_column(
                 array: $model->get_rows_by_sql("SELECT `".Price::F_ID."`, `".Price::F_TITLE."` FROM `".Price::TABLE."` WHERE (`".Price::F_ACTIVE."`=1) ORDER BY `".Price::TABLE."`.`".Price::F_TITLE."` ASC"),
                 column_key: Price::F_TITLE,
@@ -199,6 +230,8 @@ class PaController extends AppBaseController {
         View::setMeta(title: __('Редактирование прайсового фрагмента'));
         $this->setVariables([
             'pa'=> $pa,
+            'tp'=> $tp,
+            'arp'=> $arp,
             'prices_list'=> $prices_list,
             'tp_list'=> $tp_list,
         ]);

@@ -17,6 +17,7 @@
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
 
+use billing\core\Api;
 use config\tables\PA;
 use config\tables\TP;
 use config\tables\Price;
@@ -29,6 +30,8 @@ require_once DIR_LIBS . '/form_functions.php';
 /** 
  * @var array $item -- элемент из функции Аккордеона
  * @var array $pa -- элемент из контроллера
+ * @var array $tp -- Текущая ТП к которой прикреплена услуга
+ * @var array $arp -- Запись из таблицы ARP микротика со статусом IP-адреса
  * @var array $prices_list -- список прайсов, только названия
  * @var array $tp_list -- список ТП, только названия
  */
@@ -68,20 +71,50 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
                 checkboxRow(label: 'Прайс закрыт', post_rec: PA::POST_REC, name: 'price_closed', checked: !empty($item['price_closed']), label_col: 12, input_col: 12, options: "class='col-sm-3'");
                 ?>
             </div>
-            <fieldset class="border p-3">
+
+            <!-- ТП -->
+            <fieldset class="border mt-4 p-3">
+                <legend class="text-info text-start"><?=__('Параметры ТП');?></legend>
+                <?php
+                    selectRow(
+                        label: "ТП <span class='text-info-emphasis small'>[&nbsp;" 
+                        . ($tp[TP::F_ID] ?? '-') . ' | ' 
+                        . ($tp[TP::F_TITLE] ?? '-') . '&nbsp;]</span>', 
+                        post_rec: PA::POST_REC, 
+                        name: PA::F_TP_ID, 
+                        selected_id: $item[PA::F_TP_ID] ?? '-', 
+                        data: $tp_list);
+                ?>
+                <div class='row mb-3'>
+                    <div class='col-sm-3'></div>
+                    <div class='col-sm-9'>
+                        <?= '[ '. TP::get_status($tp) . ' ]<br>';?>
+                    </div>
+                </div>
+                <?php
+                    inputRow(label: 'Координаты Google Maps', post_rec: PA::POST_REC, name: 'coord_gmap', value: $item['coord_gmap'] ?? '', label_col: 3, input_col: 9, l_layout: LabelLayout::H);
+                ?>
+            </fieldset>
+
+            <fieldset class="border mt-4 p-3">
                 <legend class="text-info text-start"><?=__('IP услуга');?></legend>
                 <?php
                 checkboxRow(label: 'IP услуга', post_rec: PA::POST_REC, name: 'net_ip_service', checked: !empty($item['net_ip_service']), l_layout: LabelLayout::H);
                 ?>
-                <fieldset class="border p-3">
+                <fieldset class="border mt-4 p-3">
                     <legend class="text-info text-start"><?=__('IP выданный абоненту через микротик');?></legend>
                     <div class='mb-3 row'>
+                        <!-- Парметры IP -->
                         <?php
                         inputRow(label: 'IP-адрес', post_rec: PA::POST_REC, name: 'net_ip', value: $item['net_ip'] ?? '', label_col: 12, input_col: 12, options: "class='col-sm-3'");
                         inputRow(label: 'Маска сети', post_rec: PA::POST_REC, name: 'net_mask', value: $item['net_mask'] ?? '', label_col: 12, input_col: 12, options: "class='col-sm-3'");
                         inputRow(label: 'Шлюз', post_rec: PA::POST_REC, name: 'net_gateway', value: $item['net_gateway'] ?? '', label_col: 12, input_col: 12, options: "class='col-sm-3'");
                         checkboxRow(label: 'IP в trusted', post_rec: PA::POST_REC, name: 'net_ip_trusted', checked: !empty($item['net_ip_trusted']), label_col: 12, input_col: 12, options: "class='col-sm-3'");
                         ?>
+                        <!-- Статус IP-MAC из ARP-таблицы микротика -->
+                        <span class="badge text-bg-info mt-3">
+                        <?= ($arp ? Api::get_status_mac_from_arp_rec($arp) : 'Нет данных ARP'); ?>
+                        </span>
                     </div>
                     <div class='mb-3 row'>
                         <?php
@@ -91,13 +124,13 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
                         ?>
                     </div>
                 </fieldset>
-                <fieldset class="border p-3">
+                <fieldset class="border mt-4 p-3">
                     <legend class="text-info text-start"><?=__('Белый IP через NAT-1:1');?></legend>
                     <?php
                     inputRow(label: 'NAT 1:1', post_rec: PA::POST_REC, name: 'net_nat11', value: $item['net_nat11'] ?? '', label_col: 3, input_col: 3, l_layout: LabelLayout::H);
                     ?>
                 </fieldset>
-                <fieldset class="border p-3">
+                <fieldset class="border mt-4 p-3">
                     <legend class="text-info text-start"><?=__('IP на оборудовании абонента, мимо микротика');?></legend>
                     <div class='mb-3 row'>
                         <?php
@@ -108,22 +141,7 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
                     </div>
                 </fieldset>
             </fieldset>
-            <br>
-            <fieldset class="border p-3">
-                <legend class="text-info text-start"><?=__('Параметры ТП');?></legend>
-                <?php
-                selectRow(
-                    label: "ТП <span class='text-info-emphasis small'>[&nbsp;" 
-                    . ($item[PA::F_TP_ID] ?? '-') . ' | ' 
-                    . ($tp_list[$item[PA::F_TP_ID]] ?? '-') . '&nbsp;]</span>', 
-                    post_rec: PA::POST_REC, 
-                    name: PA::F_TP_ID, 
-                    selected_id: $item[PA::F_TP_ID] ?? '-', 
-                    data: $tp_list);
-                inputRow(label: 'Координаты Google Maps', post_rec: PA::POST_REC, name: 'coord_gmap', value: $item['coord_gmap'] ?? '', label_col: 3, input_col: 6, l_layout: LabelLayout::H);
-                ?>
-            </fieldset>
-            <fieldset class="border p-3">
+            <fieldset class="border mt-4 p-3">
                 <legend class="text-info text-start"><?=__('Стоимостные значения этого прайсового фрагмента');?></legend>
                 <div class='row mb-3'>
                     <div class='col-sm-3'></div>

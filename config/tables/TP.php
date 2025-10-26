@@ -32,6 +32,11 @@ class TP {
 
     const TABLE                    = 'tp_list'; // Технические площадки, точки доступа
 
+
+    /**
+     * Поля
+     */
+
     const F_ID                     = 'id';
     const F_STATUS                 = 'status';                  // '0 — Отключен/демонтирован, 1 — Работает',
     const F_DELETED                = 'deleted';                 // 'ТП демонтирована',
@@ -117,6 +122,55 @@ class TP {
     const TYPE_BILLIG       = 100;  // Биллинг 	100 — Сервер биллинга
 
 
+
+
+    const DESCRIPTIONS = [
+        self::F_STATUS => [
+            0=> [
+                'en'=> 'Off',
+                'ru'=> 'Отключена',  
+                'uk'=> 'Відключена',
+            ],
+            1=> [
+                'en'=> 'Working',
+                'ru'=> 'Работает',  
+                'uk'=> 'Працює',
+            ],
+        ],
+        self::F_IS_MANAGED => [
+            0=> [
+                'en'=> 'Not Managed',
+                'ru'=> 'Не управляемая',  
+                'uk'=> 'Не керована',
+            ],
+            1=> [
+                'en'=> 'Managed',
+                'ru'=> 'Управляемая',
+                'uk'=> 'Керована',
+            ],
+        ],
+        self::F_DELETED => [
+            0=> [
+                'en'=> 'The equipment is installed',
+                'ru'=> 'Оборудование установлено',  
+                'uk'=> 'Обладнання встановлено',
+            ],
+            1=> [
+                'en'=> 'The equipment has been dismantled',
+                'ru'=> 'Оборудование демонтировано',
+                'uk'=> 'Обладнання демонтовано',
+            ],
+        ],
+    ];
+
+
+    public static function get_status(array $tp): string {
+        return self::DESCRIPTIONS[self::F_STATUS]     [$tp[self::F_STATUS]]     [Lang::code()] 
+                . ' | ' . self::DESCRIPTIONS[self::F_IS_MANAGED] [$tp[self::F_IS_MANAGED]] [Lang::code()] 
+                // . ' | ' . self::DESCRIPTIONS[self::F_DELETED]    [$tp[self::F_DELETED]]    [Lang::code()]
+                ;
+    }
+
     
     const TYPES = [
         self::TYPE_NA => [
@@ -170,7 +224,6 @@ class TP {
             Lang::C_UK => 'Білінгова система',
         ],
     ];
-
 
 
     public static function get_type_name(int $type_id): string {
