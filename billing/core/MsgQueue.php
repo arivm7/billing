@@ -22,6 +22,8 @@ enum MsgType: string {
     case SUCCESS_AUTO   = SessionFields::SUCCESS_AUTO;
     case INFO           = SessionFields::INFO;
     case INFO_AUTO      = SessionFields::INFO_AUTO;
+    case WARN           = SessionFields::WARNING;
+    case WARN_AUTO      = SessionFields::WARNING_AUTO;
 }
 
 /**

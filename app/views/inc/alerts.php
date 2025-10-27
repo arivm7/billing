@@ -27,11 +27,13 @@ use config\SessionFields;
         [SessionFields::INFO,           'info',        false],
         [SessionFields::ERROR,          'danger',      false],
         [SessionFields::SUCCESS,        'success',     false],
+        [SessionFields::WARNING,        'warning',     false],
 
         // авто-закрывающиеся
         [SessionFields::INFO_AUTO,      'info',        SessionFields::INFO_TIMEOUT],
         [SessionFields::ERROR_AUTO,     'danger',      SessionFields::ERROR_TIMEOUT],
         [SessionFields::SUCCESS_AUTO,   'success',     SessionFields::SUCCESS_TIMEOUT],
+        [SessionFields::WARNING_AUTO,   'warning',     SessionFields::WARNING_TIMEOUT],
     ];
 
     $autoAlerts = [];

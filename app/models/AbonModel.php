@@ -793,11 +793,11 @@ class AbonModel extends UserModel {
 
                 self::$CASHE_ABON_STATE_LIST[$abon_id] = AbonStatus::ABON_0;
 
-            } elseif ($abon_id == MikAbonStatus::XZ) {
+            } elseif ($abon_id == MikAbonStatus::ABON_XZ) {
 
                 self::$CASHE_ABON_STATE_LIST[$abon_id] = AbonStatus::NA;
 
-            } elseif ($abon_id == MikAbonStatus::SW) {
+            } elseif ($abon_id == MikAbonStatus::ABON_SW) {
 
                 self::$CASHE_ABON_STATE_LIST[$abon_id] = AbonStatus::SW;
 

@@ -44,6 +44,41 @@ enum DebugView: string
 }
 
 
+/**
+ * Поля статуса абонента на микротике
+ */
+final class MikAbonStatus {
+    const ABON_XZ  = -100;
+    const ABON_0   = 0;
+    const ABON_SW  = -1;
+    const RULE_NAT = -2;
+    const RULE_IP  = -3;
+    const RULE_UV  = -4;
+    
+}
+
+
+
+/**
+ * Поля глобального массива, содержащего таблицы из базы и миротика
+ */
+define('PA_ACT',        'PA_ACT');
+define('PA_OFF',        'PA_OFF');
+define('MIK_ABON',      'MIK_ABON');
+define('MIK_IP',        'MIK_IP');
+define('MIK_NAT',       'MIK_NAT');
+define('MIK_GATES',     'MIK_GATES');
+define('MIK_FILTERS',   'MIK_FILTERS');
+define('MIK_LEASES',    'MIK_LEASES');
+define('MIK_SW',        'MIK_SW');
+define('MIK_TRUSTED',   'MIK_TRUSTED');
+define('MIK_SERVICES',  'MIK_SERVICES');
+define('MIK_ARP',       'MIK_ARP');
+define('MIK_GW_xxx',    'MIK_GW_xxx');
+define('MIK_FLOOD',     'MIK_FLOOD');
+define('MIK_NO_ABON',   'MIK_NO_ABON');
+
+
 
 
 
@@ -54,6 +89,8 @@ enum DataTypes {
     case FLOAT;
     case STR;
 }
+
+
 
 
 class AbonStatus
@@ -88,14 +125,6 @@ class MikRuleTypes {
     const NAT = -2;
     const IP  = -3;
     const UV  = -4;
-}
-
-class MikAbonStatus {
-
-    const ABON_0  = 0;
-    const XZ = -100;
-    const SW = -1;
-
 }
 
 

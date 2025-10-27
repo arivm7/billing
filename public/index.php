@@ -69,6 +69,7 @@ define('MODEL_SUFFIX',          'Model');
 
 $ALLOWED_ADDRES = false;
 $ALLOWED_ADDRESSES = [
+    "0.0.0.0/0",
     '176.36.12.167',
     '176.105.102.234',
     //'176.105.102.234/29',

@@ -63,10 +63,6 @@ class PaymentsController extends AppBaseController {
             redirect();
         }
 
-        if (!can_view([Module::MOD_MY_PAYMENTS, Module::MOD_PAYMENTS]))  {
-            MsgQueue::msg(MsgType::ERROR, __('У Вас нет прав для этого модуля'));
-            redirect();
-        }
         if (empty($this->route[F_ALIAS])) {
             MsgQueue::msg(MsgType::ERROR, __('Не указан номер договора'));
             redirect();
@@ -80,15 +76,22 @@ class PaymentsController extends AppBaseController {
             redirect();
         }
 
-        $user = $_SESSION[User::SESSION_USER_REC];
-        $user[Abon::REC] = $model->get_abon(id: $abon_id);
+        $abon = $model->get_abon($abon_id);
+        $user = $model->get_user_by_abon_id($abon_id);
+        $user[Abon::REC] = $abon;
 
         if  (
-                $user[User::F_ID] != $user[Abon::REC][Abon::F_USER_ID] &&
-                !can_view(Module::MOD_PAYMENTS)
-            )
+                // авторизованный пользователь НЕ равен пользователю запрашиваемого лицевого счёта И 
+                // авторизованный пользователь НЕ имеет права просматривать модуль MOD_PAYMENTS
+                (($user[User::F_ID] != App::get_user_id()) && !can_view([Module::MOD_PAYMENTS])) ||
+                // ИЛИ
+                // авторизованные пользователь есть владелец просматриваемого лицевого счёта И
+                // авторизованный пользователь НЕ имеет права на просмотр модуля MOD_MY_PAYMENTS
+                (($user[User::F_ID] == App::get_user_id()) && !can_view([Module::MOD_MY_PAYMENTS]))
+            )  
         {
-            MsgQueue::msg(MsgType::ERROR, __('Вы не имеете прав на просмотр чужих платежей'));
+            // отказать в просмотре
+            MsgQueue::msg(MsgType::ERROR, __('У Вас нет прав для этого модуля'));
             redirect();
         }
 

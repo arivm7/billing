@@ -18,6 +18,7 @@ use billing\core\MsgQueue;
 use billing\core\MsgType;
 use config\Icons;
 use config\tables\TP;
+use MikAbonStatus;
 use MikrotikApi\MikroLink;
 use config\Mik;
 
@@ -275,6 +276,40 @@ class Api {
 
 
     /**
+     * Вычисление поля номера абонета из комментария comment_abon_id
+     */
+    public static function get_aid_from_str($str): int {
+        $id = MikAbonStatus::ABON_XZ; //xz
+        if (is_empty($str)) {
+            $id = MikAbonStatus::ABON_0;
+        } elseif(!is_empty($str) && substr($str, 0 , 2)=="SW") {
+            $id = MikAbonStatus::ABON_SW; // SWITCH
+        } elseif(!is_empty($str) && substr($str, 0 , 3)=="NAT") {
+            $id = MikAbonStatus::RULE_NAT; // RULE NAT
+        } elseif(!is_empty($str) && substr($str, 0 , 2)=="IP") {
+            $id = MikAbonStatus::RULE_IP; // RULE EXT IP
+        } elseif(!is_empty($str) && substr($str, 0 , 2)=="UV") {
+            $id = MikAbonStatus::RULE_UV; // RULE UVEDOMLENIE
+        } else {
+            if(!is_empty($str) and strlen($str) > 0) {
+                $indexSpace = 0;
+                if(!($indexSpace = strpos($str, ' '))) {
+                    $indexSpace = strlen($str);
+                }
+                if($indexSpace) {
+                    $str_id = substr($str, 0 , $indexSpace);
+                    if(is_numeric($str_id)) {
+                        $id = intval($str_id);
+                    }
+                }
+            }
+        }
+        return $id;
+    }
+
+
+
+    /**
      * Возвращает список записей mik:address_list с указанным $abon_id из комментария
      * и с использованием дополнительных фильтров
      *
@@ -295,10 +330,10 @@ class Api {
         $records = array();
         foreach ($mik_list as $row) {
             if (
-                    (get_aid_from_str($row[Mik::LIST_COMMENT]) == $abon_id)
-                    && (is_null($list)     ? true : ($list     == $row[Mik::LIST_LIST]))
-                    && (is_null($dynamic)  ? true : ($dynamic  == $row[Mik::LIST_DYNAMIC]))
-                    && (is_null($disabled) ? true : ($disabled == $row[Mik::LIST_DISABLED]))
+                    (Api::get_aid_from_str($row[Mik::LIST_COMMENT]) == $abon_id) &&
+                    (is_null($list)     ? true : ($list     == $row[Mik::LIST_LIST])) && 
+                    (is_null($dynamic)  ? true : ($dynamic  == $row[Mik::LIST_DYNAMIC])) && 
+                    (is_null($disabled) ? true : ($disabled == $row[Mik::LIST_DISABLED]))
                )
             {
                 $records[] = $row;

@@ -42,6 +42,7 @@ class Pay {
      */
     const URI_MY            = '/payments';
     const URI_MY_LIST       = '/payments/list';
+    const URI_LIST       = '/payments/list';
 
 
 

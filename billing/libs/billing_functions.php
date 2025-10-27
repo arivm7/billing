@@ -110,7 +110,7 @@ enum PAStatus: int  {
 
 
 function get_pa_list_age(array $pa_list): PAStatus {
-    $status = PAStatus::PAUSE;
+    $status = PAStatus::CLOSED;
     foreach ($pa_list as $pa) {
         $pa_status = get_price_apply_age($pa);
         switch ($pa_status) {
@@ -118,7 +118,7 @@ function get_pa_list_age(array $pa_list): PAStatus {
             case PAStatus::CURRENT:
                 $status = $pa_status; 
                 break 2;
-            case PAStatus::PAUSE_TODAY:
+            default:
                 if ($pa_status > $status) {
                     $status = $pa_status; 
                 }

@@ -92,12 +92,12 @@ class ApiController extends AppBaseController {
                         $status_ip_on_abon_str .= get_html_img(src: Icons::SRC_ERROR, alt: '[ERROR]', title: "IP-адрес [{$pa_one[PA::F_NET_IP]}] не найден в таблице MIK:ABON");
                         // Активного ИП из ПА нет в микротике
                         $status_ip_on_abon_str .= " "
-                            . "Активного IP [".$pa_one['net_ip']."] нет в MIK:ABON<br>"
+                            . "Активного IP [".$pa_one[PA::F_NET_IP]."] нет в MIK:ABON<br>"
                             // Очистить поле BIL:PA:net_ip
                             . (!empty($pa_one[PA::F_NET_IP])
                                 ?   "<a href=/api_run.php"
                                         . "?cmd=set_price_apply_net_ip"
-                                        . "&prices_apply_id=".$pa_one['id']
+                                        . "&prices_apply_id=".$pa_one[PA::F_ID]
                                         . "&net_ip="
                                         . "><font face=monospace>[-]</font> Очистить поле IP ".$pa_one[PA::F_NET_IP]." в биллинге</a><br>"
                                 :   "" )
@@ -115,7 +115,7 @@ class ApiController extends AppBaseController {
                             // Закрыть PA в биллинге
                             . "<a href=/api_run.php"
                                 ."?cmd=set_price_apply_date_end"
-                                ."&prices_apply_id=".$pa_one['prices_apply_id']
+                                ."&prices_apply_id=".$pa_one[PA::F_ID]
                                 ."&date_end=".time()
                                 ."><font face=monospace>[/]</font> Закрыть прайс в биллинге</a><br>";
 
@@ -130,14 +130,14 @@ class ApiController extends AppBaseController {
                                     'comment'   =>  get_str_cut($ip_abon_rec[Mik::LIST_COMMENT]),
                                     'act'       =>  "<a href=/api_run.php"
                                                     . "?cmd=set_price_apply_net_ip"
-                                                    . "&prices_apply_id=".$pa_one['id']
+                                                    . "&prices_apply_id=".$pa_one[PA::F_ID]
                                                     . "&net_ip=".$ip_abon_rec['address']
                                                     . "> Этот IP => PA</a>"
                                 ];
                             }
-                            $status_ip_on_abon_str .= get_html_table($t, caption: "IP-адреса найденные в MIK:ABON[{$pa_one['abon_id']}]", show_header: 0);
+                            $status_ip_on_abon_str .= get_html_table($t, caption: "IP-адреса найденные в MIK:ABON[{$pa_one[PA::F_ABON_ID]}]", show_header: false);
                         } else {
-                            $status_ip_on_abon_str .= "<font face=monospace>[ ]</font> ". paint("В таблице MIK:ABON абонентов [{$pa_one['abon_id']}] не найдено", color: RED).".<br>";
+                            $status_ip_on_abon_str .= "<font face=monospace>[ ]</font> ". paint("В таблице MIK:ABON абонентов [{$pa_one[PA::F_ABON_ID]}] не найдено", color: RED).".<br>";
                         }
 
                     } elseif (count($addr_list_records) == 1) {
@@ -157,8 +157,8 @@ class ApiController extends AppBaseController {
                 /**
                  * Проверка статуса ИП-адреса в DHCP-Leases
                  */
-                if (validate_ip($pa_one['net_ip'])) {
-                    $r['address'] = $pa_one['net_ip'];
+                if (validate_ip($pa_one[PA::F_NET_IP])) {
+                    $r['address'] = $pa_one[PA::F_NET_IP];
                     $status_ip_on_leases = Api::get_status_from_mik_leases_by_mik_ip_rec($mik_leases_list, $r);
                     unset($r);
                 } else {
@@ -167,10 +167,10 @@ class ApiController extends AppBaseController {
             }
 
 
-            $pa_rec['id']       =  url_pa_form_22($pa_one['id']);
+            $pa_rec[PA::F_ID]       =  url_pa_form_22($pa_one[PA::F_ID]);
 
-            $pa_rec['abon_id']  = $this->db->get_abon_state_img(abon_id: $pa_one['abon_id'], title_prefix: "PA abon_id: {$pa_one['abon_id']}\nПроверка статуса Абонета {$pa_one['abon_id']} по биллингу\n")."&nbsp;"
-                                    . url_abon_form($pa_one['abon_id']);
+            $pa_rec[PA::F_ABON_ID]  = $this->db->get_abon_state_img(abon_id: $pa_one[PA::F_ABON_ID], title_prefix: "PA abon_id: {$pa_one[PA::F_ABON_ID]}\nПроверка статуса Абонета {$pa_one[PA::F_ABON_ID]} по биллингу\n")."&nbsp;"
+                                    . url_abon_form($pa_one[PA::F_ABON_ID]);
 
             $pa_rec['inf']      =  get_str_cut($pa_one['net_name'], max_length:30)."<br>"
                                     . get_html_CHECK(has_check: (bool)$pa_one['price_closed'], title: "Закрыт ли &laquo;Прайсовий фрагмент&raquo;")
@@ -203,7 +203,7 @@ class ApiController extends AppBaseController {
             $pa_rec['trusted']       =  ($pa_one['net_ip_service']
                                         ?   get_html_CHECK((bool)$pa_one['net_ip_trusted'], "&laquo;Доверенный&raquo; &mdash; Не проверяется на флуд.")."<br>"
                                             . get_html_check_img(
-                                                    status: $pa_one['net_ip_trusted'] == Api::has_ip_in_address_list($mik_trusted_list, ip: $pa_one['net_ip'], address_list_name:"TRUSTED", disabled: "false"),
+                                                    status: $pa_one['net_ip_trusted'] == Api::has_ip_in_address_list($mik_trusted_list, ip: $pa_one[PA::F_NET_IP], address_list_name:"TRUSTED", disabled: "false"),
                                                     title_true: "Соответсвует списку TRUSTED",
                                                     title_false: "НЕ соответсвует списку TRUSTED",
                                                     icon_width: 10, icon_height: 10)
@@ -212,13 +212,13 @@ class ApiController extends AppBaseController {
 
             if ($pa_one['net_ip_service']) {
                 $pa_mac_update_act = "";
-                $arp_rec = Api::get_mac_from_arp_list_by_ip(mik_arp_list: $mik_arp_list, ip: $pa_one['net_ip']);
+                $arp_rec = Api::get_mac_from_arp_list_by_ip(mik_arp_list: $mik_arp_list, ip: $pa_one[PA::F_NET_IP]);
                 if (is_array($arp_rec)) {
                     if ($arp_rec['mac-address'] != $pa_one['net_mac']) {
                         if (validate_mac($arp_rec['mac-address'])) {
                             $pa_mac_update_act = "<a href=/api_run.php"
                                                     ."?cmd=set_price_apply_net_mac"
-                                                    ."&prices_apply_id=".$pa_one['id']
+                                                    ."&prices_apply_id=".$pa_one[PA::F_ID]
                                                     ."&net_mac=".$arp_rec['mac-address']
                                                     ."&ref=". rawurlencode($_SERVER['SCRIPT_NAME']."?tp_id=".$tp_id."&_PA#_PA").">MAC ARP => PA</a>";
                         } else {
@@ -236,11 +236,11 @@ class ApiController extends AppBaseController {
                                         ?   ""
                                             . (is_empty($pa_one['net_on_abon_ip'])
                                                 ?   $status_ip_on_abon_str." ".$status_ip_on_leases." ".$pa_mac_update_act."<br>"
-                                                    . paint(paint("__________ ", GRAY).$pa_one['net_ip'], face: 'monospace') . "<br>"
-                                                    . Api::get_status_mac_from_arp_by_ip($mik_arp_list, $pa_one['net_ip']) // ." / ". $row['net_mask']." / ". $row['net_gateway'],
-                                                :   (!is_empty($pa_one['net_ip'])
+                                                    . paint(paint("__________ ", GRAY).$pa_one[PA::F_NET_IP], face: 'monospace') . "<br>"
+                                                    . Api::get_status_mac_from_arp_by_ip($mik_arp_list, $pa_one[PA::F_NET_IP]) // ." / ". $row['net_mask']." / ". $row['net_gateway'],
+                                                :   (!is_empty($pa_one[PA::F_NET_IP])
                                                         ? paint(get_html_img('/img/icon_error.svg') . " ERROR IP", color: RED,
-                                                                title: "IP должен быть в ['net_ip'] ИЛИ в ['net_on_abon_ip'], \n"
+                                                                title: "IP должен быть в [PA::F_NET_IP] ИЛИ в ['net_on_abon_ip'], \n"
                                                                 . "но не в обоих полях одновременно, \n"
                                                                 . "поскольку это предполагает разный способ подачи интернета абоненту \n"
                                                                 . "и разные настройки оборудования.")

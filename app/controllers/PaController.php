@@ -37,7 +37,6 @@ use config\SessionFields;
 
 class PaController extends AppBaseController {
 
-
     /**
      * Нормализует входные данные формы перед сохранением
      */
@@ -45,8 +44,12 @@ class PaController extends AppBaseController {
 
         // debug($data, '$data', die: 0);
 
-        // Инициализация результата
-        $norm = [];
+        // 5️⃣ Проставляем флаги по умолчанию, если отсутствуют
+        foreach (PA::FLAGS as $flag) {
+            if (!isset($data[$flag])) {
+                $data[$flag] = 0;
+            }
+        }
 
         /**
          * Если передан пустой F_TP_ID, то убираем его из обновления
@@ -59,17 +62,22 @@ class PaController extends AppBaseController {
          * Если передан флаг "ПФ Закрыт", то проверить поле date_end,
          * если поле пустое, то заполнить его сегодняшней датой.
          */
-        if  (
-                isset($data[PA::F_CLOSED]) && 
-                ($data[PA::F_CLOSED] == 1) &&
-                empty($data[PA::F_DATE_END_STR])
-            ) 
+        if  ( $data[PA::F_CLOSED] == 1 ) 
         {
-            $data[PA::F_DATE_END_STR] = date('Y-m-d');
-            MsgQueue::msg(MsgType::INFO, __('Дата закрытия ПФ была пустой. Установлена в сегодняшнюю. Проверьте правильность.'));
+            if (empty($data[PA::F_DATE_END_STR])) {
+                $data[PA::F_DATE_END_STR] = date('Y-m-d');
+                MsgQueue::msg(MsgType::WARN, __('Дата закрытия ПФ была пустой. Установлена в сегодняшнюю. Проверьте правильность.'));
+            }
+            if ($data[PA::F_NET_IP_SERVICE] == 1) {
+                $data[PA::F_NET_IP_SERVICE] = 0;
+                MsgQueue::msg(MsgType::WARN, __('Флаг [IP_SERVICE] принудительно отключён в связи с закрытием прайсового фрагмента. Проверьте правильность.'));
+            }
         }
 
         // debug($data, '$data', die: 1);
+
+        // Инициализация результата
+        $norm = [];
 
         foreach ($data as $key => $value) {
             // 1️⃣ Если флаг — установить 0 или 1
@@ -92,13 +100,6 @@ class PaController extends AppBaseController {
 
             // 4️⃣ Остальное — копируем как есть
             $norm[$key] = $value;
-        }
-
-        // 5️⃣ Проставляем флаги по умолчанию, если отсутствуют
-        foreach (PA::FLAGS as $flag) {
-            if (!isset($norm[$flag])) {
-                $norm[$flag] = 0;
-            }
         }
 
         if (isset($data[PA::F_DATE_START_STR])) {
@@ -139,8 +140,11 @@ class PaController extends AppBaseController {
         ]);
 
         $v->rule('lengthMax', PA::F_NET_NAME, 120);
-        $v->rule('ip', [PA::F_NET_IP, PA::F_NET_ON_ABON_IP, PA::F_NET_GATEWAY])
-          ->message('Поле {field} должно содержать корректный IP-адрес.');
+
+        if ($data[PA::F_NET_IP_SERVICE]) {
+            $v->rule('ip', [PA::F_NET_IP, PA::F_NET_ON_ABON_IP, PA::F_NET_GATEWAY])
+                ->message('Поле {field} должно содержать корректный IP-адрес.');
+        }
 
         // $v->rule('boolean', [PA::F_CLOSED, PA::F_NET_IP_SERVICE, PA::F_NET_IP_TRUSTED]);
 

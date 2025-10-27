@@ -23,6 +23,7 @@ use config\tables\PA;
 use config\tables\Module;
 use config\tables\AbonRest;
 use billing\core\base\Lang;
+use config\tables\Pay;
 Lang::load_inc(__FILE__);
 
 require_once DIR_LIBS . '/billing_functions.php';
@@ -220,14 +221,17 @@ $attr_off  =
 
                 </div>
             </div>
-            <?php if (can_edit(Module::MOD_ABON)) : ?>
             <!-- Панель действий -->
             <div class="row container-fluid mt-4">
-                <div class="col justify-content-start">
-                    <a href="<?=Abon::URI_EDIT;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-info btn-sm"><i class="bi bi-pencil-square"></i> <?= __('Edit'); ?></a>
-                </div>
+                    <div class="col justify-content-start">
+                <?php if (can_edit(Module::MOD_ABON)) : ?>
+                        <a href="<?=Abon::URI_EDIT;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-info btn-sm me-3" target="_blank"><i class="bi bi-pencil-square"></i> <?= __('Edit'); ?></a>
+                <?php endif; ?>
+                <?php if (can_view([Module::MOD_MY_PAYMENTS, Module::MOD_PAYMENTS])) : ?>
+                        <a href="<?=Pay::URI_LIST;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-info btn-sm me-3" target="_blank"><i class="bi bi-paypal"></i> <?= __('Платежі'); ?></a>
+                <?php endif; ?>
+                    </div>
             </div>
-            <?php endif; ?>
         </div>
     </div>
 </div>
