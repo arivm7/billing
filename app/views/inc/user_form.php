@@ -32,6 +32,10 @@ Lang::load_inc(__FILE__);
 
 /** @var array $user */
 
+if (!isset($user) || !is_array($user)) {
+    throw new \RuntimeException(__FILE__ . ': переменная $user не пришла или она не массив.');
+}
+
 if (isset($_SESSION[SessionFields::FORM_DATA][User::POST_REC])) {
     $form_data = $_SESSION[SessionFields::FORM_DATA][User::POST_REC];
     unset($_SESSION[SessionFields::FORM_DATA]);
@@ -39,8 +43,8 @@ if (isset($_SESSION[SessionFields::FORM_DATA][User::POST_REC])) {
     $form_data = [];
 }
 
-//debug($form_data, '$form_data');
-//debug($user, '$user');
+// debug($form_data, '$form_data');
+// debug($user, '$user');
 
 $form_data_fn = function(string $field) use ($form_data, $user): int|float|string {
     return $form_data[$field] ?? $user[$field] ?? "";
@@ -171,11 +175,11 @@ $form_data_fn = function(string $field) use ($form_data, $user): int|float|strin
             <div class="row mb-3">
                 <label for="user_viber" class="col-sm-2 col-form-label">Viber</label>
                 <div class="col-sm-6">
-                    <input type="text" class="form-control" id="user_viber" name="<?= User::POST_REC;?>[<?=User::F_VIBER;?>]" value="<?=h($user[User::F_VIBER]);?>">
+                    <input type="text" class="form-control" id="user_viber" name="<?= User::POST_REC;?>[<?=User::F_VIBER;?>]" value="<?=h($form_data_fn(User::F_VIBER));?>">
                 </div>
                 <div class="col-sm-2">
                     <div class="form-check" title="<?=__('To correspond through this messenger');?>">
-                        <input class="form-check-input" type="checkbox" id="user_viber_do_send" name="<?= User::POST_REC;?>[<?=User::F_VIBER_DO_SEND;?>]" value="1" <?=$user[User::F_VIBER_DO_SEND] ? 'checked' : '';?>>
+                        <input class="form-check-input" type="checkbox" id="user_viber_do_send" name="<?= User::POST_REC;?>[<?=User::F_VIBER_DO_SEND;?>]" value="1" <?=h($form_data_fn(User::F_VIBER_DO_SEND)) ? 'checked' : '';?>>
                         <label class="form-check-label" for="user_viber_do_send"><?=__('Use');?></label>
                     </div>
                 </div>
@@ -185,11 +189,11 @@ $form_data_fn = function(string $field) use ($form_data, $user): int|float|strin
             <div class="row mb-3">
                 <label for="user_telegram" class="col-sm-2 col-form-label">Telegram</label>
                 <div class="col-sm-6">
-                    <input type="text" class="form-control" id="user_telegram" name="<?= User::POST_REC;?>[<?=User::F_TELEGRAM;?>]" value="<?=h($user[User::F_TELEGRAM]);?>">
+                    <input type="text" class="form-control" id="user_telegram" name="<?= User::POST_REC;?>[<?=User::F_TELEGRAM;?>]" value="<?=h($form_data_fn(User::F_TELEGRAM));?>">
                 </div>
                 <div class="col-sm-2">
                     <div class="form-check" title="<?=__('To correspond through this messenger');?>">
-                        <input class="form-check-input" type="checkbox" id="user_telegram_do_send" name="<?= User::POST_REC;?>[<?=User::F_TELEGRAM_DO_SEND;?>]" value="1" <?=$user[User::F_TELEGRAM_DO_SEND] ? 'checked' : '';?>>
+                        <input class="form-check-input" type="checkbox" id="user_telegram_do_send" name="<?= User::POST_REC;?>[<?=User::F_TELEGRAM_DO_SEND;?>]" value="1" <?=$form_data_fn(User::F_TELEGRAM_DO_SEND) ? 'checked' : '';?>>
                         <label class="form-check-label" for="user_telegram_do_send"><?=__('Use');?></label>
                     </div>
                 </div>
@@ -199,11 +203,11 @@ $form_data_fn = function(string $field) use ($form_data, $user): int|float|strin
             <div class="row mb-3">
                 <label for="user_signal" class="col-sm-2 col-form-label">Signal</label>
                 <div class="col-sm-6">
-                    <input type="text" class="form-control" id="user_signal" name="<?= User::POST_REC;?>[<?=User::F_SIGNAL;?>]" value="<?=h($user[User::F_SIGNAL]);?>">
+                    <input type="text" class="form-control" id="user_signal" name="<?= User::POST_REC;?>[<?=User::F_SIGNAL;?>]" value="<?=h($form_data_fn(User::F_SIGNAL));?>">
                 </div>
                 <div class="col-sm-2">
                     <div class="form-check" title="<?=__('To correspond through this messenger');?>">
-                        <input class="form-check-input" type="checkbox" id="user_signal_do_send" name="<?= User::POST_REC;?>[<?=User::F_SIGNAL_DO_SEND;?>]" value="1" <?=$user[User::F_SIGNAL_DO_SEND] ? 'checked' : '';?>>
+                        <input class="form-check-input" type="checkbox" id="user_signal_do_send" name="<?= User::POST_REC;?>[<?=User::F_SIGNAL_DO_SEND;?>]" value="1" <?=$form_data_fn(User::F_SIGNAL_DO_SEND) ? 'checked' : '';?>>
                         <label class="form-check-label" for="user_signal_do_send"><?=__('Use');?></label>
                     </div>
                 </div>
@@ -213,11 +217,11 @@ $form_data_fn = function(string $field) use ($form_data, $user): int|float|strin
             <div class="row mb-3">
                 <label for="user_whatsapp" class="col-sm-2 col-form-label">WhatsApp</label>
                 <div class="col-sm-6">
-                    <input type="text" class="form-control" id="user_whatsapp" name="<?= User::POST_REC;?>[<?=User::F_WHATSAPP;?>]" value="<?=h($user[User::F_WHATSAPP]);?>">
+                    <input type="text" class="form-control" id="user_whatsapp" name="<?= User::POST_REC;?>[<?=User::F_WHATSAPP;?>]" value="<?=h($form_data_fn(User::F_WHATSAPP));?>">
                 </div>
                 <div class="col-sm-2">
                     <div class="form-check" title="<?=__('To correspond through this messenger');?>">
-                        <input class="form-check-input" type="checkbox" id="user_whatsapp_do_send" name="<?= User::POST_REC;?>[<?=User::F_WHATSAPP_DO_SEND;?>]" value="1" <?=$user[User::F_WHATSAPP_DO_SEND] ? 'checked' : '';?>>
+                        <input class="form-check-input" type="checkbox" id="user_whatsapp_do_send" name="<?= User::POST_REC;?>[<?=User::F_WHATSAPP_DO_SEND;?>]" value="1" <?=$form_data_fn(User::F_WHATSAPP_DO_SEND) ? 'checked' : '';?>>
                         <label class="form-check-label" for="user_whatsapp_do_send"><?=__('Use');?></label>
                     </div>
                 </div>
@@ -227,11 +231,11 @@ $form_data_fn = function(string $field) use ($form_data, $user): int|float|strin
             <div class="row mb-3">
                 <label for="user_jabber_main" class="col-sm-2 col-form-label">Jabber/XMPP</label>
                 <div class="col-sm-6">
-                    <input type="text" class="form-control" id="user_jabber_main" name="<?= User::POST_REC;?>[<?=User::F_JABBER;?>]" value="<?=h($user[User::F_JABBER]);?>">
+                    <input type="text" class="form-control" id="user_jabber_main" name="<?= User::POST_REC;?>[<?=User::F_JABBER;?>]" value="<?=h($form_data_fn(User::F_JABBER));?>">
                 </div>
                 <div class="col-sm-2">
                     <div class="form-check" title="<?=__('To correspond through this messenger');?>">
-                        <input class="form-check-input" type="checkbox" id="user_jabber_do_send" name="<?= User::POST_REC;?>[<?=User::F_JABBER_DO_SEND;?>]" value="1" <?=$user[User::F_JABBER_DO_SEND] ? 'checked' : '';?>>
+                        <input class="form-check-input" type="checkbox" id="user_jabber_do_send" name="<?= User::POST_REC;?>[<?=User::F_JABBER_DO_SEND;?>]" value="1" <?=$form_data_fn(User::F_JABBER_DO_SEND) ? 'checked' : '';?>>
                         <label class="form-check-label" for="user_jabber_do_send"><?=__('Use');?></label>
                     </div>
                 </div>

@@ -82,6 +82,10 @@ use billing\core\base\View;
               display: none !important;
             }
 
+            /* Выравнивание чекбоксов */
+            .form-check-align-center { display: flex; align-items: center; }
+            .form-check-align-bottom { display: flex; align-items: end; }
+
             /* Минимальная ширина страницы */
             body {
                 min-width: 600px;

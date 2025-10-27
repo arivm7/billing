@@ -84,7 +84,7 @@ class AppBaseModel extends Model
 
 
 
-    function get_tp(int $id) {
+    function get_tp(int $id): array {
         //echo "get_tp(int $id)<br>";
         if (!array_key_exists($id, self::$CASHE_TP_LIST)) {
             self::$CASHE_TP_LIST[$id] = $this->get_row_by_id("tp_list", $id);

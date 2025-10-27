@@ -23,6 +23,7 @@ namespace app\controllers;
 use app\models\AbonModel;
 use billing\core\Api;
 use billing\core\App;
+use billing\core\base\Model;
 use billing\core\base\View;
 use billing\core\MsgQueue;
 use billing\core\MsgType;
@@ -40,10 +41,35 @@ class PaController extends AppBaseController {
     /**
      * Нормализует входные данные формы перед сохранением
      */
-    public static function normalize(array $data): array
-    {
+    public static function normalize(array $data): array {
+
+        // debug($data, '$data', die: 0);
+
         // Инициализация результата
         $norm = [];
+
+        /**
+         * Если передан пустой F_TP_ID, то убираем его из обновления
+         */
+        if (isset($data[PA::F_TP_ID]) && ($data[PA::F_TP_ID] < 1)) {
+            unset($data[PA::F_TP_ID]);
+        }
+
+        /**
+         * Если передан флаг "ПФ Закрыт", то проверить поле date_end,
+         * если поле пустое, то заполнить его сегодняшней датой.
+         */
+        if  (
+                isset($data[PA::F_CLOSED]) && 
+                ($data[PA::F_CLOSED] == 1) &&
+                empty($data[PA::F_DATE_END_STR])
+            ) 
+        {
+            $data[PA::F_DATE_END_STR] = date('Y-m-d');
+            MsgQueue::msg(MsgType::INFO, __('Дата закрытия ПФ была пустой. Установлена в сегодняшнюю. Проверьте правильность.'));
+        }
+
+        // debug($data, '$data', die: 1);
 
         foreach ($data as $key => $value) {
             // 1️⃣ Если флаг — установить 0 или 1
@@ -130,7 +156,6 @@ class PaController extends AppBaseController {
 
 
 
-
     public function editAction() {
 
         // debug($_GET, '$_GET');
@@ -161,19 +186,34 @@ class PaController extends AppBaseController {
         if (isset($_POST[PA::POST_REC]) && is_array($_POST[PA::POST_REC])) {
             // нормализация данных
             $data = self::normalize($_POST[PA::POST_REC]);
+            // Предыдущая запись в базе для сравнения и возврата
+            $pa = $model->get_pa($data[PA::F_ID]);
             // debug($data, '$data', debug_view: DebugView::DUMP, die: 0);
             // debug($data, '$data', die: 1);
             // Валидация
             if (!self::validate($data)) {
                 $_SESSION[SessionFields::FORM_DATA] = $data;
             } else {
-                if ($model->update_row_by_id(PA::TABLE, $data, PA::F_ID)) {
-                    MsgQueue::msg(MsgType::SUCCESS_AUTO, __("Данные внесены"));
+                $data = Model::get_modified($data, $pa, PA::F_ID);
+                if ($data) {
+                    /**
+                     * Данные есть. Вносить в базу
+                     */
+                    if ($model->update_row_by_id(PA::TABLE, $data, PA::F_ID)) {
+                        MsgQueue::msg(MsgType::SUCCESS_AUTO, __("Данные внесены"));
+                        // MsgQueue::msg(MsgType::SUCCESS, $data);
+                    } else {
+                        MsgQueue::msg(MsgType::ERROR, $model->errorInfo());
+                    }
                 } else {
-                    MsgQueue::msg(MsgType::ERROR, $model->errorInfo());
+                    /**
+                     * Данных нет. Просто сообщить
+                     */
+                    MsgQueue::msg(MsgType::INFO_AUTO, __("нет изменений в данных"));
                 }
+
             }
-            redirect();
+            redirect(PA::URI_EDIT . '/' . $pa[PA::F_ID]);
         }
 
 

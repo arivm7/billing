@@ -736,4 +736,40 @@ abstract class Model {
 
 
 
+    /**
+     * Возвращает только изменённые данные из новой записи
+     */
+    public static function get_modified(array $new, array $prev, string $field_id = self::F_ID): array {
+
+        $modified = [];
+
+        /**
+         * Добавляем только изменившиеся поля
+         */
+        foreach ($new as $key => $value) {
+            if ($prev[$key] != $value) {
+                $modified[$key] = $value;
+            }
+        }
+
+        /**
+         * Если массив не пуст, то есть изменённые данные
+         */
+        if ($modified) {
+            /**
+             * Ключ обязателен
+             */
+            $modified[$field_id] = $new[$field_id];
+            /**
+             * Возвращаем изменённые данные
+             */
+            return $modified;
+        } else {
+            /**
+             * Изменений нет
+             */
+            return [];
+        }
+    }
+
 }

@@ -94,7 +94,7 @@ $col3_attr = 'class="text-center align-middle font-monospace text-sm-start ps-3 
                         </tr>
                         <?php if ($user[User::F_TELEGRAM]) : ?>
                         <tr>
-                            <th <?=$col1_attr;?>>Telegram</th>
+                            <th <?=$col1_attr;?>>Telegram&nbsp;<span class="badge text-bg-secondary"><img src="/public/bootstrap/icons/icons/telegram.svg"></span></th>
                             <td <?=$col2_attr;?>><?= h($user[User::F_TELEGRAM]) ?></td>
                             <td <?=$col3_attr;?>>
                                 <input title="<?=__('Use for correspondence and notifications');?>"
@@ -103,7 +103,7 @@ $col3_attr = 'class="text-center align-middle font-monospace text-sm-start ps-3 
                         <?php endif; ?>
                         <?php if ($user[User::F_VIBER]) : ?>
                         <tr>
-                            <th <?=$col1_attr;?>>Viber</th>
+                            <th <?=$col1_attr;?>>Viber&nbsp;<span class="badge text-bg-secondary"><img src="/public/bootstrap/icons/icons/whatsapp.svg"></span></th>
                             <td <?=$col2_attr;?>><?= h($user[User::F_VIBER]) ?></td>
                             <td <?=$col3_attr;?>>
                                 <input title="<?=__('Use for correspondence and notifications');?>"
@@ -113,7 +113,7 @@ $col3_attr = 'class="text-center align-middle font-monospace text-sm-start ps-3 
 
                         <?php if ($user[User::F_SIGNAL]) : ?>
                         <tr>
-                            <th <?=$col1_attr;?>>Signal</th>
+                            <th <?=$col1_attr;?>>Signal&nbsp;<span class="badge text-bg-secondary"><img src="/public/bootstrap/icons/icons/signal.svg"></span></th>
                             <td <?=$col2_attr;?>><?= h($user[User::F_SIGNAL]) ?></td>
                             <td <?=$col3_attr;?>>
                                 <input title="<?=__('Use for correspondence and notifications');?>"
@@ -124,7 +124,7 @@ $col3_attr = 'class="text-center align-middle font-monospace text-sm-start ps-3 
 
                         <?php if ($user[User::F_WHATSAPP]) : ?>
                         <tr>
-                            <th <?=$col1_attr;?>>WhatsApp</th>
+                            <th <?=$col1_attr;?>>WhatsApp&nbsp;<span class="badge text-bg-secondary"><img src="/public/bootstrap/icons/icons/whatsapp.svg"></span></th>
                             <td <?=$col2_attr;?>><?= h($user[User::F_WHATSAPP]) ?></td>
                             <td <?=$col3_attr;?>>
                                 <input title="<?=__('Use for correspondence and notifications');?>"
@@ -135,7 +135,7 @@ $col3_attr = 'class="text-center align-middle font-monospace text-sm-start ps-3 
 
                         <?php if ($user[User::F_JABBER]) : ?>
                         <tr>
-                            <th <?=$col1_attr;?>>XMPP/Jabber</th>
+                            <th <?=$col1_attr;?>>XMPP/Jabber&nbsp;<span class="badge text-bg-secondary"><img src="/public/bootstrap/icons/icons/chat-left.svg"></span></th>
                             <td <?=$col2_attr;?>><?= h($user[User::F_JABBER]) ?></td>
                             <td <?=$col3_attr;?>><input title="<?=__('Use for correspondence and notifications');?>" type="checkbox" disabled <?= $user[User::F_JABBER_DO_SEND] ? 'checked' : '' ?>></td>
                         </tr>

@@ -18,6 +18,8 @@
  */
 
 use billing\core\Api;
+use config\Icons;
+use config\tables\Abon;
 use config\tables\PA;
 use config\tables\TP;
 use config\tables\Price;
@@ -66,9 +68,16 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
             <div class='mb-3 row'>
                 <div class='col-sm-3'></div>
                 <?php
+                $w = (
+                    (($item['date_end'] ?? 0)  > 0) && ($item['price_closed'] == 0) ||
+                    (($item['date_end'] ?? 0) == 0) && ($item['price_closed'] == 1)
+                    ? 'text-warning'
+                    : ''
+                );
+
                 dateRow(label: 'Дата начала', post_rec: PA::POST_REC, name: 'date_start_str', timestamp: $item['date_start'] ?? null, label_col: 12, input_col: 12, options: "class='col-sm-3'");
-                dateRow(label: 'Дата окончания', post_rec: PA::POST_REC, name: 'date_end_str', timestamp: $item['date_end'] ?? null, label_col: 12, input_col: 12, options: "class='col-sm-3'");
-                checkboxRow(label: 'Прайс закрыт', post_rec: PA::POST_REC, name: 'price_closed', checked: !empty($item['price_closed']), label_col: 12, input_col: 12, options: "class='col-sm-3'");
+                dateRow(label: "<span class={$w}>Дата окончания</span>", post_rec: PA::POST_REC, name: 'date_end_str', timestamp: $item['date_end'] ?? null, label_col: 12, input_col: 12, options: "class='col-sm-3'");
+                checkboxRow(label: "<span class={$w}>Прайс закрыт</span>", post_rec: PA::POST_REC, name: 'price_closed', checked: !empty($item['price_closed']), label_col: 12, input_col: 12, options: "class='col-sm-3'");
                 ?>
             </div>
 
@@ -76,74 +85,105 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
             <fieldset class="border mt-4 p-3">
                 <legend class="text-info text-start"><?=__('Параметры ТП');?></legend>
                 <?php
-                    selectRow(
-                        label: "ТП <span class='text-info-emphasis small'>[&nbsp;" 
-                        . ($tp[TP::F_ID] ?? '-') . ' | ' 
-                        . ($tp[TP::F_TITLE] ?? '-') . '&nbsp;]</span>', 
-                        post_rec: PA::POST_REC, 
-                        name: PA::F_TP_ID, 
-                        selected_id: $item[PA::F_TP_ID] ?? '-', 
-                        data: $tp_list);
+
+                    $label = "ТП <span class='text-info fs-7'>[&nbsp;" 
+                                . ($tp[TP::F_ID] ?? '-') . ' | ' 
+                                . ($tp[TP::F_TITLE] ?? '-') . '&nbsp;]</span>';
+                    $title = "---";
                 ?>
                 <div class='row mb-3'>
-                    <div class='col-sm-3'></div>
-                    <div class='col-sm-9'>
+                    <label class='col-sm-3 col-form-label'><?=$label;?></label>
+                    <div class='col-sm-6' title='<?=$title;?>'>
+                        <?=
+                            make_html_select(
+                                data: $tp_list, 
+                                name: PA::POST_REC . "[".PA::F_TP_ID."]", 
+                                selected_id: $item[PA::F_TP_ID] ?? '-', 
+                                show_keys: true) // , select_opt: "style='min-width: 99%; white-space: nowrap;'"
+                        ;?>
+                    </div>
+                    <div class='col-sm-3 fs-7 text-secondary d-flex align-items-center'>                        
                         <?= '[ '. TP::get_status($tp) . ' ]<br>';?>
                     </div>
                 </div>
-                <?php
-                    inputRow(label: 'Координаты Google Maps', post_rec: PA::POST_REC, name: 'coord_gmap', value: $item['coord_gmap'] ?? '', label_col: 3, input_col: 9, l_layout: LabelLayout::H);
-                ?>
+
+                <div class='row mb-3'>
+                    <label for='<?=PA::F_COORD_GMAP;?>' class='col-sm-3 col-form-label'><?=__('Координаты Google Maps');?></label>
+                    <div class='col-sm-8' title="<?=__('Укажите координаты на Google-картах');?>" >
+                        <input type='text' class='form-control text-center text-secondary' id='<?=PA::F_COORD_GMAP;?>' name='<?=PA::POST_REC;?>[<?=PA::F_COORD_GMAP;?>]' value='<?=h($item[PA::F_COORD_GMAP] ?? '');?>'>
+                    </div>
+                    <div class='col-sm-1'>
+                        <?php if ($item[PA::F_COORD_GMAP]): ?>
+                            <a href="https://www.google.com/maps/place/<?=h($item[PA::F_COORD_GMAP] ?? '');?>" target=_blank title="<?=__('Показать координаты на странице Google-карт');?>" >
+                                <img src="<?=Icons::SRC_ICON_MAPS;?>" height="32rem">
+                            </a>
+                        <?php else : ?>
+                            <span class="form-control" title="<?=__('Координаты не указаны');?>" >&nbsp;</span>
+                        <?php endif; ?>
+                    </div>
+                </div>
             </fieldset>
 
             <fieldset class="border mt-4 p-3">
-                <legend class="text-info text-start"><?=__('IP услуга');?></legend>
-                <?php
-                checkboxRow(label: 'IP услуга', post_rec: PA::POST_REC, name: 'net_ip_service', checked: !empty($item['net_ip_service']), l_layout: LabelLayout::H);
-                ?>
-                <fieldset class="border mt-4 p-3">
-                    <legend class="text-info text-start"><?=__('IP выданный абоненту через микротик');?></legend>
+                <legend class="text-info text-start">
                     <div class='mb-3 row'>
-                        <!-- Парметры IP -->
-                        <?php
-                        inputRow(label: 'IP-адрес', post_rec: PA::POST_REC, name: 'net_ip', value: $item['net_ip'] ?? '', label_col: 12, input_col: 12, options: "class='col-sm-3'");
-                        inputRow(label: 'Маска сети', post_rec: PA::POST_REC, name: 'net_mask', value: $item['net_mask'] ?? '', label_col: 12, input_col: 12, options: "class='col-sm-3'");
-                        inputRow(label: 'Шлюз', post_rec: PA::POST_REC, name: 'net_gateway', value: $item['net_gateway'] ?? '', label_col: 12, input_col: 12, options: "class='col-sm-3'");
-                        checkboxRow(label: 'IP в trusted', post_rec: PA::POST_REC, name: 'net_ip_trusted', checked: !empty($item['net_ip_trusted']), label_col: 12, input_col: 12, options: "class='col-sm-3'");
-                        ?>
-                        <!-- Статус IP-MAC из ARP-таблицы микротика -->
-                        <span class="badge text-bg-info mt-3">
-                        <?= ($arp ? Api::get_status_mac_from_arp_rec($arp) : 'Нет данных ARP'); ?>
-                        </span>
+                        <label for='net_ip_service' class='col-sm-3 col-form-label'><?=__('IP услуга');?></label>
+                        <div class='col-sm-3 d-flex align-items-center'>
+                            <input type='checkbox' class='form-check-input fs-6' id='net_ip_service'
+                                name='<?=PA::POST_REC;?>[<?=PA::F_NET_IP_SERVICE;?>]'
+                                value='1' <?=($item[PA::F_NET_IP_SERVICE] ? 'checked' : '');?>>
+                        </div>
+                        <?php if ($item['net_ip_service']) : ?>
+                            <div class='col-sm-6 d-flex align-items-center'>
+                                <!-- Статус IP-MAC из ARP-таблицы микротика -->
+                                <span class="badge text-bg-info mt-3">
+                                <?= ($arp ? Api::get_status_mac_from_arp_rec($arp) : 'Нет данных ARP'); ?>
+                                </span>
+                            </div>
+                        <?php endif; ?>
                     </div>
-                    <div class='mb-3 row'>
+                </legend>
+                <?php if ($item['net_ip_service']) : ?>
+                    <fieldset class="border mt-4 p-3">
+                        <legend class="text-info text-start"><?=__('IP выданный абоненту через микротик');?></legend>
+                        <div class='mb-3 row'>
+                            <!-- Парметры IP -->
+                            <?php
+                            inputRow(label: 'IP-адрес', post_rec: PA::POST_REC, name: 'net_ip', value: $item['net_ip'] ?? '', label_col: 12, input_col: 12, options: "class='col-sm-3'");
+                            inputRow(label: 'Маска сети', post_rec: PA::POST_REC, name: 'net_mask', value: $item['net_mask'] ?? '', label_col: 12, input_col: 12, options: "class='col-sm-3'");
+                            inputRow(label: 'Шлюз', post_rec: PA::POST_REC, name: 'net_gateway', value: $item['net_gateway'] ?? '', label_col: 12, input_col: 12, options: "class='col-sm-3'");
+                            checkboxRow(label: 'IP в trusted', post_rec: PA::POST_REC, name: 'net_ip_trusted', checked: !empty($item['net_ip_trusted']), label_col: 12, input_col: 12, options: "class='col-sm-3'");
+                            ?>
+                        </div>
+                        <div class='mb-3 row'>
+                            <?php
+                            inputRow(label: 'DNS 1', post_rec: PA::POST_REC, name: 'net_dns1', value: $item['net_dns1'] ?? '', label_col: 12, input_col: 12, options: "class='col-sm-3'");
+                            inputRow(label: 'DNS 2', post_rec: PA::POST_REC, name: 'net_dns2', value: $item['net_dns2'] ?? '', label_col: 12, input_col: 12, options: "class='col-sm-3'");
+                            inputRow(label: 'MAC', post_rec: PA::POST_REC, name: 'net_mac', value: $item['net_mac'] ?? '', label_col: 12, input_col: 12, options: "class='col-sm-4'");
+                            ?>
+                        </div>
+                    </fieldset>
+                    <fieldset class="border mt-4 p-3">
+                        <legend class="text-info text-start"><?=__('Белый IP через NAT-1:1');?></legend>
                         <?php
-                        inputRow(label: 'DNS 1', post_rec: PA::POST_REC, name: 'net_dns1', value: $item['net_dns1'] ?? '', label_col: 12, input_col: 12, options: "class='col-sm-3'");
-                        inputRow(label: 'DNS 2', post_rec: PA::POST_REC, name: 'net_dns2', value: $item['net_dns2'] ?? '', label_col: 12, input_col: 12, options: "class='col-sm-3'");
-                        inputRow(label: 'MAC', post_rec: PA::POST_REC, name: 'net_mac', value: $item['net_mac'] ?? '', label_col: 12, input_col: 12, options: "class='col-sm-4'");
+                        inputRow(label: 'NAT 1:1', post_rec: PA::POST_REC, name: 'net_nat11', value: $item['net_nat11'] ?? '', label_col: 3, input_col: 3, l_layout: LabelLayout::H);
                         ?>
-                    </div>
-                </fieldset>
-                <fieldset class="border mt-4 p-3">
-                    <legend class="text-info text-start"><?=__('Белый IP через NAT-1:1');?></legend>
-                    <?php
-                    inputRow(label: 'NAT 1:1', post_rec: PA::POST_REC, name: 'net_nat11', value: $item['net_nat11'] ?? '', label_col: 3, input_col: 3, l_layout: LabelLayout::H);
-                    ?>
-                </fieldset>
-                <fieldset class="border mt-4 p-3">
-                    <legend class="text-info text-start"><?=__('IP на оборудовании абонента, мимо микротика');?></legend>
-                    <div class='mb-3 row'>
-                        <?php
-                        inputRow(label: 'IP на абоненте', post_rec: PA::POST_REC, name: 'net_on_abon_ip', value: $item['net_on_abon_ip'] ?? '', label_col: 12, input_col: 12, options: "class='col-sm-3'");
-                        inputRow(label: 'Маска на абоненте', post_rec: PA::POST_REC, name: 'net_on_abon_mask', value: $item['net_on_abon_mask'] ?? '', label_col: 12, input_col: 12, options: "class='col-sm-3'");
-                        inputRow(label: 'Шлюз на абоненте', post_rec: PA::POST_REC, name: 'net_on_abon_gate', value: $item['net_on_abon_gate'] ?? '', label_col: 12, input_col: 12, options: "class='col-sm-3'");
-                        ?>
-                    </div>
-                </fieldset>
+                    </fieldset>
+                    <fieldset class="border mt-4 p-3">
+                        <legend class="text-info text-start"><?=__('IP на оборудовании абонента, мимо микротика');?></legend>
+                        <div class='mb-3 row'>
+                            <?php
+                            inputRow(label: 'IP на абоненте', post_rec: PA::POST_REC, name: 'net_on_abon_ip', value: $item['net_on_abon_ip'] ?? '', label_col: 12, input_col: 12, options: "class='col-sm-3'");
+                            inputRow(label: 'Маска на абоненте', post_rec: PA::POST_REC, name: 'net_on_abon_mask', value: $item['net_on_abon_mask'] ?? '', label_col: 12, input_col: 12, options: "class='col-sm-3'");
+                            inputRow(label: 'Шлюз на абоненте', post_rec: PA::POST_REC, name: 'net_on_abon_gate', value: $item['net_on_abon_gate'] ?? '', label_col: 12, input_col: 12, options: "class='col-sm-3'");
+                            ?>
+                        </div>
+                    </fieldset>
+                <?php endif; ?>
             </fieldset>
             <fieldset class="border mt-4 p-3">
-                <legend class="text-info text-start"><?=__('Стоимостные значения этого прайсового фрагмента');?></legend>
-                <div class='row mb-3'>
+                <legend class="text-info text-start small"><?=__('Стоимостные значения этого прайсового фрагмента');?></legend>
+                <div class='row mb-3 small'>
                     <div class='col-sm-3'></div>
                     <div class='col-sm-2 text-center'><?=__('Стоимость');?><br><?=$item['cost_value'] ?? 0;?></div>
                     <div class='col-sm-2 text-center'><?=__('PPMA (мес)');?><br><?=$item['PPMA_value'] ?? 0;?></div>
@@ -164,6 +204,7 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
                 <div class="col-sm-3"></div>
                 <div class="col-sm-6 text-center">
                     <button type="submit" class="btn btn-primary"><?= __('Сохранить'); ?></button>
+                    <a class="btn btn-secondary" href="<?=Abon::URI_VIEW;?>/<?=$item[PA::F_ABON_ID];?>"><?= __('В карточку абонента'); ?></a>
                 </div>
             </div>
         </div>

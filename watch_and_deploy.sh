@@ -58,6 +58,6 @@ inotifywait -r -m -e modify,create,delete,move --format '%w|%e|%f' "${WATCH_DIRS
     echo -e "${COLOR_FILENAME}${path}${COLOR_OFF}"
     echo -e "${COLOR_USAGE}$(date +%F\ %T)${COLOR_OFF} | ${COLOR_INFO}${action}${COLOR_OFF} on ${COLOR_FILENAME}${file}${COLOR_OFF}"
     echo -e "==== Запуск deploy..."
-    "${DEPLOY_SCRIPT}"
+    /usr/bin/env bash "${DEPLOY_SCRIPT}"
     echo -e "==== ${COLOR_OK}Завершение deploy${COLOR_OFF}  [ ${COLOR_USAGE}Ctrl+C${COLOR_OFF} для остановки слежения ]"
 done

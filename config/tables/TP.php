@@ -165,9 +165,11 @@ class TP {
 
 
     public static function get_status(array $tp): string {
-        return self::DESCRIPTIONS[self::F_STATUS]     [$tp[self::F_STATUS]]     [Lang::code()] 
-                . ' | ' . self::DESCRIPTIONS[self::F_IS_MANAGED] [$tp[self::F_IS_MANAGED]] [Lang::code()] 
-                // . ' | ' . self::DESCRIPTIONS[self::F_DELETED]    [$tp[self::F_DELETED]]    [Lang::code()]
+        return self::DESCRIPTIONS[self::F_STATUS][$tp[self::F_STATUS]][Lang::code()] 
+                . ' | ' 
+                . ($tp[self::F_STATUS] 
+                    ? self::DESCRIPTIONS[self::F_IS_MANAGED] [$tp[self::F_IS_MANAGED]] [Lang::code()] 
+                    : self::DESCRIPTIONS[self::F_DELETED]    [$tp[self::F_DELETED]]    [Lang::code()])
                 ;
     }
 

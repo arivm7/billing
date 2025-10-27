@@ -87,7 +87,7 @@ class UserController extends AppBaseController {
          */
         Validator::addRule('telegram_valid', function ($field, $value, array $params, array $fields) {
             if (empty($value)) {return \true;} // необязательное поле
-            return isPhone($value) || isUsername($value) || isTelegramWeb($value);
+            return isTelegram($value);
         }, __('должно быть телефоном, username или ссылкой на Telegram'));
 
         /**
@@ -267,6 +267,16 @@ class UserController extends AppBaseController {
         // debug($_POST, '$_POST');
         // debug($this->route, '$this->route', die: 0);
 
+        if (!App::isAuth()) {
+            MsgQueue::msg(MsgType::ERROR,__('Авторизуйтесь, пожалуйста'));
+            redirect(Auth::URI_LOGIN);
+        }
+
+        if (!can_edit([Module::MOD_MY_USER_CARD, Module::MOD_USER_CARD])) {
+            MsgQueue::msg(MsgType::ERROR,__('Нет прав'));
+            redirect();
+        }
+
         $model = new UserModel();
 
         if  (
@@ -299,20 +309,19 @@ class UserController extends AppBaseController {
                     $user_rec[User::F_ID] = (int)$this->route[F_ALIAS];
                 }
 
-                // сравнение новой записи и старой
-                $equals = true;
-                foreach ($user_rec as $field => $value) {
-                    if ($user[$field] != $value) {
-                        $equals = false;
-                        break;
-                    }
-                }
+                // Выборка только изменённых полей
+                $modified = Model::get_modified($user_rec, $user);
 
-                if ($equals) {
-                    // Новые данные равны старым данным
-                    MsgQueue::msg(MsgType::INFO_AUTO, 'Изменений нет. Нечего вносить в базу.');
+                // // сравнение новой записи и старой
+                // $equals = true;
+                // foreach ($user_rec as $field => $value) {
+                //     if ($user[$field] != $value) {
+                //         $equals = false;
+                //         break;
+                //     }
+                // }
 
-                } else {
+                if ($modified) {
                     // Данные различаются
                     if ($model->update_row_by_id(table: User::TABLE, row: $user_rec, field_id: User::F_ID)) {
                         MsgQueue::msg(MsgType::SUCCESS_AUTO, 'Данные внесены');
@@ -320,6 +329,9 @@ class UserController extends AppBaseController {
                         $_SESSION[SessionFields::FORM_DATA][User::POST_REC] = $_POST[User::POST_REC];
                         MsgQueue::msg(MsgType::ERROR, $model->errorInfo());
                     }
+                } else {
+                    // Новые данные равны старым данным
+                    MsgQueue::msg(MsgType::INFO_AUTO, 'Изменений нет');
                 }
             } else {
                 $_SESSION[SessionFields::FORM_DATA][User::POST_REC] = $_POST[User::POST_REC];

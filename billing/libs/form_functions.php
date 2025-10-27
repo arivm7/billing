@@ -205,7 +205,7 @@ function checkboxRow(
         int $input_col = DEFAULT_INPUT_COL,
         LabelLayout $l_layout = LabelLayout::V,
         string $post_rec = 'item',
-        string $options = "class='mb-3 row'")
+        string $options = "class='row mb-3'")
 {
     $id = ($id ?: 'input_' . $name);
     echo "<div {$options}>"

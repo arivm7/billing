@@ -524,6 +524,19 @@ class AbonModel extends UserModel {
     }
     
 
+
+    function get_pa(int $pa_id):array {
+        self::$errors = [];
+        if ($this->validate_id(PA::TABLE, $pa_id, PA::F_ID)) {
+            return $this->get_row_by_id(PA::TABLE, $pa_id, PA::F_ID);
+        } else {
+            self::$errors[] = "No Valid ID ".$pa_id."";
+            return [];
+        }
+    }
+
+
+
     function get_srvice_type_by_pa(array $pa): ServiceType
     {
         if ($pa[PA::F_NET_IP_SERVICE]) {

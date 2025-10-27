@@ -1818,14 +1818,40 @@ function isUsername(string $value): bool {
 
 
 
-function isTelegramWeb(string $value): bool {
+function isTelegram(string $value): bool {
     /*
-     * Поддерживает: http://t.me/username или https://t.me/username
-     * Длина username 5–32 символа
-     * Регистронезависимо
+     * Поддерживает:
+     *  - http://t.me/username или https://t.me/username
+     *  - @username
+     *  - email: user@example.com
+     *  - телефон: +380501234567, 380501234567, 0501234567
+     * Username: 5–32 символа, буквы/цифры/подчеркивание, регистронезависимо
      */
-    return preg_match('#^https?://(www\.)?t\.me/[\w_]{5,32}$#i', $value);
+    $value = trim($value);
+
+    // Telegram web-ссылка
+    if (preg_match('#^https?://(www\.)?t\.me/[\w_]{5,32}$#i', $value)) {
+        return true;
+    }
+
+    // Telegram username с @
+    if (preg_match('#^@[\w_]{5,32}$#i', $value)) {
+        return true;
+    }
+
+    // Email
+    if (filter_var($value, FILTER_VALIDATE_EMAIL)) {
+        return true;
+    }
+
+    // Номер телефона (допускаем +, пробелы, дефисы и скобки)
+    if (preg_match('#^\+?\d[\d\s\-\(\)]{7,20}$#', $value)) {
+        return true;
+    }
+
+    return false;
 }
+
 
 
 function isJabberFull(string $value): bool {

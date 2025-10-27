@@ -1245,7 +1245,7 @@ class AbonController extends AppBaseController {
             );
 
         $this->setVariables([
-            'title'=> __('Карта Пользователя/Абонента'),
+            'title'=> __('Карта Пользователя/Абонента') . " " . $user[User::F_ID],
             'user' => $user,
         ]);
     }
