@@ -42,57 +42,57 @@ $uri = Conciliation::URI_PRINT . '/' . $id;
     <table class="table table-bordered table-striped table-hover align-middle">
         <tbody>
             <tr>
-                <td>
+                <td class="bg-warning-subtle">
                     <div class="small text-muted mt-1">
-                        <p class="bukvitca">Наличие факсимиле и штампа в выходном документе не означает его юридической силы.<br>
-                        Для получения действующего бухгалтерского документа нужно получить подписаные бумажные документы или воспользоваться системами электронной подписи&nbsp;ЭЦП&nbsp;(КЭП).</p>
+                        <p class="bukvitca"><?=__('The presence of a facsimile and a stamp in the output document does not mean that it is legally binding');?>.<br>
+                        <?=__('To obtain a valid accounting document, you need to obtain signed paper documents, or use electronic digital signature systems (EDS), or a qualified electronic signature (CAP).');?>.</p>
                     </div>
                 </td>
-                <td class="text-end">
+                <td class="text-end bg-warning-subtle">
                 </td>
             </tr>
 
             <tr>
                 <td>
-                    <div class="small text-muted mt-1 bukvitca">С даты подключения по текущий месяц, включительно.</div>
+                    <div class="small text-muted mt-1 bukvitca"><?=__('From the activation date to the current month, Including');?>.</div>
                     <div class="text-end">
-                        <a class="btn btn-primary btn-sm" target="_blank" href="<?= $uri; ?>">Полный</a>
-                        <a class="btn btn-primary btn-sm" target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_SHTAMP; ?>=1" title="Полный со штампом">Красивый</a>
+                        <a class="btn btn-primary btn-sm" target="_blank" href="<?= $uri; ?>"><?=__('Full');?></a>
+                        <a class="btn btn-primary btn-sm" target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_SHTAMP; ?>=1" title="<?=__('Full with stamp');?>"><?=__('Beautiful');?></a>
                     </div>
                 </td>
                 <td class="text-end">
                     <?php if (can_use(Module::MOD_CONCILIATION)) : ?>
-                    <a target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_DEBUG; ?>=1" class="link-secondary">Отладочный</a>
+                    <a target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_DEBUG; ?>=1" class="link-secondary"><?=__('Debugging');?></a>
                     <?php endif; ?>
                 </td>
             </tr>
 
             <tr>
                 <td>
-                    <div class="small text-muted mt-1 bukvitca">С начала этого года по текущий месяц включительно.</div>
+                    <div class="small text-muted mt-1 bukvitca"><?=__('From the beginning of this year to the current month inclusive');?>.</div>
                     <div class="text-end">
-                        <a class="btn btn-primary btn-sm" target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= year(); ?>-01-01">Этот год</a>
-                        <a class="btn btn-primary btn-sm" target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= year(); ?>-01-01&<?= Conciliation::F_SHTAMP; ?>=1" title="Полный со штампом">Красивый</a>
+                        <a class="btn btn-primary btn-sm" target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= year(); ?>-01-01"><?=__('This year');?></a>
+                        <a class="btn btn-primary btn-sm" target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= year(); ?>-01-01&<?= Conciliation::F_SHTAMP; ?>=1" title="<?=__('Full with stamp');?>"><?=__('Beautiful');?></a>
                     </div>
                 </td>
                 <td class="text-end">
                     <?php if (can_use(Module::MOD_CONCILIATION)) : ?>
-                    <a target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= year(); ?>-01-01&<?= Conciliation::F_DEBUG; ?>=1" class="link-secondary">Отладочный</a>
+                    <a target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= year(); ?>-01-01&<?= Conciliation::F_DEBUG; ?>=1" class="link-secondary"><?=__('Debugging');?></a>
                     <?php endif; ?>
                 </td>
             </tr>
 
             <tr>
                 <td>
-                    <div class="small text-muted mt-1 bukvitca">Прошлый год, с <span class="text-info"><?= (year() - 1); ?>-01-01</span> по <span class="text-info"><?= (year() - 1); ?>-12-31</span> включительно.</div>
+                    <div class="small text-muted mt-1 bukvitca"><?=__('Last year, from');?> <span class="text-info"><?= (year() - 1); ?>-01-01</span> <?=__('by');?> <span class="text-info"><?= (year() - 1); ?>-12-31</span> <?=__('including');?>.</div>
                     <div class="text-end">
-                        <a class="btn btn-primary btn-sm" target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= (year() - 1); ?>-01-01&<?= Conciliation::F_DATE2_STR; ?>=<?= (year() - 1); ?>-12-31">Прошлый год</a>
-                        <a class="btn btn-primary btn-sm" target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= (year() - 1); ?>-01-01&<?= Conciliation::F_DATE2_STR; ?>=<?= (year() - 1); ?>-12-31&<?= Conciliation::F_SHTAMP; ?>=1" title="Со штампом">Красивый</a>
+                        <a class="btn btn-primary btn-sm" target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= (year() - 1); ?>-01-01&<?= Conciliation::F_DATE2_STR; ?>=<?= (year() - 1); ?>-12-31"><?=__('Last year');?></a>
+                        <a class="btn btn-primary btn-sm" target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= (year() - 1); ?>-01-01&<?= Conciliation::F_DATE2_STR; ?>=<?= (year() - 1); ?>-12-31&<?= Conciliation::F_SHTAMP; ?>=1" title="<?=__('With a stamp');?>"><?=__('Beautiful');?></a>
                     </div>
                 </td>
                 <td class="text-end">
                     <?php if (can_use(Module::MOD_CONCILIATION)) : ?>
-                    <a target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= (year() - 1); ?>-01-01&<?= Conciliation::F_DATE2_STR; ?>=<?= (year() - 1); ?>-12-31&<?= Conciliation::F_DEBUG; ?>=1" class="link-secondary">Отладочный</a>
+                    <a target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= (year() - 1); ?>-01-01&<?= Conciliation::F_DATE2_STR; ?>=<?= (year() - 1); ?>-12-31&<?= Conciliation::F_DEBUG; ?>=1" class="link-secondary"><?=__('Debugging');?></a>
                     <?php endif; ?>
                 </td>
             </tr>
@@ -103,7 +103,7 @@ $uri = Conciliation::URI_PRINT . '/' . $id;
                     <form action="<?= $uri; ?>" method="get" target="_blank">
                         <div class="row gy-2 gx-2 align-items-center justify-content-end">
                             <!-- <input type="hidden" name="abon_id" value="<?= $abon_id; ?>"> -->
-                            <label class="col-auto col-form-label bukvitca">Этот год:</label>
+                            <label class="col-auto col-form-label bukvitca"><?=__('This year');?>:</label>
 
                             <div class="col-auto">
                                 <input name="<?= Conciliation::F_DATE1_STR; ?>" type="date" class="form-control form-control-sm text-center" value="<?=year(time());?>-01-01">
@@ -115,17 +115,17 @@ $uri = Conciliation::URI_PRINT . '/' . $id;
 
                             <div class="col-auto form-check">
                                 <input name="<?= Conciliation::F_SHTAMP; ?>" class="form-check-input" type="checkbox" value="1" id="shtamp1">
-                                <label class="form-check-label small" for="shtamp1">штамп</label>
+                                <label class="form-check-label small" for="shtamp1"><?=__('stamp');?></label>
                             </div>
 
                             <div class="col-auto">
-                                <button type="submit" class="btn btn-sm btn-primary">Показать</button>
+                                <button type="submit" class="btn btn-sm btn-primary"><?=__('Show');?></button>
                             </div>
 
                     <?php if (can_use(Module::MOD_CONCILIATION)) : ?>
                             <div class="col-auto form-check">
                                 <input name="<?=Conciliation::F_DEBUG;?>" class="form-check-input" type="checkbox" value="1" id="debug1">
-                                <label class="form-check-label small" for="debug1">отладка</label>
+                                <label class="form-check-label small" for="debug1"><?=__('debugging');?></label>
                             </div>
                     <?php endif; ?>
 
@@ -141,7 +141,7 @@ $uri = Conciliation::URI_PRINT . '/' . $id;
                 <td class="text-end">
                     <form action="<?= $uri; ?>" method="get" target="_blank" class="row gy-2 gx-2 align-items-center justify-content-end">
                         <!-- <input type="hidden" name="abon_id" value="<?= $abon_id; ?>"> -->
-                        <label class="col-auto col-form-label bukvitca">Весь период +1 мес.:</label>
+                        <label class="col-auto col-form-label bukvitca"><?=__('The entire period +1 month.');?>:</label>
 
                         <div class="col-auto">
                             <input name="<?= Conciliation::F_DATE1_STR; ?>" type="date" class="form-control form-control-sm text-center" value="<?= date("Y-m-d", $abon[Abon::F_DATE_JOIN]); ?>">
@@ -153,17 +153,17 @@ $uri = Conciliation::URI_PRINT . '/' . $id;
 
                         <div class="col-auto form-check">
                             <input name="<?= Conciliation::F_SHTAMP; ?>" class="form-check-input" type="checkbox" value="1" id="shtamp2">
-                            <label class="form-check-label small" for="shtamp2">штамп</label>
+                            <label class="form-check-label small" for="shtamp2"><?=__('stamp');?></label>
                         </div>
 
                         <div class="col-auto">
-                            <button type="submit" class="btn btn-sm btn-primary">Показать</button>
+                            <button type="submit" class="btn btn-sm btn-primary"><?=__('Show');?></button>
                         </div>
 
                     <?php if (can_use(Module::MOD_CONCILIATION)) : ?>
                         <div class="col-auto form-check">
                             <input name="<?=Conciliation::F_DEBUG;?>" class="form-check-input" type="checkbox" value="1" id="debug2">
-                            <label class="form-check-label small" for="debug2">отладка</label>
+                            <label class="form-check-label small" for="debug2"><?=__('debugging');?></label>
                         </div>
                     <?php endif; ?>
 
