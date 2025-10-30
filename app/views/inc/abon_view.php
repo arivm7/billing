@@ -68,16 +68,21 @@ $abon_attr = AbonController::attribute_warning[$dutyWarn->name];
  * - иначе просто число
  */
 $prepayed_html = 
-    (is_null($rest[AbonRest::F_PREPAYED])
-        ?   "-"
-        :   ($rest[AbonRest::F_PREPAYED] < -(365*3)
-                ? "<span class='small' title='{$rest[AbonRest::F_PREPAYED]} ".__('дней')."'>&lt;&lt;&lt;</span>"
-                :   ($rest[AbonRest::F_PREPAYED] > (365*3)
-                        ? "<span class='small' title='{$rest[AbonRest::F_PREPAYED]} ".__('дней')."'>&gt;&gt;&gt;</span>"
-                        : $rest[AbonRest::F_PREPAYED]
+    ($rest 
+        ?   (is_null($rest[AbonRest::F_PREPAYED])
+                ?   "-"
+                :   ($rest[AbonRest::F_PREPAYED] < -(365*3)
+                        ? "<span class='small' title='{$rest[AbonRest::F_PREPAYED]} ".__('дней')."'>&lt;&lt;&lt;</span>"
+                        :   ($rest[AbonRest::F_PREPAYED] > (365*3)
+                                ? "<span class='small' title='{$rest[AbonRest::F_PREPAYED]} ".__('дней')."'>&gt;&gt;&gt;</span>"
+                                : $rest[AbonRest::F_PREPAYED]
+                            )
                     )
             )
+        :   "--"
     );
+
+;
 
 /**
  * Формирование атрибутов для отображения остатков и границ **обслуживания**
@@ -90,7 +95,10 @@ $prepayed_html =
 //         ? "class='text-secondary'"
 //         : ($abon[Abon::F_DUTY_MAX_WARN] > $rest[AbonRest::F_PREPAYED] ? AbonController::attribute_warning[DutyWarn::INFO->name] : "")
 //     );
-$attr_warn = ($abon[Abon::F_DUTY_MAX_WARN] > $rest[AbonRest::F_PREPAYED] ? AbonController::attribute_warning[DutyWarn::INFO->name] : "");
+$attr_warn =    (!is_null($rest) && ($abon[Abon::F_DUTY_MAX_WARN] > $rest[AbonRest::F_PREPAYED]) 
+                    ? AbonController::attribute_warning[DutyWarn::INFO->name] 
+                    : ""
+                );
 
 /**
  * Формирование атрибута для отображения границы **отключения**
@@ -106,7 +114,7 @@ $attr_warn = ($abon[Abon::F_DUTY_MAX_WARN] > $rest[AbonRest::F_PREPAYED] ? AbonC
 //             )
 //     );
 $attr_off  = 
-        ( $abon[Abon::F_DUTY_MAX_OFF] > $rest[AbonRest::F_PREPAYED] 
+        ( !is_null($rest) && ($abon[Abon::F_DUTY_MAX_OFF] > $rest[AbonRest::F_PREPAYED]) 
                 ? AbonController::attribute_warning[DutyWarn::NEED_OFF->name] 
                 : ""
         );
