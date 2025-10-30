@@ -57,6 +57,8 @@ class Module {
     const MOD_SEARCH        = 36;
     const MOD_WEB_DEBUG     = 39;
     const MOD_PPP           = 43;
+    const MOD_ADMIN_MENU    = 27;
+
 
 
 

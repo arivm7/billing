@@ -51,6 +51,10 @@ use billing\core\base\View;
             .min-w-10  { min-width:  10% !important; }
 
             .w-10 { width: 10% !important; }
+            .w-15 { width: 15% !important; }
+            .w-25 { width: 25% !important; }
+            .w-50 { width: 50% !important; }
+            .w-75 { width: 75% !important; }
             .w-90 { width: 90% !important; }
 
             /* размер текста */

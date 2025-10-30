@@ -13,6 +13,7 @@
 
 
 use app\models\AbonModel;
+use app\models\UserModel;
 use billing\core\base\Lang;
 use config\tables\Firm;
 use config\tables\PA;
@@ -1201,7 +1202,10 @@ function msg_to_session(string|array|null $msg = null, int $status = MSG_HAS_ERR
  * @param array $abon -- Ассоциативный масив записи абонента
  * @return DutyWarn -- статус предупреждения абонента
  */
-function get_abon_warn_status(array $rest, array $abon): DutyWarn {
+function get_abon_warn_status(array|null $rest, array $abon): DutyWarn {
+
+    if (is_null($rest)) { return DutyWarn::NA; }
+
     if  (
             !isset($rest[AbonRest::F_PREPAYED]) || !isset($rest[AbonRest::F_SUM_PP30A]) || 
             !isset($rest[AbonRest::F_SUM_PP01A]) || !isset($rest[AbonRest::F_REST])
@@ -1767,6 +1771,7 @@ function get_str_cut(string|null $text, int $max_length=20, string $encoding="UT
 
 
 /**
+ * Обёртка для функции AppBaseModel->url_abon_form()
  * Возвращает текстовую строку-ссылку на страницу абонента (пользователя
  * @param int $abon_id
  * @return string -- Строка с html-кодом
@@ -1774,9 +1779,38 @@ function get_str_cut(string|null $text, int $max_length=20, string $encoding="UT
 function url_abon_form(int $abon_id): string {
     // !!! Убрать обращение к базе
     $model = new AbonModel();
-    if (is_null($abon_id) || $abon_id == 0 || !$model->validate_id("abons", $abon_id)) { return $abon_id; }
-    $c = $model->get_html_chek_payer(aid: $abon_id);
-    return "<a href='".Abon::URI_VIEW."/{$abon_id}' target=_blank title='".$model->get_abon_address($abon_id)."' >{$abon_id}</a>&nbsp;{$c}";
+    return $model->url_abon_form($abon_id);
+}
+
+
+/**
+ * Обёртка для функции AppBaseModel->url_user_form()
+ * Возвращает текстовую строку-ссылку на страницу пользователя
+ * @param int $user_id
+ * @return string -- Строка с html-кодом
+ */
+function url_user_form(int $user_id): string {
+    // !!! Убрать обращение к базе
+    $model = new UserModel();
+    return $model->url_user_form($user_id);
+}
+
+
+
+/**
+ * Обёртка для функции AppBaseModel->url_tp_form()
+ * Возвращает текстовую строку-ссылку на форму редактирования ТП
+ * @param int|null $tp_id
+ * @param array|null $tp
+ * @param bool $has_img
+ * @param int $icon_width
+ * @param int $icon_height
+ * @return string
+ */
+function url_tp_form(int|null $tp_id = null, array|null $tp = null, bool $has_img = false, int $icon_width = ICON_WIDTH_DEF, int $icon_height = ICON_HEIGHT_DEF): string {
+    // !!! Убрать обращение к базе
+    $model = new UserModel();
+    return $model->url_tp_form($tp_id, $tp, $has_img, $icon_width, $icon_height);
 }
 
 
@@ -1917,4 +1951,33 @@ function isJabberFull(string $value): bool {
  * <a href="https://www.messenger.com/t/jack.malbon.3">Facebook Messenger</a>
  *
  */
+
+
+/**
+ * В одномерном ассоциативном массиве в указанном поле меняет значение указанного поля с помощью функции $func($value)
+ * @param array $row
+ * @param string|int|bool $field
+ * @param callable $func
+ */
+function replace_field_on_row(array &$row, string|int|bool $field, callable $func) {
+    foreach ($row as $key => &$value) {
+        if ($key == $field && !is_null($value)) {
+            $value = $func($value);
+        }
+    }
+}
+
+
+
+/**
+ * В двумерном массиве в каждой строке в указанном поле меняет значение указанного поля с помощью функции $func($value)
+ * @param array $table -- изменяемый двумерный массив
+ * @param string|int|bool $field -- изменяемое поле
+ * @param callable $func -- высываемая функция возвращающая новый результат для поля
+ */
+function replace_field_on_table(array &$table, string|int|bool $field, callable $func) {
+    foreach ($table as &$row) {
+        replace_field_on_row($row, $field, $func);
+    }
+}
 

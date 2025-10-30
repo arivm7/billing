@@ -43,16 +43,16 @@ class AdminController extends AdminBaseController {
 
 
 
-    public function indexAction() {
-        View::setMeta(
-            title: "Админка :: Главная страница.",
-            descr: "Тут должно быть описание главной страницы Админки",
-            keywords: "Ключевые слова главной страницы админки"
-            );
-        $this->setVariables([
-            'data' => ["1", "data"]
-        ]);
-    }
+    // public function indexAction() {
+    //     View::setMeta(
+    //         title: "Админка :: Главная страница.",
+    //         descr: "Тут должно быть описание главной страницы Админки",
+    //         keywords: "Ключевые слова главной страницы админки"
+    //         );
+    //     $this->setVariables([
+    //         'data' => ["1", "data"]
+    //     ]);
+    // }
 
 
 
@@ -144,6 +144,15 @@ class AdminController extends AdminBaseController {
 
 
     public function menuEditAction() {
+
+        if (!App::isAuth()) {
+            redirect('/');
+        }
+
+        if (!can_use(Module::MOD_ADMIN_MENU)) {
+            redirect('/');
+        }
+
         $model = new MenuModel();
 
         /**

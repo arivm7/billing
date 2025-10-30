@@ -387,11 +387,11 @@ class AppBaseModel extends Model
         $payer = false;
         if (!is_null($aid)) {
             $abon = $this->get_abon($aid);
-            $payer = $abon['is_payer'];
+            $payer = $abon[Abon::F_IS_PAYER];
         } elseif (!is_null($uid)) {
-            $A = $this->get_rows_by_field('abons', field_name: 'user_id', field_value: $uid);
+            $A = $this->get_rows_by_field(Abon::TABLE, field_name: Abon::F_USER_ID, field_value: $uid);
             foreach ($A as $abon) {
-                if ($abon['is_payer']) {
+                if ($abon[Abon::F_IS_PAYER]) {
                     $payer = true;
                     break;
                 }
@@ -412,7 +412,7 @@ class AppBaseModel extends Model
      */
     function url_user_form(int $user_id): string {
         $c = $this->get_html_chek_payer(uid: $user_id);
-        return "<a href='".Abon::URI_VIEW."/{$user_id}' target=_blank title='". $this->get_user_name($user_id)."' >$user_id</a>&nbsp;{$c}";
+        return "<nobr><a href='".Abon::URI_VIEW."/{$user_id}' target=_blank title='". $this->get_user_name($user_id)."' >$user_id</a>&nbsp;{$c}</nobr>";
     }
 
 
@@ -425,8 +425,7 @@ class AppBaseModel extends Model
     function url_abon_form(int $abon_id): string {
         if (is_null($abon_id) || $abon_id == 0 || !$this->validate_id("abons", $abon_id)) { return $abon_id; }
         $c = $this->get_html_chek_payer(aid: $abon_id);
-        return a(href: Abon::URI_VIEW . "/{$abon_id}", text: "{$abon_id}", title: $this->get_abon_address($abon_id), target: "_blank") . "&nbsp;{$c}";
-     // return "<a href=/abon/form?abon_id={$abon_id} title='". $this->get_abon_address($abon_id)."' target=_blank >{$abon_id}</a>&nbsp;{$c}";
+        return "<nobr>" . a(href: Abon::URI_VIEW . "/{$abon_id}", text: "{$abon_id}", title: $this->get_abon_address($abon_id), target: "_blank") . "&nbsp;{$c}</nobr>";
     }
 
 
@@ -441,10 +440,14 @@ class AppBaseModel extends Model
 
     /**
      * Возвращает html-строку с кодом ссылки на страницу редактирования ТП
-     * @param string $tp_id
+     * @param array|null $tp
+     * @param int|null $tp_id
+     * @param bool $has_img
+     * @param int $icon_width
+     * @param int $icon_height
      * @return string
      */
-    function url_tp_form(array|null $tp = null, int|null $tp_id = null, bool $has_img = false, int $icon_width = ICON_WIDTH_DEF, int $icon_height = ICON_HEIGHT_DEF): string {
+    function url_tp_form(int|null $tp_id = null, array|null $tp = null, bool|null $has_img = null, int $icon_width = ICON_WIDTH_DEF, int $icon_height = ICON_HEIGHT_DEF): string {
         if (is_null($tp) && !is_null($tp_id)) {
             if ($this->validate_id(TP::TABLE, $tp_id, TP::F_ID)) {
                 $tp = $this->get_tp($tp_id);
@@ -452,10 +455,11 @@ class AppBaseModel extends Model
                 return "";
             }
         }
-        return a(   href:   "/tp_form.php?tp_id={$tp[TP::F_ID]}",
+        return a(   href:   TP::URI_EDIT."/{$tp[TP::F_ID]}",
                     target: TARGET_BLANK,
                     title:  __('Редактировать ТП') . "[{$tp[TP::F_ID]}] {$tp[TP::F_TITLE]}",
-                    src:    Icons::SRC_TP_EDIT,
+                    text:   (is_null($has_img) || ($has_img === false) ? ($tp[TP::F_TITLE] ?? '') : null),
+                    src:    (is_null($has_img) || ($has_img === true) ? Icons::SRC_TP_EDIT : null),
                     alt:    'EDIT',
                     width:  $icon_width,
                     height: $icon_height);

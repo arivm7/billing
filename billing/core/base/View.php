@@ -190,7 +190,7 @@ class View {
 
 
     public static function getMeta(): string {
-        return    "<title>" . self::$meta[self::META_TITLE] . "</title>"
+        return    "<title>" . __('Rilan') . " :: " . self::$meta[self::META_TITLE] . "</title>"
                 . "<meta name=description content='" . self::$meta[self::META_DESCR] . "'>"
                 . "<meta name=keywords content='" . self::$meta[self::META_KEYWORDS] . "'>";
     }

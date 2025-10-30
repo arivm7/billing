@@ -521,6 +521,22 @@ class AbonModel extends UserModel {
                     . "`".PA::TABLE."`.`".PA::F_DATE_END."` DESC,"          //  -- затем сортировка по убыванию date_end
                     . "`".PA::TABLE."`.`".PA::F_DATE_START."` DESC";        //  -- потом по убыванию date_start
         return $this->get_rows_by_sql($sql);
+
+        // вариант:
+        // (
+        //   SELECT *
+        //   FROM prices_apply
+        //   WHERE abon_id = 458 AND date_end IS NULL
+        //   ORDER BY date_start DESC
+        // )
+        // UNION ALL
+        // (
+        //   SELECT *
+        //   FROM prices_apply
+        //   WHERE abon_id = 458 AND date_end IS NOT NULL
+        //   ORDER BY date_end DESC
+        // );
+
     }
     
 

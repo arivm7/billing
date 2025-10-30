@@ -20,6 +20,7 @@
 use app\widgets\Theme\ThemeSelector;
 use billing\core\App;
 use config\Auth;
+use config\Search;
 use config\tables\Abon;
 use config\tables\Module;
 use config\tables\User;
@@ -43,9 +44,11 @@ $path=strtolower('/' . ($this->route[F_PREFIX] ? $this->route[F_PREFIX] . '/' : 
 <?php if (App::$auth->isAuth) : ?>
             <ul class="nav nav-pills me-auto">
                 <?php if (can_view(Module::MOD_SEARCH)) : ?>
+                <?php if (can_use(Module::MOD_ADMIN_MENU)) : ?>
                 <li class="nav-item pe-2 d-flex align-items-center">
                     <a class="btn btn-outline-success btn-sm <?=(str_contains($path, 'admin/') ? "active" : "");?>" href="/admin/admin/menuedit">Admin</a>
                 </li>
+                <?php endif; ?>
                 <li class="nav-item pe-2 d-flex align-items-center">
                     <a class="btn btn-outline-success btn-sm disabled" href="/help">Help</a>
                 </li>
@@ -58,9 +61,9 @@ $path=strtolower('/' . ($this->route[F_PREFIX] ? $this->route[F_PREFIX] . '/' : 
                     </form>
                 </li>
                 <li class="nav-item pe-2">
-                    <form class="d-flex" role="search" method="get" action="/search/text">
+                    <form class="d-flex" role="search" method="get" action="<?=Search::URI_QUERY;?>">
                         <div class="input-group align-items-center">
-                            <input class="form-control form-control-sm" type="search" placeholder="<?=__('Search fragment');?>" aria-label="Search" title="<?=__('Search');?>">
+                            <input class="form-control form-control-sm" type="search" name="<?=Search::F_QUERY;?>" placeholder="<?=__('Search fragment');?>" aria-label="Search" title="<?=__('Search');?>">
                             <button class="btn btn-outline-success btn-sm" type="submit"><?=__('Search');?></button>
                         </div>
                     </form>
