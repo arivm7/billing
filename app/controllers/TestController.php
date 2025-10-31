@@ -41,13 +41,20 @@ class TestController extends AppBaseController {
              * ЗАПУСК ТЕСТОВ
              */
 
-            translit_uk_test(1);
+
+            echo "TEST highlight_like_groups: <br>";
+            echo h(highlight_like_groups("Отключились потому что через этот интернет не работала касса... хз...", "что%то")) . "<br>";
+            echo h(highlight_like_groups("Платит нерегулярно и не верит,что что-то должен", "что%то")) . "<br>";
+
+            die();
+
+            translit_uk_test(0);
             echo "<hr>";
-            translit_ru_test(1);
+            translit_ru_test(0);
             echo "<hr>";
-            detect_language_test(1);
+            detect_language_test(0);
             echo "<hr>";
-            translit_test(1);
+            translit_test(0);
         }
 
         die();

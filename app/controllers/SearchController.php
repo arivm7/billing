@@ -128,6 +128,14 @@ class SearchController extends AppBaseController {
                     replace_field_on_table($rows, $rec['field'], $rec['func']);
                 }
 
+                foreach ($row_search[Search::F_SEARSH_IN_FIELDS] as $field) {
+                    foreach ($rows as &$row) {
+                        if (!empty($row[$field])) {
+                            $row[$field] = highlight_like_groups($row[$field], $searsh_str);;
+                        }
+                    }
+                }
+
                 // debug($rows, '$rows', die: 0);
             }
 

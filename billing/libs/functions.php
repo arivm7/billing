@@ -1981,3 +1981,36 @@ function replace_field_on_table(array &$table, string|int|bool $field, callable 
     }
 }
 
+
+
+function highlight_like_groups(string $text, string $likePattern): string {
+    $parts = array_filter(explode('%', $likePattern));
+    if (!$parts) return htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+
+    // сортируем по длине по возрастанию
+    usort($parts, fn($a, $b) => mb_strlen($b) <=> mb_strlen($a));
+
+    $textHtml = htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+
+    foreach ($parts as $part) {
+        if ($part === '') continue;
+        $partEsc = preg_quote($part, '/');
+
+        // регистронезависимая замена всех вхождений
+        $textHtml = preg_replace_callback(
+            "/($partEsc)/iu",
+            fn($m) => '<mark>' . $m[1] . '</mark>',
+            $textHtml
+        );
+    }
+
+    return $textHtml;
+}
+
+
+
+
+
+
+
+
