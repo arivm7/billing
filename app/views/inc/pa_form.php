@@ -28,11 +28,13 @@ use billing\core\base\Lang;
 Lang::load_inc(__FILE__);
 
 require_once DIR_LIBS . '/form_functions.php';
+require_once DIR_LIBS . '/inc_functions.php';
 
 /** 
  * @var array $item -- элемент из функции Аккордеона
  * @var array $pa -- элемент из контроллера
  * @var array $tp -- Текущая ТП к которой прикреплена услуга
+ * @var bool|null $abon_ip_on -- Enable/Disable статус IP-адреса в таблице ABON
  * @var array $arp -- Запись из таблицы ARP микротика со статусом IP-адреса
  * @var array $prices_list -- список прайсов, только названия
  * @var array $tp_list -- список ТП, только названия
@@ -51,7 +53,7 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
 
 <div class="row justify-content-center">
 <div class="col-12 col-md-10 col-lg-8">
-    <div class="card mb-4 w-75">
+    <div class="card mb-4 w-100 min-w-700">
         <div class="card-header">
             <h2><?= isset($item[PA::F_ID]) ? __('Редактировать прайсовый фрагмент для абонента') . ' #' . $item[PA::F_ABON_ID] : __('Новый прайсовый фрагмент'); ?></h2>
         </div>
@@ -128,7 +130,7 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
                 <legend class="text-info text-start">
                     <div class='mb-3 row'>
                         <label for='net_ip_service' class='col-sm-3 col-form-label'><?=__('IP услуга');?></label>
-                        <div class='col-sm-3 d-flex align-items-center'>
+                        <div class='col-sm-1 d-flex align-items-center'>
                             <input type='checkbox' class='form-check-input fs-6' id='net_ip_service'
                                 name='<?=PA::POST_REC;?>[<?=PA::F_NET_IP_SERVICE;?>]'
                                 value='1' <?=($item[PA::F_NET_IP_SERVICE] ? 'checked' : '');?>>
@@ -136,8 +138,12 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
                         <?php if ($item['net_ip_service']) : ?>
                             <div class='col-sm-6 d-flex align-items-center'>
                                 <!-- Статус IP-MAC из ARP-таблицы микротика -->
-                                <span class="badge text-bg-info mt-3">
+                                <span class="badge text-bg-info mt-3 fs-6">
+                                <?= get_html_abon_ip_status($abon_ip_on); ?>&nbsp;
                                 <?= ($arp ? Api::get_status_mac_from_arp_rec($arp) : 'Нет данных ARP'); ?>
+                                <!-- Действия с IP -->
+                                <?=get_html_btn_abon_ip_turn($item[PA::F_TP_ID], $item[PA::F_NET_IP], 0, options: 'class="btn btn-light p-1"');?>
+                                <?=get_html_btn_abon_ip_turn($item[PA::F_TP_ID], $item[PA::F_NET_IP], 1, options: 'class="btn btn-light p-1"');?>
                                 </span>
                             </div>
                         <?php endif; ?>

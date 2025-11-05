@@ -30,3 +30,14 @@ const REQUEST_SCHEME_DEFAULT = 'https';
 const SERVER_NAME_DEFAULT    = 'my.ri.net.ua';
 const SERVER_PORT_DEFAULT    = '443';
 
+/**
+ * Адрес этого хоста
+ */
+define('URL_DOMAIN', $_SERVER['HTTP_HOST'] ?? SERVER_NAME_DEFAULT);
+define('URL_HOST', "https://".URL_DOMAIN."");
+
+/**
+ * Адрес редиректа после авторизации/выхода
+ * echo "<META HTTP-EQUIV=\"REFRESH\" CONTENT=\"0;URL=". $_SERVER['REQUEST_SCHEME']."://".$_SERVER['SERVER_NAME'].":".$_SERVER['SERVER_PORT']."".$path."\">";
+ */
+define('URL_REDIRECT', URL_HOST . "/");

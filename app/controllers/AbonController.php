@@ -183,11 +183,6 @@ class AbonController extends AppBaseController {
         $model = new AbonModel();
 
         /**
-         * Обновление остатков на ЛС всех абонентов (формируется в отдельной таблице `abon_rest`)
-         */
-        $model->update_abon_rest(force: false);
-
-        /**
          * Список ТП прикреплённых к авторизованному пользователю
          * чтобы получить абонентов только со своих ТП
          */

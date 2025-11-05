@@ -30,30 +30,8 @@ require_once DIR_LIBS . '/compare_functions.php';
 require_once DIR_LIBS . '/billing_functions.php';
 
 
-/**
- * Адрес этого хоста
- */
-define('URL_DOMAIN', $_SERVER['HTTP_HOST']);
-define('URL_HOST', "https://".$_SERVER['HTTP_HOST']."");
-
-
-
-/**
- * Адрес редиректа после авторизации/выхода
- * echo "<META HTTP-EQUIV=\"REFRESH\" CONTENT=\"0;URL=". $_SERVER['REQUEST_SCHEME']."://".$_SERVER['SERVER_NAME'].":".$_SERVER['SERVER_PORT']."".$path."\">";
- */
-define('URL_REDIRECT', URL_HOST . "/");
-
-
 
 $I_COLOR_STEP = 1;
-$COLOR1_VALUE = COLOR1_VALUE;
-$COLOR2_VALUE = COLOR2_VALUE;
-$COLOR3_VALUE = COLOR3_VALUE;
-$COLOR4_VALUE = COLOR4_VALUE;
-$COLOR5_VALUE = COLOR5_VALUE;
-$COLOR6_VALUE = COLOR6_VALUE;
-
 
 
 const TABLE_ATTRIBUTES = "class='table table-striped table-hover table-bordered'";
@@ -2010,6 +1988,63 @@ function highlight_like_groups(string $text, string $likePattern): string {
 
 
 
+
+function detect_invoker(): string {
+    // 1) очевидный веб
+    if (php_sapi_name() !== 'cli' && PHP_SAPI !== 'cli') {
+        return 'web';
+    }
+
+    // теперь мы в CLI (включая cron)
+    // 2) если есть типичный веб-серверный context — веб:
+    if (!empty($_SERVER['REMOTE_ADDR']) || !empty($_SERVER['REQUEST_METHOD']) || !empty($_SERVER['HTTP_USER_AGENT'])) {
+        return 'web';
+    }
+
+    // 3) попробуем понять — интерактивный CLI (ssh/tty) или фоновый (cron)
+    $isTty = false;
+    // posix_isatty доступен не всегда
+    if (function_exists('posix_isatty')) {
+        $isTty = posix_isatty(STDIN);
+    } else {
+        // fallback: есть переменные окружения типа TERM или SSH_ — обычно значит интерактив
+        $isTty = (getenv('TERM') !== false) || (getenv('SSH_TTY') !== false) || (getenv('SSH_CONNECTION') !== false);
+    }
+
+    if ($isTty) {
+        return 'cli-interactive';
+    }
+
+    // 4) ещё попытка: посмотреть родительский процесс (Linux /proc)
+    if (function_exists('posix_getppid')) {
+        $ppid = posix_getppid();
+        $procCmd = @file_get_contents("/proc/{$ppid}/cmdline");
+        if ($procCmd !== false) {
+            $procCmd = str_replace("\0", ' ', $procCmd);
+            $procCmd = strtolower($procCmd);
+            // типичные имена демонов/планировщиков
+            if (strpos($procCmd, 'cron') !== false || strpos($procCmd, 'crond') !== false) {
+                return 'cron';
+            }
+            if (strpos($procCmd, 'systemd') !== false && strpos($procCmd, 'cron') !== false) {
+                return 'cron';
+            }
+            // parent could be bash called by cron; if parent cmdline contains -c and no tty vars - likely cron
+            if (strpos($procCmd, '-c') !== false && !getenv('SSH_CONNECTION')) {
+                return 'cron-like';
+            }
+        }
+    }
+
+    // 5) эвристики по окружению: у cron часто нет интерактивных переменных (SHELL, TERM), но и это не строго
+    $hasInteractiveEnv = (getenv('SHELL') !== false) || (getenv('TERM') !== false) || (getenv('USER') !== false && getenv('HOME') !== false && getenv('LOGNAME') !== false);
+    if (!$hasInteractiveEnv) {
+        return 'cron';
+    }
+
+    // 6) последнее — CLI, но не очевидно — пометим как cli-background
+    return 'cli-background';
+}
 
 
 

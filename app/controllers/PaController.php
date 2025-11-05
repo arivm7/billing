@@ -160,6 +160,22 @@ class PaController extends AppBaseController {
 
 
 
+    /**
+     * Если присутствуют поля, указанные в списке, то требуется пересчет стоимости фрагментов
+     * @param array $data -- обновляемые поля записи ПФ
+     * @return bool
+     */
+    public static function need_recalc_cost(array $data): bool {
+        foreach (PA::NEED_RECALC_FIELDS as $field) {
+            if (isset($data[$field])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+
     public function editAction() {
 
         // debug($_GET, '$_GET');
@@ -184,6 +200,8 @@ class PaController extends AppBaseController {
 
         $model = new AbonModel();
 
+
+        
         /**
          * Редактирование данных
          */
@@ -192,12 +210,15 @@ class PaController extends AppBaseController {
             $data = self::normalize($_POST[PA::POST_REC]);
             // Предыдущая запись в базе для сравнения и возврата
             $pa = $model->get_pa($data[PA::F_ID]);
-            // debug($data, '$data', debug_view: DebugView::DUMP, die: 0);
+            // debug($pa, '$pa', debug_view: DebugView::DUMP, die: 0);
             // debug($data, '$data', die: 1);
             // Валидация
             if (!self::validate($data)) {
                 $_SESSION[SessionFields::FORM_DATA] = $data;
             } else {
+                /**
+                 * Возвращаем только изменённые поля (и поле ID для идентификации)
+                 */
                 $data = Model::get_modified($data, $pa, PA::F_ID);
                 if ($data) {
                     /**
@@ -205,6 +226,30 @@ class PaController extends AppBaseController {
                      */
                     if ($model->update_row_by_id(PA::TABLE, $data, PA::F_ID)) {
                         MsgQueue::msg(MsgType::SUCCESS_AUTO, __("Данные внесены"));
+                        
+                        if (self::need_recalc_cost($data)) {
+                            /**
+                             * Обновление стоимосьти ПФ
+                             */
+                            MsgQueue::msg(MsgType::INFO_AUTO, __('Обновляем стоимость начисления в прайсовых фрагментах') . " [".$pa[PA::F_ABON_ID]."]...");
+                            if ($model->update_prices_cost_all($pa[PA::F_ABON_ID])) {
+                                MsgQueue::msg(MsgType::INFO_AUTO, __("Успешно."));
+                            } else {
+                                MsgQueue::msg(MsgType::INFO_AUTO, __("Ошибка"));
+                                MsgQueue::msg(MsgType::ERROR, $model->errorInfo());
+                            }
+                            /**
+                             * Обновление активных абонплат
+                             */
+                            MsgQueue::msg(MsgType::INFO_AUTO, __('Обновляем активные абонплаты прайсовых фрагментов') . " [".$pa[PA::F_ABON_ID]."]...");
+                            if ($model->update_prices_active_all($pa[PA::F_ABON_ID])) {
+                                MsgQueue::msg(MsgType::INFO_AUTO, __("Успешно."));
+                            } else {
+                                MsgQueue::msg(MsgType::INFO_AUTO, __("Ошибка"));
+                                MsgQueue::msg(MsgType::ERROR, $model->errorInfo());
+                            }
+
+                        }
                         // MsgQueue::msg(MsgType::SUCCESS, $data);
                     } else {
                         MsgQueue::msg(MsgType::ERROR, $model->errorInfo());
@@ -234,6 +279,7 @@ class PaController extends AppBaseController {
         $tp = $model->get_tp($pa[PA::F_TP_ID]);
 
         $arp = null;
+        $abon_ip_on = null;
         if  (
                 $tp[TP::F_STATUS] &&                    // ТП активна
                 $tp[TP::F_IS_MANAGED] &&                // ТП управляемая
@@ -249,14 +295,18 @@ class PaController extends AppBaseController {
             $mik = Api::tp_connector(tp: $tp);
             if ($mik !== false) {
                 /**
+                 * Enable/Disable статус IP-адреса в таблице ABON
+                 */
+                $abon_ip_on = Api::get_ip_enabled_on_mik_abon($mik, $pa[PA::F_NET_IP]);
+                if ($abon_ip_on === null) {
+                    MsgQueue::msg(MsgType::ERROR, Api::get_errors());
+                }
+                /**
                  * Соединение с миротиком установлено
                  */
-                $arp = Api::get_mac_from_arp_by_ip(
-                    $mik,
-                    $pa[PA::F_NET_IP], 
-                    true);
+                $arp = Api::get_mac_from_arp_by_ip($mik, $pa[PA::F_NET_IP], true);
             } else {
-                MsgQueue::msg(MsgType::ERROR, Api::$errors);
+                MsgQueue::msg(MsgType::ERROR, Api::get_errors());
             }
         }
 
@@ -275,6 +325,7 @@ class PaController extends AppBaseController {
         $this->setVariables([
             'pa'=> $pa,
             'tp'=> $tp,
+            'abon_ip_on'=> $abon_ip_on,
             'arp'=> $arp,
             'prices_list'=> $prices_list,
             'tp_list'=> $tp_list,

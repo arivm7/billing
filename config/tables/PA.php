@@ -36,7 +36,6 @@ class PA {
     const F_ID                  = 'id';                 //
     const F_ABON_ID             = 'abon_id';            // Абонент, которому назначен прайс
     const F_PRICE_ID            = 'prices_id';          // ID прикреплённого прайса
-    const F_PRICE_TITLE         = 'price_title';        // Название прикрепленного прайса из таблицы Прайсов
     const F_DATE_START          = 'date_start';         // Дата активации прайса
     const F_DATE_START_STR      = 'date_start_str';     // Дата активации прайса
     const F_DATE_END            = 'date_end';           // Дата отключения прайса
@@ -101,15 +100,27 @@ class PA {
     ];
 
     
+    
+    const NEED_RECALC_FIELDS = [
+        self::F_ABON_ID,            // Абонент, которому назначен прайс
+        self::F_PRICE_ID,           // ID прикреплённого прайса
+        self::F_DATE_START,         // Дата активации прайса
+        self::F_DATE_END,           // Дата отключения прайса
+        self::F_CLOSED,             // Прайс закрыт. Не только указана конечная дата, но она уже прошла и установлена стоимость прайсового фрагмента.
+    ];
+
+    
+
 
     /* ----------------
      * вычисляемые поля
      * ---------------- */
 
-    const FF_P_TITLE            = 'title';              // prices.title,
-    const FF_P_PPD              = 'pay_per_day';        // prices.pay_per_day,
-    const FF_P_PPM              = 'pay_per_month';      // prices.pay_per_month,
-    const FF_P_DESCR            = 'description';        // prices.description,
+    const F_PRICE_TITLE         = 'price_title';        // prices.title -- Название прикрепленного прайса из таблицы Прайсов
+    // const F_PRICE_TITLE          = 'title';              // prices.title,
+    const F_PRICE_PPD           = 'price_PPD';          // prices.pay_per_day,
+    const F_PRICE_PPM           = 'price_PPM';          // prices.pay_per_month,
+    const F_PRICE_DESCR         = 'price_description';  // prices.description,
     const FF_TP_TITLE           = 'tp_title';           // tp_list.title
     const FF_TP_STATUS          = 'tp_status';          // tp_list.status
     const FF_TP_DELETED         = 'tp_deleted';         // tp_list.deleted

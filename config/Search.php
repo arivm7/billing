@@ -1,4 +1,22 @@
 <?php
+/**
+ *  Project : my.ri.net.ua
+ *  File    : Search.php
+ *  Path    : config/Search.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 04 Nov 2025 07:16:29
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
+
+/**
+ * Description of Search.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
+
 
 namespace config;
 

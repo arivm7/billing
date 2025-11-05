@@ -26,7 +26,7 @@
  */
 
 ?>
-<div class="container-fluid min-vh-100 d-flex justify-content-center align-items-start">
+<div class="container-fluid d-flex justify-content-center align-items-start min-w-800">
     <div class="col-12 col-sm-12 col-md-10 col-lg-8 col-xl-6">
         <div class="card shadow-sm">
             <h1 class="card-header"><?=__('Payment for services');?></h1>

@@ -45,10 +45,33 @@ $form_data_fn = function(string $field) use ($form_data, $abon): int|float|strin
     return $form_data[$field] ?? $abon[$field] ?? "";
 };
 
+$address = ($form_data_fn(Abon::F_ADDRESS) ? h($form_data_fn(Abon::F_ADDRESS)) : "");
+$count_lines_addr = substr_count($address, "\n");
+$count_lines_addr = 
+    (($count_lines_addr < 3 )
+        ?   2
+        :   (($count_lines_addr > 10)
+                ? 10
+                : $count_lines_addr
+            )
+    );
+
+$comment = ($form_data_fn(Abon::F_COMMENTS) ? h($form_data_fn(Abon::F_COMMENTS)) : "");
+$count_lines_comment = substr_count($comment, "\n");
+$count_lines_comment = 
+    (($count_lines_comment < 3)
+        ?   2
+        :   (($count_lines_comment > 10)
+                ? 10
+                : $count_lines_comment
+            )
+    );
+
 ?>
 <div class="row justify-content-center">
 <div class="col-12 col-md-10 col-lg-8">
-    <div class="card mb-4 w-75">
+    <div class="card mb-4 w-100 min-w-700">
+
         <div class="card-header">
             <h2><?=$form_data_fn(Abon::F_ID) . '<br>' . h($form_data_fn(Abon::F_ADDRESS));?></h2>
         </div>
@@ -68,7 +91,7 @@ $form_data_fn = function(string $field) use ($form_data, $abon): int|float|strin
                 <div class="mb-3 row">
                     <label for="abon_address" class="col-sm-3 col-form-label"><?=__('Адрес подключения');?></label>
                     <div class="col-sm-9">
-                        <textarea class="form-control" id="abon_address" rows="2" name="<?= Abon::POST_REC;?>[<?= Abon::F_ADDRESS;?>]"><?=($form_data_fn(Abon::F_ADDRESS) ? h($form_data_fn(Abon::F_ADDRESS)) : "");?></textarea>
+                        <textarea class="form-control" id="abon_address" rows="<?=$count_lines_addr;?>" name="<?= Abon::POST_REC;?>[<?= Abon::F_ADDRESS;?>]"><?=$address;?></textarea>
                     </div>
                 </div>
 
@@ -98,7 +121,7 @@ $form_data_fn = function(string $field) use ($form_data, $abon): int|float|strin
                 <div class="mb-3 row">
                     <label for="abon_comments" class="col-sm-3 col-form-label">Примечания</label>
                     <div class="col-sm-9">
-                        <textarea class="form-control" id="abon_comments" rows="3" name="<?= Abon::POST_REC;?>[<?= Abon::F_COMMENTS;?>]"><?=($form_data_fn(Abon::F_COMMENTS) ? h($form_data_fn(Abon::F_COMMENTS)) : "");?></textarea>
+                        <textarea class="form-control" id="abon_comments" rows="<?=$count_lines_comment;?>" name="<?= Abon::POST_REC;?>[<?= Abon::F_COMMENTS;?>]"><?=$comment;?></textarea>
                     </div>
                 </div>
 

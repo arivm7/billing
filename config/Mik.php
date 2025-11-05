@@ -25,8 +25,15 @@ class Mik {
     const OFF = 'false';
 
 
-    /*
-     * address_list
+    /**
+     * Списки (таблицы)
+     */
+    const L_ABON           = 'ABON';            // [list] => ABON
+
+
+
+    /**
+     * поля структуры "address_list"
      */
 
     const LIST_ID             = '.id';             // [.id] => *1

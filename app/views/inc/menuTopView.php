@@ -32,7 +32,7 @@ if (App::$auth->isAuth) {
 }
 $path=strtolower('/' . ($this->route[F_PREFIX] ? $this->route[F_PREFIX] . '/' : "") . $this->route[F_CONTROLLER] . '/' . $this->route[F_ACTION]);
 ?>
-<nav class="navbar navbar-expand-lg bg-body-tertiary">
+<nav class="navbar navbar-expand bg-body-tertiary min-w-800">
     <div class="container-fluid align-items-center text-end">
         <a class="navbar-brand" href="/" title="<?=__('To the main page');?>" >
             <img src="/public/img/ri_logo2.svg" alt="[RILAN-admin]" title="<?=__('Rilan');?>. <?=__('Subscriber personal cabinet');?>." height="75" class="d-inline-block align-text-top">

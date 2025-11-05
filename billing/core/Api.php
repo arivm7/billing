@@ -34,6 +34,17 @@ class Api {
     public static $errors = [];
 
 
+
+    const URI_ABON_IP = "/api/abon-ip";
+
+
+
+    public const F_CMD = 'cmd';
+    public const F_TP_ID = 'tpid';
+    public const F_IP = 'ip';
+    public const F_ENABLED = 'ena';
+    public const CMD_ENABLE = 'cmdena';
+
     /**
      * Константы для именования ключей таблиц из базы
      */
@@ -63,6 +74,11 @@ class Api {
     public const OUT_ARP    = 'OUT_ARP';
 
 
+    public static function get_errors(): array {
+        $err = self::$errors;
+        self::$errors = [];
+        return $err;
+    }
 
     /**
      * Создаёт объект подключения к микротику
@@ -250,7 +266,6 @@ class Api {
      * @param string|null $dynamic
      * @param string|null $disabled
      * @return array
-     * @throws Exception
      */
     public static function get_records_from_address_list_by_ip(array $mik_list, string|null $ip, string|null $list=null, string|null $dynamic=null, string|null $disabled=null): array
     {
@@ -418,7 +433,8 @@ class Api {
     }
 
 
-    public static function get_mac_from_arp_by_ip(MikroLink $mik, null|string $ip, bool $disconect_on_end = false): array|string|null {
+
+    public static function get_mac_from_arp_by_ip(MikroLink $mik, null|string $ip, bool $disconect_on_end = false): array {
 
         /**
          * Выполним команду print с фильтром адреса
@@ -430,12 +446,12 @@ class Api {
         if (!empty($response) && is_array($response)) {
             // Обычно возвращается массив строк-массивов
             $entry = $response[0];
-            // echo "IP: " . ($entry['address'] ?? '') . "\n";
-            // echo "MAC: " . ($entry['mac-address'] ?? '') . "\n";
-            // echo "Interface: " . ($entry['interface'] ?? '') . "\n";
-            // echo "Dynamic: " . ($entry['dynamic'] ?? '') . "\n";
+            if (array_key_exists("DHCP", $entry)) {
+                $entry["dhcp"] = $entry["DHCP"];
+                unset($entry["DHCP"]);
+            }
         } else {
-            $entry = null;
+            $entry = [];
             // echo "Запись ARP по адресу {$ip} не найдена.\n";
         }
 
@@ -517,7 +533,7 @@ class Api {
      * @param MikroLink $mik -- подключенный АПИ микротика
      * @param string|null $address_list -- строка имена адресного листа
      * @param bool $disconect_on_end -- закрыть подключение к микротику по завершению
-     * @return type BOOLEAN
+     * @return array
      */
     static function get_tp_address_list(MikroLink $mik, string|null $address_list = null, bool $disconect_on_end = false): array {
         if (empty($address_list)) {
@@ -726,7 +742,7 @@ class Api {
         if (!empty($arp_rec['mac-address'])) {
             if (validate_mac($arp_rec['mac-address'])) {
                 $title = "[ I|V ] Invalid|Valid \n[ D|S ] Dynamic|Static \n[ C ] Complete \n[ X|E ] Disabled|Enabled";
-                //debug("_R:", $arp_rec, "<hr>");
+                // debug($arp_rec, '$arp_rec');
                 // ARP: .id address mac-address interface published invalid DHCP dynamic complete disabled
                 $idcx = "";
                 $idcx .= ($arp_rec['invalid']  == "true"? paint("I", RED)   : paint("V", GREEN));
@@ -777,6 +793,173 @@ class Api {
     }
 
 
+
+    /**
+     * Возвращает статус IP-адреса из таблицы ABON
+     * @param MikroLink $mik -- подключённый микротик
+     * @param string|null $ip -- искомый адрес
+     * @param bool $disconect_on_end -- отключать микротик по віполнении операции
+     * @return bool|null -- true/false -- статус адреса. Null -- ошибка. Детализация ошибки в Api::get_errors();
+     */
+    public static function get_ip_enabled_on_mik_abon(MikroLink $mik, string|null $ip, bool $disconect_on_end = false): bool|null {
+
+        if ($mik === false) {
+            self::$errors[] = __('Микротик не подключён');
+            return null;
+        }
+
+        if (!(validate_ip($ip) || is_ip_net($ip))) {
+            self::$errors[] = __('IP %s не верен или не указан', "[{$ip}]");
+            return null;
+        }
+
+        $rez = $mik->exec('/ip/firewall/address-list/print', 
+            [
+                        "?list"=>Mik::L_ABON,
+                        "?address"=>$ip
+                    ]
+                );
+            
+        if (count($rez) == 1) {
+            return ($rez[0]['disabled'] === Mik::OFF);
+        } elseif (count($rez) == 0) {
+            return false;
+        } else {
+            self::$errors[] = __('В таблице ABON нет указанного IP-адреса');
+            return null;
+        }
+    }
+
+
+
+    public static function add_mik_abon_ip(MikroLink $mik, string $ip, bool|int $enabled = 1, $comment = "", $disconect_on_end = false) {
+
+        if (!validate_ip($ip)) {
+            self::$errors[] = __('Не верный IP');
+            if ($disconect_on_end) { $mik->disconnect(); };
+            return false;
+        }
+
+        if ($mik) {
+            //echo "к микротику приконнектились<br>";
+            // /ip firewall address-list add list=ABON address=1.1.1.1 comment="11 1 11"
+            $rez = $mik->exec('/ip/firewall/address-list/add', 
+                    [
+                        'list'      => 'ABON',
+                        'address'   => $ip,
+                        'comment'   => $comment,
+                        'disabled'  => ($enabled ? Mik::OFF : Mik::ON),
+                    ]
+                );
+
+            if ($disconect_on_end) { $mik->disconnect(); };
+
+            if(is_string($rez)) {
+                return $rez;
+            } else {
+                self::$errors[] = __('Не удалось добавить IP в таблицу ABON');
+                if(is_array($rez)) {
+                    self::$errors[] = $rez['!trap'][0]['message'];
+                }
+                return false;
+            }
+        } else {
+            self::$errors[] = __('Нет подключения к микротику');
+            return false;
+        }
+    }
+
+
+
+    public static function set_mik_abon_ip(MikroLink $mik, string $ip, bool $enabled, bool $disconect_on_end = false): bool {
+        
+        if (!validate_ip($ip)) {
+            self::$errors[] = __('Не верный IP');
+            if ($disconect_on_end) { $mik->disconnect(); };
+            return false;
+        }
+
+        $result = false;
+
+        if ($mik) {
+            //echo "к микротику приконнектились<br>";
+            // /ip firewall address-list set numbers=[find where list="ABON" disabled=no address="1.1.1.1"] disabled=yes
+            // :put [/ip firewall address-list print where list=ABON disabled=no address=1.1.1.1]
+
+            /**
+             * Получаем запись IP-адреса
+             */
+            $rez = $mik->exec('/ip/firewall/address-list/print', 
+                [
+                            "?list"=>Mik::L_ABON,
+                            "?address"=>$ip
+                        ]
+                    );
+
+            if(count($rez) === 1) {
+                /**
+                 * Есть одна запись. 
+                 * То устанавливаем её в нужное значение
+                 */
+                $id = $rez[0]['.id'];
+                $rez = $mik->exec('/ip/firewall/address-list/set', 
+                        [
+                            "numbers"=>$id,
+                            "disabled"=>($enabled ? "no" : "yes")
+                        ]
+                    );
+                debug($rez, '$rez_2', die:0);
+
+                /**
+                 * Проверка выполнения операции
+                 */
+                $rez = $mik->exec('/ip/firewall/address-list/print', 
+                        [
+                            "?.id"=>$id
+                        ]
+                    );
+                $result = ($rez[0]['disabled'] == ($enabled ? Mik::OFF : Mik::ON));
+            } elseif (count($rez) === 0) {
+                /**
+                 * В таблице нет указанного IP-адреса
+                 * Создаём запись с указанным IP-адресом
+                 */
+                $result = self::add_mik_abon_ip($mik, $ip, $enabled, disconect_on_end: $disconect_on_end);
+                self::$errors[] = __('Указанного IP-адреса в таблице нет. Создаём новую запись.');
+            } else {
+                /**
+                 * Несколько указанных IP адресов. 
+                 * Это недопустимо.
+                 */
+                self::$errors[] = __('Критическая ошибка: В таблице несколько указанных IP адресов. Должен быть только один.');
+                $result = false;
+            }
+
+            // $id = $rez[0]['.id'];
+            // //echo $id." выключаем<br>";
+            // //echo "2.rez: "; print_r($rez); echo "<hr>";
+            // //echo "3.rez: "; print_r($rez); echo "<hr>";
+            // //exit;
+            // if (count($rez)>0) {
+            //     $mik->disconnect();
+            //     return ($rez[0]['disabled']==($disabled?"true":"false")?true:false);
+            //     //exit;
+            // } else {
+            //     $api_error .= "Странная ошибка. Адрес-лист 'ABON' + enabled IP ".$ip." --> команда отработала, но при проверке не нашёлся адрес с нужныи .id=".$id.". ";
+            //     //echo $api_error."<br>";
+            // }
+            // $api_error .= "Возможно, в адрес-листе 'ABON' нет enabled IP ".$ip.". ";
+
+        } else {
+            self::$errors[] = __('Нет подключения к микротику');
+            return false;
+        }
+
+        if ($disconect_on_end) { $mik->disconnect(); }
+       
+        return $result;
+    }    
+        
 
 
 

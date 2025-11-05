@@ -37,9 +37,11 @@ const COLOR_PURPLE = '#800080'; // Фиолетовый
 const COLOR_CYAN   = '#00ffff'; // Голубой
 const COLOR_BLACK  = '#000000'; // Чёрный
 
-const COLOR1_VALUE = '#eeeeee';
-const COLOR2_VALUE = '#ffffcc';
-const COLOR3_VALUE = '#cccccc';
-const COLOR4_VALUE = '#cebeff';
-const COLOR5_VALUE = '#e0c7ff';
-const COLOR6_VALUE = '#ffffA8';
+
+const COLOR1_VALUE = '#eeeeee';  $COLOR1_VALUE = COLOR1_VALUE;
+const COLOR2_VALUE = '#ffffcc';  $COLOR2_VALUE = COLOR2_VALUE;
+const COLOR3_VALUE = '#cccccc';  $COLOR3_VALUE = COLOR3_VALUE;
+const COLOR4_VALUE = '#cebeff';  $COLOR4_VALUE = COLOR4_VALUE;
+const COLOR5_VALUE = '#e0c7ff';  $COLOR5_VALUE = COLOR5_VALUE;
+const COLOR6_VALUE = '#ffffA8';  $COLOR6_VALUE = COLOR6_VALUE;
+

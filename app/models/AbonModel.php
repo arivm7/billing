@@ -16,6 +16,8 @@ namespace app\models;
 use AbonStatus;
 use AbonStatusTitle;
 use billing\core\App;
+use billing\core\MsgQueue;
+use billing\core\MsgType;
 use config\Icons;
 use config\Mik;
 use config\tables\Abon;
@@ -51,56 +53,48 @@ class AbonModel extends UserModel {
      * @param bool $force
      * @return bool
      */
-    function update_abon_rest(bool $force = false): bool {
+    function update_abon_rest(): bool {
 
-        if  (!isset($_COOKIE[SessionFields::A_REST_FIELD]) || $force) {
 
-            $sql = "TRUNCATE TABLE ".AbonRest::TABLE.";"
-                 . "INSERT INTO "
-                    . AbonRest::TABLE." ("
-                        . AbonRest::F_ABON_ID  . ", "
-                        . AbonRest::F_SUM_PAY  . ", "
-                        . AbonRest::F_SUM_COST . ", "
-                        . AbonRest::F_SUM_PPMA . ", "
-                        . AbonRest::F_SUM_PPDA
-                    . ") "
-                 . "SELECT
-                        a.abon_id,
-                        IFNULL(p.sum_pay, 0) AS sum_pay,
-                        IFNULL(pa.sum_cost, 0) AS sum_cost,
-                        IFNULL(pa.sum_PPMA, 0) AS sum_PPMA,
-                        IFNULL(pa.sum_PPDA, 0) AS sum_PPDA
-                    FROM
-                        (
-                            SELECT abon_id FROM payments
-                            UNION
-                            SELECT abon_id FROM prices_apply
-                        ) a
-                    LEFT JOIN (
-                        SELECT abon_id, SUM(pay) AS sum_pay
-                        FROM payments
-                        GROUP BY abon_id
-                    ) p ON p.abon_id = a.abon_id
-                    LEFT JOIN (
-                        SELECT
-                        abon_id,
-                        SUM(cost_value) AS sum_cost,
-                        SUM(`PPMA_value`) AS sum_PPMA,
-                        SUM(`PPDA_value`) AS sum_PPDA
-                        FROM prices_apply
-                        GROUP BY abon_id
-                    ) pa ON pa.abon_id = a.abon_id;";
-            if ($this->execute($sql)) {
-                self::setcookie(
-                        name: SessionFields::A_REST_FIELD,
-                        value: SessionFields::A_REST_VALUE,
-                        expires_or_options: time() + SessionFields::A_REST_TIME
-                );
-                return true;
-            }
-            return false;
+        $sql = "TRUNCATE TABLE ".AbonRest::TABLE.";"
+                . "INSERT INTO "
+                . AbonRest::TABLE." ("
+                    . AbonRest::F_ABON_ID  . ", "
+                    . AbonRest::F_SUM_PAY  . ", "
+                    . AbonRest::F_SUM_COST . ", "
+                    . AbonRest::F_SUM_PPMA . ", "
+                    . AbonRest::F_SUM_PPDA
+                . ") "
+                . "SELECT
+                    a.abon_id,
+                    IFNULL(p.sum_pay, 0)   AS ".AbonRest::F_SUM_PAY.",
+                    IFNULL(pa.sum_cost, 0) AS ".AbonRest::F_SUM_COST.",
+                    IFNULL(pa.sum_PPMA, 0) AS ".AbonRest::F_SUM_PPMA.",
+                    IFNULL(pa.sum_PPDA, 0) AS ".AbonRest::F_SUM_PPDA."
+                FROM
+                    (
+                        SELECT abon_id FROM payments
+                        UNION
+                        SELECT abon_id FROM prices_apply
+                    ) a
+                LEFT JOIN (
+                    SELECT abon_id, SUM(pay) AS ".AbonRest::F_SUM_PAY."
+                    FROM payments
+                    GROUP BY abon_id
+                ) p ON p.abon_id = a.abon_id
+                LEFT JOIN (
+                    SELECT
+                    abon_id,
+                    SUM(cost_value) AS ".AbonRest::F_SUM_COST.",
+                    SUM(`PPMA_value`) AS ".AbonRest::F_SUM_PPMA.",
+                    SUM(`PPDA_value`) AS ".AbonRest::F_SUM_PPDA."
+                    FROM prices_apply
+                    GROUP BY abon_id
+                ) pa ON pa.abon_id = a.abon_id;";
+        if ($this->execute($sql)) {
+            return true;
         }
-        return true;
+        return false;
     }
 
 
@@ -179,83 +173,114 @@ class AbonModel extends UserModel {
     }
 
 
-
-    public static function get_price_apply_cost($price_apply, $today=NA) { //2022
-        if($today == NA) { $today = TODAY(); } else { $today = get_date($today); }
+    /**
+     * вычисляет стоимость услуги по записи из таблицы prices_apply — то есть сумму, которую должен заплатить абонент за период действия прайса.
+     * Версия 2022 года
+     * Она учитывает:
+     * ежедневную оплату (pay_per_day, PPD);
+     * ежемесячную оплату (pay_per_month, PPM);
+     * даты начала и конца действия (date_start, date_end);
+     * текущее состояние прайса (CURRENT, PAUSE, CLOSED, FUTURE, и др.);
+     * и дату расчёта ($today).
+     * 
+     * @param mixed $price_apply -- запись прайсового фрагмента
+     * @param mixed $today -- дата, до которой делается рассчёт
+     * @return float|int
+     */
+    public static function get_price_apply_cost(array $price_apply, int $today=NA): float { //2022
+        if ($today == NA) { $today = TODAY(); }
+        $today = get_date($today);
         $cost = 0.0;
         // echo "<pre>prices_apply:<br>".print_r($price_apply, true)."</pre>" ;
         switch (get_price_apply_age($price_apply, $today)) {
 
-          case PAStatus::CURRENT:
-          case PAStatus::PAUSE_TODAY:
-            $price_apply[PA::F_DATE_END] = $today;                                //echo "Активный прайсовый фрагмент<br>";
+            /**
+             * Если прайс активный (CURRENT или PAUSE_TODAY)
+             * конец периода временно принимается за сегодня, чтобы рассчитать накопленную стоимость «по текущее число».
+             */
+            case PAStatus::CURRENT:
+            case PAStatus::PAUSE_TODAY:
+                $price_apply[PA::F_DATE_END] = $today;                             
 
-          case PAStatus::PAUSE:
-          case PAStatus::CLOSED:
-            if(abs($price_apply[PA::FF_P_PPD]) > 0) {
+            /**
+             * Если прайс приостановлен или закрыт (PAUSE, CLOSED)
+             * Происходит реальный расчёт стоимости по датам начала и конца.
+             */
+            case PAStatus::PAUSE:
+            case PAStatus::CLOSED:
 
-                /*
-                $d1 = new DateTime("@".$prices_apply['date_start']);
-                $d2 = new DateTime("@".$prices_apply['date_end']);
-                $interval = date_diff($d1, $d2);
-                $cost += (($interval->days + 1) * (double)$prices_apply['pay_per_day']);
+                /**
+                 * Расчёт подневной оплаты
                  */
-                $d1 = $price_apply[PA::F_DATE_START];
-                $d2 = $price_apply[PA::F_DATE_END];
-                $interval = get_between_days($d1, $d2);
-                $cost += (($interval + 1) * (double)$price_apply[PA::FF_P_PPD]);
-
-            }
-            if(abs($price_apply[PA::FF_P_PPM]) > 0) {
-                // дни начисления в одном месяце
-                if(date("Ym", $price_apply[PA::F_DATE_START]) == date("Ym", $price_apply[PA::F_DATE_END])) {
-                    $days_of_month = days_of_month($price_apply[PA::F_DATE_START]);
-                    $days_costed = day($price_apply[PA::F_DATE_END]) - day($price_apply[PA::F_DATE_START]) + 1;
-                    $cost += ((double)$price_apply[PA::FF_P_PPM] / $days_of_month * $days_costed);
-                } else {
-                    // дни начисления в разных месяцах
-                    //дней в первом месяце
-                    $day_start = day($price_apply[PA::F_DATE_START]);
-                    $days_of_month = days_of_month($price_apply[PA::F_DATE_START]);
-                    $days_costed = $days_of_month - $day_start + 1;                  //echo "Оплачиваемых дней в певом месяце = ".$days_costed."<br>";
-                    $cost += ((double)$price_apply[PA::FF_P_PPM] / $days_of_month * $days_costed);
-
-                    //дней в последнем месяце
-                    $day_end = day($price_apply[PA::F_DATE_END]);
-                    $days_of_month = days_of_month($price_apply[PA::F_DATE_END]);
-                    $days_costed = $day_end;                                    //echo "Оплачиваемых дней в поледнем месяце = ".$days_costed."<br>";
-                    $cost += ((double)$price_apply[PA::FF_P_PPM] / $days_of_month * $days_costed);
-
-                    //полных месяцев
-                    $d1_str = year($price_apply[PA::F_DATE_START])."-".month($price_apply[PA::F_DATE_START])."-".(days_of_month($price_apply[PA::F_DATE_START])-1); //echo "Рассчёт месяцев 1 = ".$d1_str."<br>";
-                    $d2_str = year($price_apply[PA::F_DATE_END])."-".month($price_apply[PA::F_DATE_END])."-02";                                              //echo "Рассчёт месяцев 2 = ".$d2_str."<br>";
-                    $d1 = date_create($d1_str);
-                    $d2 = date_create($d2_str);
-                    $interval = date_diff($d1, $d2);                                //echo "Оплачиваемых месяцев = ".($interval->m + $interval->y * 12)."<br>";
-                    $cost += ((double)$price_apply[PA::FF_P_PPM] * ($interval->m + $interval->y * 12));
-                    //echo "<pre>prices_apply:<br>".print_r($interval, true)."</pre>";
+                if(abs($price_apply[PA::F_PRICE_PPD]) > 0) {
+                    /**
+                     * — вычисляется количество оплачиваемых дней (+1, чтобы включить последний) 
+                     */
+                    $d1 = $price_apply[PA::F_DATE_START];
+                    $d2 = $price_apply[PA::F_DATE_END];
+                    $interval = get_between_days($d1, $d2);
+                    $cost += (($interval + 1) * (double)$price_apply[PA::F_PRICE_PPD]);
                 }
-            }
-            return $cost;
-            //break;
 
-          case PAStatus::FUTURE:
-            return 0;
-            //break;
+                /**
+                 * Расчёт ежемесячной оплаты
+                 */
+                if(abs($price_apply[PA::F_PRICE_PPM]) > 0) {
+                    // дни начисления в одном месяце
+                    if(date("Ym", $price_apply[PA::F_DATE_START]) == date("Ym", $price_apply[PA::F_DATE_END])) {
+                        $days_of_month = days_of_month($price_apply[PA::F_DATE_START]);
+                        $days_costed = day($price_apply[PA::F_DATE_END]) - day($price_apply[PA::F_DATE_START]) + 1;
+                        $cost += ((double)$price_apply[PA::F_PRICE_PPM] / $days_of_month * $days_costed);
+                    } else {
+                        // дни начисления в разных месяцах
+                        // дней в первом месяце
+                        $day_start = day($price_apply[PA::F_DATE_START]);
+                        $days_of_month = days_of_month($price_apply[PA::F_DATE_START]);
+                        $days_costed = $days_of_month - $day_start + 1;                  //echo "Оплачиваемых дней в певом месяце = ".$days_costed."<br>";
+                        $cost += ((double)$price_apply[PA::F_PRICE_PPM] / $days_of_month * $days_costed);
 
-          default:
-            exit("<hr>Этого не должно быть:<br>get_price_apply_cost():<br><pre>".print_r($price_apply, true)."</pre><hr>");
+                        // дней в последнем месяце
+                        $day_end = day($price_apply[PA::F_DATE_END]);
+                        $days_of_month = days_of_month($price_apply[PA::F_DATE_END]);
+                        $days_costed = $day_end;                                    //echo "Оплачиваемых дней в поледнем месяце = ".$days_costed."<br>";
+                        $cost += ((double)$price_apply[PA::F_PRICE_PPM] / $days_of_month * $days_costed);
 
+                        // полных месяцев
+                        $d1_str = year($price_apply[PA::F_DATE_START])."-".month($price_apply[PA::F_DATE_START])."-".(days_of_month($price_apply[PA::F_DATE_START])-1); //echo "Рассчёт месяцев 1 = ".$d1_str."<br>";
+                        $d2_str = year($price_apply[PA::F_DATE_END])."-".month($price_apply[PA::F_DATE_END])."-02";                                              //echo "Рассчёт месяцев 2 = ".$d2_str."<br>";
+                        $d1 = date_create($d1_str);
+                        $d2 = date_create($d2_str);
+                        $interval = date_diff($d1, $d2);                                //echo "Оплачиваемых месяцев = ".($interval->m + $interval->y * 12)."<br>";
+                        $cost += ((double)$price_apply[PA::F_PRICE_PPM] * ($interval->m + $interval->y * 12));
+                        // echo "<pre>prices_apply:<br>".print_r($interval, true)."</pre>";
+                    }
+                }
+                return $cost;
+                // break;
+
+            case PAStatus::FUTURE:
+                return 0.0;
+                // break;
+
+            default:
+                throw new \Exception("<hr>Этого не должно быть:<br>get_price_apply_cost:<br><pre>".print_r($price_apply, true)."</pre><hr>", 1);
         }
     }
 
 
 
     /**
-     * Считает правильно
-     * @param array $price_apply
-     * @param int $today
-     * @return array
+     * Считает правильно!
+     * Расщепляет прайсовый фрагмент на месяцы и рассчитывает помесячную стоимость (частичные + полные месяцы), 
+     * возвращая структуру начислений.
+     * 
+     * Рассчитывает детализированную помесячную стоимость одного фрагмента прайса (prices_apply), 
+     * начиная с даты старта до даты окончания (или до $today, если активный).
+     * Возвращает массив $struct, где каждая запись описывает один расчётный месяц (или его часть) и сумму начисления за этот период.
+     * 
+     * @param array $price_apply -- один прайсовый фрагмент
+     * @param int $today -- дата, считающаяся в расчётах "текущей"
+     * @return array -- помесячная структура стоимости
      */
     public static function get_price_apply_cost_per_montch(array $price_apply, int $today): array {
         $struct = array();
@@ -270,6 +295,7 @@ class AbonModel extends UserModel {
             case PAStatus::PAUSE_TODAY:
                 $price_apply[PA::F_DATE_END] = $today;
                 $price_apply[PA::F_DATE_END_STR] = date("Y-m-d", $price_apply[PA::F_DATE_END]);
+                // никуда не выходим, продожаем обработку
 
             case PAStatus::PAUSE:
             case PAStatus::CLOSED:
@@ -282,15 +308,19 @@ class AbonModel extends UserModel {
 
         $index = 0;
         $struct[$index]['pa_id']    = $price_apply[PA::F_ID];
+        // начальная дата расчётов
         $struct[$index]['date']     = get_date($price_apply[PA::F_DATE_START]);
         $struct[$index]['date_str'] = date("Y-m-d", $struct[$index]['date']);
-        $struct[$index]['text']     = (isset($price_apply[PA::FF_P_TITLE])?$price_apply[PA::FF_P_TITLE]:"");
+        // Название прикреплённого прайса
+        $struct[$index]['text']     = (isset($price_apply[PA::F_PRICE_TITLE])?$price_apply[PA::F_PRICE_TITLE]:"");
+        // название прайсвого фрагмнта
         $struct[$index]['name']     = (isset($price_apply[PA::F_NET_NAME])?$price_apply[PA::F_NET_NAME]:"");
-        $struct[$index]['cost']      = 0;
+        // Начальная стоимость ПФ
+        $struct[$index]['cost']     = 0.0;
 
         if(     // если прайсовый фрагмент что-то начисляет, то
-                (abs($price_apply[PA::FF_P_PPD])   > 0) ||
-                (abs($price_apply[PA::FF_P_PPM]) > 0)
+                (abs($price_apply[PA::F_PRICE_PPD])   > 0) ||
+                (abs($price_apply[PA::F_PRICE_PPM]) > 0)
           ) {
 
             if(date("Ym", $price_apply[PA::F_DATE_START]) == date("Ym", $price_apply[PA::F_DATE_END])) {
@@ -304,7 +334,7 @@ class AbonModel extends UserModel {
                 $struct[$index]['pa_id']    = $price_apply[PA::F_ID];
                 $struct[$index]['date']     = get_date($price_apply[PA::F_DATE_END]);
                 $struct[$index]['date_str'] = date("Y-m-d", $struct[$index]['date']);
-                $struct[$index]['text']     = $price_apply[PA::FF_P_TITLE] ?? "";
+                $struct[$index]['text']     = $price_apply[PA::F_PRICE_TITLE] ?? "";
                 $struct[$index]['name']     = $price_apply[PA::F_NET_NAME] ?? "";
                 $struct[$index]['cost']     = $cost;
             } else {
@@ -318,13 +348,13 @@ class AbonModel extends UserModel {
                 $day_start = day($price_apply[PA::F_DATE_START]);
                 $days_of_month = \days_of_month($price_apply[PA::F_DATE_START]);
                 $days_costed = $days_of_month - $day_start + 1;                  //echo "Оплачиваемых дней в певом месяце = ".$days_costed."<br>";
-                $cost = ((double)$price_apply[PA::FF_P_PPM] / $days_of_month * $days_costed)
-                      + ((double)$price_apply[PA::FF_P_PPD] * $days_costed);
+                $cost = ((double)$price_apply[PA::F_PRICE_PPM] / $days_of_month * $days_costed)
+                      + ((double)$price_apply[PA::F_PRICE_PPD] * $days_costed);
                 $index++;
                 $struct[$index]['pa_id']    = $price_apply[PA::F_ID];
                 $struct[$index]['date']     = mktime(0, 0, 0, month($price_apply[PA::F_DATE_START]), days_of_month($price_apply[PA::F_DATE_START]), year($price_apply[PA::F_DATE_START]));
                 $struct[$index]['date_str'] = date("Y-m-d", $struct[$index]['date']);
-                $struct[$index]['text']     = $price_apply[PA::FF_P_TITLE] ?? "";
+                $struct[$index]['text']     = $price_apply[PA::F_PRICE_TITLE] ?? "";
                 $struct[$index]['name']     = $price_apply[PA::F_NET_NAME] ?? "";
                 $struct[$index]['cost']     = $cost;
 
@@ -334,13 +364,13 @@ class AbonModel extends UserModel {
                 $day_end = day($price_apply[PA::F_DATE_END]);
                 $days_of_month = days_of_month($price_apply[PA::F_DATE_END]);
                 $days_costed = $day_end;                                         //echo "Оплачиваемых дней в поледнем месяце = ".$days_costed."<br>";
-                $cost = ((double)$price_apply[PA::FF_P_PPM] / $days_of_month * $days_costed)
-                      + ((double)$price_apply[PA::FF_P_PPD] * $days_costed);
+                $cost = ((double)$price_apply[PA::F_PRICE_PPM] / $days_of_month * $days_costed)
+                      + ((double)$price_apply[PA::F_PRICE_PPD] * $days_costed);
                 $index++;
                 $struct[$index]['pa_id']    = $price_apply[PA::F_ID];
                 $struct[$index]['date']     = get_date($price_apply[PA::F_DATE_END]);
                 $struct[$index]['date_str'] = date("Y-m-d", $struct[$index]['date']);
-                $struct[$index]['text']     = $price_apply[PA::FF_P_TITLE] ?? "";
+                $struct[$index]['text']     = $price_apply[PA::F_PRICE_TITLE] ?? "";
                 $struct[$index]['name']     = $price_apply[PA::F_NET_NAME] ?? "";
                 $struct[$index]['cost']     = $cost;
 
@@ -372,11 +402,11 @@ class AbonModel extends UserModel {
                         $struct[$index]['pa_id']    = $price_apply[PA::F_ID];
                         $struct[$index]['date']     = mktime(0, 0, 0, $m, 1, $y);
                         $struct[$index]['date_str'] = date("Y-m-d", $struct[$index]['date']);
-                        $struct[$index]['text']     = (isset($price_apply[PA::FF_P_TITLE])?$price_apply[PA::FF_P_TITLE]:"");
+                        $struct[$index]['text']     = (isset($price_apply[PA::F_PRICE_TITLE])?$price_apply[PA::F_PRICE_TITLE]:"");
                         $struct[$index]['name']     = (isset($price_apply[PA::F_NET_NAME])?$price_apply[PA::F_NET_NAME]:"");
                         $days_of_month = date("t", mktime(0, 0, 0, $m, 1, $y));
-                        $cost = ((double)$price_apply[PA::FF_P_PPM])
-                              + ((double)$price_apply[PA::FF_P_PPD] * $days_of_month);
+                        $cost = ((double)$price_apply[PA::F_PRICE_PPM])
+                              + ((double)$price_apply[PA::F_PRICE_PPD] * $days_of_month);
                         $struct[$index]['cost'] = $cost;
                         $m++;
                         if($m > 12) {
@@ -620,14 +650,14 @@ class AbonModel extends UserModel {
                 DATE_FORMAT(from_unixtime(prices_apply.date_end),  '%Y-%m-%d')     AS date_end_str,
                 DATE_FORMAT(from_unixtime(prices_apply.cost_date), '%Y-%m-%d')     AS cost_date_str,
                 DATE_FORMAT(from_unixtime(prices_apply.modified_date), '%Y-%m-%d') AS modified_date_str,
-                prices.title,
-                prices.pay_per_day,
-                prices.pay_per_month,
-                prices.description,
-                tp_list.title                                                      AS tp_title,
-                tp_list.status                                                     AS tp_status,
-                tp_list.deleted                                                    AS tp_deleted,
-                tp_list.is_managed                                                 AS tp_is_managed
+                prices.title                                                       AS ".PA::F_PRICE_TITLE.",
+                prices.pay_per_day                                                 AS ".PA::F_PRICE_PPD.",
+                prices.pay_per_month                                               AS ".PA::F_PRICE_PPM.",
+                prices.description                                                 AS ".PA::F_PRICE_DESCR.",
+                tp_list.title                                                      AS ".PA::FF_TP_TITLE.",
+                tp_list.status                                                     AS ".PA::FF_TP_STATUS.",
+                tp_list.deleted                                                    AS ".PA::FF_TP_DELETED.",
+                tp_list.is_managed                                                 AS ".PA::FF_TP_IS_MANAGED."
                 FROM prices_apply
                     LEFT JOIN billing.prices  ON prices_apply.prices_id     = prices.id
                     LEFT JOIN billing.tp_list ON prices_apply.net_router_id = tp_list.id
@@ -1110,6 +1140,128 @@ class AbonModel extends UserModel {
 
 
 
+    /**
+     * версия 2021 года
+     * @param int $recalc_abon_id -- ID абонента, если нужно обновить только его прайсы (по умолчанию — 0, значит все)
+     * @return bool
+     */
+    function update_prices_cost_all(int $recalc_abon_id = 0): bool // версия 2021 года
+    {
+        $cost_value = 0.0; //* echo 'инициализируем поле "начислено"<br>';
+        $cost_date = time(); //* echo 'инициализируем поле "дата начисления"<br>';
+        $ret = true;
+
+        $sql = "SELECT
+            `prices_apply`.`id`,
+            `prices_apply`.`abon_id`,
+            `prices_apply`.`date_start`,
+            `prices_apply`.`date_end`,
+            `prices_apply`.`".PA::F_CLOSED."`,
+            `prices_apply`.`cost_value`,
+            `prices_apply`.`cost_date`,
+            `prices`.`pay_per_day` AS ".PA::F_PRICE_PPD.",
+            `prices`.`pay_per_month` AS ".PA::F_PRICE_PPM."
+            FROM prices_apply
+            LEFT JOIN `billing`.`prices` ON `prices_apply`.`prices_id` = `prices`.`id`
+            LEFT JOIN `billing`.`abons` ON `prices_apply`.`abon_id` = `abons`.`id`
+            ".(($recalc_abon_id>0) ? "WHERE `prices_apply`.`abon_id` = ".$recalc_abon_id : "WHERE `abons`.`is_payer`=1")." ";
+
+        $model = new AbonModel();
+        // запрашиваем список прайсовых фрагментов
+        $rows =  $model->get_rows_by_sql($sql); 
+        if ($rows) {
+            foreach ($rows as $row) {
+                // дата обновления стоимости ПФ
+                $cost_date = time();
+                // считаем стоимость ПФ
+                $cost_value = self::get_price_apply_cost($row);
+                if ($recalc_abon_id > 0) {
+                    MsgQueue::msg(MsgType::INFO_AUTO, "price_apply_id: {$row[PA::F_ID]}: {$cost_value}");
+                }
+                // обновить данные в таблицах;
+                $sql = "UPDATE `".PA::TABLE."` "
+                        . "SET `".PA::F_COST_VALUE."`='{$cost_value}',`".PA::F_COST_DATE."`={$cost_date} "
+                        . "WHERE `".PA::F_ID."`={$row[PA::F_ID]}";
+                if (!$model->execute($sql)) {
+                    $this->errors[] = __('Ошибка обновления стоимости прайсового начисления') . " [{$sql}]";
+                    $ret = false;
+                }
+            }
+        } else {
+            $this->errors[] = __('Ошибка выборки прайсовых фрагментов, или прайсовые фрагменты не прикреплены для abon_id') . " [{$recalc_abon_id}]";
+            $ret = false;
+        }
+        return $ret;
+    }
+
+
+
+    /**
+     * Версия 2021 года
+     * 1️⃣ — обновляет поля активных прайсов,
+     * 2️⃣ — обнуляет поля у неактивных (закрытых) прайсов.
+     * Функция ставит или сбрасывает текущие значения активной абонплаты (PPDA_value, PPMA_value) 
+     * только для тех строк, у которых прайсовый фрагмнт активен на текущий момент.
+     * @param int $recalc_abon_id -- ID абонента, если нужно обновить только его прайсы (по умолчанию — 0, значит "все")
+     * @return bool
+     */
+    function update_prices_active_all(int $recalc_abon_id = 0): bool // Версия 2021 года
+    {
+        $ret = true;
+
+        /**
+         * Устанавливаем поле активного прайса в открытых прайсах
+         */
+        $sql = "UPDATE  prices_apply
+                LEFT JOIN billing.prices ON prices_apply.prices_id = prices.id
+                SET
+                prices_apply.PPDA_value=prices.pay_per_day,
+                prices_apply.PPMA_value=prices.pay_per_month
+                WHERE
+                ".(($recalc_abon_id > 0) ? "prices_apply.abon_id=".$recalc_abon_id." AND" : "")."
+                (
+                    (
+                        !isnull(`prices_apply`.`date_end`)
+                        AND (`prices_apply`.`date_end` > UNIX_TIMESTAMP())
+                    ) OR (
+                        isnull(`prices_apply`.`date_end`)
+                        AND (`prices_apply`.`date_start` < UNIX_TIMESTAMP())
+                    )
+                ) = 1
+                ";
+
+        if (!$this->execute($sql)) {
+            $this->errors[] = __('Ошибка установки полей `PPDA_value` и `PPMA_value` для активных прайсовых фрагментов');
+            $ret = false;
+        }
+
+        /**
+         * Обнуляем поле активного прайса в закрытых прайсах
+         */
+        $sql = "UPDATE `prices_apply`
+                LEFT JOIN `billing`.`prices` ON `prices_apply`.`prices_id` = `prices`.`id`
+                SET
+                `prices_apply`.`PPDA_value`=0,
+                `prices_apply`.`PPMA_value`=0
+                WHERE
+                    ".(($recalc_abon_id > 0) ? "(`prices_apply`.`abon_id`=" . $recalc_abon_id . ") AND" : "")."
+                    (
+                        (
+                            !isnull(`prices_apply`.`date_end`)
+                            AND (`prices_apply`.`date_end` > UNIX_TIMESTAMP())
+                        ) OR (
+                            isnull(`prices_apply`.`date_end`)
+                            AND (`prices_apply`.`date_start` < UNIX_TIMESTAMP())
+                        )
+                    ) = 0
+                ";
+
+        if (!$this->execute($sql)) {
+            $this->errors[] = __('Ошибка обнуления полей `PPDA_value` и `PPMA_value` для закрытых прайсовых фрагментов');
+            $ret = false;
+        }
+        return $ret;
+    }
 
 
 

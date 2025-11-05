@@ -50,6 +50,11 @@ use billing\core\base\View;
             .min-w-15  { min-width:  15% !important; }
             .min-w-10  { min-width:  10% !important; }
 
+            .min-w-400 { min-width: 400px !important; }
+            .min-w-600 { min-width: 600px !important; }
+            .min-w-700 { min-width: 700px !important; }
+            .min-w-800 { min-width: 800px !important; }
+
             .w-10 { width: 10% !important; }
             .w-15 { width: 15% !important; }
             .w-25 { width: 25% !important; }
@@ -58,11 +63,12 @@ use billing\core\base\View;
             .w-90 { width: 90% !important; }
 
             /* размер текста */
-            .fs-7  {font-size:0.8rem!important}
-            .fs-8  {font-size:0.65rem!important}
-            .fs-9  {font-size:0.5rem!important}
-            .fs-10 {font-size:0.4rem!important}
-            .fs-11 {font-size:0.3rem!important}
+            .fs-7  {font-size:0.85rem !important; }
+            .fs-8  {font-size:0.7rem !important; }
+            .fs-9  {font-size:0.6rem !important; }
+            .fs-10 {font-size:0.5rem !important; }
+            .fs-11 {font-size:0.4rem !important; }
+            .fs-12 {font-size:0.3rem !important; }
 
             /* Лэйаут страницы */
             .my-layout {
@@ -92,7 +98,13 @@ use billing\core\base\View;
 
             /* Минимальная ширина страницы */
             body {
-                min-width: 600px;
+                min-width: 800px;
+            }
+
+            mark {
+                padding-left: 0;
+                padding-right: 0;
+                border-radius: 0.25em;
             }
 
         </style>
@@ -116,7 +128,7 @@ use billing\core\base\View;
                     <hr>
                 </aside>
 
-                <div class="my-content container-fluid">
+                <div class="my-content container-fluid min-w-600">
                     <?php include DIR_INC . '/alerts.php'; ?>
                     <?= $content ?>
                     <hr>
@@ -129,24 +141,24 @@ use billing\core\base\View;
                     <div class="d-flex flex-wrap align-items-center me-4 gap-3">
                         <?php $title_for = __('Payment instructions'); ?>
                         <?php if (Theme::id() == Theme::F_ID_LIGHT) : ?>
-                            <a href="/how_to_pay_all.php">
+                            <a href="/pay">
                                 <img src='/img/p24/liqpay/logo_liqpay_main.svg' height="24" alt='LIQPAY' title='<?=$title_for;?> LIQPAY'>
                             </a>
-                            <a href="/how_to_pay_all.php">
+                            <a href="/pay">
                                 <img src='/img/p24/p24/24-pay-mark.svg' style='max-height:60px;' alt='24Pay' title='<?=$title_for;?> (24)Pay'>
                             </a>
                         <?php else : ?>
-                            <a href="/how_to_pay_all.php">
+                            <a href="/pay">
                                 <img src='/img/p24/liqpay/logo_liqpay_white_color_book.svg' height="24" alt='LIQPAY' title='<?=$title_for;?> LIQPAY'>
                             </a>
-                            <a href="/how_to_pay_all.php">
+                            <a href="/pay">
                                 <img src='/img/p24/p24/24-pay-mark_border.svg' style='max-height:42px;' alt='24Pay' title='<?=$title_for;?> (24)Pay'>
                             </a>
                         <?php endif; ?>
-                        <a href="/how_to_pay_all.php">
+                        <a href="/pay">
                             <img src='/img/p24/visa/full-color-128x72.png' style='max-height:38px;' alt='VISA' title='<?=$title_for;?> VISA'>
                         </a>
-                        <a href="/how_to_pay_all.php">
+                        <a href="/pay">
                             <img src='/img/p24/mc/mc_symbol.svg' style='max-height:48px;' alt='Mastercard' title='<?=$title_for;?> Mastercard'>
                         </a>
                     </div>

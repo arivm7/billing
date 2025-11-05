@@ -1,4 +1,22 @@
 <?php
+/**
+ *  Project : my.ri.net.ua
+ *  File    : SearchController.php
+ *  Path    : app/controllers/SearchController.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 04 Nov 2025 07:01:36
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
+
+/**
+ * Description of SearchController.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
+
 
 namespace app\controllers;
 

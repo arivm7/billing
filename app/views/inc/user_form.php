@@ -53,7 +53,7 @@ $form_data_fn = function(string $field) use ($form_data, $user): int|float|strin
 ?>
 <div class="row justify-content-center">
 <div class="col-12 col-md-10 col-lg-8">
-    <div class="card mb-4 w-75">
+    <div class="card mb-4 w-100 min-w-700">
         <div class="card-header">
             <h2><?=__('Edit user card');?></h2>
         </div>

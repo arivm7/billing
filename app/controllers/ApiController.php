@@ -11,22 +11,20 @@
  *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
  */
 
-
 declare(strict_types=1);
-
 
 namespace app\controllers;
 
-
-
 use app\models\AbonModel;
 use app\models\AppBaseModel;
+use billing\core\App;
 use billing\core\base\View;
 use billing\core\MsgQueue;
 use billing\core\MsgType;
 use billing\core\Api;
 use config\Icons;
 use config\Mik;
+use config\tables\Module;
 use config\tables\PA;
 use config\tables\TP;
 use DebugView;
@@ -409,6 +407,61 @@ class ApiController extends AppBaseController {
         $mik->disconnect();
 
         debug('end', 'end', die: 1);
+    }
+
+
+
+    function abonIpAction() {
+        // /api/abon-ip?cmd=set&ip=1.1.1.1&ena=1
+        // (
+        //     [api/abon-ip] => 
+        //     [cmd] => cmdena
+        //     [tpid] => 68
+        //     [ip] => 10.1.4.161
+        //     [ena] => 1
+        // )
+        debug($_GET, '$_GET');
+        debug($this->route, '$this->route', die:0);
+
+        if (!App::isAuth()) {
+            redirect('/');
+        }
+
+        if (!can_edit(Module::MOD_PA)) {
+            MsgQueue::msg(MsgType::ERROR, __('Нет прав'));
+            redirect();
+        }
+
+        if (isset($_GET[Api::F_CMD])) {
+            $cmd = h($_GET[Api::F_CMD]);
+            switch ($cmd) {
+                case Api::CMD_ENABLE:
+                    $tp_id  = intval($_GET[Api::F_TP_ID]);
+                    $ip     = $_GET[Api::F_IP];
+                    $ena    = boolval($_GET[Api::F_ENABLED]);
+                    if (Api::set_mik_abon_ip(Api::tp_connector($tp_id), $ip, $ena, true)) {
+                        MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Статус установлен успешно'));
+                        if (Api::$errors) {
+                            MsgQueue::msg(MsgType::SUCCESS_AUTO, Api::$errors);
+                        }
+                    } else {
+                        MsgQueue::msg(MsgType::ERROR, __('Ошибка установления статуса IP адреса'));
+                        if (Api::$errors) {
+                            MsgQueue::msg(MsgType::ERROR, Api::$errors);
+                        }
+                    }
+                    redirect();
+                    break;
+                    
+                default:
+                    # code...
+                    break;
+            }
+        }
+
+        debug($this->route, '$this->route', die:0);
+
+        die();
     }
 
 

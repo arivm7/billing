@@ -192,4 +192,8 @@ class ServiceTitles
 }
 
 
+define("OUT_HTML", 1);
+define("OUT_CONS", 2);
+
+
 // define('MAX_COMMENT_LENGTH', 20);

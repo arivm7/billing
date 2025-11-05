@@ -108,4 +108,15 @@ class Icons {
 
 
 
+    const SRC_ICON_MIK_OFF              = '/img/icon_mik_off.svg';
+    const SRC_ICON_MIK_ABON_IP_NO       = '/img/icon_mik_abon_ip_no.svg';
+    const SRC_ICON_MIK_ABON_IP_OFF_RED  = '/img/icon_mik_abon_ip_off_red.svg';
+    const SRC_ICON_MIK_ABON_IP_OFF      = '/img/icon_mik_abon_ip_off.svg';
+    const SRC_ICON_MIK_ABON_IP_ON       = '/img/icon_mik_abon_ip_on.svg';
+    const SRC_ICON_MIK_ABON_IP_TURN_OFF = '/img/icon_mik_abon_ip_turn_off.svg';
+    const SRC_ICON_MIK_ABON_IP_TURN_ON  = '/img/icon_mik_abon_ip_turn_on.svg';
+    const SRC_ICON_MIK_ABON_NET_OFF     = '/img/icon_mik_abon_net_off.svg';
+    const SRC_ICON_MIK_ABON_NET_ON      = '/img/icon_mik_abon_net_on.svg';
+
+
 }
