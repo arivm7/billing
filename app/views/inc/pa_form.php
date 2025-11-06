@@ -136,14 +136,17 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
                                 value='1' <?=($item[PA::F_NET_IP_SERVICE] ? 'checked' : '');?>>
                         </div>
                         <?php if ($item['net_ip_service']) : ?>
-                            <div class='col-sm-6 d-flex align-items-center'>
+                            <div class='col-sm-8 d-flex align-items-center justify-content-end'>
                                 <!-- Статус IP-MAC из ARP-таблицы микротика -->
                                 <span class="badge text-bg-info mt-3 fs-6">
-                                <?= get_html_abon_ip_status($abon_ip_on); ?>&nbsp;
-                                <?= ($arp ? Api::get_status_mac_from_arp_rec($arp) : 'Нет данных ARP'); ?>
-                                <!-- Действия с IP -->
-                                <?=get_html_btn_abon_ip_turn($item[PA::F_TP_ID], $item[PA::F_NET_IP], 0, options: 'class="btn btn-light p-1"');?>
-                                <?=get_html_btn_abon_ip_turn($item[PA::F_TP_ID], $item[PA::F_NET_IP], 1, options: 'class="btn btn-light p-1"');?>
+                                    <?= get_html_abon_ip_status($abon_ip_on); ?>&nbsp;
+                                    <?= ($arp ? Api::get_status_mac_from_arp_rec($arp) : 'Нет данных ARP'); ?> |
+                                    <!-- Действия с IP -->
+                                    <?=get_html_btn_abon_ip_turn($item[PA::F_TP_ID], $item[PA::F_NET_IP], 0, options: 'class="btn btn-light p-1"');?>
+                                    <?=get_html_btn_abon_ip_turn($item[PA::F_TP_ID], $item[PA::F_NET_IP], 1, options: 'class="btn btn-light p-1"');?>
+                                    <?=get_html_btn_pause(pa: $item, set: 1, options: 'class="btn btn-light p-1"');?>
+                                    <?=get_html_btn_pause(pa: $item, set: 0, options: 'class="btn btn-light p-1"');?>
+                                    <?=get_html_btn_clone(pa_id: $item[PA::F_ID], options: 'class="btn btn-light p-1"');?>
                                 </span>
                             </div>
                         <?php endif; ?>

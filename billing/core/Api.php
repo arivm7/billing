@@ -35,7 +35,7 @@ class Api {
 
 
 
-    const URI_ABON_IP = "/api/abon-ip";
+    const URI_ABON_IP = "/api/cmd";
 
 
 
@@ -43,7 +43,18 @@ class Api {
     public const F_TP_ID = 'tpid';
     public const F_IP = 'ip';
     public const F_ENABLED = 'ena';
-    public const CMD_ENABLE = 'cmdena';
+    public const F_PA_ID = 'paid';
+    public const F_DATE_END = 'date_end';
+    public const CMD_IP_ENABLE = 'ipena';
+    public const CMD_PAUSE = 'set_abon_pause';
+    public const CMD_PA_CLONE = 'pa_clone';
+    
+// prices_apply_id=2760
+// date_end=null
+// tp_id=68
+// ip=10.1.1.125
+// disabled=0
+
 
     /**
      * Константы для именования ключей таблиц из базы

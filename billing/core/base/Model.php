@@ -499,6 +499,12 @@ abstract class Model {
 
 
 
+    function get_user_id_by_abon_id(int $abon_id): int {
+        return $this->get_user($this->get_abon($abon_id)[Abon::F_USER_ID])[User::F_ID];
+    }
+
+
+
     /**
      * Возвращает запись-массив параметров Пользователя.
      * @param int $id

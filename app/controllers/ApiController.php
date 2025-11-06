@@ -411,7 +411,7 @@ class ApiController extends AppBaseController {
 
 
 
-    function abonIpAction() {
+    function cmdAction() {
         // /api/abon-ip?cmd=set&ip=1.1.1.1&ena=1
         // (
         //     [api/abon-ip] => 
@@ -420,22 +420,24 @@ class ApiController extends AppBaseController {
         //     [ip] => 10.1.4.161
         //     [ena] => 1
         // )
-        debug($_GET, '$_GET');
-        debug($this->route, '$this->route', die:0);
+        // debug($_GET, '$_GET');
+        // debug($this->route, '$this->route', die:0);
 
         if (!App::isAuth()) {
             redirect('/');
         }
+
 
         if (!can_edit(Module::MOD_PA)) {
             MsgQueue::msg(MsgType::ERROR, __('Нет прав'));
             redirect();
         }
 
+
         if (isset($_GET[Api::F_CMD])) {
             $cmd = h($_GET[Api::F_CMD]);
             switch ($cmd) {
-                case Api::CMD_ENABLE:
+                case Api::CMD_IP_ENABLE:
                     $tp_id  = intval($_GET[Api::F_TP_ID]);
                     $ip     = $_GET[Api::F_IP];
                     $ena    = boolval($_GET[Api::F_ENABLED]);
@@ -459,8 +461,9 @@ class ApiController extends AppBaseController {
             }
         }
 
+        debug($_GET, '$_GET');
         debug($this->route, '$this->route', die:0);
-
+        echo 'abonIpAction(): не обработанная ситуация.';
         die();
     }
 

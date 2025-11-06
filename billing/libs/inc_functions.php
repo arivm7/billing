@@ -19,10 +19,14 @@
 
 
 
+use app\models\AbonModel;
 use billing\core\Api;
 use billing\core\base\Lang;
 use config\Icons;
+use config\tables\PA;
 
+require_once DIR_LIBS . '/billing_functions.php';
+require_once DIR_LIBS . '/datetime_functions.php';
 require_once DIR_LIBS . '/billing_functions.php';
 
 
@@ -96,7 +100,7 @@ function get_html_abon_ip_status(bool|null $status): string {
 
 
 
-function get_html_btn_abon_ip_turn(int $tp_id, string $ip, bool|int $enable, string $title = '', string $options = 'class="btn"'): string {
+function get_html_btn_abon_ip_turn(int $tp_id, string $ip, bool|int $enable, string $title = '', string $options = 'class="btn"', string $target = '_self'): string {
 
     // ?cmd=set_tp_abon_ip_disabled
     // &tp_id=68
@@ -106,7 +110,7 @@ function get_html_btn_abon_ip_turn(int $tp_id, string $ip, bool|int $enable, str
 
     $query =  http_build_query(
         [
-            Api::F_CMD      => Api::CMD_ENABLE,
+            Api::F_CMD      => Api::CMD_IP_ENABLE,
             Api::F_TP_ID    => $tp_id,
             Api::F_IP       => $ip,
             Api::F_ENABLED  => $enable ? 1 : 0,
@@ -118,11 +122,102 @@ function get_html_btn_abon_ip_turn(int $tp_id, string $ip, bool|int $enable, str
     $src = ($enable ? Icons::SRC_ICON_MIK_ABON_IP_TURN_ON : Icons::SRC_ICON_MIK_ABON_IP_TURN_OFF);
     $alt = ($enable ? '[On]' : '[Off]');
 
-    $html = "<a ".($options ?:'')." href='".Api::URI_ABON_IP."?{$query}' title='{$title}' target='_self'>"
+    $html = "<a ".($options ?:'')." href='".Api::URI_ABON_IP."?{$query}' title='{$title}' target='{$target}'>"
                 ."<img src='{$src}' alt='{$alt}' height='24rem'></img>"
             ."</a>";
     return $html;
 }
 
+
+
+function get_html_btn_pause(int|null $pa_id = null, array|null $pa = null, bool|int $set = 1, string $title = '', string $options = 'class="btn"', string $target = '_self'): string {
+    global $TODAY;
+
+
+    if (empty($pa)) {
+        $model = new AbonModel();
+        $pa = $model->get_pa($pa_id);
+        if (empty($pa)) {
+            throw new Exception("PA ID No Valid");
+        }
+    }
+
+    if  (
+            empty($pa[PA::F_ID]) ||
+            empty($pa[PA::F_TP_ID]) ||
+            empty($pa[PA::F_NET_IP]) || !validate_ip($pa[PA::F_NET_IP])
+        ) 
+    {
+        throw new Exception("PA Struct No Valid");
+    }
+
+    // ?cmd=set_abon_pause
+    // &tp_id=68
+    // &prices_apply_id=2760
+    // &date_end=1762390800
+    // &ip=10.1.1.125
+    // &disabled=1
+
+    $query =  http_build_query(
+        [
+            Api::F_CMD      => Api::CMD_PAUSE,
+            Api::F_TP_ID    => $pa[PA::F_TP_ID],
+            Api::F_PA_ID    => $pa[PA::F_ID],
+            Api::F_DATE_END => ($set ? $TODAY : null),
+            Api::F_IP       => $pa[PA::F_NET_IP],
+            Api::F_ENABLED  => $set ? 1 : 0,
+        ],
+        "", null, PHP_QUERY_RFC1738 // PHP_QUERY_RFC3986
+    );
+
+
+    $title = ($title ?: ($set 
+                ? __('Поставить на паузу сейчас: '.CR
+                    . '1. Закрывает текущий прайсовый фрагмент '.CR
+                    . '2. отключает IP адрес на ТП, по возможности.') 
+                : __("Отменить паузу -- снова активировать этот прайс:".CR
+                    . "1. Обнулить поле date_end".CR
+                    . "2. Активировать IP " . ($pa[PA::F_NET_IP] ?: "")." на микротике".CR
+                    . "Использовать для недавно закрытого прайса (не более ".UNPAUSED_DAYS_ENABLE." прайсовых дней), ".CR
+                    . "чтобы не нарушать начисление.")));
+    $src = ($set ? Icons::SRC_PAUSE : Icons::SRC_PAUSE_PLAY);
+    $alt = ($set ? '[On]' : '[Off]');
+
+    $html = "<a ".($options ?:'')." href='".Api::URI_ABON_IP."?{$query}' title='{$title}' target='{$target}'>"
+                ."<img src='{$src}' alt='{$alt}' height='24rem'></img>"
+            ."</a>";
+    return $html;
+}
+
+
+
+function get_html_btn_clone(int|null $pa_id = null, string $title = '', string $options = 'class="btn"', string $target = '_self'): string {
+
+    // ?cmd=price_apply_open_clone
+    // &cloned_price_apply_id=2760
+
+    $query =  http_build_query(
+        [
+            Api::F_CMD      => Api::CMD_PA_CLONE,
+            Api::F_PA_ID    => $pa_id,
+        ],
+        "", null, PHP_QUERY_RFC1738 // PHP_QUERY_RFC3986
+    );
+
+    $title = ($title ?: 
+        "Клонировать этот прайс. " . CR
+        . "Создать открытый прайсовый фрагмент " . CR
+        . "с сетевыми параметрами этого фрагмента " . CR
+        . "и активировать на техплощадке, если ТП управляемая."
+    );
+    
+    $src = Icons::SRC_CLONE;
+    $alt = '[Clone]';
+
+    $html = "<a ".($options ?:'')." href='".Api::URI_ABON_IP."?{$query}' title='{$title}' target='{$target}'>"
+                ."<img src='{$src}' alt='{$alt}' height='24rem'></img>"
+            ."</a>";
+    return $html;
+}
 
 

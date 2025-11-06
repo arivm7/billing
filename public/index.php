@@ -119,6 +119,11 @@ Router::add('^dogovir/?$', [F_CONTROLLER => 'docs', F_ACTION => 'view', F_ALIAS 
 Router::add('^rules/?$',   [F_CONTROLLER => 'docs', F_ACTION => 'view', F_ALIAS => 2]);
 Router::add('^flood/?$',   [F_CONTROLLER => 'docs', F_ACTION => 'view', F_ALIAS => 3]);
 
+Router::add('^conciliation/(?P<' . F_ALIAS . '>[0-9]+)$', [
+    F_CONTROLLER => 'conciliation',
+    F_ACTION     => ACT_INDEX,
+]);
+
 Router::add('^pay/(?P<' . F_ALIAS . '>[0-9]+)$', [
     F_CONTROLLER => 'pay',
     F_ACTION     => ACT_INDEX,

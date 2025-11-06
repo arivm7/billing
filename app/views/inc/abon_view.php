@@ -18,6 +18,7 @@
  */
 
 use app\controllers\AbonController;
+use config\Conciliation;
 use config\tables\Abon;
 use config\tables\PA;
 use config\tables\Module;
@@ -231,14 +232,20 @@ $attr_off  =
             </div>
             <!-- Панель действий -->
             <div class="row container-fluid mt-4">
-                    <div class="col justify-content-start">
-                <?php if (can_edit(Module::MOD_ABON)) : ?>
+                <div class="col justify-content-start">
+                    <!-- Форма редактирования -->
+                    <?php if (can_edit(Module::MOD_ABON)) : ?>
                         <a href="<?=Abon::URI_EDIT;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-info btn-sm me-3" target="_self"><i class="bi bi-pencil-square"></i> <?= __('Edit'); ?></a>
-                <?php endif; ?>
-                <?php if (can_view([Module::MOD_MY_PAYMENTS, Module::MOD_PAYMENTS])) : ?>
-                        <a href="<?=Pay::URI_LIST;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-info btn-sm me-3" target="_blank"><i class="bi bi-paypal"></i> <?= __('Платежі'); ?></a>
-                <?php endif; ?>
-                    </div>
+                    <?php endif; ?>
+                    <!-- Список платежей -->
+                    <?php if (can_view([Module::MOD_MY_PAYMENTS, Module::MOD_PAYMENTS])) : ?>
+                            <a href="<?=Pay::URI_LIST;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-info btn-sm me-3" target="_blank"><i class="bi bi-paypal"></i> <?= __('Платежі'); ?></a>
+                    <?php endif; ?>
+                    <!-- Форма "Сверка платежей" -->
+                    <?php if (can_view([Module::MOD_MY_CONCILIATION, Module::MOD_CONCILIATION])) : ?>
+                        <a href="<?=Conciliation::URI_INDEX;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-info btn-sm me-3"><?= __('Сверка платежей'); ?></a>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
     </div>

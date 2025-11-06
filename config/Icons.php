@@ -30,7 +30,13 @@ class Icons {
 
     const SRC_EDIT            = '/img/icon_edit.svg';
     const SRC_EDIT_REC        = '/img/icon_edit_record.svg';
-    const SRC_CLONE           = '/img/clone.png';
+    const SRC_CLONE           = '/img/btn_clone.svg';
+    const SRC_PAUSE           = '/img/btn_pause.svg';
+    const SRC_PAUSE_GRAY      = '/img/btn_pause_gray.svg';
+    const SRC_PAUSE_PLAY      = '/img/btn_pause_play.svg';
+
+
+
     const SRC_PLUS            = '/img/icon_plus.svg';
     const SRC_WARN            = '/img/icon_warning.svg';
     const SRC_ERROR           = '/img/icon_error.svg';

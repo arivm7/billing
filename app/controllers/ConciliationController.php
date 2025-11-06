@@ -21,6 +21,7 @@ use billing\core\MsgQueue;
 use billing\core\MsgType;
 use config\Conciliation;
 use config\tables\Abon;
+use config\tables\Module;
 use config\tables\Pay;
 use config\tables\User;
 
@@ -36,7 +37,44 @@ class ConciliationController extends AbonController {
         if (!App::$auth->isAuth) { redirect(); }
         $model = new AbonModel();
 
-        $user = $_SESSION[User::SESSION_USER_REC];
+        if (isset($this->route[F_ALIAS])) {
+            if ($model->validate_id(Abon::TABLE, intval($this->route[F_ALIAS]), Abon::F_ID)) {
+                /**
+                 * Это верный abon_id
+                 */
+                $user_id = $model->get_user_id_by_abon_id(intval($this->route[F_ALIAS]));
+            } elseif ($model->validate_id(User::TABLE, intval($this->route[F_ALIAS]), User::F_ID)) {
+                /**
+                 * Это верный user_id
+                 */
+                $user_id = intval($this->route[F_ALIAS]);
+            }
+        } else {
+            $user_id = App::get_user_id();
+        }
+
+        /**
+         * Мой ли это user_id ?
+         */
+        if ($user_id == App::get_user_id()) {
+            /**
+             * Это мой user_id
+             */
+            if (!can_view(Module::MOD_MY_CONCILIATION)) {
+                MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+                redirect();
+            }
+        } else {
+            /**
+             * Это чужой user_id
+             */
+            if (!can_view(Module::MOD_CONCILIATION)) {
+                MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+                redirect();
+            }
+        }
+
+        $user = $model->get_user($user_id);
         $user[Abon::TABLE] = $model->get_rows_by_field(table: Abon::TABLE, field_name: Abon::F_USER_ID, field_value: $user[User::F_ID]);
 
         $this->setVariables([

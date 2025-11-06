@@ -3,8 +3,8 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: localhost:3306
--- Время создания: Сен 18 2025 г., 02:51
--- Версия сервера: 8.0.43
+-- Время создания: Ноя 05 2025 г., 23:12
+-- Версия сервера: 8.0.44
 -- Версия PHP: 8.2.29
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
@@ -70,8 +70,8 @@ CREATE TABLE `abons` (
 DROP TABLE IF EXISTS `abon_rest`;
 CREATE TABLE `abon_rest` (
   `abon_id` int UNSIGNED NOT NULL COMMENT 'ID абонента',
-  `sum_pay` float NOT NULL DEFAULT '0' COMMENT 'Сумма платежей и внесений на ЛС',
-  `sum_cost` float NOT NULL DEFAULT '0' COMMENT 'Сумма начислений за услуги price_apply',
+  `sum_pay` double NOT NULL DEFAULT '0' COMMENT 'Сумма платежей и внесений на ЛС',
+  `sum_cost` double NOT NULL DEFAULT '0' COMMENT 'Сумма начислений за услуги price_apply',
   `sum_PPMA` double NOT NULL DEFAULT '0' COMMENT 'PPMA - Price Per Month Active',
   `sum_PPDA` double NOT NULL DEFAULT '0' COMMENT 'PPDA - Price Per Day Active'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -131,17 +131,19 @@ INSERT INTO `adm_menu` (`id`, `parent_id`, `module_id`, `anon_visible`, `visible
 (11, 7, NULL, 0, 1, 30, 'Роли', 'Ролі', 'Roles', 'Список административных роле', 'Список административных роле', 'Список административных роле', '/admin/roles', 0, NULL, NULL, 458, 1756412960),
 (12, 7, NULL, 0, 1, 40, 'Роли/Пользователи', 'Ролі/Користвачі', 'Roles/Users', 'Просмотр и редактирование привязок Ролей к Пользователям', 'Просмотр и редактирование привязок Ролей к Пользователям', 'Просмотр и редактирование привязок Ролей к Пользователям', '/admin/roles/ts-users', 0, NULL, NULL, 458, 1756412948),
 (13, 2, NULL, 0, 1, 1, 'Список абонентов', 'Перелік абонентів', 'List of abons', 'Список абонентов', 'Перелік абонентів', 'List of subscribers', '/abon', 0, NULL, NULL, 1, 1754420776),
-(16, 0, 25, 0, 1, 20, ':: Как оплатить', ':: Як сплатити', ':: How to pay', '', '', '', '', 0, NULL, NULL, 368277, 1756929836),
-(17, 0, 25, 0, 1, 50, ':: Акт сверки', ':: Зведення платежів', ':: Account reconciliation', 'Акт сверки расчетов', 'Акт звіряння розрахунків', 'Account reconciliation report', '/conciliation', 0, NULL, NULL, 461, 1756514952),
+(16, 0, 25, 1, 1, 20, ':: Как оплатить', ':: Як сплатити', ':: How to pay', '', '', '', '/pay', 0, NULL, NULL, 1, 1760639426),
+(17, 0, 25, 0, 1, 50, '::&nbsp;Акт&nbsp;сверки', '::&nbsp;Зведення&nbsp;платежів', '::&nbsp;Account&nbsp;reconciliation', 'Акт сверки расчетов', 'Акт звіряння розрахунків', 'Account reconciliation report', '/conciliation', 0, NULL, NULL, 1, 1758504426),
 (18, 0, 0, 1, 1, 30, ':: Договор', ':: Договір', ':: Agreement', 'Публичный договор', 'Публічний договір', 'Offerta', '/dogovir', 0, NULL, NULL, 368277, 1756929942),
 (19, 0, 29, 0, 1, 130, ':: ТП', ':: ТП', ':: ТП', '', '', '', '', 0, NULL, NULL, 1, 1756591041),
-(20, 0, 25, 0, 1, 40, ':: История платежей', ':: Історія платежів', ':: Payment history', 'История платежей', 'Історія платежів', 'Payment history', '/payments', 0, NULL, NULL, 1, 1757467689),
+(20, 0, 25, 0, 1, 40, '::&nbsp;История&nbsp;платежей', '::&nbsp;Історія&nbsp;платежів', '::&nbsp;Payment&nbsp;history', 'История платежей', 'Історія платежів', 'Payment history', '/payments', 0, NULL, NULL, 1, 1758504380),
 (22, 0, 30, 0, 1, 70, ':: Документы', ':: Документи', ':: Documents', 'Документы', 'Документи', 'Documents', '', 0, NULL, NULL, 1, 1756591163),
-(23, 0, 0, 1, 1, 35, ':: Правила сети', ':: Правила мережі', ':: Network Rules', '', '', '', '/rules', 0, NULL, NULL, 461, 1756567716),
+(23, 0, 0, 1, 1, 35, '::&nbsp;Правила&nbsp;сети', '::&nbsp;Правила&nbsp;мережі', '::&nbsp;Network&nbsp;Rules', '', '', '', '/rules', 0, NULL, NULL, 1, 1758504325),
 (24, 0, 0, 1, 1, 55, ':: Защита от DDoS', ':: Захист від DDoS', ':: DDoS protection', 'Краткая инструкция по обнаружению и удалению вредоносных программ.', 'Коротка інструкція щодо виявлення та видалення шкідливих програм.', 'A brief guide to detecting and removing malware.', '/flood', 0, NULL, NULL, 461, 1756567723),
 (25, 22, NULL, 0, 1, 10, 'Документы', 'Документы', 'Документы', 'Редактор документов', 'Редактор документов', 'Редактор документов', '/docs', 0, NULL, NULL, NULL, NULL),
 (26, 22, NULL, 0, 1, 20, 'Файлы', 'Файлы', 'Файлы', 'Управление публичными и личными файлами, документами, изображениями', 'Управление публичными и личными файлами, документами, изображениями', 'Управление публичными и личными файлами, документами, изображениями', '/files', 0, NULL, NULL, NULL, NULL),
-(27, 19, 29, 0, 1, 10, ':: Список ТП', ':: Перелік ТП', ':: TP List', '', '', '', '/tp', 0, NULL, NULL, 1, 1756944303);
+(27, 19, 29, 0, 1, 10, 'Список ТП', 'Перелік ТП', 'TP List', '', '', '', '/tp', 0, NULL, NULL, 1, 1760911701),
+(28, 19, 31, 0, 1, 20, 'Предприятия', 'Підприємства', 'Firms', '', '', '', '/firms', 0, NULL, NULL, 1, 1760911769),
+(29, 19, 43, 0, 1, 30, 'Список ППП', 'Перелік ППП', 'POP List', '', '', '', '/ppp?active=1', 0, NULL, NULL, 1, 1760983922);
 
 -- --------------------------------------------------------
 
@@ -184,28 +186,30 @@ TRUNCATE TABLE `adm_module_list`;
 --
 
 INSERT INTO `adm_module_list` (`id`, `uk_title`, `ru_title`, `en_title`, `uk_description`, `ru_description`, `en_description`, `route`, `api`, `creation_uid`, `creation_date`, `modified_uid`, `modified_date`) VALUES
-(3, 'Contacts', 'Contacts', 'Contacts', '', '', '', '', '', 1, 1725738438, 1, 1756687481),
+(3, 'Контакти', 'Контакты', 'Contacts', 'Додаткові контакти', 'Дополнительные контакты', 'Additional contacts', '', '', 1, 1725738438, 4, 1760460076),
 (6, 'Прайсовий фрагмент', 'Прайсовый фрагмент', 'Price Apply', '', '', '', '', '', 1, 1725738567, 1, 1757498328),
-(22, 'Firm', 'Firm', 'Firm', '', '', '', '', '', 1, 1725781712, 1, 1757498398),
+(22, 'Підприємства', 'Предприятия', 'Firms', '', '', '', '', '', 1, 1725781712, 4, 1760460336),
 (23, 'Картка користувача (My)', 'Карточка пользователя (My)', 'User Card (My)', 'Відображати мою картку користувача з усіма заповненими полями', 'Отображать мою карточку пользователя со всеми заполненными полями', 'Display my user card with all filled fields', '', '', 1, 1756463185, 1, 1757497928),
-(24, 'Contacts (My)', 'Contacts (My)', 'Contacts (My)', '', '', '', '', '', 458, 1756472087, 1, 1757497946),
+(24, 'Контакти (My)', 'Контакты (My)', 'Contacts (My)', 'Додаткові контакти зареєстрованого Користувача (Мої)', 'Дополнительные контакты зарегистрированного пользователя (Мои)', 'Additional contacts of the registered user (My)', '', '', 458, 1756472087, 4, 1760460073),
 (25, 'Абонентські данні (My)', 'Абонентские данные (My)', 'Abon Data (My)', '', '', '', '', '', 458, 1756504308, 1, 1757498678),
 (26, 'Прайсовий фрагмент (My)', 'Прайсовый фрагмент (My)', 'Price Apply (My)', '', '', '', '', '', 458, 1756504463, 1, 1757498500),
 (27, 'Адмін меню', 'Админ меню', 'Admin menu', '', '', '', '', '', 1, 1756589706, 1, 1757496529),
 (28, 'Абонентські данні', 'Абонентские данные', 'Abon Data', '', '', '', '', '', 1, 1756589835, 1, 1757498676),
 (29, 'ТП', 'ТП', 'ТП', 'Модуль доступа к просмотру меню, списка и прочим функциям ТП', 'Модуль доступа к просмотру меню, списка и прочим функциям ТП', 'Модуль доступа к просмотру меню, списка и прочим функциям ТП', '', '', 1, 1756590992, 1, 1756799914),
 (30, 'Документы', 'Документы', 'Документы', '', '', '', '', '', 1, 1756591086, 1, 1756591086),
-(31, 'Firm (My)', 'Firm (My)', 'Firm (My)', '', '', '', '', '', 1, 1756652907, 1, 1757497962),
-(32, 'Modules', 'Modules', 'Modules', '', '', '', '', '', 1, 1756678959, 1, 1756678959),
-(33, 'Firm Status', 'Firm Status', 'Firm Status', '', '', '', '', '', 1, 1756731615, 1, 1756731615),
-(34, 'Conciliation (My)', 'Conciliation (My)', 'Conciliation (My)', 'Акт Зведення розрахунків', 'Акт сверки платежей', 'Act Reconciliation', '', '', 1, 1756803986, 1, 1757497846),
-(35, 'Conciliation', 'Conciliation', 'Conciliation', '', '', '', '', '', 1, 1756804026, 1, 1756804026),
+(31, 'Підприємства (My)', 'Предприятия (My)', 'Firms (My)', '', '', '', '', '', 1, 1756652907, 4, 1760460333),
+(32, 'Модулі', 'Модули', 'Modules', 'Доступ до функцій керування модулями', 'Доступ к функциям управления модулями', 'Access to module management functions', '', '', 1, 1756678959, 4, 1760460544),
+(33, 'Підприємство. Статус', 'Предприятие. Статус', 'Firm Status', '', '', '', '', '', 1, 1756731615, 4, 1760460450),
+(34, 'Акт звірки платежів (My)', 'Акт сверки платежей (My)', 'Conciliation (My)', 'Акт звірки взаємних розрахунків зареєстрованого користувача (Мої)', 'Акт сверки взаимных расчётов зарегистрированного пользователя (Мои)', 'Reconciliation report of mutual settlements of a registered user (My)', '', '', 1, 1756803986, 4, 1760460242),
+(35, 'Акт звірки платежів', 'Акт сверки платежей', 'Conciliation', 'Акт звірки взаємних розрахунків', 'Акт сверки взаимных расчётов', 'The act of reconciliation of mutual settlements', '', '', 1, 1756804026, 4, 1760460244),
 (36, 'Поиск', 'Поиск', 'Поиск', '', '', '', '', '', 1, 1756923436, 1, 1756923436),
 (37, 'Повідомлення', 'Уведомления', 'Notify', '', '', '', '', '', 458, 1757066739, 1, 1757498598),
 (38, 'Повідомлення (My)', 'Уведомления (My)', 'Notify (My)', '', '', '', '', '', 458, 1757066783, 1, 1757498595),
-(39, 'Web Debug', 'Web Debug', 'Web Debug', '', '', '', '', '', 1, 1757370881, 1, 1757371019),
-(40, 'Payments', 'Payments', 'Payments', '', '', '', '', '', 1, 1757491880, 1, 1757491880),
-(41, 'Payments (My)', 'Payments (My)', 'Payments (My)', '', '', '', '', '', 1, 1757492014, 1, 1757497995);
+(39, 'Web Debug', 'Web Debug', 'Web Debug', 'Показ налагоджувальної інформації', 'Показ отладочной информации', 'Show debug information', '', '', 1, 1757370881, 1, 1760466407),
+(40, 'Платежі', 'Платежи', 'Payments', 'Доступ до функцій роботи з платежами', 'Доступ к функциям работы с платежами', 'Access to payment functions', '', '', 1, 1757491880, 4, 1760460737),
+(41, 'Платежі (My)', 'Платежи (My)', 'Payments (My)', 'Доступ до функцій роботи з моїми платежами (My)', 'Доступ к функциям работы с моими платежами (My)', 'Access to My Payments (My) functionality', '', '', 1, 1757492014, 4, 1760460735),
+(42, 'Картка користувача', 'Карточка пользователя', 'User Card', '', '', '', '', '', 1, 1760368719, 1, 1760368719),
+(43, 'ППП', 'ППП', 'PAP', 'Пункт прийому платежів (механізм отримання платежів)', 'Пункт приёма платежей (механизм получения платежей)', 'Payment acceptance point (payment receipt mechanism)', '', '', 1, 1760874151, 1, 1760874170);
 
 -- --------------------------------------------------------
 
@@ -256,7 +260,7 @@ INSERT INTO `adm_role_list` (`id`, `uk_title`, `ru_title`, `en_title`, `uk_descr
 (12, 'Ст. касир', 'Ст. кассир', 'Senior cashier', 'Старший касир (той, хто набирає та керує)', 'Старший кассир (тот, кто набирает и управляет)', 'Senior Cashier (the one who types and manages)', 1, 1751885179, 1, 1753266951),
 (13, 'Касир', 'Кассир', 'Cashier', 'Касир', 'Кассир', 'Cashier', 1, 1751885179, 1, 1753267539),
 (14, 'Ст. агент', 'Ст. агент', 'Senior agent', 'Старший агент (тот, хто набирає і управляє)', 'Старший агент (тот, кто набирает и управляет)', 'Senior Agent (the one who recruits and manages)', 1, 1751885179, 1, 1753267444),
-(15, 'Агент', 'Агент', 'Агент', 'Маркетолог, рекламный агент, кредитор (ответственный за контроль платежей)', 'Маркетолог, рекламный агент, кредитор (ответственный за контроль платежей)', 'Маркетолог, рекламный агент, кредитор (ответственный за контроль платежей)', 1, 1751885179, 0, 0),
+(15, 'Агент', 'Агент', 'Агент', 'Маркетолог, рекламний агент, кредитор (інформує про заборгованість)', 'Маркетолог, рекламный агент, кредитор (ответственный за контроль платежей)', 'Marketer, advertising agent, creditor (informing about debt)', 1, 1751885179, 1, 1760369066),
 (16, 'Ст. консультант', 'Ст. консультант', 'Senior Consultant', 'Старший консультант контакт-центра, тех. підтримки (тот, хто набирає і управляє)', 'Старший консультант контакт-центра, тех. поддержки (тот, кто набирает и управляет)', 'Senior contact center consultant, tech. podderje (one who recruits and manages)', 1, 1751885179, 1, 1753267291),
 (17, 'Консультант', 'Консультант', 'Консультант', 'Консультант контакт-центру, технічної підтримки', 'Консультант контакт-центра, технической поддержки', 'Contact center consultant, technical support', 1, 1751885179, 1, 1753187287);
 
@@ -313,6 +317,8 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (1, 39, 1),
 (1, 40, 15),
 (1, 41, 0),
+(1, 42, 15),
+(1, 43, 15),
 (2, 3, 15),
 (2, 6, 15),
 (2, 22, 15),
@@ -335,7 +341,9 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (2, 39, 1),
 (2, 40, 5),
 (2, 41, 0),
-(3, 3, 1),
+(2, 42, 15),
+(2, 43, 15),
+(3, 3, 0),
 (3, 6, 0),
 (3, 22, 0),
 (3, 23, 3),
@@ -357,7 +365,9 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (3, 39, 0),
 (3, 40, 0),
 (3, 41, 1),
-(4, 3, 1),
+(3, 42, 0),
+(3, 43, 0),
+(4, 3, 0),
 (4, 6, 0),
 (4, 22, 0),
 (4, 23, 1),
@@ -379,8 +389,10 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (4, 39, 0),
 (4, 40, 0),
 (4, 41, 0),
+(4, 42, 0),
+(4, 43, 0),
 (5, 3, 0),
-(5, 6, 0),
+(5, 6, 1),
 (5, 22, 0),
 (5, 23, 0),
 (5, 24, 0),
@@ -401,6 +413,8 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (5, 39, 0),
 (5, 40, 0),
 (5, 41, 0),
+(5, 42, 1),
+(5, 43, 15),
 (6, 3, 0),
 (6, 6, 1),
 (6, 22, 0),
@@ -423,6 +437,8 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (6, 39, 0),
 (6, 40, 0),
 (6, 41, 0),
+(6, 42, 1),
+(6, 43, 0),
 (7, 3, 0),
 (7, 6, 1),
 (7, 22, 0),
@@ -445,8 +461,10 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (7, 39, 0),
 (7, 40, 0),
 (7, 41, 0),
-(8, 3, 1),
-(8, 6, 1),
+(7, 42, 1),
+(7, 43, 0),
+(8, 3, 7),
+(8, 6, 3),
 (8, 22, 1),
 (8, 23, 0),
 (8, 24, 0),
@@ -467,8 +485,10 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (8, 39, 0),
 (8, 40, 1),
 (8, 41, 0),
-(9, 3, 1),
-(9, 6, 1),
+(8, 42, 7),
+(8, 43, 0),
+(9, 3, 7),
+(9, 6, 3),
 (9, 22, 1),
 (9, 23, 0),
 (9, 24, 0),
@@ -489,7 +509,9 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (9, 39, 0),
 (9, 40, 1),
 (9, 41, 0),
-(10, 3, 1),
+(9, 42, 7),
+(9, 43, 0),
+(10, 3, 5),
 (10, 6, 0),
 (10, 22, 1),
 (10, 23, 0),
@@ -511,7 +533,9 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (10, 39, 0),
 (10, 40, 7),
 (10, 41, 0),
-(11, 3, 1),
+(10, 42, 1),
+(10, 43, 0),
+(11, 3, 5),
 (11, 6, 0),
 (11, 22, 1),
 (11, 23, 0),
@@ -533,6 +557,8 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (11, 39, 0),
 (11, 40, 5),
 (11, 41, 0),
+(11, 42, 1),
+(11, 43, 0),
 (12, 3, 0),
 (12, 6, 0),
 (12, 22, 1),
@@ -555,6 +581,8 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (12, 39, 0),
 (12, 40, 5),
 (12, 41, 0),
+(12, 42, 1),
+(12, 43, 0),
 (13, 3, 0),
 (13, 6, 0),
 (13, 22, 1),
@@ -577,8 +605,10 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (13, 39, 0),
 (13, 40, 5),
 (13, 41, 0),
-(14, 3, 1),
-(14, 6, 0),
+(13, 42, 1),
+(13, 43, 0),
+(14, 3, 5),
+(14, 6, 3),
 (14, 22, 1),
 (14, 23, 0),
 (14, 24, 0),
@@ -599,8 +629,10 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (14, 39, 0),
 (14, 40, 0),
 (14, 41, 0),
-(15, 3, 1),
-(15, 6, 0),
+(14, 42, 7),
+(14, 43, 0),
+(15, 3, 5),
+(15, 6, 3),
 (15, 22, 1),
 (15, 23, 0),
 (15, 24, 0),
@@ -621,8 +653,10 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (15, 39, 0),
 (15, 40, 0),
 (15, 41, 0),
-(16, 3, 1),
-(16, 6, 1),
+(15, 42, 7),
+(15, 43, 0),
+(16, 3, 5),
+(16, 6, 3),
 (16, 22, 1),
 (16, 23, 0),
 (16, 24, 0),
@@ -643,8 +677,10 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (16, 39, 0),
 (16, 40, 1),
 (16, 41, 0),
-(17, 3, 1),
-(17, 6, 1),
+(16, 42, 7),
+(16, 43, 0),
+(17, 3, 5),
+(17, 6, 3),
 (17, 22, 1),
 (17, 23, 0),
 (17, 24, 0),
@@ -664,7 +700,9 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (17, 38, 0),
 (17, 39, 0),
 (17, 40, 1),
-(17, 41, 0);
+(17, 41, 0),
+(17, 42, 7),
+(17, 43, 0);
 
 -- --------------------------------------------------------
 
@@ -685,26 +723,6 @@ CREATE TABLE `adm_user_role` (
 --   `user_id`
 --       `users` -> `id`
 --
-
---
--- Очистить таблицу перед добавлением данных `adm_user_role`
---
-
-TRUNCATE TABLE `adm_user_role`;
---
--- Дамп данных таблицы `adm_user_role`
---
-
-INSERT INTO `adm_user_role` (`user_id`, `role_id`) VALUES
-(1, 1),
-(1, 2),
-(4, 5),
-(4, 7),
-(4, 9),
-(4, 13),
-(4, 15),
-(4, 17),
-(458, 3);
 
 -- --------------------------------------------------------
 
@@ -1237,8 +1255,7 @@ CREATE TABLE `payments` (
   `pay_date` int NOT NULL COMMENT 'Дата платежа',
   `pay_bank_no` tinytext CHARACTER SET cp1251 COLLATE cp1251_bin COMMENT 'Банковский номер операции',
   `pay_type_id` int UNSIGNED NOT NULL COMMENT 'ИД Типа платежа',
-  `pay_ppp_id` int UNSIGNED NOT NULL COMMENT 'ППП',
-  `pay_sourse_id` int UNSIGNED NOT NULL DEFAULT '0' COMMENT 'На какой счёт пришёл платёж',
+  `pay_ppp_id` int UNSIGNED NOT NULL COMMENT 'Пункт приёма платежей (ППП) -- счёт, агент или предприятие куда поступили средства.',
   `description` text CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL COMMENT 'Описание платежа',
   `created_date` int NOT NULL DEFAULT '0' COMMENT 'Юзер, создавший запись',
   `created_uid` int UNSIGNED NOT NULL DEFAULT '0' COMMENT 'Дата создания записис в базе',
@@ -1265,26 +1282,6 @@ CREATE TABLE `payments_calculates` (
 
 --
 -- ССЫЛКИ ТАБЛИЦЫ `payments_calculates`:
---
-
--- --------------------------------------------------------
-
---
--- Структура таблицы `payments_sources`
---
-
-DROP TABLE IF EXISTS `payments_sources`;
-CREATE TABLE `payments_sources` (
-  `id` int UNSIGNED NOT NULL,
-  `active` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'Активен ли источник поступления средств',
-  `title` varchar(30) NOT NULL COMMENT 'Куда пришёл платёж: р/с, карта',
-  `description` tinytext NOT NULL,
-  `agent_id` int UNSIGNED DEFAULT NULL COMMENT 'ИД Агента (пользователя, который получил и внес деньги от абонента',
-  `owner_id` int UNSIGNED DEFAULT NULL COMMENT 'Владелец счёта, на который приходят деньги'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='Откуда приходят платежи (через какие системы, точки продаж)';
-
---
--- ССЫЛКИ ТАБЛИЦЫ `payments_sources`:
 --
 
 -- --------------------------------------------------------
@@ -1355,6 +1352,7 @@ CREATE TABLE `phone_numbers` (
 DROP TABLE IF EXISTS `ppp_list`;
 CREATE TABLE `ppp_list` (
   `id` int UNSIGNED NOT NULL,
+  `order_num` int NOT NULL DEFAULT '0' COMMENT 'Порядок сортировки',
   `firm_id` int UNSIGNED NOT NULL COMMENT 'ID предприятия',
   `title` tinytext NOT NULL COMMENT 'Название источника приема платежей',
   `owner_id` int UNSIGNED DEFAULT NULL COMMENT 'ID фактического, юридического,  владельца счета/кассы, принимающего платежи',
@@ -1462,7 +1460,6 @@ CREATE TABLE `prices` (
   `pay_per_day` float NOT NULL DEFAULT '0',
   `pay_per_month` float NOT NULL DEFAULT '0',
   `description` tinytext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci COMMENT 'Описание тарифного пакета',
-  `_x_created_date_` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Дата добавления прайса',
   `creation_date` int DEFAULT NULL COMMENT 'Дата создания записи',
   `creation_uid` int UNSIGNED DEFAULT NULL COMMENT 'ID того, кто добавил прайс',
   `modified_date` int DEFAULT NULL COMMENT 'Дата-время изменения  записи',
@@ -1486,62 +1483,62 @@ TRUNCATE TABLE `prices`;
 -- Дамп данных таблицы `prices`
 --
 
-INSERT INTO `prices` (`id`, `active`, `tp_id`, `title`, `pay_per_day`, `pay_per_month`, `description`, `_x_created_date_`, `creation_date`, `creation_uid`, `modified_date`, `modified_uid`) VALUES
-(1, 1, NULL, 'M-0100', 0, 100, '100 грн/міс', '2009-12-31 22:00:00', 1313787600, 1, 0, NULL),
-(2, 1, NULL, 'D-0100', 3.3, 0, '3,3 грн/доб (~100 грн/міс)', '2009-12-31 22:00:00', 1500238800, 1, 0, NULL),
-(3, 1, NULL, 'D-0075', 2.5, 0, '2,5 грн/доб (~75 грн/міс)', '2009-12-31 22:00:00', 1514757600, 1, 1707433556, 1),
-(4, 1, NULL, 'M-0075', 0, 75, '75 грн/міс', '2009-12-31 22:00:00', 1328047200, 1, 0, NULL),
-(5, 1, NULL, 'M-0150', 0, 150, '150 грн/міс', '2009-12-31 22:00:00', 1381784400, 1, 0, NULL),
-(6, 1, NULL, 'M-0300', 0, 300, '300 грн/міс', '2009-12-31 22:00:00', 1318194000, 1, 0, NULL),
-(7, 1, NULL, 'M-0400', 0, 400, '400 грн/міс', '2009-12-31 22:00:00', 1328824800, 1, 0, NULL),
-(8, 1, NULL, 'D-0300', 10, 0, '10 грн/доб (300-310 грн/міс)', '2009-12-31 22:00:00', 1375304400, 1, 0, NULL),
-(9, 0, NULL, 'M-0050-IP', 0, 50, 'Зовнішня IP, +50 грн/міс', '2009-12-31 22:00:00', 1392242400, 1, 1707639325, 1),
-(10, 0, NULL, 'M-0050 (off)', 0, 50, '50 грн/міс', '2009-12-31 22:00:00', 1366578000, 1, 0, NULL),
-(11, 1, NULL, 'Службовий', 0, 0.01, 'Службовий', '2009-12-31 22:00:00', 1366578000, 1, 1707442856, 1),
-(12, 1, NULL, 'M-1000', 0, 1000, '1000 грн/міс', '2009-12-31 22:00:00', 1635717600, 1, 0, NULL),
-(13, 1, NULL, 'M-0200', 0, 200, '200 грн/міс', '2009-12-31 22:00:00', 1409518800, 1, 0, NULL),
-(14, 0, NULL, 'M-0160', 0, 160, '160 грн/мес = 200 - 20% НДС', '2014-12-25 10:12:45', 1419502365, 1, 0, NULL),
-(15, 0, NULL, 'M-0070-IP', 0, 70, 'Зовнішня IP, +70 грн/міс', '2014-12-25 12:23:49', 1419510229, 1, 1707445503, 1),
-(16, 1, NULL, 'M-0120', 0, 120, '120 грн/міс', '2015-01-06 08:24:19', 1420532659, 1, 1707445320, 1),
-(17, 1, NULL, 'D-0120', 4, 0, '~120 грн/міс (4 грн/доб)', '2015-01-19 11:41:13', 1421667673, 1, 0, NULL),
-(18, 0, NULL, '.com.ua', 0, 11, 'Поддержка доменного имени 132 грн/год', '2015-03-20 18:00:13', 1426874413, 1, 0, NULL),
-(19, 0, 40, 'HOSTING 1', 0, 8.33, 'Хостинг 1. 100 грн/рік', '2015-03-20 18:02:20', 1426874540, 1, 1707445546, 1),
-(20, 1, NULL, 'M-0050', 0, 50, '50 грн/міс', '2015-08-24 21:00:00', 1440450000, 1, 0, NULL),
-(21, 1, NULL, 'D-0240', 8, 0, '240-248 грн/міс, 8 грн/доб', '2016-01-26 10:58:03', 1453805883, 1, 0, NULL),
-(22, 0, NULL, 'M-0500 2 канала', 0, 500, '500 грн/міс, 2 каналу.', '2016-06-23 17:09:22', 1466701762, 1, 1707639304, 1),
-(23, 0, NULL, '2й канал', 0, 0, 'IP и ТП 2-го канала', '2016-06-23 17:16:45', 1466702205, 1, 0, NULL),
-(24, 0, NULL, 'Отчисления 458', 0, -172, 'за ланетовский второй канал на R1', '2016-10-11 21:10:27', 1476220227, 1, 1707445450, 1),
-(25, 1, NULL, 'D-0135', 4.5, 0, '4.5грн/доб', '2016-12-13 16:17:07', 1481645827, 1, 0, NULL),
-(26, 1, NULL, 'D-0150', 5, 0, '5грн/доб, 150-155 грн/міс', '2017-02-02 06:37:34', 1486017454, 1, 0, NULL),
-(27, 1, NULL, 'M-0500', 0, 500, '500 грн/міс', '2017-05-16 21:39:45', 1494970785, 1, 0, NULL),
-(28, 1, NULL, 'IP-GRAY', 0, 0, 'внутр. IP адреса', '2017-07-07 21:20:26', 1499462426, 1, 0, NULL),
-(29, 1, NULL, 'M-0600', 0, 600, '600грн/міс', '2017-05-16 21:39:45', 1494970785, 1, 0, NULL),
-(30, 1, NULL, 'M-0180', 0, 180, '180 грн/міс', '2019-04-22 09:10:38', 1555924238, 1, 0, NULL),
-(31, 1, NULL, 'D-0180', 6, 0, '6 грн/доб (~180 грн/міс)', '2019-04-22 09:10:38', 1555924238, 1, 0, NULL),
-(32, 1, NULL, 'D-0210', 7, 0, '7 грн/доб (~210 грн/міс)', '2019-08-19 09:40:25', 1566207625, 1, 0, NULL),
-(33, 1, NULL, 'D-0600', 20, 0, '600-620 грн/міс, 20 грн/доб', '2021-01-29 10:08:08', 1611914888, 1, 0, 1),
-(34, 1, NULL, 'Отчисления M-0100', 0, -100, '-100 грн/міс', '2021-09-15 06:08:32', 1631686112, 1, 1707445922, 1),
-(35, 1, NULL, 'M-0370', 0, 370, '370 грн/міс', '2022-01-03 09:34:43', 1641202483, 1, 0, 1),
-(36, 1, NULL, 'M-1300', 0, 1300, '1300 грн/міс', '2022-06-07 06:38:14', 1654583894, 1, 0, 1),
-(37, 1, NULL, 'M-0800', 0, 800, '800 грн/міс', '2022-09-13 08:27:06', 1663057626, 1, 0, 1),
-(38, 1, NULL, 'D-0360', 12, 0, '12грн/доб. (~360грн/міс)', '2022-09-23 15:18:32', 1663946312, 1, 0, 1),
-(39, 1, NULL, 'M-1100', 0, 1100, '1100 грн/міс', '2022-12-18 15:42:03', 1671378123, 1, 0, NULL),
-(40, 1, NULL, 'M-1200', 0, 1200, '1200 грн/міс', '2022-12-18 15:44:13', 1671378253, 1, 0, NULL),
-(41, 1, NULL, 'D-1200', 40, 0, '1200-1240 грн/міс, 40 грн/доб', '2022-12-18 15:46:48', 1671378408, 1, 0, NULL),
-(42, 1, NULL, 'D-0900', 30, 0, '900-930 грн/міс, 30 грн/доб', '2022-12-18 15:48:10', 1671378490, 1, 0, 1),
-(43, 1, NULL, 'Отчисления D-0200', -6.6, 0, '-200 грн/міс, 6.6 грн/доб', '2021-09-15 06:08:32', 1631686112, 1, 1707445617, 1),
-(45, 1, NULL, 'D-0420', 14, 0, '420 грн/30 діб, 14 грн/доб', '2024-02-06 22:27:12', 0, 1, 0, 1),
-(46, 1, NULL, 'D-0540', 18, 0, '18 грн/доб (540 грн/30 діб)', '2024-07-01 13:08:35', 1719839315, 1, 1719839315, 1),
-(47, 1, NULL, 'D-0450', 15, 0, '15 грн/доб (450 грн/30 діб)', '2024-11-07 15:21:36', 1730992896, 1, 1730992896, 1),
-(48, 1, NULL, 'D-0480', 16, 0, '16 грн/доб (480 грн/30 діб)', '2024-11-07 15:22:01', 1730992921, 1, 1730992921, 1),
-(49, 1, NULL, 'M-0410', 0, 410, '410 грн/міс (~13.67 грн/добу)', '2024-11-07 20:07:44', 1731010064, 10, 1731010064, 10),
-(50, 1, NULL, 'D-0660', 22, 0, '22 грн/доб (660 грн/30 діб)', '2024-12-10 13:23:26', 1733837006, 1, 1733837006, 1),
-(51, 1, NULL, 'D-0690', 23, 0, '23 грн/доб (690 грн/30 діб)', '2024-12-10 16:19:18', 1733847558, 1, 1733847558, 1),
-(52, 1, NULL, 'M-1750', 0, 1750, '1750 грн/міс (~58.33 грн/добу)', '2025-01-08 16:20:51', 1736353251, 1, 1736353251, 1),
-(53, 1, NULL, 'D-1080', 36, 0, '36 грн/доб (1080 грн/30 діб)', '2025-01-23 13:51:54', 1737640314, 1, 1737640314, 1),
-(54, 1, NULL, 'D-0720', 24, 0, '24 грн/доб (720 грн/30 діб)', '2025-06-12 00:28:10', 1749688090, 1, 1749688090, 1),
-(55, 1, NULL, 'D-0750', 25, 0, '25 грн/доб (750 грн/30 діб)', '2025-06-12 00:28:32', 1749688112, 1, 1749688112, 1),
-(56, 1, NULL, 'M-1500', 0, 1500, '1500 грн/міс (~50.00 грн/добу)', '2025-08-14 12:20:00', 1755174000, 1, 1755174000, 1);
+INSERT INTO `prices` (`id`, `active`, `tp_id`, `title`, `pay_per_day`, `pay_per_month`, `description`, `creation_date`, `creation_uid`, `modified_date`, `modified_uid`) VALUES
+(1, 1, NULL, 'M-0100', 0, 100, '100 грн/міс', 1313787600, 1, 0, NULL),
+(2, 1, NULL, 'D-0100', 3.3, 0, '3,3 грн/доб (~100 грн/міс)', 1500238800, 1, 0, NULL),
+(3, 1, NULL, 'D-0075', 2.5, 0, '2,5 грн/доб (~75 грн/міс)', 1514757600, 1, 1707433556, 1),
+(4, 1, NULL, 'M-0075', 0, 75, '75 грн/міс', 1328047200, 1, 0, NULL),
+(5, 1, NULL, 'M-0150', 0, 150, '150 грн/міс', 1381784400, 1, 0, NULL),
+(6, 1, NULL, 'M-0300', 0, 300, '300 грн/міс', 1318194000, 1, 0, NULL),
+(7, 1, NULL, 'M-0400', 0, 400, '400 грн/міс', 1328824800, 1, 0, NULL),
+(8, 1, NULL, 'D-0300', 10, 0, '10 грн/доб (300-310 грн/міс)', 1375304400, 1, 0, NULL),
+(9, 0, NULL, 'M-0050-IP', 0, 50, 'Зовнішня IP, +50 грн/міс', 1392242400, 1, 1707639325, 1),
+(10, 0, NULL, 'M-0050 (off)', 0, 50, '50 грн/міс', 1366578000, 1, 0, NULL),
+(11, 1, NULL, 'Службовий', 0, 0.01, 'Службовий', 1366578000, 1, 1707442856, 1),
+(12, 1, NULL, 'M-1000', 0, 1000, '1000 грн/міс', 1635717600, 1, 0, NULL),
+(13, 1, NULL, 'M-0200', 0, 200, '200 грн/міс', 1409518800, 1, 0, NULL),
+(14, 0, NULL, 'M-0160', 0, 160, '160 грн/мес = 200 - 20% НДС', 1419502365, 1, 0, NULL),
+(15, 0, NULL, 'M-0070-IP', 0, 70, 'Зовнішня IP, +70 грн/міс', 1419510229, 1, 1707445503, 1),
+(16, 1, NULL, 'M-0120', 0, 120, '120 грн/міс', 1420532659, 1, 1707445320, 1),
+(17, 1, NULL, 'D-0120', 4, 0, '~120 грн/міс (4 грн/доб)', 1421667673, 1, 0, NULL),
+(18, 0, NULL, '.com.ua', 0, 11, 'Поддержка доменного имени 132 грн/год', 1426874413, 1, 0, NULL),
+(19, 0, 40, 'HOSTING 1', 0, 8.33, 'Хостинг 1. 100 грн/рік', 1426874540, 1, 1707445546, 1),
+(20, 1, NULL, 'M-0050', 0, 50, '50 грн/міс', 1440450000, 1, 0, NULL),
+(21, 1, NULL, 'D-0240', 8, 0, '240-248 грн/міс, 8 грн/доб', 1453805883, 1, 0, NULL),
+(22, 0, NULL, 'M-0500 2 канала', 0, 500, '500 грн/міс, 2 каналу.', 1466701762, 1, 1707639304, 1),
+(23, 0, NULL, '2й канал', 0, 0, 'IP и ТП 2-го канала', 1466702205, 1, 0, NULL),
+(24, 0, NULL, 'Отчисления 458', 0, -172, 'за ланетовский второй канал на R1', 1476220227, 1, 1707445450, 1),
+(25, 1, NULL, 'D-0135', 4.5, 0, '4.5грн/доб', 1481645827, 1, 0, NULL),
+(26, 1, NULL, 'D-0150', 5, 0, '5грн/доб, 150-155 грн/міс', 1486017454, 1, 0, NULL),
+(27, 1, NULL, 'M-0500', 0, 500, '500 грн/міс', 1494970785, 1, 0, NULL),
+(28, 1, NULL, 'IP-GRAY', 0, 0, 'внутр. IP адреса', 1499462426, 1, 0, NULL),
+(29, 1, NULL, 'M-0600', 0, 600, '600грн/міс', 1494970785, 1, 0, NULL),
+(30, 1, NULL, 'M-0180', 0, 180, '180 грн/міс', 1555924238, 1, 0, NULL),
+(31, 1, NULL, 'D-0180', 6, 0, '6 грн/доб (~180 грн/міс)', 1555924238, 1, 0, NULL),
+(32, 1, NULL, 'D-0210', 7, 0, '7 грн/доб (~210 грн/міс)', 1566207625, 1, 0, NULL),
+(33, 1, NULL, 'D-0600', 20, 0, '600-620 грн/міс, 20 грн/доб', 1611914888, 1, 0, 1),
+(34, 1, NULL, 'Отчисления M-0100', 0, -100, '-100 грн/міс', 1631686112, 1, 1707445922, 1),
+(35, 1, NULL, 'M-0370', 0, 370, '370 грн/міс', 1641202483, 1, 0, 1),
+(36, 1, NULL, 'M-1300', 0, 1300, '1300 грн/міс', 1654583894, 1, 0, 1),
+(37, 1, NULL, 'M-0800', 0, 800, '800 грн/міс', 1663057626, 1, 0, 1),
+(38, 1, NULL, 'D-0360', 12, 0, '12грн/доб. (~360грн/міс)', 1663946312, 1, 0, 1),
+(39, 1, NULL, 'M-1100', 0, 1100, '1100 грн/міс', 1671378123, 1, 0, NULL),
+(40, 1, NULL, 'M-1200', 0, 1200, '1200 грн/міс', 1671378253, 1, 0, NULL),
+(41, 1, NULL, 'D-1200', 40, 0, '1200-1240 грн/міс, 40 грн/доб', 1671378408, 1, 0, NULL),
+(42, 1, NULL, 'D-0900', 30, 0, '900-930 грн/міс, 30 грн/доб', 1671378490, 1, 0, 1),
+(43, 1, NULL, 'Отчисления D-0200', -6.6, 0, '-200 грн/міс, 6.6 грн/доб', 1631686112, 1, 1707445617, 1),
+(45, 1, NULL, 'D-0420', 14, 0, '420 грн/30 діб, 14 грн/доб', 0, 1, 0, 1),
+(46, 1, NULL, 'D-0540', 18, 0, '18 грн/доб (540 грн/30 діб)', 1719839315, 1, 1719839315, 1),
+(47, 1, NULL, 'D-0450', 15, 0, '15 грн/доб (450 грн/30 діб)', 1730992896, 1, 1730992896, 1),
+(48, 1, NULL, 'D-0480', 16, 0, '16 грн/доб (480 грн/30 діб)', 1730992921, 1, 1730992921, 1),
+(49, 1, NULL, 'M-0410', 0, 410, '410 грн/міс (~13.67 грн/добу)', 1731010064, 10, 1731010064, 10),
+(50, 1, NULL, 'D-0660', 22, 0, '22 грн/доб (660 грн/30 діб)', 1733837006, 1, 1733837006, 1),
+(51, 1, NULL, 'D-0690', 23, 0, '23 грн/доб (690 грн/30 діб)', 1733847558, 1, 1733847558, 1),
+(52, 1, NULL, 'M-1750', 0, 1750, '1750 грн/міс (~58.33 грн/добу)', 1736353251, 1, 1736353251, 1),
+(53, 1, NULL, 'D-1080', 36, 0, '36 грн/доб (1080 грн/30 діб)', 1737640314, 1, 1737640314, 1),
+(54, 1, NULL, 'D-0720', 24, 0, '24 грн/доб (720 грн/30 діб)', 1749688090, 1, 1749688090, 1),
+(55, 1, NULL, 'D-0750', 25, 0, '25 грн/доб (750 грн/30 діб)', 1749688112, 1, 1749688112, 1),
+(56, 1, NULL, 'M-1500', 0, 1500, '1500 грн/міс (~50.00 грн/добу)', 1755174000, 1, 1755174000, 1);
 
 -- --------------------------------------------------------
 
@@ -1572,7 +1569,7 @@ CREATE TABLE `prices_apply` (
   `net_mac` varchar(20) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL COMMENT 'MAC абонентского устройства',
   `net_router_id` int UNSIGNED DEFAULT '0' COMMENT 'ID маршрутизатора к которому подключён абонент',
   `coord_gmap` tinytext COMMENT 'Координаты точки предоставления услуги на Гугл-карте',
-  `net_ip_status` int NOT NULL DEFAULT '0' COMMENT '0 - ничего не делалли; 1 - ИП запись создана; 2 - ИП заморожен; 3 - ИП активен; 4 - ИП удалён.',
+  `_x_net_ip_status` int NOT NULL DEFAULT '0' COMMENT '0 - ничего не делалли; 1 - ИП запись создана; 2 - ИП заморожен; 3 - ИП активен; 4 - ИП удалён.',
   `cost_value` float NOT NULL DEFAULT '0' COMMENT 'Стоимость прайсового фрагмента',
   `cost_date` int DEFAULT NULL COMMENT 'дата пересчёта начисления по этайсовуму фрагментуому пр',
   `PPMA_value` float NOT NULL DEFAULT '0' COMMENT 'Price Per Montch - Значение активной абонплаты',
@@ -1879,6 +1876,36 @@ INSERT INTO `tp_rangs` (`id`, `title`, `description`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Структура таблицы `ts_abons_templates`
+--
+
+DROP TABLE IF EXISTS `ts_abons_templates`;
+CREATE TABLE `ts_abons_templates` (
+  `id` int UNSIGNED NOT NULL,
+  `ppp_id` int UNSIGNED NOT NULL COMMENT 'ППП к которому относится шаблон',
+  `abon_id` int UNSIGNED NOT NULL COMMENT 'ID абонента, которому относится фрагмент текста',
+  `template` tinytext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL COMMENT 'Фрагмент текста, по которому узнавать абонента',
+  `modified_uid` int UNSIGNED DEFAULT NULL COMMENT 'Кто именил',
+  `modified_date` int DEFAULT NULL COMMENT 'когда изменил',
+  `created_uid` int UNSIGNED DEFAULT NULL COMMENT 'кто создал',
+  `created_date` int DEFAULT NULL COMMENT 'когда создал'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='сопоставление текстовых фрагментов к абонентам';
+
+--
+-- ССЫЛКИ ТАБЛИЦЫ `ts_abons_templates`:
+--   `ppp_id`
+--       `ppp_list` -> `id`
+--   `abon_id`
+--       `abons` -> `id`
+--   `created_uid`
+--       `users` -> `id`
+--   `modified_uid`
+--       `users` -> `id`
+--
+
+-- --------------------------------------------------------
+
+--
 -- Структура таблицы `ts_firms_users`
 --
 
@@ -1942,13 +1969,15 @@ CREATE TABLE `users` (
   `viber_do_send` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Отправлять сообщения на Viber',
   `telegram` text CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci COMMENT 'Имя учётной записи месенджера Telegram',
   `telegram_do_send` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Отправлять сообщения на Telegram',
+  `signal_messenger` text CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci COMMENT 'Имя учётной записи месенджера Signal',
+  `signal_do_send` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Отправлять сообщения на Signal',
+  `whatsapp` text CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci COMMENT 'Имя учётной записи месенджера WhatsApp',
+  `whatsapp_do_send` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Отправлять сообщения на WhatsApp',
   `prava` smallint NOT NULL DEFAULT '0' COMMENT '0 == клиент / пользователь, \r\n1 и более == Административные привилегии',
   `creation_uid` int UNSIGNED DEFAULT NULL COMMENT 'Кто создал запись',
   `creation_date` int NOT NULL DEFAULT '0' COMMENT 'Дата создания записи',
   `modified_uid` int UNSIGNED NOT NULL DEFAULT '0' COMMENT 'Кто изменил запись',
-  `modified_date` int NOT NULL DEFAULT '0' COMMENT 'Дата изменения записи в базе',
-  `_x_reg_date` int NOT NULL DEFAULT '0' COMMENT 'дата регистрации, int(11)',
-  `reg_user_id` int UNSIGNED NOT NULL DEFAULT '0' COMMENT 'ID регистратора'
+  `modified_date` int NOT NULL DEFAULT '0' COMMENT 'Дата изменения записи в базе'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 --
@@ -2146,7 +2175,6 @@ ALTER TABLE `payments`
   ADD KEY `pay` (`pay`),
   ADD KEY `pay_type_id` (`pay_type_id`),
   ADD KEY `pay_ppp_id` (`pay_ppp_id`),
-  ADD KEY `pay_sourse_id` (`pay_sourse_id`),
   ADD KEY `pay_fakt` (`pay_fakt`);
 ALTER TABLE `payments` ADD FULLTEXT KEY `pay_bank_no` (`pay_bank_no`);
 
@@ -2155,12 +2183,6 @@ ALTER TABLE `payments` ADD FULLTEXT KEY `pay_bank_no` (`pay_bank_no`);
 --
 ALTER TABLE `payments_calculates`
   ADD PRIMARY KEY (`user_id`,`payment_type_id`,`payment_source_id`);
-
---
--- Индексы таблицы `payments_sources`
---
-ALTER TABLE `payments_sources`
-  ADD PRIMARY KEY (`id`);
 
 --
 -- Индексы таблицы `payments_types`
@@ -2286,6 +2308,16 @@ ALTER TABLE `tp_rangs`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Индексы таблицы `ts_abons_templates`
+--
+ALTER TABLE `ts_abons_templates`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `abon_id` (`abon_id`),
+  ADD KEY `ppp_id` (`ppp_id`),
+  ADD KEY `created_uid` (`created_uid`),
+  ADD KEY `modified_uid` (`modified_uid`);
+
+--
 -- Индексы таблицы `ts_firms_users`
 --
 ALTER TABLE `ts_firms_users`
@@ -2326,13 +2358,13 @@ ALTER TABLE `abons`
 -- AUTO_INCREMENT для таблицы `adm_menu`
 --
 ALTER TABLE `adm_menu`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT COMMENT 'ID элемента меню', AUTO_INCREMENT=28;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT COMMENT 'ID элемента меню', AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT для таблицы `adm_module_list`
 --
 ALTER TABLE `adm_module_list`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'ID административного модуля', AUTO_INCREMENT=42;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'ID административного модуля', AUTO_INCREMENT=44;
 
 --
 -- AUTO_INCREMENT для таблицы `adm_role_list`
@@ -2443,12 +2475,6 @@ ALTER TABLE `payments`
   MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT для таблицы `payments_sources`
---
-ALTER TABLE `payments_sources`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
 -- AUTO_INCREMENT для таблицы `payments_types`
 --
 ALTER TABLE `payments_types`
@@ -2537,6 +2563,12 @@ ALTER TABLE `tp_list`
 --
 ALTER TABLE `tp_rangs`
   MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=101;
+
+--
+-- AUTO_INCREMENT для таблицы `ts_abons_templates`
+--
+ALTER TABLE `ts_abons_templates`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT для таблицы `users`
@@ -2640,6 +2672,15 @@ ALTER TABLE `tp_list`
   ADD CONSTRAINT `tp_list_ibfk_4` FOREIGN KEY (`creation_uid`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   ADD CONSTRAINT `tp_list_ibfk_5` FOREIGN KEY (`modified_uid`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   ADD CONSTRAINT `tp_list_ibfk_6` FOREIGN KEY (`default_price_id`) REFERENCES `prices` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+--
+-- Ограничения внешнего ключа таблицы `ts_abons_templates`
+--
+ALTER TABLE `ts_abons_templates`
+  ADD CONSTRAINT `ts_abons_templates_ibfk_1` FOREIGN KEY (`ppp_id`) REFERENCES `ppp_list` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  ADD CONSTRAINT `ts_abons_templates_ibfk_2` FOREIGN KEY (`abon_id`) REFERENCES `abons` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  ADD CONSTRAINT `ts_abons_templates_ibfk_3` FOREIGN KEY (`created_uid`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  ADD CONSTRAINT `ts_abons_templates_ibfk_4` FOREIGN KEY (`modified_uid`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 --
 -- Ограничения внешнего ключа таблицы `ts_user_tp`
@@ -2843,13 +2884,6 @@ USE `phpmyadmin`;
 -- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
 
 --
--- Метаданные для таблицы payments_sources
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
 -- Метаданные для таблицы payments_types
 --
 -- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
@@ -2956,6 +2990,13 @@ USE `phpmyadmin`;
 
 --
 -- Метаданные для таблицы tp_rangs
+--
+-- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
+-- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
+-- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
+
+--
+-- Метаданные для таблицы ts_abons_templates
 --
 -- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
 -- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
