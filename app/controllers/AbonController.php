@@ -123,7 +123,7 @@ class AbonController extends AppBaseController {
             $html .= "&nbsp;";
             $html .= $model->url_tp_form(tp: $tp, has_img: true);
             $html .= "&nbsp;";
-            $html .= $tp[TP::F_TITLE];
+            $html .= "<a href=?".make_get_params(['tp'=>$tp[TP::F_ID]])." title='Показать абонентов только по этой ТП '>{$tp[TP::F_TITLE]}</a>";
             $html .= "<br>";
         }
         $html = rtrim($html, "<br>");
@@ -183,10 +183,39 @@ class AbonController extends AppBaseController {
         $model = new AbonModel();
 
         /**
+         * Фильтры параметра запроса списка абонентов
+         */
+        $filters = [
+            'tp'       => 0,
+            'per_page' => 20,
+            'is_payer' => 1,
+            'order_by' => "(".AbonRest::TABLE.".".AbonRest::F_SUM_PAY." - ".AbonRest::TABLE.".".AbonRest::F_SUM_COST.") ASC"
+        ];
+
+        // debug($_GET, '$_GET');
+        // debug($_POST, '$_POST');
+        // debug($this->route, '$this->route');
+
+        if (isset($_GET['tp']) && is_numeric($_GET['tp'])) {
+            $filters['tp'] = intval($_GET['tp']);
+        }
+
+        /**
          * Список ТП прикреплённых к авторизованному пользователю
          * чтобы получить абонентов только со своих ТП
          */
-        $tp_list = $model->get_my_tp_list();
+        if ($filters['tp'] === 0) {
+            $tp_list = $model->get_my_tp_list();
+        } else {
+            if ($model->validate_id(TP::TABLE, intval($filters['tp']), TP::F_ID)) {
+                $tp_list = [
+                    $model->get_tp(intval($filters['tp'])),
+                ];
+            } else {
+                $tp_list = [];
+            }
+        }
+        
 
         /**
          * Список ID абонентов с полученных выше техплощадок
@@ -194,47 +223,59 @@ class AbonController extends AppBaseController {
         $abon_id_list = $model->get_abons_id_by_tp(tp_list: $tp_list, field_id: TP::F_ID);
 
         /**
-         * Фильтры параметра запроса списка абонентов
+         * Есть ли список абонентов
          */
-        $filters = [
-            'per_page' => 20,
-            'is_payer' => 1,
-            'order_by' => "(".AbonRest::TABLE.".".AbonRest::F_SUM_PAY." - ".AbonRest::TABLE.".".AbonRest::F_SUM_COST.") ASC"
-        ];
+        if (!empty($abon_id_list)) {
+            /**
+             * Список абонентов есть
+             */
 
-        /**
-         * Запрос полной выборки абонентов и объединение с таблицей остатков (rest)
-         */
-        $sql = "SELECT "
-                . "".Abon::TABLE.".*, "
-                . "".AbonRest::TABLE.".".AbonRest::F_SUM_PAY.", "
-                . "".AbonRest::TABLE.".".AbonRest::F_SUM_COST.", "
-                . "".AbonRest::TABLE.".".AbonRest::F_SUM_PPMA.", "
-                . "".AbonRest::TABLE.".".AbonRest::F_SUM_PPDA." "
-                . "FROM ".Abon::TABLE." "
-                . "JOIN ".AbonRest::TABLE." ON ".Abon::TABLE.".".Abon::F_ID." = ".AbonRest::TABLE.".".AbonRest::F_ABON_ID." "
-                . "WHERE "
-                    . (!empty($abon_id_list) ? "(".Abon::TABLE.".".Abon::F_ID." IN (".implode(',', $abon_id_list).")) " : "1 ")
-                    . "and "
-                    . "".(isset($filters['is_payer']) && !is_null($filters['is_payer']) ? "(abons.is_payer = {$filters['is_payer']})" : "1")." "
-                . "ORDER BY {$filters['order_by']}";
-//        debug($abon_id_list, die: 0);
-//        debug($sql, die: 1);
-        $pager = new Pagination(per_page: $filters['per_page'], sql: $sql);
-        $rows = $pager->get_rows();
+            /**
+             * Запрос полной выборки абонентов и объединение с таблицей остатков (rest)
+             */
+            $sql = "SELECT "
+                    . "".Abon::TABLE.".*, "
+                    . "".AbonRest::TABLE.".".AbonRest::F_SUM_PAY.", "
+                    . "".AbonRest::TABLE.".".AbonRest::F_SUM_COST.", "
+                    . "".AbonRest::TABLE.".".AbonRest::F_SUM_PPMA.", "
+                    . "".AbonRest::TABLE.".".AbonRest::F_SUM_PPDA." "
+                    . "FROM ".Abon::TABLE." "
+                    . "JOIN ".AbonRest::TABLE." ON ".Abon::TABLE.".".Abon::F_ID." = ".AbonRest::TABLE.".".AbonRest::F_ABON_ID." "
+                    . "WHERE "
+                        . "(".Abon::TABLE.".".Abon::F_ID." IN (".implode(',', $abon_id_list).")) "
+                        . "and "
+                        . "".(isset($filters['is_payer']) && !is_null($filters['is_payer']) ? "(abons.is_payer = {$filters['is_payer']})" : "1")." "
+                    . "ORDER BY {$filters['order_by']}";
+            // debug($sql, '$sql');
+            $pager = new Pagination(per_page: $filters['per_page'], sql: $sql);
+            $rows = $pager->get_rows();
 
-        foreach ($rows as $abon) {
+            $tp_col_title = ($filters['tp'] === 0
+                ? "Все ТП"
+                : "<nobr>" . $tp_list[0][TP::F_TITLE] . " | <a href=?".make_get_params(['tp'=>0])." title='Убрать фильтр'>[X]</a></nobr>"
+            );
 
-            update_rest_fields($abon);
+            foreach ($rows as $abon) {
 
-            $t[] = [
-                'act'     => self::get_html_actions($abon),
-                'uid/aid' => self::get_html_url_aid_uid($abon),
-                'info'    => self::get_html_info($abon),
-                'rest'    => self::get_html_edges($abon),
-                'tp'      => self::get_html_tp_list_with_abon($abon[Abon::F_ID]),
-            ];
+                update_rest_fields($abon);
+
+                $t[] = [
+                    'act'     => self::get_html_actions($abon),
+                    'uid/aid' => self::get_html_url_aid_uid($abon),
+                    'info'    => self::get_html_info($abon),
+                    'rest'    => self::get_html_edges($abon),
+                    $tp_col_title => self::get_html_tp_list_with_abon($abon[Abon::F_ID]),
+                ];
+            }
+            
+        } else {
+            /**
+             * Списка абонентов нет
+             */
+            $pager = null;
+            $t = [];
         }
+
 
         $this->setVariables([
             'pager' => $pager,
@@ -1176,7 +1217,7 @@ class AbonController extends AppBaseController {
          * Если дошли сюда, значит пользователь идентифицирован и загружен
          * Загружаем абонентов
          */
-        $user[Abon::TABLE] = $model->get_rows_by_field(table: Abon::TABLE, field_name: Abon::F_USER_ID, field_value: $user[User::F_ID]);
+        $user[Abon::TABLE] = $model->get_rows_by_field(table: Abon::TABLE, field_name: Abon::F_USER_ID, field_value: $user[User::F_ID], order_by: "`".Abon::TABLE."`.`".Abon::F_IS_PAYER."` DESC");
 
         foreach ($user[Abon::TABLE] as &$abon) {
 
@@ -1240,7 +1281,7 @@ class AbonController extends AppBaseController {
             );
 
         $this->setVariables([
-            'title'=> __('Карта Пользователя/Абонента') . " " . $user[User::F_ID],
+            'title'=> __('Карта Пользователя') . ' [' . $user[User::F_ID].']',
             'user' => $user,
         ]);
     }

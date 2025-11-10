@@ -212,7 +212,7 @@ $templates = implode(
                             class="form-control"
                             id="number_purpose"
                             name="<?=Ppp::POST_REC;?>[<?=Ppp::F_NUMBER_PURPOSE;?>]"
-                            rows="2"
+                           <?=get_count_rows_for_textarea($form_data_fn(Ppp::F_NUMBER_PURPOSE));?>"
                         ><?=h($form_data_fn(Ppp::F_NUMBER_PURPOSE));?></textarea>
                     </div>
                 </div>
@@ -259,7 +259,7 @@ $templates = implode(
                             class="form-control"
                             id="number_info"
                             name="<?=Ppp::POST_REC;?>[<?=Ppp::F_NUMBER_INFO;?>]"
-                            rows="2"
+                            rows="<?=get_count_rows_for_textarea($form_data_fn(Ppp::F_NUMBER_INFO));?>"
                         ><?=h($form_data_fn(Ppp::F_NUMBER_INFO));?></textarea>
                     </div>
                 </div>
@@ -274,7 +274,7 @@ $templates = implode(
                             class="form-control"
                             id="number_comment"
                             name="<?=Ppp::POST_REC;?>[<?=Ppp::F_NUMBER_COMMENT;?>]"
-                            rows="2"
+                            rows="<?=get_count_rows_for_textarea($form_data_fn(Ppp::F_NUMBER_COMMENT));?>"
                         ><?=h($form_data_fn(Ppp::F_NUMBER_COMMENT));?></textarea>
                     </div>
                 </div>
@@ -289,7 +289,7 @@ $templates = implode(
                             class="form-control"
                             id="sms_pay_info"
                             name="<?=Ppp::POST_REC;?>[<?=Ppp::F_SMS_PAY_INFO;?>]"
-                            rows="2"
+                            rows="<?=get_count_rows_for_textarea($form_data_fn(Ppp::F_SMS_PAY_INFO));?>"
                             placeholder="{PORT} {LOGIN} {SUM}"
                         ><?=h($form_data_fn(Ppp::F_SMS_PAY_INFO));?></textarea>
                         <div class="form-text"><?=__('May contain placeholders | Может содержать подстановки | Може містити підстановки | %s', $templates);?></div>
@@ -306,7 +306,7 @@ $templates = implode(
                             class="form-control"
                             id="support_phones"
                             name="<?=Ppp::POST_REC;?>[<?=Ppp::F_SUPPORT_PHONES;?>]"
-                            rows="2"
+                            rows="<?=get_count_rows_for_textarea($form_data_fn(Ppp::F_SUPPORT_PHONES));?>"
                         ><?=h($form_data_fn(Ppp::F_SUPPORT_PHONES));?></textarea>
                     </div>
                 </div>

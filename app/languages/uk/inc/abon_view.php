@@ -30,4 +30,5 @@ return [
     'Number of prepaid days, upon crossing which disable service' => 'Кількість передплачених днів, при перетині яких відключати послугу',
     'Automatically disable service' => 'Автоматично відключати послугу',
     'Number of waiting days before disabling' => 'Кількість днів очікування перед відключенням',
+    'Reconciliation' => 'Зведення платежів',
 ];

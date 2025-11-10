@@ -79,6 +79,8 @@ class UserController extends AppBaseController {
     {
         // Инициализация валидатора
 
+        Validator::lang(Lang::code());
+
         /**
          * Telegram может быть:
          *  -- Номер телефона (для регистрации через SMS).
@@ -106,8 +108,6 @@ class UserController extends AppBaseController {
             return isJabberFull($value);
         }, __('должно быть корректным Jabber/XMPP адресом'));
 
-        Validator::lang(Lang::code());
-
         $v = new Validator($data);
 
         $v->labels([
@@ -121,7 +121,7 @@ class UserController extends AppBaseController {
         ]);
 
         // --- ОБЯЗАТЕЛЬНЫЕ ПОЛЯ ---
-        $requiredFields = [User::F_LOGIN, User::F_NAME_SHORT];
+        $requiredFields = [User::F_NAME_SHORT, User::F_NAME_FULL];
         if ($isNew) {
             // при создании требуем пароль
             $requiredFields[] = User::F_FORM_PASS;
@@ -130,10 +130,7 @@ class UserController extends AppBaseController {
         $v->rule('required', $requiredFields);
 
         // --- ЛОГИН ---
-        $v->rule('lengthBetween', User::F_LOGIN, App::get_config('login_length_min'), App::get_config('login_length_max'));
-        // проверяется отдельной функцией
-        //   ->rule('regex', User::F_LOGIN, '/'.App::get_config('login_content').'/')
-        //   ->message('{field} может содержать только латинские буквы, цифры и символы ._- ('.App::get_config('login_content').')');
+        // проверяется в validate_deep();
 
         // --- ПАРОЛЬ ---
         if (!empty($data[User::F_FORM_PASS])) {
@@ -225,6 +222,21 @@ class UserController extends AppBaseController {
             }
         }
 
+        // login — если пуст, то равен ID
+        if (empty($data[User::F_LOGIN])) {
+            $data[User::F_LOGIN] = $data[User::F_ID];
+        }
+
+        // F_NAME_SHORT — если пуст, то равен ID
+        if (empty($data[User::F_NAME_SHORT])) {
+            $data[User::F_NAME_SHORT] = $data[User::F_ID];
+        }
+
+        // F_NAME_FULL — если пуст, то равен ID
+        if (empty($data[User::F_NAME_FULL])) {
+            $data[User::F_NAME_FULL] = $data[User::F_ID];
+        }
+
         // Email —  trim (strtolower убрал, поскольку email может быть с именем)
         if (!empty($data[User::F_EMAIL_MAIN])) {
             $data[User::F_EMAIL_MAIN] = trim($data[User::F_EMAIL_MAIN]);
@@ -289,6 +301,7 @@ class UserController extends AppBaseController {
             $user = $model->get_user((int)$this->route[F_ALIAS]);
 
             // Копируем только разрешённые поля
+            $user_rec = [];
             foreach (User::FORM_FIELDS as $field=>$def_value) {
                 if (array_key_exists($field, $_POST[User::POST_REC])) {
                     $user_rec[$field] = $_POST[User::POST_REC][$field];

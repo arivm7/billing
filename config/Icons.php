@@ -37,6 +37,7 @@ class Icons {
 
 
 
+    const SRC_GUH_REPORT      = '/img/icon_buh_report.svg';
     const SRC_PLUS            = '/img/icon_plus.svg';
     const SRC_WARN            = '/img/icon_warning.svg';
     const SRC_ERROR           = '/img/icon_error.svg';
@@ -91,6 +92,7 @@ class Icons {
     const SRC_ICON_EMAIL      = '/img/icon_email.svg';
     const SRC_ICON_EMAIL_OFF  = '/img/icon_email_gray.svg';
     const SRC_ICON_PHONE      = '/img/icon_phone.svg';
+    const SRC_ICON_UAH        = '/img/icon_uah.svg';
     const SRC_ICON_UAH2PAY    = '/img/icon_uah2pay.svg';
     const SRC_ICON_FILER      = '/img/icon_filter.svg';
     const SRC_ICON_MAPS       = '/img/google-maps_064.png';

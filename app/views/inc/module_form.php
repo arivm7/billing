@@ -59,7 +59,7 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
                 <div class="col-12">
                     <div class="input-group">
                         <label for="<?=$lang;?>_descr" class="input-group-text d-flex align-items-start">[<?=strtoupper($lang);?>] <?=__('Description');?></label>
-                        <textarea id="<?=$lang;?>_descr" class="form-control" rows="2" name="<?=Module::POST_REC;?>[<?=Module::F_DESCRIPTION[$lang];?>]"><?= $module[Module::F_DESCRIPTION[$lang]] ?? '';?></textarea>
+                        <textarea id="<?=$lang;?>_descr" class="form-control" rows="<?=get_count_rows_for_textarea($module[Module::F_DESCRIPTION[$lang]] ?? '');?>" name="<?=Module::POST_REC;?>[<?=Module::F_DESCRIPTION[$lang];?>]"><?= $module[Module::F_DESCRIPTION[$lang]] ?? '';?></textarea>
                     </div>
                 </div>
             </div>

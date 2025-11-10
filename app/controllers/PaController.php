@@ -52,6 +52,13 @@ class PaController extends AppBaseController {
         }
 
         /**
+         * Если передан пустой F_PRICE_ID, то убираем его из обновления
+         */
+        if (isset($data[PA::F_PRICE_ID]) && ($data[PA::F_PRICE_ID] < 1)) {
+            unset($data[PA::F_PRICE_ID]);
+        }
+
+        /**
          * Если передан пустой F_TP_ID, то убираем его из обновления
          */
         if (isset($data[PA::F_TP_ID]) && ($data[PA::F_TP_ID] < 1)) {
@@ -128,7 +135,6 @@ class PaController extends AppBaseController {
         // Правила проверки
         $v->rule('required', [
             PA::F_ABON_ID,
-            PA::F_PRICE_ID,
             PA::F_NET_NAME,
             PA::F_DATE_START,
         ])->message('{field} — обязательное поле.');
@@ -276,6 +282,7 @@ class PaController extends AppBaseController {
 
         $pa = $model->get_row_by_id(PA::TABLE, $pa_id, PA::F_ID);
 
+        $price = $model->get_price($pa[PA::F_PRICE_ID]);
         $tp = $model->get_tp($pa[PA::F_TP_ID]);
 
         $arp = null;
@@ -324,6 +331,7 @@ class PaController extends AppBaseController {
         View::setMeta(title: __('Редактирование прайсового фрагмента'));
         $this->setVariables([
             'pa'=> $pa,
+            'price'=> $price,
             'tp'=> $tp,
             'abon_ip_on'=> $abon_ip_on,
             'arp'=> $arp,

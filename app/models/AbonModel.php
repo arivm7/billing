@@ -56,8 +56,8 @@ class AbonModel extends UserModel {
     function update_abon_rest(): bool {
 
 
-        $sql = "TRUNCATE TABLE ".AbonRest::TABLE.";"
-                . "INSERT INTO "
+        $sql1 = "TRUNCATE TABLE ".AbonRest::TABLE.";";
+        $sql2 = "INSERT INTO "
                 . AbonRest::TABLE." ("
                     . AbonRest::F_ABON_ID  . ", "
                     . AbonRest::F_SUM_PAY  . ", "
@@ -91,8 +91,12 @@ class AbonModel extends UserModel {
                     FROM prices_apply
                     GROUP BY abon_id
                 ) pa ON pa.abon_id = a.abon_id;";
-        if ($this->execute($sql)) {
-            return true;
+
+        // debug($sql, '$sql', die: 1);
+        if ($this->execute($sql1)) {
+            if ($this->execute($sql2)) {
+                return true;
+            }
         }
         return false;
     }

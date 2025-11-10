@@ -48,26 +48,10 @@ $form_data_fn = function(string $field) use ($form_data, $abon): int|float|strin
 };
 
 $address = ($form_data_fn(Abon::F_ADDRESS) ? h($form_data_fn(Abon::F_ADDRESS)) : "");
-$count_lines_addr = substr_count($address, "\n");
-$count_lines_addr = 
-    (($count_lines_addr < 3 )
-        ?   2
-        :   (($count_lines_addr > 10)
-                ? 10
-                : $count_lines_addr
-            )
-    );
+$count_lines_addr = get_count_rows_for_textarea($address);
 
 $comment = ($form_data_fn(Abon::F_COMMENTS) ? h($form_data_fn(Abon::F_COMMENTS)) : "");
-$count_lines_comment = substr_count($comment, "\n");
-$count_lines_comment = 
-    (($count_lines_comment < 3)
-        ?   2
-        :   (($count_lines_comment > 10)
-                ? 10
-                : $count_lines_comment
-            )
-    );
+$count_lines_comment = get_count_rows_for_textarea($comment);
 
 ?>
 <div class="row justify-content-center">

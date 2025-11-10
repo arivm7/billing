@@ -184,7 +184,7 @@ class RolesController extends AdminBaseController {
         /**
          * Полная таблица ролей (скорее всего не нужна)
          */
-        $roles = $model->get_rows_by_where(table: Role::TABLE, row_id_by: Role::F_ID);
+        $roles = $model->get_roles();
 
         /**
          * Таблица ролей для формирования <select>...

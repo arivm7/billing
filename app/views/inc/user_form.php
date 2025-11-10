@@ -69,7 +69,7 @@ $form_data_fn = function(string $field) use ($form_data, $user): int|float|strin
                 <div class="col-sm-3">
                     <input type="text" class="form-control" id="user_login" name="<?=User::POST_REC;?>[<?=User::F_LOGIN;?>]" value="<?=h($form_data_fn(User::F_LOGIN));?>" required>
                 </div>
-                <div class="col-sm-3">:::</div>
+                <div class="col-sm-3"></div>
                 <div class="col-sm-2">:::</div>
             </div>
 
@@ -116,7 +116,7 @@ $form_data_fn = function(string $field) use ($form_data, $user): int|float|strin
                 <div class="col-sm-3">
                     <input type="text" class="form-control" id="user_name_short" name="<?=User::POST_REC;?>[<?=User::F_NAME_SHORT;?>]" value="<?=h($form_data_fn(User::F_NAME_SHORT));?>">
                 </div>
-                <div class="col-sm-3">:::</div>
+                <div class="col-sm-3"></div>
                 <div class="col-sm-2">:::</div>
             </div>
 
@@ -161,7 +161,7 @@ $form_data_fn = function(string $field) use ($form_data, $user): int|float|strin
             <div class="row mb-3">
                 <label for="user_address_invoice" class="col-sm-2 col-form-label"><?=__('Document delivery address');?></label>
                 <div class="col-sm-6">
-                    <textarea class="form-control" id="user_address_invoice" name="<?= User::POST_REC;?>[<?=User::F_ADDRESS_INVOICE;?>]" rows="3"><?= h($form_data_fn(User::F_ADDRESS_INVOICE));?></textarea>
+                    <textarea class="form-control" id="user_address_invoice" name="<?= User::POST_REC;?>[<?=User::F_ADDRESS_INVOICE;?>]" rows="<?=get_count_rows_for_textarea($form_data_fn(User::F_ADDRESS_INVOICE));?>3"><?= h($form_data_fn(User::F_ADDRESS_INVOICE));?></textarea>
                 </div>
                 <div class="col-sm-2">
                     <div class="form-check" title="<?=__('Deliver documents and invoices in paper/digital form');?>">

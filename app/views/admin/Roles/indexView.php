@@ -68,7 +68,7 @@ use billing\core\base\Lang;
                                     <div class="mb-3">
                                         <label for="<?=$lang;?>_description" class="form-label">[<?= strtoupper($lang);?>] <?=__('Описание');?>:</label>
                                         <textarea class="form-control" id="<?=$lang;?>_description" name="<?=Role::POST_REC;?>[<?=Role::F_DESCRIPTION[$lang];?>]"
-                                                  rows="2"><?= h($row[Role::F_DESCRIPTION[$lang]] ?? ''); ?></textarea>
+                                                  rows="<?=get_count_rows_for_textarea($row[Role::F_DESCRIPTION[$lang]] ?? '');?>2"><?= h($row[Role::F_DESCRIPTION[$lang]] ?? ''); ?></textarea>
                                     </div>
                                 <?php endforeach; ?>
 

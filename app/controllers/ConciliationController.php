@@ -32,9 +32,12 @@ use config\tables\User;
  */
 class ConciliationController extends AbonController {
 
+
+    
     function indexAction() {
 
         if (!App::$auth->isAuth) { redirect(); }
+
         $model = new AbonModel();
 
         if (isset($this->route[F_ALIAS])) {
@@ -82,6 +85,66 @@ class ConciliationController extends AbonController {
         ]);
 
         View::setMeta(title: __('Запрос на Акт сверки платежей'));
+
+    }
+
+
+
+    function intervalAction(){
+
+        if (!App::$auth->isAuth) { redirect(); }
+
+        $model = new AbonModel();
+
+        if (isset($this->route[F_ALIAS])) {
+            if ($model->validate_id(Abon::TABLE, intval($this->route[F_ALIAS]), Abon::F_ID)) {
+                /**
+                 * Верный abon_id
+                 */
+                $abon_id = intval($this->route[F_ALIAS]);
+            } else {
+                /**
+                 * Ошибочный abon_id
+                 */
+                MsgQueue::msg(MsgType::ERROR_AUTO, __('Не верный ID'));
+                redirect();
+            }
+        } else {
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Не укащан ID'));
+            redirect();
+        }
+
+        /**
+         * Мой ли это user_id ?
+         */
+        $user_id = $model->get_user_id_by_abon_id($abon_id);
+        if ($user_id == App::get_user_id()) {
+            /**
+             * Это мой user_id
+             */
+            if (!can_view(Module::MOD_MY_CONCILIATION)) {
+                MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+                redirect();
+            }
+        } else {
+            /**
+             * Это чужой user_id
+             */
+            if (!can_view(Module::MOD_CONCILIATION)) {
+                MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+                redirect();
+            }
+        }
+
+        $user = $model->get_user($user_id);
+        $abon = $model->get_abon($abon_id);
+
+        $this->setVariables([
+            'user' => $user,
+            'abon' => $abon,
+        ]);
+
+        View::setMeta(title: __('Выбор интервала Акта сверки платежей'));
 
     }
 

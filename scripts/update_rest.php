@@ -46,7 +46,7 @@ use app\models\AbonModel;
 
 const APP_NAME = "RI-BILLING";
 
-require __DIR__ . '/../config/dirs.php';
+require __DIR__    . '/../config/dirs.php';
 require DIR_CONFIG . '/ini.php';
 require DIR_LIBS   . '/common.php';
 require DIR_LIBS   . '/functions.php';
@@ -56,7 +56,7 @@ require DIR_LIBS   . '/functions.php';
 /**
  * Автозагручик Composer'а
  */
-require __DIR__ . '/../vendor/autoload.php';
+require __DIR__    . '/../vendor/autoload.php';
 
 use Monolog\Logger;
 use Monolog\Handler\SyslogHandler;
@@ -66,7 +66,7 @@ use Monolog\Handler\SyslogHandler;
 $log = new Logger(APP_NAME);
 $log->pushHandler(new SyslogHandler(APP_NAME, LOG_USER, Logger::DEBUG));
 
-$log->info('start update REST');
+$log->info('REST update start');
 
 $model = new AbonModel();
 
@@ -74,13 +74,15 @@ $model = new AbonModel();
  * Обновление остатков на ЛС всех абонентов (формируется в отдельной таблице `abon_rest`)
 */
 if ($model->update_abon_rest()) {
-    $msg = 'Обновление REST выполнено успешно';
-    $log->info($msg);
+    $msg = 'REST обновление выполнено успешно';
+    $log->info($msg, [$model->errorInfo()]);
     echo "{$msg}\n";
+    print_r($model->errorInfo());
 } else {
-    $msg = 'Ошибка обновления REST';
-    $log->error($msg);
+    $msg = 'REST Ошибка обновления';
+    $log->error($msg, [$model->errorInfo()]);
     echo "{$msg}\n";
+    print_r($model->errorInfo());
     $errors = $model->errorInfo();
     foreach ($errors as $key => $err) {
         $msg = "[{$key}] {$err}";

@@ -22,7 +22,7 @@ use config\tables\User;
 use billing\core\base\Lang;
 Lang::load_inc(__FILE__);
 /** @var array $user */
-$col1_attr = 'class="text text-secondary text-secondary-emphasis text-end small ps-3 pe-3" style="width: 150pt; white-space: nowrap;"';
+$col1_attr = 'class="text text-secondary text-secondary-emphasis text-end small ps-3 pe-3" style="vertical-align: middle; width: 150pt; white-space: nowrap;"';
 $col2_attr = 'class="text text-info text-info-emphasis text-xl-start ps-3 pe-3"';
 $col3_attr = 'class="text-center align-middle font-monospace text-sm-start ps-3 pe-3" style="width: 100px; white-space: nowrap;"';
 ?>
@@ -31,7 +31,17 @@ $col3_attr = 'class="text-center align-middle font-monospace text-sm-start ps-3 
         <tbody>
             <tr>
                 <th <?=$col1_attr;?>><?=__('Login');?></th>
-                <td <?=$col2_attr;?> title="ID: <?=h($user[User::F_ID]);?>"><?= h($user[User::F_LOGIN]) ?></td>
+                <td <?=$col2_attr;?> title="ID: <?=h($user[User::F_ID]);?>">
+                    <div class='d-flex justify-content-between align-items-center'>
+                        <!-- left -->
+                        <?= h($user[User::F_LOGIN]) ?>
+                        <!-- right -->
+                        <!-- Кнопка перехода на Форму редактирования -->
+                        <?php if (can_edit([Module::MOD_MY_USER_CARD, Module::MOD_USER_CARD])) : ?>
+                            <a href="<?=User::URI_EDIT;?>/<?=$user[User::F_ID];?>" class="btn btn-outline-info btn-sm"><i class="bi bi-pencil-square"></i> <?= __('Edit'); ?></a>
+                        <?php endif; ?>
+                    </div>
+                </td>
             </tr>
             <tr>
                 <th <?=$col1_attr;?>><?=__('Name Short');?></th>
@@ -147,9 +157,7 @@ $col3_attr = 'class="text-center align-middle font-monospace text-sm-start ps-3 
                 <td colspan="2">
                     <!-- Панель действий -->
                     <div class="card-footer d-flex gap-2">
-                        <?php if (can_edit([Module::MOD_MY_USER_CARD, Module::MOD_USER_CARD])) : ?>
-                            <a href="<?=User::URI_EDIT;?>/<?=$user[User::F_ID];?>" class="btn btn-info btn-sm"><i class="bi bi-pencil-square"></i> <?= __('Edit'); ?></a>
-                        <?php endif; ?>
+                        [_]
                     </div>
                 </td>
             </tr>

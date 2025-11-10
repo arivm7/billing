@@ -30,4 +30,5 @@ return [
     'Number of prepaid days, upon crossing which disable service' => 'Number of prepaid days, upon crossing which disable service',
     'Automatically disable service' => 'Automatically disable service',
     'Number of waiting days before disabling' => 'Number of waiting days before disabling',
+    'Reconciliation' => 'Reconciliation',
 ];

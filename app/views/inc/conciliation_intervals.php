@@ -25,7 +25,9 @@ Lang::load_inc(__FILE__);
 /** @var array $item */
 /** @var array $user */
 /** @var array $abon */
-$abon = $item;
+if (empty($abon) && !empty($item)) {
+    $abon = $item;
+}
 $abon_id = $abon[Abon::F_ID];
 $id = (!empty($abon[Abon::F_ID_HASH]) ? $abon[Abon::F_ID_HASH] : $abon_id);
 $uri = Conciliation::URI_PRINT . '/' . $id;
@@ -166,14 +168,11 @@ $uri = Conciliation::URI_PRINT . '/' . $id;
                             <label class="form-check-label small" for="debug2"><?=__('debugging');?></label>
                         </div>
                     <?php endif; ?>
-
                     </form>
                 </td>
                 <td>
                 </td>
             </tr>
-
         </tbody>
     </table>
-
 </div>

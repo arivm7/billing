@@ -31,8 +31,9 @@ require_once DIR_LIBS . '/form_functions.php';
 require_once DIR_LIBS . '/inc_functions.php';
 
 /** 
- * @var array $item -- элемент из функции Аккордеона
- * @var array $pa -- элемент из контроллера
+ * @var array $item -- ПФ. элемент из функции Аккордеона
+ * @var array $pa -- ПФ. элемент из контроллера
+ * @var array $price -- Прайс, установленны сейчас в ПФ
  * @var array $tp -- Текущая ТП к которой прикреплена услуга
  * @var bool|null $abon_ip_on -- Enable/Disable статус IP-адреса в таблице ABON
  * @var array $arp -- Запись из таблицы ARP микротика со статусом IP-адреса
@@ -50,12 +51,11 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
 }
 
 ?>
-
 <div class="row justify-content-center">
 <div class="col-12 col-md-10 col-lg-8">
     <div class="card mb-4 w-100 min-w-700">
         <div class="card-header">
-            <h2><?= isset($item[PA::F_ID]) ? __('Редактировать прайсовый фрагмент для абонента') . ' #' . $item[PA::F_ABON_ID] : __('Новый прайсовый фрагмент'); ?></h2>
+            <h2><?= isset($item[PA::F_ID]) ? __('Редактировать прайсовый фрагмент для абонента') . ' [' . $item[PA::F_ABON_ID] .']' : __('Новый прайсовый фрагмент'); ?></h2>
         </div>
         <form action="" method="post">
         <div class="card-body">
@@ -63,7 +63,7 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
 
             <?php
             inputRow(label: 'Абонент ID', post_rec: PA::POST_REC, name: 'abon_id', value: $item[PA::F_ABON_ID] ?? '', type: InputType::NUMBER, l_layout: LabelLayout::H, label_col: 3, input_col: 3);
-            selectRow(label: "Прайс ID [&nbsp;<span class='text-info-emphasis'>" . ($prices_list[$item[PA::F_PRICE_ID]] ?? '-') . '</span>&nbsp;]', post_rec: PA::POST_REC, name: 'prices_id', selected_id: $item['prices_id'] ?? '-', data: $prices_list);
+            selectRow(label: "Прайс ID [&nbsp;<span class='text-info-emphasis'>" . ($price[Price::F_TITLE] ?? '-') . '</span>&nbsp;]', post_rec: PA::POST_REC, name: 'prices_id', selected_id: $item['prices_id'] ?? '-', data: $prices_list);
             inputRow(label: 'Сетевое имя', post_rec: PA::POST_REC, name: 'net_name', value: $item['net_name'] ?? '', l_layout: LabelLayout::H, label_col: 3, input_col: 9);
             ?>
 
@@ -137,6 +137,7 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
                         </div>
                         <?php if ($item['net_ip_service']) : ?>
                             <div class='col-sm-8 d-flex align-items-center justify-content-end'>
+                                <?php if ($item[PA::F_NET_IP_SERVICE] && !$item[PA::F_CLOSED] && $tp[TP::F_STATUS] && $tp[TP::F_IS_MANAGED]) : ?>
                                 <!-- Статус IP-MAC из ARP-таблицы микротика -->
                                 <span class="badge text-bg-info mt-3 fs-6">
                                     <?= get_html_abon_ip_status($abon_ip_on); ?>&nbsp;
@@ -148,6 +149,7 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
                                     <?=get_html_btn_pause(pa: $item, set: 0, options: 'class="btn btn-light p-1"');?>
                                     <?=get_html_btn_clone(pa_id: $item[PA::F_ID], options: 'class="btn btn-light p-1"');?>
                                 </span>
+                                <?php endif; ?>
                             </div>
                         <?php endif; ?>
                     </div>

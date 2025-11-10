@@ -22,7 +22,10 @@
 use app\models\AbonModel;
 use billing\core\Api;
 use billing\core\base\Lang;
+use billing\core\MsgQueue;
+use billing\core\MsgType;
 use config\Icons;
+use config\tables\Module;
 use config\tables\PA;
 
 require_once DIR_LIBS . '/billing_functions.php';
@@ -138,7 +141,16 @@ function get_html_btn_pause(int|null $pa_id = null, array|null $pa = null, bool|
         $model = new AbonModel();
         $pa = $model->get_pa($pa_id);
         if (empty($pa)) {
-            throw new Exception("PA ID No Valid");
+            // throw new Exception("PA ID No Valid");
+            MsgQueue::msg(MsgType::ERROR, __('ID прайсового фрагмента не верен'));
+            if (can_use(Module::MOD_WEB_DEBUG)) {
+                MsgQueue::msg(MsgType::ERROR, "pa_id: [{$pa_id}]");
+                if (is_array($pa)) {
+                    MsgQueue::msg(MsgType::ERROR, "pa:");
+                    MsgQueue::msg(MsgType::ERROR, $pa);
+                }
+            }
+            return '';
         }
     }
 
@@ -148,7 +160,15 @@ function get_html_btn_pause(int|null $pa_id = null, array|null $pa = null, bool|
             empty($pa[PA::F_NET_IP]) || !validate_ip($pa[PA::F_NET_IP])
         ) 
     {
-        throw new Exception("PA Struct No Valid");
+        // throw new Exception("PA Struct No Valid");
+        MsgQueue::msg(MsgType::ERROR, __('Ошибка структуры прайсового фрагмента'));
+        if (can_use(Module::MOD_WEB_DEBUG)) {
+            MsgQueue::msg(MsgType::ERROR, __('Проверяемые поля:'));
+            MsgQueue::msg(MsgType::ERROR, PA::F_ID . ': ' . $pa[PA::F_ID]);
+            MsgQueue::msg(MsgType::ERROR, PA::F_TP_ID . ': ' . $pa[PA::F_TP_ID]);
+            MsgQueue::msg(MsgType::ERROR, PA::F_NET_IP . ': ' . $pa[PA::F_NET_IP] . ' (с валидацией)');
+        }
+        return '';
     }
 
     // ?cmd=set_abon_pause

@@ -18,7 +18,7 @@
 
 return [
     'Select a subscriber connection to view payments' => 'Виберіть абонентське підключення для перегляду платежів',
-    'Show payment list' => 'Показати список платежів',
+    'Show payment list' => 'Показати перелік платежів',
     'No subscriber connections' => 'Абонентських підключень немає',
     'No permission to view this module' => 'Немає прав для перегляду цього модуля',
 ];

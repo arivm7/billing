@@ -28,5 +28,14 @@ class RolesModel extends AppBaseModel {
     }
 
 
+    public function get_roles() {
+        /**
+         * Таблица ролей за исключением "вычисляемых" ролей
+         */
+        return $this->get_rows_by_where(
+            table: Role::TABLE, 
+            where: "`".Role::F_ID."` NOT IN (".implode(',', Role::CALCULATED_ROLES).")", 
+            row_id_by: Role::F_ID);
+    }
 
 }

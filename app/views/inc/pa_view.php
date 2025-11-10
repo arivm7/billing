@@ -32,7 +32,20 @@ Lang::load_inc(__FILE__);
         <div class="card-body">
             <table <?= TABLE_ATTRIBUTES; ?> >
                 <tr>
-                    <td class="text-end">AID:</td><td><span class="text text-secondary small"><?= h($item[PA::F_ABON_ID]); ?></span><?= ' | ' . __user(abon_id: $item[PA::F_ABON_ID]) . ' | ' . __abon(abon_id: $item[PA::F_ABON_ID]); ?></td>
+                    <td class="text-end">AID:</td>
+                    <td>
+                        <div class='d-flex justify-content-between align-items-center'>
+                            <div>
+                                <span class="text text-secondary small"><?= h($item[PA::F_ABON_ID]); ?></span><?= ' | ' . __user(abon_id: $item[PA::F_ABON_ID]) . ' | ' . __abon(abon_id: $item[PA::F_ABON_ID]); ?>
+                            </div>
+                            <?php if (can_edit(Module::MOD_PA)) : ?>
+                                <!-- Кнопка редактирования ПФ -->
+                                <a href="<?=PA::URI_EDIT;?>/<?=$item[PA::F_ID];?>" class="btn btn-outline-info btn-sm">
+                                    <i class="bi bi-pencil-square"></i> <?= __('Редактировать'); ?>
+                                </a>
+                            <?php endif; ?>
+                        </div>
+                    </td>
                 </tr>
                 <tr>
                     <td></td>
@@ -117,10 +130,8 @@ Lang::load_inc(__FILE__);
         <!-- Панель действий -->
         <div class="card-footer d-flex gap-2">
             <?php if (can_edit(Module::MOD_PA)) : ?>
-                <a href="<?=PA::URI_EDIT;?>/<?=$item[PA::F_ID];?>"
-                    class="btn btn-info btn-sm"></i><i class="bi bi-pencil-square"></i> <?= __('Редактировать'); ?></a>
                 <a href="?<?= PA::F_ID ?>=<?= $item[PA::F_ID] ?>&action=pause"
-                    class="btn btn-secondary btn-sm"
+                    class="btn btn-outline-secondary btn-sm"
                     onclick="return confirm(__('Отправить запрос на остановку услуги?'))">&#9208; <?= __('Поставить на паузу'); ?></a>
             <?php endif; ?>
         </div>

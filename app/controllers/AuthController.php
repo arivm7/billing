@@ -30,6 +30,10 @@ class AuthController extends AppBaseController{
 
 
 
+    /**
+     * Регистрация нового пользователя
+     * @return void
+     */
     function signupAction() {
         View::setMeta(title: "Регистрация нового пользователя");
         $this->setVariables([]);
@@ -44,12 +48,12 @@ class AuthController extends AppBaseController{
                 $userModel->errorsToSession();
                 redirect();
             }
-            $userModel->attributes[User::DB_PASS_HASH] = $userModel->get_hash_pass($userModel->attributes[User::FORM_PASS]);
-            if ($userModel->userSave()) {
+            $userModel->attributes[User::F_PASS_HASH] = $userModel->get_hash_pass($userModel->attributes[User::F_FORM_PASS]);
+            if ($userModel->userCreate()) {
                 $userModel->successToSession();
                 redirect(Auth::URI_LOGIN);
             } else {
-                $_SESSION[SessionFields::ERROR] = "Что-то пошло не так: Ошибка записи в базу.";
+                MsgQueue::msg(MsgType::ERROR,"Что-то пошло не так: Ошибка записи в базу.");
             }
             redirect();
         }
@@ -57,6 +61,10 @@ class AuthController extends AppBaseController{
 
 
 
+    /**
+     * Авторизация
+     * @return void
+     */
     function loginAction() {
 
         if (!empty($_POST[User::POST_REC])) {

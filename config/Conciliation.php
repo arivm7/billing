@@ -21,6 +21,7 @@ namespace config;
 class Conciliation {
 
     const URI_INDEX     = '/conciliation';
+    const URI_INTERVALS = '/conciliation/interval';
     const URI_PRINT     = '/conciliation/print';
 
     const F_ABON_ID     = 'abon_id';

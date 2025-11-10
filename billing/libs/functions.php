@@ -1958,7 +1958,7 @@ function highlight_like_groups(string $text, string $likePattern): string {
     // сортируем по длине по возрастанию
     usort($parts, fn($a, $b) => mb_strlen($b) <=> mb_strlen($a));
 
-    $textHtml = htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    $textHtml = $text; // = h($text);
 
     foreach ($parts as $part) {
         if ($part === '') continue;
@@ -2038,4 +2038,49 @@ function detect_invoker(): string {
 
 
 
+/**
+ * Возвращает высоту, в количествах строк, для редактора коментариев <textarea rows>
+ * @param string $text
+ * @param int $count_rows_min
+ * @param int $count_rows_max
+ * @return int
+ */
+function get_count_rows_for_textarea(string $text, int $count_rows_min=0, int $count_rows_max=0): int {
+    if ($count_rows_min < 1) { $count_rows_min = App::get_config('textarea_rows_min'); }
+    if ($count_rows_max < 1) { $count_rows_max = App::get_config('textarea_rows_max'); }
+    $count_lines_comment = substr_count($text, "\n");
+    return
+        (($count_lines_comment <= $count_rows_min)
+            ?   $count_rows_min
+            :   (($count_lines_comment > $count_rows_max)
+                    ? $count_rows_max
+                    : $count_lines_comment
+                )
+        );    
+}
 
+
+/**
+ * Генерирует URL-кодированную строку запроса из предоставленного ассоциативного (или индексированного) массива. 
+ * Возвращает только фрагмент с указанием переменных запроса, т.е. строку между '?' и '#'
+ * @param array $params
+ * @param string|null $url
+ * @return string
+ */
+function make_get_params(array $params, string|null $url = null): string {
+    if ($url === null) { $url = $_SERVER['REQUEST_URI']; }
+
+    $query = parse_url($url, PHP_URL_QUERY);
+    if ($query) {
+        parse_str($query, $query_params);
+    } else {
+        $query_params = [];
+    }
+
+    foreach ($params as $key => $value) {
+        $query_params[$key] = $value;
+    }
+    $uri = http_build_query($query_params);
+
+    return $uri;
+}

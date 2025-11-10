@@ -129,6 +129,13 @@ $config = [
     'pass_length_max' => 35,
 
 
+    /**
+     * Высота, в количествах строк, редактора коментариев <textarea>
+     */
+    'textarea_rows_min' => 2,
+    'textarea_rows_max' => 10,
+
+
 ];
 
 return $config;

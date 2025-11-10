@@ -73,6 +73,9 @@ class Role {
         'en' => self::F_EN_DESCRIPTION,
     ];
 
-
+    public const CALCULATED_ROLES = [
+        self::ABON_ON,
+        self::ABON_OFF,
+    ];
 
 }

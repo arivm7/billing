@@ -205,7 +205,7 @@ class UserModel extends AppBaseModel{
      * @param array|null $user_data
      * @return bool
      */
-    public function userSave(array|null $user_data = null): bool {
+    public function userCreate(array|null $user_data = null): bool {
         if (!$user_data) {
             $user_data = $this->attributes;
         }
@@ -225,14 +225,14 @@ class UserModel extends AppBaseModel{
             User::F_MODIFIED_UID => User::UID_BILLING,
             User::F_MODIFIED_DATE => time(),
         ];
-        if ($this->insert_row(table: User::DB_TABLE, row: $userRecord)) {
+        if ($this->insert_row(table: User::TABLE, row: $userRecord)) {
             $id = $this->lastInsertId();
-            $row = $this->get_row_by_id(User::DB_TABLE, $id, User::F_ID);
-            if (empty($row[User::F_LOGIN]))     { $row[User::F_LOGIN] = $id; }
-            if (empty($row[User::F_NAME_FULL])) { $row[User::F_NAME_FULL] = $id; }
-        if (empty($row[User::F_NAME_SHORT]))    { $row[User::F_NAME_SHORT] = $id; }
-            debug($row, 'row');
-            if ($this->update_row_by_id(User::DB_TABLE, $row, User::F_ID)) {
+            $row = $this->get_row_by_id(User::TABLE, $id, User::F_ID);
+            if (empty($row[User::F_LOGIN]))      { $row[User::F_LOGIN] = $id; }
+            if (empty($row[User::F_NAME_FULL]))  { $row[User::F_NAME_FULL] = $id; }
+            if (empty($row[User::F_NAME_SHORT])) { $row[User::F_NAME_SHORT] = $id; }
+            // debug($row, 'row');
+            if ($this->update_row_by_id(User::TABLE, $row, User::F_ID)) {
                 $this->errors = [];
                 $this->success['signUp'][] = 'Вы успешно зарегистрированы';
                 $this->success['signUp'][] = "ID: {$id}";
@@ -250,7 +250,7 @@ class UserModel extends AppBaseModel{
             $this->success['signUp'][] = 'Запись данных в базу не удалась';
             return false;
         }
-        throw new \Exception("Этого не должно быть");
+        // throw new \Exception("Этого не должно быть");
     }
 
 
@@ -258,7 +258,7 @@ class UserModel extends AppBaseModel{
     /**
      * Возвращает из базы ассоциативный массив со списком ТП разрешенных текущему авторизованному пользователю.
      * Если парамерт-фильтр установлен в null, то он не участвует в запросе и выбираются все значения.
-     * @param int|null $user_id
+     * @param int|null $user_id -- если не указан, то используется ID авторизованного пользователя
      * @param int|null $status -- 0 — Отключен/демонтирован, 1 — Работает
      * @param int|null $deleted -- ТП физически демонтирована, её больше нет.
      * @param int|null $is_managed -- Управляемая ТП, т.е. есть микротик и абоны почключены через таблицу АБОН
