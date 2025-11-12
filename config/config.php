@@ -136,6 +136,13 @@ $config = [
     'textarea_rows_max' => 10,
 
 
+    /**
+     * Список абонентов.
+     * Количество строк в списке
+     */
+    'abon_per_page' => 15,
+    
+
 ];
 
 return $config;

@@ -129,7 +129,7 @@ function get_pa_list_age(array $pa_list): PAStatus {
                 $status = $pa_status; 
                 break 2;
             default:
-                if ($pa_status > $status) {
+                if ($pa_status->value > $status->value) {
                     $status = $pa_status; 
                 }
                 break;

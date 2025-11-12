@@ -21,10 +21,19 @@
  * @var array $tp_list   Список техплощадок (каждая запись = row из tp_list)
  */
 
+use billing\core\MsgQueue;
+use billing\core\MsgType;
 use config\Icons;
+use config\tables\Abon;
+use config\tables\Module;
 use config\tables\TP;
 use billing\core\base\Lang;
 $num = 0;
+
+if (!can_use(Module::MOD_TP)) {
+    MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+    redirect();
+}
 ?>
 <div class="mx-auto w-auto">
     <table class="table table-bordered table-striped table-hover align-middle min-w-75 w-auto mx-auto">
@@ -74,14 +83,19 @@ $num = 0;
                             <?php endif; ?>
                         </td>
                         <td>
+                            <?php if (can_view(Module::MOD_ABON)) : ?>
+                                <a href="<?=Abon::URI_INDEX.'?tp='.$tp[TP::F_ID];?>" class="btn btn-sm btn-outline-success">
+                                    <img src="<?= Icons::SRC_ABON;?>" height="22rem" title="<?= __('Список абонентов') ?>">
+                                </a>
+                            <?php endif; ?>
                             <?php if ($tp[TP::F_IS_MANAGED]) : ?>
-                            <a href="<?=TP::URI_COMBINE.'/'.$tp[TP::F_ID];?>" class="btn btn-sm btn-primary">
-                                <img src="<?= Icons::SRC_ICON_MIK_BLUE;?>" height="22rem" title="<?= __('Панель упавления') ?>">
-                            </a>
+                                <a href="<?=TP::URI_COMBINE.'/'.$tp[TP::F_ID];?>" class="btn btn-sm btn-primary">
+                                    <img src="<?= Icons::SRC_ICON_MIK_BLUE;?>" height="22rem" title="<?= __('Панель упавления') ?>">
+                                </a>
                             <?php else : ?>
-                            <div class="btn btn-sm btn-secondary">
-                                <img src="<?= Icons::SRC_ICON_MIK_GRAY;?>" height="22rem" title="<?= __('ТП Не управляемая') ?>">
-                            </div>
+                                <div class="btn btn-sm btn-secondary">
+                                    <img src="<?= Icons::SRC_ICON_MIK_GRAY;?>" height="22rem" title="<?= __('ТП Не управляемая') ?>">
+                                </div>
                             <?php endif; ?>
                             <a href="<?=$tp[TP::F_WEB_MANAGEMENT];?>" target="_blank" class="btn btn-sm btn-primary" title="<?= __('Управление ТП с помощью web-интерфейса') ?>">
                                 <img src="<?= Icons::SRC_ICON_HTTP;?>" height="22rem">

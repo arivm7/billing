@@ -21,6 +21,7 @@ use billing\core\base\View;
 use billing\core\MsgQueue;
 use billing\core\MsgType;
 use billing\core\Pagination;
+use config\Icons;
 use DutyWarn;
 use config\Auth;
 use config\tables\Abon;
@@ -187,7 +188,7 @@ class AbonController extends AppBaseController {
          */
         $filters = [
             'tp'       => 0,
-            'per_page' => 20,
+            'per_page' => App::get_config('abon_per_page'),
             'is_payer' => 1,
             'order_by' => "(".AbonRest::TABLE.".".AbonRest::F_SUM_PAY." - ".AbonRest::TABLE.".".AbonRest::F_SUM_COST.") ASC"
         ];
@@ -198,6 +199,10 @@ class AbonController extends AppBaseController {
 
         if (isset($_GET['tp']) && is_numeric($_GET['tp'])) {
             $filters['tp'] = intval($_GET['tp']);
+        }
+
+        if (isset($_GET['payer']) && is_numeric($_GET['payer'])) {
+            $filters['is_payer'] = intval($_GET['payer']) ? 1 : 0;
         }
 
         /**
@@ -252,9 +257,28 @@ class AbonController extends AppBaseController {
 
             $tp_col_title = ($filters['tp'] === 0
                 ? "Все ТП"
-                : "<nobr>" . $tp_list[0][TP::F_TITLE] . " | <a href=?".make_get_params(['tp'=>0])." title='Убрать фильтр'>[X]</a></nobr>"
+                : "<nobr>" . $tp_list[0][TP::F_TITLE] . " | <a href='?".make_get_params(['tp'=>0])."' title='Убрать фильтр'>[X]</a></nobr>"
             );
 
+            $rest_title = 
+                "<div class='d-flex justify-content-between align-items-center'>"
+                    . "<div>Rest:</div>"
+                    . "<a href='?".make_get_params(['payer'=>($filters['is_payer'] == 1 ? "0" : "1")])."' "
+                        . "title='"
+                            . ( $filters['is_payer'] == 1 
+                                ? "Показаны включённые абоненты, ".CR."и абоненты на паузе. ".CR."Нажмите, чтобы показать отключённых абонентов" 
+                                : "Показаны отключённые абоненты, ".CR."Нажмите, чтобы показать включённых абонентов"
+                              )."'"
+                        . ">"
+                    . "<img src='".($filters['is_payer'] == 1 ? Icons::SRC_ABON_OK : Icons::SRC_ABON_OFF)."' height='22px'></a>"
+                . "</div>";
+
+            /*
+                        // <input class="form-check-input" type="checkbox" id="net_ip_service"
+                        //        name="<?=PA::POST_REC;?>[<?=PA::F_NET_IP_SERVICE;?>]"
+                        //        value="1" <?=($item[PA::F_NET_IP_SERVICE] ? 'checked' : '');?>>
+            */    
+            $t = [];
             foreach ($rows as $abon) {
 
                 update_rest_fields($abon);
@@ -263,7 +287,7 @@ class AbonController extends AppBaseController {
                     'act'     => self::get_html_actions($abon),
                     'uid/aid' => self::get_html_url_aid_uid($abon),
                     'info'    => self::get_html_info($abon),
-                    'rest'    => self::get_html_edges($abon),
+                    $rest_title   => self::get_html_edges($abon),
                     $tp_col_title => self::get_html_tp_list_with_abon($abon[Abon::F_ID]),
                 ];
             }

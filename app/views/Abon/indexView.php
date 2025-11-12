@@ -1,6 +1,7 @@
 <?php
 
 use billing\core\App;
+use config\Icons;
 use config\tables\Module;
 /*
  *  Project : my.ri.net.ua
