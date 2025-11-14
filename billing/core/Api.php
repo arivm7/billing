@@ -35,19 +35,20 @@ class Api {
 
 
 
-    const URI_ABON_IP = "/api/cmd";
+    public const URI_CMD = "/api/cmd";
 
 
 
-    public const F_CMD = 'cmd';
-    public const F_TP_ID = 'tpid';
-    public const F_IP = 'ip';
-    public const F_ENABLED = 'ena';
-    public const F_PA_ID = 'paid';
-    public const F_DATE_END = 'date_end';
-    public const CMD_IP_ENABLE = 'ipena';
-    public const CMD_PAUSE = 'set_abon_pause';
-    public const CMD_PA_CLONE = 'pa_clone';
+    public const F_CMD          = 'cmd';
+    public const F_TP_ID        = 'tpid';
+    public const F_IP           = 'ip';
+    public const F_ENABLED      = 'ena';
+    public const F_PA_ID        = 'paid';
+    public const F_DATE_END     = 'date_end';
+    public const CMD_IP_ENABLE  = 'ipena';
+    public const CMD_PAUSE      = 'set_abon_pause';
+    public const CMD_PA_CLONE   = 'pa_clone';
+    public const CMD_PA_CLOSE   = 'pa_close';
     
 // prices_apply_id=2760
 // date_end=null

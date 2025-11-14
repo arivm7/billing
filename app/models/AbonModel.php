@@ -540,20 +540,41 @@ class AbonModel extends UserModel {
     /**
      * Список прикрепленных прайсвых фрагментов, включая название прикрепленного прайса
      * @param int $abon_id
+     * @param bool|null $active -- делает выборку активных или закрытых прайсов. Если NULL, то выбирает всех.
      * @return array
      */
-    function get_pa_by_abon_id(int $abon_id): array
+    function get_pa_by_abon_id(int $abon_id, bool|null $active = null): array
     {
         $sql = "SELECT "
                 . "`".Price::TABLE."`.`".Price::F_TITLE."` AS ".PA::F_PRICE_TITLE.", "
                 . "`".PA::TABLE."`.* "
                 . "FROM `".PA::TABLE."` "
                 . "LEFT JOIN ".Price::TABLE." ON ".Price::TABLE.".".Price::F_ID." = ".PA::TABLE.".".PA::F_PRICE_ID." "
-                . "WHERE `".PA::TABLE."`.`".PA::F_ABON_ID."`={$abon_id} "
+                . "WHERE "
+                .    "`".PA::TABLE."`.`".PA::F_ABON_ID."`={$abon_id} "
+                . (is_null($active) 
+                    ?   ""
+                    :   ($active 
+                            ?   "AND "
+                                . "("
+                                    . "`".PA::TABLE."`.`".PA::F_DATE_END."` IS NULL "
+                                    . "OR "
+                                    . "`".PA::TABLE."`.`".PA::F_DATE_END."` >= UNIX_TIMESTAMP(CURDATE()) "
+                                . ") "
+                            :   "AND "
+                                . "("
+                                    . "`".PA::TABLE."`.`".PA::F_DATE_END."` IS NOT NULL "
+                                    . "OR "
+                                    . "`".PA::TABLE."`.`".PA::F_DATE_END."` < UNIX_TIMESTAMP(CURDATE()) "
+                                . ") "
+                        )
+                  )
                 . "ORDER BY "
                     . "(`".PA::TABLE."`.`".PA::F_DATE_END."` IS NOT NULL)," //  -- сначала идут строки с NULL
                     . "`".PA::TABLE."`.`".PA::F_DATE_END."` DESC,"          //  -- затем сортировка по убыванию date_end
                     . "`".PA::TABLE."`.`".PA::F_DATE_START."` DESC";        //  -- потом по убыванию date_start
+
+        // debug($sql, '$sql', die:1);
         return $this->get_rows_by_sql($sql);
 
         // вариант:
@@ -1265,6 +1286,57 @@ class AbonModel extends UserModel {
             $ret = false;
         }
         return $ret;
+    }
+
+
+
+    /**
+     * Возвращает запись-массив параметров Абонента.
+     * @param int $id
+     * @return array
+     */
+    public function get_abon(int $id): array {
+        if ($id === 0) {
+            return $this->get_abon_0();
+        }
+        if ($this->validate_id(Abon::TABLE, $id, Abon::F_ID)) {
+            return $this->get_row_by_id(Abon::TABLE, $id, Abon::F_ID);
+        } else {
+            throw new \Exception("get_abon(int $id) -- нет такого абонента");
+        }
+    }
+
+
+
+    public function get_abon_by_hash(string $hash): array {
+        return $this->get_row_by_id(table_name: Abon::TABLE, field_id: Abon::F_ID_HASH, id_value: $hash);
+    }
+
+
+
+    function get_abon_address(int $aid): string|null
+    {
+        if (!$this->validate_id(Abon::TABLE, $aid, Abon::F_ID)) { return null; }
+        $a = $this->get_abon($aid);
+        return (isset($a[Abon::F_ADDRESS]) ? $a[Abon::F_ADDRESS] : '');
+    }
+
+
+
+    /**
+     * Возвращает ассоциативный массив с полями пользователя.
+     * На вход получает ID абонента.
+     * @param int $abon_id -- ID абонента
+     * @return array
+     */
+    function get_user_by_abon_id(int $abon_id): array {
+        return $this->get_user($this->get_abon($abon_id)[Abon::F_USER_ID]);
+    }
+
+
+
+    function get_user_id_by_abon_id(int $abon_id): int {
+        return $this->get_user($this->get_abon($abon_id)[Abon::F_USER_ID])[User::F_ID];
     }
 
 

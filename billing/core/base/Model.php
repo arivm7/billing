@@ -425,39 +425,6 @@ abstract class Model {
 
 
     /**
-     * Возвращает запись-массив параметров Абонента.
-     * @param int $id
-     * @return array
-     */
-    public function get_abon(int $id): array {
-        if ($id === 0) {
-            return $this->get_abon_0();
-        }
-        if ($this->validate_id(Abon::TABLE, $id, Abon::F_ID)) {
-            return $this->get_row_by_id(Abon::TABLE, $id, Abon::F_ID);
-        } else {
-            throw new \Exception("get_abon(int $id) -- нет такого абонента");
-        }
-    }
-
-
-
-    public function get_abon_by_hash(string $hash): array {
-        return $this->get_row_by_id(table_name: Abon::TABLE, field_id: Abon::F_ID_HASH, id_value: $hash);
-    }
-
-
-
-    function get_abon_address(int $aid): string|null
-    {
-        if (is_null($aid) || $aid < 1) { return null; }
-        $a = $this->get_abon($aid);
-        return (isset($a['address']) ? $a['address'] : null);
-    }
-
-
-
-    /**
      * Кэш-массив для функции get_user_by_login()
      */
     private static array $CACHE_USER_BY_LOGIN = array();
@@ -483,24 +450,6 @@ abstract class Model {
             }
         }
         return self::$CACHE_USER_BY_LOGIN[$login];
-    }
-
-
-
-    /**
-     * Возвращает ассоциативный массив с полями пользователя.
-     * На вход получает ID абонента.
-     * @param int $abon_id -- ID абонента
-     * @return array
-     */
-    function get_user_by_abon_id(int $abon_id): array {
-        return $this->get_user($this->get_abon($abon_id)[Abon::F_USER_ID]);
-    }
-
-
-
-    function get_user_id_by_abon_id(int $abon_id): int {
-        return $this->get_user($this->get_abon($abon_id)[Abon::F_USER_ID])[User::F_ID];
     }
 
 
@@ -589,7 +538,7 @@ abstract class Model {
      * Обновляются поля `modified_date` и `modified_uid`.
      * @param string $table -- обновляемая таблица
      * @param array $row -- Ассоциативный массив с обновляемыми полями
-     * @global type $_SESSION['id'] -- записывается в поле `modified_uid`
+     * @param string $field_id -- имя ID поля
      * @return bool
      */
     function update_row_by_id(string $table, array $row, string $field_id = self::F_ID): bool {
@@ -634,8 +583,8 @@ abstract class Model {
      * @return bool -- Успешность встваки строки
      */
     function insert_row(string $table, array $row): bool {
-        $fields = array();
-        $values = array();
+        $fields = [];
+        $values = [];
         foreach ($row as $key => $value) {
             $fields[] = $key;
             $values[] = (is_null($value) ? "NULL" : "" . $this->quote($value) . "");
@@ -686,12 +635,11 @@ abstract class Model {
 
 
 
-    function get_prava_user_module(int $user_id, int $module_id): int {
-        $prava = ACCESS_NONE;
-        $role_list = $this->get_role_list_for_user($user_id);
-        debug("role_list: ", $role_list);
-
-    }
+    // function get_prava_user_module(int $user_id, int $module_id): int {
+    //     $prava = ACCESS_NONE;
+    //     $role_list = $this->get_role_list_for_user($user_id);
+    //     debug("role_list: ", $role_list);
+    // }
 
 
     /**
@@ -741,41 +689,5 @@ abstract class Model {
     }
 
 
-
-    /**
-     * Возвращает только изменённые данные из новой записи
-     */
-    public static function get_modified(array $new, array $prev, string $field_id = self::F_ID): array {
-
-        $modified = [];
-
-        /**
-         * Добавляем только изменившиеся поля
-         */
-        foreach ($new as $key => $value) {
-            if ($prev[$key] != $value) {
-                $modified[$key] = $value;
-            }
-        }
-
-        /**
-         * Если массив не пуст, то есть изменённые данные
-         */
-        if ($modified) {
-            /**
-             * Ключ обязателен
-             */
-            $modified[$field_id] = $new[$field_id];
-            /**
-             * Возвращаем изменённые данные
-             */
-            return $modified;
-        } else {
-            /**
-             * Изменений нет
-             */
-            return [];
-        }
-    }
 
 }
