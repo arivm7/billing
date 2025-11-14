@@ -42,18 +42,18 @@ require_once DIR_LIBS . '/inc_functions.php';
             <ul class="nav nav-tabs justify-content-start" id="my_tab_user_abon" role="tablist">
                 <!-- Вкладка пользователя -->
                 <li class="nav-item" role="presentation">
-                    <a class="nav-link active" data-bs-toggle="tab" href="#tab_user_<?=$user[User::F_ID];?>" role="tab"><small><?=__('User card');?></small></a>
+                    <a class="nav-link" data-bs-toggle="tab" href="#tab_user_<?=$user[User::F_ID];?>" role="tab"><small><?=__('User card');?></small></a>
                 </li>
                 <!-- Вкладка Абонентов -->
                 <li class="nav-item" role="presentation">
-                    <a class="nav-link" data-bs-toggle="tab" href="#tab_abons_<?=$user[User::F_ID];?>" role="tab"><small><?=__('Abonent services');?></small></a>
+                    <a class="nav-link active" data-bs-toggle="tab" href="#tab_abons_<?=$user[User::F_ID];?>" role="tab"><small><?=__('Abonent services');?></small></a>
                 </li>
             </ul>
 
             <div class="tab-content">
 
-                <!-- Контент Вкладки пользователя -->
-                <div class="tab-pane fade show active" id="tab_user_<?=$user[User::F_ID];?>" role="tabpanel">
+                <!-- [ Контент Вкладки пользователя ] -->
+                <div class="tab-pane fade" id="tab_user_<?=$user[User::F_ID];?>" role="tabpanel">
                     <?php require DIR_INC . '/user_view.php'; ?>
                     <!-- < ?php require DIR_INC . '/user_tabs.php'; ?> -->
                     <hr>
@@ -81,19 +81,20 @@ require_once DIR_LIBS . '/inc_functions.php';
                 </div>
 
 
-                <!-- Контент Вкладки Абонентов -->
-                <div class="tab-pane fade" id="tab_abons_<?=$user[User::F_ID];?>" role="tabpanel">
+                <!-- [ Контент Вкладки Абонентов ] -->
+                <div class="tab-pane fade show active" id="tab_abons_<?=$user[User::F_ID];?>" role="tabpanel">
                     <!-- Перебор подключенных абонентов -->
                     <div class="container-fluid mt-4">
                     <?php if (!empty($user[Abon::TABLE])) : ?>
                         <?= get_html_accordion(
                                     table: $user[Abon::TABLE],
+                                    open_index: array_key_first($user[Abon::TABLE]),
                                     file_view: DIR_INC . '/abon_card.php',
                                     func_get_title: function(array $abon) {
                                             return get_html_content_left_right(
                                                 left:   " :: " . $abon[Abon::F_ADDRESS] . "",
                                                 right:  get_html_pa_status(get_pa_list_age($abon[PA::TABLE])),
-                                                add_class: 'w-100');
+                                                add_class: 'w-100') . '&nbsp;&nbsp;&nbsp;';
                                     },
                                     variables:  ['user' => $user]
                             );

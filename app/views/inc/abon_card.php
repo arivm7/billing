@@ -21,6 +21,7 @@
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
 
+use billing\core\App;
 use config\tables\Abon;
 use config\tables\PA;
 use billing\core\base\Lang;
@@ -49,40 +50,59 @@ if (isset($item) && !isset($abon)) { $abon = $item; }
     </ul>
 
     <div class="tab-content" id="myTabContent">
-        <!-- Контент вкладки абонентского подключения -->
+        <!-- [ Контент вкладки абонентского подключения ] -->
         <div class="tab-pane fade show active" id="tab_abon_<?=$abon[Abon::F_ID]?>" role="tabpanel">
             <?php require DIR_INC . '/abon_view.php'; ?>
         </div>
-        <!-- Контент вкладки прайсовых фрагментов -->
+        <!-- [ Контент вкладки прайсовых фрагментов ] -->
         <div class="tab-pane fade" id="tab_pa_<?=$abon[Abon::F_ID]?>" role="tabpanel">
             <!-- Перебор подключенных прайсовых фрагментов -->
             <div class="container-fluid mt-4">
-            <?php
-                if ($abon[PA::TABLE]) {
-                    echo get_html_accordion(
-                            table: $abon[PA::TABLE],
-                            file_view: DIR_INC . '/pa_view.php',
-                            func_get_title: function(array $pa) {
-                                    $left = "<span class='text font-monospace text-secondary small'>"
-                                                . ($pa[PA::F_DATE_START] ? date(DATE_FORMAT, $pa[PA::F_DATE_START]) : '____-__-__') . ' | '
-                                                . ($pa[PA::F_DATE_END] ? date(DATE_FORMAT, $pa[PA::F_DATE_END]) : '____-__-__') . ' | '
-                                            . "</span>"
-                                            . $pa[PA::F_NET_NAME];
-                                    $right = get_html_pa_status(__pa_age($pa)) . "&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;";
-                                    $title = get_html_content_left_right(
-                                                left:  $left,
-                                                right: $right,
-                                                add_class: 'w-100');
-                                    return $title;
-                            }
-                    );
-                } else {
-                    echo "<br><div class='alert alert-info' role='alert'>".__('No active prices')."</div>";
-                }
-            ?>
+                <!-- 
+                <div class="text-end">
+                    <form>
+                        <div class="form-check form-check-inline" action="/config/pa">
+                            <input class="form-check-input" type="checkbox" name="pa_filter_active" id="pa_filter_active" <?=(App::get_config('pa_show_filter')['active'] ? "checked" : "");?> value="1">
+                            <label class="form-check-label" for="pa_filter_active">Active</label>
+                        </div>                        
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" name="pa_filter_paused" id="pa_filter_paused" <?=(App::get_config('pa_show_filter')['paused'] ? "checked" : "");?> value="1">
+                            <label class="form-check-label" for="pa_filter_paused">Paused</label>
+                        </div>                        
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" name="pa_filter_closed" id="pa_filter_closed" <?=(App::get_config('pa_show_filter')['closed'] ? "checked" : "");?> value="1">
+                            <label class="form-check-label" for="pa_filter_closed">Closed</label>
+                        </div>                        
+                        <button type="submit" class="btn btn-sm btn-outline-info">[>]</button>
+                    </form>
+                </div> 
+                -->
+                <?php
+                    if ($abon[PA::TABLE]) {
+                        echo get_html_accordion(
+                                table: $abon[PA::TABLE],
+                                file_view: DIR_INC . '/pa_view.php',
+                                func_get_title: function(array $pa) {
+                                        $left = "<span class='text font-monospace text-secondary small'>"
+                                                    . ($pa[PA::F_DATE_START] ? date(DATE_FORMAT, $pa[PA::F_DATE_START]) : '____-__-__') . ' | '
+                                                    . ($pa[PA::F_DATE_END] ? date(DATE_FORMAT, $pa[PA::F_DATE_END]) : '____-__-__') . ' | '
+                                                . "</span>"
+                                                . $pa[PA::F_NET_NAME];
+                                        $right = get_html_pa_status(__pa_age($pa)) . "&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;";
+                                        $title = get_html_content_left_right(
+                                                    left:  $left,
+                                                    right: $right,
+                                                    add_class: 'w-100');
+                                        return $title;
+                                }
+                        );
+                    } else {
+                        echo "<br><div class='alert alert-info' role='alert'>".__('No active prices')."</div>";
+                    }
+                ?>
             </div>
         </div>
-        <!-- Контент вкладки уведомлений -->
+        <!-- [ Контент вкладки уведомлений ] -->
         <div class="tab-pane fade" id="tab_notify_<?=$abon[Abon::F_ID]?>" role="tabpanel">
             <div class="container-fluid mt-4">
             <?php require DIR_INC . '/notify_view.php'; ?>

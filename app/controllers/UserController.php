@@ -323,7 +323,7 @@ class UserController extends AppBaseController {
                 }
 
                 // Выборка только изменённых полей
-                $modified = Model::get_modified($user_rec, $user);
+                $modified = get_diff_fields($user_rec, $user, User::F_ID);
 
                 // // сравнение новой записи и старой
                 // $equals = true;

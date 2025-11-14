@@ -42,8 +42,6 @@ class PaController extends AppBaseController {
      */
     public static function normalize(array $data): array {
 
-        // debug($data, '$data', die: 0);
-
         // 5️⃣ Проставляем флаги по умолчанию, если отсутствуют
         foreach (PA::FLAGS as $flag) {
             if (!isset($data[$flag])) {
@@ -66,6 +64,21 @@ class PaController extends AppBaseController {
         }
 
         /**
+         * Если передан пустой F_NET_NAME, то генерируем текст
+         */
+        if (empty($data[PA::F_NET_NAME])) {
+            $model = new AbonModel();
+            $abon_address = trim($model->get_abon_address($data[PA::F_ABON_ID]));
+            $data[PA::F_NET_NAME] =
+                $data[PA::F_ABON_ID]
+                . ($abon_address ? ' ' . $abon_address : '')
+                . (($data[PA::F_NET_IP_SERVICE] == 1) && !empty($data[PA::F_NET_IP])
+                    ? ' | ' . $data[PA::F_NET_IP].'/'.\ip_mask_to_prefix($data[PA::F_NET_MASK]).'/.'.ip_get_last_octet($data[PA::F_NET_GATEWAY])
+                    : '');
+            MsgQueue::msg(MsgType::WARN, __('F_NET_NAME был пуст. Установлен в F_ABON_ID и парметры подключения. Проверьте правильность.'));
+        }
+
+        /**
          * Если передан флаг "ПФ Закрыт", то проверить поле date_end,
          * если поле пустое, то заполнить его сегодняшней датой.
          */
@@ -80,8 +93,6 @@ class PaController extends AppBaseController {
                 MsgQueue::msg(MsgType::WARN, __('Флаг [IP_SERVICE] принудительно отключён в связи с закрытием прайсового фрагмента. Проверьте правильность.'));
             }
         }
-
-        // debug($data, '$data', die: 1);
 
         // Инициализация результата
         $norm = [];
@@ -225,7 +236,7 @@ class PaController extends AppBaseController {
                 /**
                  * Возвращаем только изменённые поля (и поле ID для идентификации)
                  */
-                $data = Model::get_modified($data, $pa, PA::F_ID);
+                $data = get_diff_fields($data, $pa, PA::F_ID);
                 if ($data) {
                     /**
                      * Данные есть. Вносить в базу
@@ -269,6 +280,7 @@ class PaController extends AppBaseController {
 
             }
             redirect(PA::URI_EDIT . '/' . $pa[PA::F_ID]);
+            // redirect();
         }
 
 

@@ -17,6 +17,7 @@
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
 
+use billing\core\Api;
 use config\tables\Module;
 use config\tables\PA;
 use billing\core\base\Lang;
@@ -69,17 +70,19 @@ Lang::load_inc(__FILE__);
                                         </span>
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td><?= __('Начисление'); ?>:</td>
-                                    <td><?= number_format($item[PA::F_COST_VALUE], 2, ',', ' ') . ' грн' ?></td>
-                                </tr>
-
+                                <?php if (can_use(Module::MOD_PA)) : ?>
+                                    <tr>
+                                        <td><?= __('Начисление'); ?>:</td>
+                                        <td><?= number_format($item[PA::F_COST_VALUE], 2, ',', ' ') . ' грн' ?></td>
+                                    </tr>
+                                <?php endif; ?>
                                 <?php if (__pa_age($item) == \PAStatus::CURRENT) : ?>
                                     <tr>
                                         <td><?= __('Абонплата'); ?>:</td>
                                         <td>
                                             <?= ($item[PA::F_PPMA_VALUE] ? number_format($item[PA::F_PPMA_VALUE], 2, ',', ' ') . " " . __('грн/мес') : ''); ?>
-                                            <?= ($item[PA::F_PPDA_VALUE] ? number_format($item[PA::F_PPDA_VALUE], 2, ',', ' ') . " " . __('грн/сут') : ''); ?>
+                                            <?= ($item[PA::F_PPDA_VALUE] ? number_format($item[PA::F_PPDA_VALUE], 2, ',', ' ') . " " . __('грн/сут')
+                                                . '<span class=\'text-secondary\'> | ' . number_format($item[PA::F_PPDA_VALUE] * 30, 2, ',', ' ') . " " . __('грн/30дней') . '</span>' : ''); ?>
                                         </td>
                                     </tr>
                                     <?php if ($item[PA::F_NET_IP_SERVICE]) : ?>
@@ -130,6 +133,12 @@ Lang::load_inc(__FILE__);
         <!-- Панель действий -->
         <div class="card-footer d-flex gap-2">
             <?php if (can_edit(Module::MOD_PA)) : ?>
+                <?php if (!$item[PA::F_CLOSED]) : ?>
+                    <a href="<?= Api::URI_CMD; ?>?<?=Api::F_CMD;?>=<?=Api::CMD_PA_CLOSE;?>&<?=Api::F_PA_ID;?>=<?= $item[PA::F_ID]; ?>"
+                        class="btn btn-outline-info btn-sm"
+                        onclick="return confirm('<?=__('Вы точно хотите остановить услугу и закрыть прайсовый фрагмент?');?>')">&#9209; <?= __('Закрыть прайс'); ?>
+                    </a>
+                <?php endif; ?>
                 <a href="?<?= PA::F_ID ?>=<?= $item[PA::F_ID] ?>&action=pause"
                     class="btn btn-outline-secondary btn-sm"
                     onclick="return confirm(__('Отправить запрос на остановку услуги?'))">&#9208; <?= __('Поставить на паузу'); ?></a>

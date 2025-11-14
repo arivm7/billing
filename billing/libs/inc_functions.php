@@ -125,7 +125,7 @@ function get_html_btn_abon_ip_turn(int $tp_id, string $ip, bool|int $enable, str
     $src = ($enable ? Icons::SRC_ICON_MIK_ABON_IP_TURN_ON : Icons::SRC_ICON_MIK_ABON_IP_TURN_OFF);
     $alt = ($enable ? '[On]' : '[Off]');
 
-    $html = "<a ".($options ?:'')." href='".Api::URI_ABON_IP."?{$query}' title='{$title}' target='{$target}'>"
+    $html = "<a ".($options ?:'')." href='".Api::URI_CMD."?{$query}' title='{$title}' target='{$target}'>"
                 ."<img src='{$src}' alt='{$alt}' height='24rem'></img>"
             ."</a>";
     return $html;
@@ -203,7 +203,7 @@ function get_html_btn_pause(int|null $pa_id = null, array|null $pa = null, bool|
     $src = ($set ? Icons::SRC_PAUSE : Icons::SRC_PAUSE_PLAY);
     $alt = ($set ? '[On]' : '[Off]');
 
-    $html = "<a ".($options ?:'')." href='".Api::URI_ABON_IP."?{$query}' title='{$title}' target='{$target}'>"
+    $html = "<a ".($options ?:'')." href='".Api::URI_CMD."?{$query}' title='{$title}' target='{$target}'>"
                 ."<img src='{$src}' alt='{$alt}' height='24rem'></img>"
             ."</a>";
     return $html;
@@ -234,7 +234,7 @@ function get_html_btn_clone(int|null $pa_id = null, string $title = '', string $
     $src = Icons::SRC_CLONE;
     $alt = '[Clone]';
 
-    $html = "<a ".($options ?:'')." href='".Api::URI_ABON_IP."?{$query}' title='{$title}' target='{$target}'>"
+    $html = "<a ".($options ?:'')." href='".Api::URI_CMD."?{$query}' title='{$title}' target='{$target}'>"
                 ."<img src='{$src}' alt='{$alt}' height='24rem'></img>"
             ."</a>";
     return $html;

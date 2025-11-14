@@ -155,30 +155,32 @@ class Pagination {
      * @return string
      */
     public function getHtml(): string {
-        $back = null;       // Ссылка "Назад"
-        $forwsrd = null;    // Ссылка "Вперёд"
+        // $back = null;       // Ссылка "Назад"
+        // $forwsrd = null;    // Ссылка "Вперёд"
         $startPage = null;  // Ссылка "В начало"
         $endPage = null;    // Ссылка "В конец"
+        $page3left = null;
+        $page3right = null;
         $page2left = null;  // Вторая страница слева
-        $page1left = null;  // Первая страница слева
         $page2right = null; // Вторая страница справа
+        $page1left = null;  // Первая страница слева
         $page1right = null; // Первая страница справа
 
-        if ($this->current_page > 1) {
-            $back = "<li class='page-item' title='На предыдущую страницу'>"
-                    . "<a class='page-link' href='{$this->uri}page=" . ($this->current_page - 1) . "'>&#11178;</a></li>"; // ⮪ &#11178;
-        } else {
-            $back = "<li class='page-item disabled' title='На предыдущую страницу'>"
-                    . "<a class='page-link'>&#11178;</a></li>"; // ⮪ &#11178;
-        }
+        // if ($this->current_page > 1) {
+        //     $back = "<li class='page-item' title='На предыдущую страницу'>"
+        //             . "<a class='page-link' href='{$this->uri}page=" . ($this->current_page - 1) . "'>&#11178;</a></li>"; // ⮪ &#11178;
+        // } else {
+        //     $back = "<li class='page-item disabled' title='На предыдущую страницу'>"
+        //             . "<a class='page-link'>&#11178;</a></li>"; // ⮪ &#11178;
+        // }
 
-        if ($this->current_page < $this->count_pages) {
-            $forwsrd = "<li class='page-item' title='На следующую страницу'>"
-                    . "<a class='page-link' href='{$this->uri}page=" . ($this->current_page + 1) . "'>&#11179;</a></li>"; // ⮫ &#11179;
-        } else {
-            $forwsrd = "<li class='page-item disabled' title='На следующую страницу'>"
-                    . "<a class='page-link'>&#11179;</a></li>"; // ⮫ &#11179;
-        }
+        // if ($this->current_page < $this->count_pages) {
+        //     $forwsrd = "<li class='page-item' title='На следующую страницу'>"
+        //             . "<a class='page-link' href='{$this->uri}page=" . ($this->current_page + 1) . "'>&#11179;</a></li>"; // ⮫ &#11179;
+        // } else {
+        //     $forwsrd = "<li class='page-item disabled' title='На следующую страницу'>"
+        //             . "<a class='page-link'>&#11179;</a></li>"; // ⮫ &#11179;
+        // }
 
         if ($this->current_page > 1) {
             $startPage = "<li class='page-item' title='На первую страницу'>"
@@ -196,12 +198,36 @@ class Pagination {
                     . "<a class='page-link'>&raquo;|</a></li>";
         }
 
+        if ($this->current_page - 3 > 0) {
+            $page3left = "<li class='page-item' title='Назад на 3 старницы'>"
+                    . "<a class='page-link' href='{$this->uri}page=" . ($this->current_page - 3) . "'>&lt;&lt;&lt;</a></li>"; // &laquo;
+        } else {
+            $page3left = "<li class='page-item disabled' title='Назад на 2 старницы'>"
+                    . "<a class='page-link'>&lt;&lt;&lt;</a></li>"; // &laquo;
+        }
+
+        if ($this->current_page + 3 <= $this->count_pages) {
+            $page3right = "<li class='page-item' title='Вперёд на 3 старницы'>"
+                    . "<a class='page-link' href='{$this->uri}page=" . ($this->current_page + 3) . "'>&gt;&gt;&gt;</a></li>"; // &raquo;
+        } else {
+            $page3right = "<li class='page-item disabled' title='Вперёд на 2 старницы'>"
+                    . "<a class='page-link'>&gt;&gt;&gt;</a></li>"; // &raquo;
+        }
+
         if ($this->current_page - 2 > 0) {
             $page2left = "<li class='page-item' title='Назад на 2 старницы'>"
                     . "<a class='page-link' href='{$this->uri}page=" . ($this->current_page - 2) . "'>&lt;&lt;</a></li>"; // &laquo;
         } else {
             $page2left = "<li class='page-item disabled' title='Назад на 2 старницы'>"
                     . "<a class='page-link'>&lt;&lt;</a></li>"; // &laquo;
+        }
+
+        if ($this->current_page + 2 <= $this->count_pages) {
+            $page2right = "<li class='page-item' title='Вперёд на 2 старницы'>"
+                    . "<a class='page-link' href='{$this->uri}page=" . ($this->current_page + 2) . "'>&gt;&gt;</a></li>"; // &raquo;
+        } else {
+            $page2right = "<li class='page-item disabled' title='Вперёд на 2 старницы'>"
+                    . "<a class='page-link'>&gt;&gt;</a></li>"; // &raquo;
         }
 
         if ($this->current_page - 1 > 0) {
@@ -220,21 +246,13 @@ class Pagination {
                     . "<a class='page-link'>&gt;</a></li>"; // > &gt;
         }
 
-        if ($this->current_page + 2 <= $this->count_pages) {
-            $page2right = "<li class='page-item' title='Вперёд на 2 старницы'>"
-                    . "<a class='page-link' href='{$this->uri}page=" . ($this->current_page + 2) . "'>&gt;&gt;</a></li>"; // &raquo;
-        } else {
-            $page2right = "<li class='page-item disabled' title='Вперёд на 2 старницы'>"
-                    . "<a class='page-link'>&gt;&gt;</a></li>"; // &raquo;
-        }
-
         return    '<nav>'
                 . '<ul class="pagination justify-content-center">'
-                . $startPage . $back . $page2left . $page1left
+                . $startPage . $page3left . $page2left . $page1left
                 . '<li class="page-item active"><a class="page-link">'
                 . 'Стр. ' . $this->current_page . ' из ' . $this->count_pages . ' | '
                 . 'Записи ' . ($this->get_sql_limit_start() + 1) . '-' . ($this->get_sql_limit_start() + $this->row_per_page) . ' из ' . $this->count_rows . '</a></li>'
-                . $page1right . $page2right . $forwsrd . $endPage
+                . $page1right . $page2right .  $page3right . $endPage
                 . '</ul>'
                 . '</nav>';
     }

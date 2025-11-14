@@ -68,6 +68,9 @@ class MyController extends AppBaseController  {
         }
 
         if (can_use(Module::MOD_MY_ABON)) {
+            /**
+             * Считываем абонентские подключения
+             */
             $my[Abon::TABLE] = $this->model->get_rows_by_where(
                     table: Abon::TABLE,
                     where: '('.Abon::F_USER_ID.'='.$my[User::F_ID].')'
@@ -88,7 +91,7 @@ class MyController extends AppBaseController  {
                     /**
                      * Получение подключенных прайсовых фрагментов
                      */
-                    $abon[PA::TABLE] = $this->model->get_pa_by_abon_id($abon[Abon::F_ID]);
+                    $abon[PA::TABLE] = $this->model->get_pa_by_abon_id($abon[Abon::F_ID], true);
 
                     // /** Для передачи USER_ID в PA */
                     // foreach ($abon[PA::TABLE] as &$pa_one) {

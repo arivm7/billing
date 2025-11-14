@@ -156,6 +156,18 @@ enum ServiceType {
 
 
 /**
+ * Типы IP-адресов
+ */
+enum IpType {
+    case ADDRESS;
+    case NET;
+    case MASK;
+    case PREFIX;
+    case NA;
+}
+
+
+/**
  * Массив названий сервисов по языкам
  */
 class ServiceTitles

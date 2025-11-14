@@ -117,7 +117,6 @@ class PA {
      * ---------------- */
 
     const F_PRICE_TITLE         = 'price_title';        // prices.title -- Название прикрепленного прайса из таблицы Прайсов
-    // const F_PRICE_TITLE          = 'title';              // prices.title,
     const F_PRICE_PPD           = 'price_PPD';          // prices.pay_per_day,
     const F_PRICE_PPM           = 'price_PPM';          // prices.pay_per_month,
     const F_PRICE_DESCR         = 'price_description';  // prices.description,

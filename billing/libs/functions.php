@@ -2084,3 +2084,134 @@ function make_get_params(array $params, string|null $url = null): string {
 
     return $uri;
 }
+
+
+
+/**
+ * Определяет, что передано: префикс (/24) или маска (255.255.255.0)
+ * @param string $ip
+ * @return IpType
+ */
+function detect_ip_mask_type(string $ip): IpType {
+    $ip = trim($ip);
+
+    // Удалим ведущий слэш, если он есть
+    $value = ltrim($ip, '/');
+
+    // Проверяем — это число от 0 до 32 (префикс)
+    if (ctype_digit($value) && (int)$value >= 0 && (int)$value <= 32) {
+        return IpType::PREFIX;
+    }
+
+    // Проверяем — это IPv4-маска
+    if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+        return IpType::MASK;
+    }
+
+    // Ничего не подошло
+    return IpType::NA;
+}
+
+
+
+/**
+ * Преобразовывает ip маску в ip префикс
+ * 255.255.255.0 -> 24
+ * @param string $mask
+ * @return string
+ */
+function ip_mask_to_prefix(string $mask): string|false {
+    if (detect_ip_mask_type($mask) == IpType::PREFIX) { return $mask; }
+    // Преобразуем в бинарную строку и считаем количество единиц
+    $long = ip2long($mask);
+    if ($long === false) {
+        // throw new InvalidArgumentException("Некорректная маска: $mask");
+        return false;
+    }
+    $binary = decbin($long);
+    return strval(substr_count($binary, '1'));
+}
+
+
+
+/**
+ * Из префикса ([/]24) → в маску (255.255.255.0)
+ * @param string $prefix
+ * @return string
+ */
+function ip_prefix_to_mask(string $prefix): string|false {
+    if (detect_ip_mask_type($prefix) == IpType::MASK) { return $prefix; }
+    $int_prefix = intval(ltrim($prefix, '/'));
+    if ($int_prefix < 0 || $int_prefix > 32) {
+        // throw new InvalidArgumentException("Некорректный префикс: /$prefix");
+        return false;
+    }
+    $mask = (0xFFFFFFFF << (32 - $int_prefix)) & 0xFFFFFFFF;
+    return long2ip($mask);
+}
+
+
+
+/**
+ * Возвращает последний октет IPv4-адреса
+ *
+ * @param string $ip IPv4-адрес (например "192.168.1.45")
+ * @return string|false Последний октет или false, если IP некорректный
+ */
+function ip_get_last_octet(string $ip): string|false {
+    if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+        return false;
+    }
+
+    $parts = explode('.', $ip);
+    return end($parts);
+}
+
+
+
+/**
+ * Возвращает только изменённые данные из новой записи
+ * Если различия есть, то обязательно добавляет ID поле
+ * @param array $new    -- новый массив
+ * @param array $prev   -- исходный массив
+ * @param string $field_id -- ID поле, если указано, то обязательно для передачив результирующий массив
+ * @return array
+ */
+function get_diff_fields(array $new, array $prev, string|null $field_id = 'id'): array {
+
+    $differences = [];
+
+    /**
+     * Добавляем только изменившиеся поля
+     */
+    foreach ($new as $key => $value) {
+        if ($prev[$key] != $value) {
+            $differences[$key] = $value;
+        }
+    }
+
+    /**
+     * Если есть изменённые данные и ID поле указано,
+     * то добавить ID поле
+     */
+    if ($differences) {
+        /**
+         * Ключ если указан, то обязателен
+         */
+        if ($field_id) {
+            $differences[$field_id] = $new[$field_id];
+        }
+        /**
+         * Возвращаем изменённые данные
+         */
+        return $differences;
+    } else {
+        /**
+         * Изменений нет
+         */
+        return [];
+    }
+
+
+
+}
