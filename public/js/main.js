@@ -49,6 +49,40 @@ $(function () {
  * Сохранение статуса меню-аккордеона на bootstrap
  * @type type
  */
+/*
+document.addEventListener('DOMContentLoaded', function () {
+  const storageKey = 'accordion-menu-state';
+
+  // Получаем сохранённое состояние из localStorage
+  let savedState = {};
+  try {
+    savedState = JSON.parse(localStorage.getItem(storageKey)) || {};
+  } catch (e) {
+    savedState = {};
+  }
+
+  // Применяем состояние только к аккордеонам меню
+  document.querySelectorAll('.accordion-collapse[id^="menu_collapse_"]').forEach(function (el) {
+    const id = el.id;
+    if (savedState[id]) {
+      el.classList.add('show');
+    } else {
+      el.classList.remove('show');
+    }
+
+    // Навешиваем события на открытие/закрытие
+    el.addEventListener('shown.bs.collapse', function () {
+      savedState[id] = true;
+      localStorage.setItem(storageKey, JSON.stringify(savedState));
+    });
+    el.addEventListener('hidden.bs.collapse', function () {
+      savedState[id] = false;
+      localStorage.setItem(storageKey, JSON.stringify(savedState));
+    });
+  });
+});
+*/
+/*
 document.addEventListener('DOMContentLoaded', function () {
   const storageKey = 'accordion-state';
 
@@ -70,12 +104,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-
-
-  /**
-   * Для виджета меню с шаблоном menu_template_bootstrap
-   * Навешиваем события на открытие/закрытие
-   */
+  // Навешиваем события на открытие/закрытие
   document.querySelectorAll('.accordion-collapse').forEach(function (el) {
     el.addEventListener('shown.bs.collapse', function () {
       savedState[el.id] = true;
@@ -87,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 });
-
+*/
 
 
 /**
