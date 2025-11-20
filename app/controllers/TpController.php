@@ -268,7 +268,7 @@ class TpController extends AppBaseController {
 
                 default:
                     throw new \Exception('Этого не должно быть: Не верный тип даных.');
-                    break;
+                    // break;
             }
         }
 
@@ -348,16 +348,16 @@ class TpController extends AppBaseController {
             TP::F_COST_TP_VALUE          => 'Стоимость строительства',
             TP::F_ABON_ID_RANGE_START    => 'Начало диапазона абон.ID',
             TP::F_ABON_ID_RANGE_END      => 'Конец диапазона абон.ID',
-            TP::F_MIK_IP          => 'Mikrotik IP',
-            TP::F_MIK_PORT        => 'Mikrotik порт',
-            TP::F_MIK_LOGIN       => 'Mikrotik логин',
-            TP::F_MIK_PASSWD      => 'Mikrotik пароль',
-            TP::F_MIK_FTP_IP          => 'FTP IP',
-            TP::F_MIK_FTP_PORT        => 'FTP порт',
-            TP::F_MIK_FTP_LOGIN       => 'FTP логин',
-            TP::F_MIK_FTP_PASSWD      => 'FTP пароль',
-            TP::F_MIK_FTP_FOLDER      => 'FTP папка',
-            TP::F_MIK_FTP_GETPATH     => 'FTP путь'
+            TP::F_MIK_IP                 => 'Mikrotik IP',
+            TP::F_MIK_PORT               => 'Mikrotik порт',
+            TP::F_MIK_LOGIN              => 'Mikrotik логин',
+            TP::F_MIK_PASSWD             => 'Mikrotik пароль',
+            TP::F_MIK_FTP_IP             => 'FTP IP',
+            TP::F_MIK_FTP_PORT           => 'FTP порт',
+            TP::F_MIK_FTP_LOGIN          => 'FTP логин',
+            TP::F_MIK_FTP_PASSWD         => 'FTP пароль',
+            TP::F_MIK_FTP_FOLDER         => 'FTP папка',
+            TP::F_MIK_FTP_GETPATH        => 'FTP путь'
         ]);
 
         // обязательные
@@ -418,7 +418,7 @@ class TpController extends AppBaseController {
         $v->rule('url', [
             TP::F_URL,
             TP::F_URL_ZABBIX,
-            TP::F_WEB_MANAGEMENT
+            // TP::F_WEB_MANAGEMENT,
         ]);
 
         // статус (0/1)
@@ -438,8 +438,10 @@ class TpController extends AppBaseController {
         ]);
 
         // Проверка границ больше - меньше
-        $v->rule('min', TP::F_ABON_ID_RANGE_END,    $data[TP::F_ABON_ID_RANGE_START]+1);
-        $v->rule('max', TP::F_ABON_ID_RANGE_START,  $data[TP::F_ABON_ID_RANGE_END]-1);
+        if (($data[TP::F_ABON_ID_RANGE_START] > 0) || ( $data[TP::F_ABON_ID_RANGE_END] > 0)) {
+            $v->rule('min', TP::F_ABON_ID_RANGE_END,    $data[TP::F_ABON_ID_RANGE_START]+1);
+            $v->rule('max', TP::F_ABON_ID_RANGE_START,  $data[TP::F_ABON_ID_RANGE_END]-1);
+        }
 
         if(!$v->validate()) {
             // ошибки

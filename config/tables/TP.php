@@ -47,15 +47,19 @@ class TP {
     const F_FIRM_ID                = 'firm_id';                 // 'ID Обслуживающего предприятия',
     const F_TITLE                  = 'title';                   // 'Название тех.площадки',
     const F_IP                     = 'ip';                      // 'IP-адрес точки доступа или тех.площадки',
+    const F_WEB_MANAGEMENT         = 'web_management';          // 'Страница web-доступа к устройству',
+    const F_WEB_MANAGEMENT_VALUE   = 'web_management_value';    // С подставленными значениями из шаблонов,
+    const F_URL                    = 'url';                     // 'URL-строка для управления устройством (обычно через вэб)',
+    const F_URL_VALUE              = 'url_value';               // Строка с подставленными значениями из шаблонов
+    const F_URL_ZABBIX             = 'url_zabbix';              // 'URL страницы в системе мониторинга zabbix относящейся к этой ТП',
+    const F_URL_ZABBIX_VALUE       = 'url_zabbix_value';        // С подставленными значяениями из шаблонов,
     const F_LOGIN                  = 'login';                   // 'логин для управляющего доступа',
     const F_PASS                   = 'pass';                    // 'пароль дл управляющего доступа',
-    const F_URL                    = 'url';                     // 'URL-строка для управления устройством (обычно через вэб)',
-    const F_URL_ZABBIX             = 'url_zabbix';              // 'URL страницы в системе мониторинга zabbix относящейся к этой ТП',
     const F_ADDRESS                = 'address';                 // 'Адрес размещения ТП',
     const F_COORD                  = 'coord';                   // 'Географические координаты ТП для отображения на картах',
     const F_RANG_ID                = 'rang_id';                 // 'Ранг узла: 1 — Абонентский узел | 2 — AP | 3 — Агрегатор AP | 4 — Bridge AP | 5 — Bridge Client | 10 — Хостинговая тех. площадка | 100 — Биллинг',
-    const F_UPLINK_ID              = 'uplink_id';               // 'Узел "верхнего" уровня, от которого идёт сигнал к этому узлу (не обязательно маршрутизатор)',
-    const F_WEB_MANAGEMENT         = 'web_management';          // 'Страница web-доступа к устройству',
+    const F_UPLINK_ID              = 'uplink_id';               // 'ID Узела "верхнего" уровня, от которого идёт сигнал к этому узлу (не обязательно маршрутизатор)',
+    const F_UPLINK                 = 'uplink';        // Массив // Узел "верхнего" уровня, от которого идёт сигнал к этому узлу (не обязательно маршрутизатор)
     const F_DEFAULT_PRICE_ID       = 'default_price_id';        // 'Прайс По_умолчанию для этой ТП',
     const F_DESCRIPTION            = 'description';             // 'Описание ТП',
     const F_COST_PER_M             = 'cost_per_M';              // 'Стоимость Эксплуатации/аренды/абонплаты техплощадки',
@@ -65,11 +69,13 @@ class TP {
     const F_ABON_ID_RANGE_START    = 'abon_id_range_start';     // 'Начало диапазона выдачи ID для пользователей',
     const F_ABON_ID_RANGE_END      = 'abon_id_range_end';       // 'Конец диапазона выдачи ID для пользователей',
     const F_MIK_IP                 = 'script_mik_ip';           // 'IP устройства',
+    const F_MIK_IP_VALUE           = 'script_mik_ip_val';       // С подстановкой значений из шаблонов,
     const F_MIK_PORT               = 'script_mik_port';         // 8728 'API tcp порт доступа на устройство',
     const F_MIK_PORT_SSL           = 'script_mik_port_ssl';     // 8729 'API tcp порт для SSL доступа на устройство',
     const F_MIK_LOGIN              = 'script_mik_login';        // 'login доступа на устройство',
     const F_MIK_PASSWD             = 'script_mik_passwd';       // 'passwd доступа на устройства',
     const F_MIK_FTP_IP             = 'script_ftp_ip';           // 'IP-адрес для ftp доступа',
+    const F_MIK_FTP_IP_VALUE       = 'script_ftp_ip_val';       // С подстановкой значений из шаблонов,
     const F_MIK_FTP_PORT           = 'script_ftp_port';         // 'TCP-порт для ftp доступа',
     const F_MIK_FTP_LOGIN          = 'script_ftp_login';        // 'Логин для ftp доступа',
     const F_MIK_FTP_PASSWD         = 'script_ftp_passwd';       // 'Пасс для ftp доступа',
@@ -174,6 +180,7 @@ class TP {
     }
 
     
+
     const TYPES = [
         self::TYPE_NA => [
             Lang::C_EN => 'N/A',
@@ -228,9 +235,28 @@ class TP {
     ];
 
 
+
+    const TEMPLATE_IP = '{IP}';
+
+    const TEMPLATES = [
+        self::TEMPLATE_IP,
+    ];
+
+    const TEMPLATES_FIELDS = [
+        self::F_URL             => self::F_URL_VALUE,
+        self::F_WEB_MANAGEMENT  => self::F_WEB_MANAGEMENT_VALUE,
+        self::F_URL_ZABBIX      => self::F_URL_ZABBIX_VALUE,
+        self::F_MIK_IP          => self::F_MIK_IP_VALUE,
+        self::F_MIK_FTP_IP      => self::F_MIK_FTP_IP_VALUE,
+    ];
+
+
+
     public static function get_type_name(int $type_id): string {
         return self::TYPES[$type_id][Lang::code()];
     }
+
+
 
 
 

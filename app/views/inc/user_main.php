@@ -92,7 +92,7 @@ require_once DIR_LIBS . '/inc_functions.php';
                                     file_view: DIR_INC . '/abon_card.php',
                                     func_get_title: function(array $abon) {
                                             return get_html_content_left_right(
-                                                left:   " :: " . $abon[Abon::F_ADDRESS] . "",
+                                                left:   num_len($abon[Abon::F_ID], App::get_config('port_max_digits')) . " :: " . $abon[Abon::F_ADDRESS] . "",
                                                 right:  get_html_pa_status(get_pa_list_age($abon[PA::TABLE])),
                                                 add_class: 'w-100') . '&nbsp;&nbsp;&nbsp;';
                                     },

@@ -131,7 +131,7 @@ class Search {
             self::F_SHOW_FIELDS       => ["id",           "abon_id",      "net_name",   "net_nat11",  "net_ip",     "net_mac",    "price_closed", "net_router_id"],
             self::F_COL_TITLES        => ["PA ID",        "Abon ID",      "Имя подкл.", "NAT 1:1",    "ip",         "MAC",        "Закрыт",       "ТП ID"],
             self::F_CELL_ATTRIBUTES   => ["align=center", "align=center", "align=left", "align=left", "align=left", "align=left", "align=center", "align=left"],
-            self::F_SEARSH_IN_FIELDS  => ["net_name", "net_on_abon_ip", "net_on_abon_gate", "net_nat11", "net_ip", "net_mask", "net_dns1", "net_dns2", "net_mac"],
+            self::F_SEARSH_IN_FIELDS  => ["net_name", "net_on_abon_ip", "net_on_abon_gate", "net_nat11", "net_ip", "net_mac", "net_mask", "net_dns1", "net_dns2"],
             self::F_ORDER_BY          => "abon_id DESC, price_closed DESC, id DESC",
             self::F_REPLACE_FIELDS    => [
             //     [self::F_FIELD => 'id',            self::F_FUNC => 'url_pa_form'],

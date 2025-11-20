@@ -58,25 +58,6 @@ if (isset($item) && !isset($abon)) { $abon = $item; }
         <div class="tab-pane fade" id="tab_pa_<?=$abon[Abon::F_ID]?>" role="tabpanel">
             <!-- Перебор подключенных прайсовых фрагментов -->
             <div class="container-fluid mt-4">
-                <!-- 
-                <div class="text-end">
-                    <form>
-                        <div class="form-check form-check-inline" action="/config/pa">
-                            <input class="form-check-input" type="checkbox" name="pa_filter_active" id="pa_filter_active" <?=(App::get_config('pa_show_filter')['active'] ? "checked" : "");?> value="1">
-                            <label class="form-check-label" for="pa_filter_active">Active</label>
-                        </div>                        
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" name="pa_filter_paused" id="pa_filter_paused" <?=(App::get_config('pa_show_filter')['paused'] ? "checked" : "");?> value="1">
-                            <label class="form-check-label" for="pa_filter_paused">Paused</label>
-                        </div>                        
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" name="pa_filter_closed" id="pa_filter_closed" <?=(App::get_config('pa_show_filter')['closed'] ? "checked" : "");?> value="1">
-                            <label class="form-check-label" for="pa_filter_closed">Closed</label>
-                        </div>                        
-                        <button type="submit" class="btn btn-sm btn-outline-info">[>]</button>
-                    </form>
-                </div> 
-                -->
                 <?php
                     if ($abon[PA::TABLE]) {
                         echo get_html_accordion(

@@ -89,18 +89,18 @@ if (!can_use(Module::MOD_TP)) {
                                 </a>
                             <?php endif; ?>
                             <?php if ($tp[TP::F_IS_MANAGED]) : ?>
-                                <a href="<?=TP::URI_COMBINE.'/'.$tp[TP::F_ID];?>" class="btn btn-sm btn-primary">
+                                <a href="<?=TP::URI_COMBINE.'/'.$tp[TP::F_ID];?>" class="btn btn-sm btn-outline-primary">
                                     <img src="<?= Icons::SRC_ICON_MIK_BLUE;?>" height="22rem" title="<?= __('Панель упавления') ?>">
                                 </a>
                             <?php else : ?>
-                                <div class="btn btn-sm btn-secondary">
+                                <div class="btn btn-sm btn-outline-secondary">
                                     <img src="<?= Icons::SRC_ICON_MIK_GRAY;?>" height="22rem" title="<?= __('ТП Не управляемая') ?>">
                                 </div>
                             <?php endif; ?>
-                            <a href="<?=$tp[TP::F_WEB_MANAGEMENT];?>" target="_blank" class="btn btn-sm btn-primary" title="<?= __('Управление ТП с помощью web-интерфейса') ?>">
+                            <a href="<?=$tp[TP::F_WEB_MANAGEMENT_VALUE];?>" target="_blank" class="btn btn-sm btn-outline-primary" title="<?= __('Управление ТП с помощью web-интерфейса') ?>">
                                 <img src="<?= Icons::SRC_ICON_HTTP;?>" height="22rem">
                             </a>
-                            <a href="<?= TP::URI_EDIT;?>/<?= (int)$tp[TP::F_ID] ?>" class="btn btn-sm btn-warning" title="<?= __('Редактировать параметры ТП') ?>">
+                            <a href="<?= TP::URI_EDIT;?>/<?= (int)$tp[TP::F_ID] ?>" class="btn btn-sm btn-outline-warning" title="<?= __('Редактировать параметры ТП') ?>">
                                 <img src="<?= Icons::SRC_EDIT_REC;?>" height="22rem">
                             </a>
                             <?php if ($tp[TP::F_COUNT_PA]) : ?>
@@ -111,7 +111,7 @@ if (!can_use(Module::MOD_TP)) {
                             <?php else : ?>
                             <a  href="<?=TP::URI_DELETE.'/'.$tp[TP::F_ID];?>"
                                 title="<?=__('Можно удалить, &#10;посколкьу нет полключённых прайсовых фрагментов');?>"
-                                class="btn btn-sm btn-danger"
+                                class="btn btn-sm btn-outline-danger"
                                 onclick="return confirm('<?= __('Удалить эту ТП?') ?>');">
                                 <img src="<?= Icons::SRC_ICON_TRASH;?>" height="22rem">
                             </a>

@@ -53,52 +53,183 @@ class AbonModel extends UserModel {
      * @param bool $force
      * @return bool
      */
-    function update_abon_rest(): bool {
+    function update_abon_rest_all(int|null $abon_id = null): bool {
+        $sql = "
+            INSERT INTO ".AbonRest::TABLE." (
+                ".AbonRest::F_ABON_ID.",
+                ".AbonRest::F_SUM_PAY.",
+                ".AbonRest::F_SUM_COST.",
+                ".AbonRest::F_SUM_PPMA.",
+                ".AbonRest::F_SUM_PPDA."
+            )
+            SELECT
+                a.".Pay::F_ABON_ID.",
+                IFNULL( p.".AbonRest::F_SUM_PAY .", 0) AS ".AbonRest::F_SUM_PAY .",
+                IFNULL(pa.".AbonRest::F_SUM_COST.", 0) AS ".AbonRest::F_SUM_COST.",
+                IFNULL(pa.".AbonRest::F_SUM_PPMA.", 0) AS ".AbonRest::F_SUM_PPMA.",
+                IFNULL(pa.".AbonRest::F_SUM_PPDA.", 0) AS ".AbonRest::F_SUM_PPDA."
+            FROM
+            ( "
+                . (is_null($abon_id)
+
+                    ?   "SELECT ".Pay::F_ABON_ID." AS ".AbonRest::F_ABON_ID." FROM ".Pay::TABLE." "
+                        . "UNION "
+                        . "SELECT ".PA::F_ABON_ID."  AS ".AbonRest::F_ABON_ID." FROM ".PA::TABLE.""
+
+                    :   "SELECT {$abon_id} AS ".AbonRest::F_ABON_ID.""
+
+                  )
+            ." ) AS a
+            LEFT JOIN (
+                SELECT ".Pay::F_ABON_ID.", SUM(".Pay::F_PAY_ACNT.") AS ".AbonRest::F_SUM_PAY."
+                FROM ".Pay::TABLE." 
+                ".(is_null($abon_id) ? "" : "WHERE ".Pay::F_ABON_ID." = {$abon_id}")."
+                GROUP BY ".Pay::F_ABON_ID."
+            ) AS p ON p.".Pay::F_ABON_ID." = a.".AbonRest::F_ABON_ID."
+            LEFT JOIN (
+                SELECT
+                    ".PA::F_ABON_ID.",
+                    SUM(".PA::F_COST_VALUE.") AS ".AbonRest::F_SUM_COST.",
+                    SUM(".PA::F_PPMA_VALUE.") AS ".AbonRest::F_SUM_PPMA.",
+                    SUM(".PA::F_PPDA_VALUE.") AS ".AbonRest::F_SUM_PPDA."
+                FROM ".PA::TABLE." 
+                ".(is_null($abon_id) ? "" : "WHERE ".PA::F_ABON_ID." = {$abon_id}")."
+                GROUP BY ".PA::F_ABON_ID."
+            ) AS pa ON pa.".PA::F_ABON_ID." = a.".AbonRest::F_ABON_ID."
+
+            ON DUPLICATE KEY UPDATE
+                ".AbonRest::TABLE.".".AbonRest::F_SUM_PAY."  = VALUES(".AbonRest::F_SUM_PAY."),
+                ".AbonRest::TABLE.".".AbonRest::F_SUM_COST." = VALUES(".AbonRest::F_SUM_COST."),
+                ".AbonRest::TABLE.".".AbonRest::F_SUM_PPMA." = VALUES(".AbonRest::F_SUM_PPMA."),
+                ".AbonRest::TABLE.".".AbonRest::F_SUM_PPDA." = VALUES(".AbonRest::F_SUM_PPDA.");
+        ";
+        // echo 'SQL: '.  $sql . "\n";
+        return $this->execute($sql);
+    }
 
 
-        $sql1 = "TRUNCATE TABLE ".AbonRest::TABLE.";";
-        $sql2 = "INSERT INTO "
-                . AbonRest::TABLE." ("
-                    . AbonRest::F_ABON_ID  . ", "
-                    . AbonRest::F_SUM_PAY  . ", "
-                    . AbonRest::F_SUM_COST . ", "
-                    . AbonRest::F_SUM_PPMA . ", "
-                    . AbonRest::F_SUM_PPDA
-                . ") "
-                . "SELECT
-                    a.abon_id,
-                    IFNULL(p.sum_pay, 0)   AS ".AbonRest::F_SUM_PAY.",
-                    IFNULL(pa.sum_cost, 0) AS ".AbonRest::F_SUM_COST.",
-                    IFNULL(pa.sum_PPMA, 0) AS ".AbonRest::F_SUM_PPMA.",
-                    IFNULL(pa.sum_PPDA, 0) AS ".AbonRest::F_SUM_PPDA."
-                FROM
-                    (
-                        SELECT abon_id FROM payments
-                        UNION
-                        SELECT abon_id FROM prices_apply
-                    ) a
-                LEFT JOIN (
-                    SELECT abon_id, SUM(pay) AS ".AbonRest::F_SUM_PAY."
-                    FROM payments
-                    GROUP BY abon_id
-                ) p ON p.abon_id = a.abon_id
-                LEFT JOIN (
-                    SELECT
-                    abon_id,
-                    SUM(cost_value) AS ".AbonRest::F_SUM_COST.",
-                    SUM(`PPMA_value`) AS ".AbonRest::F_SUM_PPMA.",
-                    SUM(`PPDA_value`) AS ".AbonRest::F_SUM_PPDA."
-                    FROM prices_apply
-                    GROUP BY abon_id
-                ) pa ON pa.abon_id = a.abon_id;";
 
-        // debug($sql, '$sql', die: 1);
-        if ($this->execute($sql1)) {
-            if ($this->execute($sql2)) {
-                return true;
+    /**
+     * версия 2021 года
+     * @param int $recalc_abon_id -- ID абонента, если нужно обновить только его прайсы (по умолчанию — 0, значит все)
+     * @return bool
+     */
+    function update_prices_cost_all(int $recalc_abon_id = 0): bool // версия 2021 года
+    {
+        $cost_value = 0.0; //* echo 'инициализируем поле "начислено"<br>';
+        $cost_date = time(); //* echo 'инициализируем поле "дата начисления"<br>';
+        $ret = true;
+
+        $sql = "SELECT
+            `prices_apply`.`id`,
+            `prices_apply`.`abon_id`,
+            `prices_apply`.`date_start`,
+            `prices_apply`.`date_end`,
+            `prices_apply`.`".PA::F_CLOSED."`,
+            `prices_apply`.`cost_value`,
+            `prices_apply`.`cost_date`,
+            `prices`.`pay_per_day` AS ".PA::F_PRICE_PPD.",
+            `prices`.`pay_per_month` AS ".PA::F_PRICE_PPM."
+            FROM prices_apply
+            LEFT JOIN `billing`.`prices` ON `prices_apply`.`prices_id` = `prices`.`id`
+            LEFT JOIN `billing`.`abons` ON `prices_apply`.`abon_id` = `abons`.`id`
+            ".(($recalc_abon_id>0) ? "WHERE `prices_apply`.`abon_id` = ".$recalc_abon_id : "WHERE `abons`.`is_payer`=1")." ";
+
+        $model = new AbonModel();
+        // запрашиваем список прайсовых фрагментов
+        $rows =  $model->get_rows_by_sql($sql); 
+        if ($rows) {
+            foreach ($rows as $row) {
+                // дата обновления стоимости ПФ
+                $cost_date = time();
+                // считаем стоимость ПФ
+                $cost_value = self::get_price_apply_cost($row);
+                if ($recalc_abon_id > 0) {
+                    MsgQueue::msg(MsgType::INFO_AUTO, "price_apply_id: {$row[PA::F_ID]}: {$cost_value}");
+                }
+                // обновить данные в таблицах;
+                $sql = "UPDATE `".PA::TABLE."` "
+                        . "SET `".PA::F_COST_VALUE."`='{$cost_value}',`".PA::F_COST_DATE."`={$cost_date} "
+                        . "WHERE `".PA::F_ID."`={$row[PA::F_ID]}";
+                if (!$model->execute($sql)) {
+                    $this->errors[] = __('Ошибка обновления стоимости прайсового начисления') . " [{$sql}]";
+                    $ret = false;
+                }
             }
+        } else {
+            $this->errors[] = __('Ошибка выборки прайсовых фрагментов, или прайсовые фрагменты не прикреплены для abon_id') . " [{$recalc_abon_id}]";
+            $ret = false;
         }
-        return false;
+        return $ret;
+    }
+
+
+
+    /**
+     * Версия 2021 года
+     * 1️⃣ — обновляет поля активных прайсов,
+     * 2️⃣ — обнуляет поля у неактивных (закрытых) прайсов.
+     * Функция ставит или сбрасывает текущие значения активной абонплаты (PPDA_value, PPMA_value) 
+     * только для тех строк, у которых прайсовый фрагмнт активен на текущий момент.
+     * @param int $recalc_abon_id -- ID абонента, если нужно обновить только его прайсы (по умолчанию — 0, значит "все")
+     * @return bool
+     */
+    function update_prices_active_all(int $recalc_abon_id = 0): bool // Версия 2021 года
+    {
+        $ret = true;
+
+        /**
+         * Устанавливаем поле активного прайса в открытых прайсах
+         */
+        $sql = "UPDATE  prices_apply
+                LEFT JOIN billing.prices ON prices_apply.prices_id = prices.id
+                SET
+                prices_apply.PPDA_value=prices.pay_per_day,
+                prices_apply.PPMA_value=prices.pay_per_month
+                WHERE
+                ".(($recalc_abon_id > 0) ? "prices_apply.abon_id=".$recalc_abon_id." AND" : "")."
+                (
+                    (
+                        !isnull(`prices_apply`.`date_end`)
+                        AND (`prices_apply`.`date_end` > UNIX_TIMESTAMP())
+                    ) OR (
+                        isnull(`prices_apply`.`date_end`)
+                        AND (`prices_apply`.`date_start` < UNIX_TIMESTAMP())
+                    )
+                ) = 1
+                ";
+
+        if (!$this->execute($sql)) {
+            $this->errors[] = __('Ошибка установки полей `PPDA_value` и `PPMA_value` для активных прайсовых фрагментов');
+            $ret = false;
+        }
+
+        /**
+         * Обнуляем поле активного прайса в закрытых прайсах
+         */
+        $sql = "UPDATE `prices_apply`
+                LEFT JOIN `billing`.`prices` ON `prices_apply`.`prices_id` = `prices`.`id`
+                SET
+                `prices_apply`.`PPDA_value`=0,
+                `prices_apply`.`PPMA_value`=0
+                WHERE
+                    ".(($recalc_abon_id > 0) ? "(`prices_apply`.`abon_id`=" . $recalc_abon_id . ") AND" : "")."
+                    (
+                        (
+                            !isnull(`prices_apply`.`date_end`)
+                            AND (`prices_apply`.`date_end` > UNIX_TIMESTAMP())
+                        ) OR (
+                            isnull(`prices_apply`.`date_end`)
+                            AND (`prices_apply`.`date_start` < UNIX_TIMESTAMP())
+                        )
+                    ) = 0
+                ";
+
+        if (!$this->execute($sql)) {
+            $this->errors[] = __('Ошибка обнуления полей `PPDA_value` и `PPMA_value` для закрытых прайсовых фрагментов');
+            $ret = false;
+        }
+        return $ret;
     }
 
 
@@ -118,7 +249,11 @@ class AbonModel extends UserModel {
         if (empty($tp_id_list)) {
             return [];
         } else {
-            return $this->get_rows_by_where(table: TP::TABLE, where: TP::F_ID . ' IN (' . implode(',', $tp_id_list) . ') AND `'.TP::F_STATUS.'`=1');
+            $list = $this->get_rows_by_where(table: TP::TABLE, where: TP::F_ID . ' IN (' . implode(',', $tp_id_list) . ') AND `'.TP::F_STATUS.'`=1');
+            foreach ($list as &$tp) {
+                $this->normalize_tp($tp);
+            }
+            return $list;
         }
     }
 
@@ -167,7 +302,7 @@ class AbonModel extends UserModel {
      * @param array $prices_apply_all -- список всех прайсовых фрагментов абонента.
      * @return float -- сумма стоимости прайсовых фрагментов.
      */
-    public static function get_prices_apply_cost_sum(array $prices_apply_all, $today=NA): float {
+    public static function get_prices_apply_cost_sum(array $prices_apply_all, int $today=NA): float {
         if($today == NA) { $today = TODAY(); } else { $today = get_date($today); }
         $cost = 0;
         foreach ($prices_apply_all as $pa_one) {
@@ -177,8 +312,10 @@ class AbonModel extends UserModel {
     }
 
 
+
     /**
-     * вычисляет стоимость услуги по записи из таблицы prices_apply — то есть сумму, которую должен заплатить абонент за период действия прайса.
+     * вычисляет стоимость услуги по записи из таблицы prices_apply 
+     * — сумму, которую должен заплатить абонент за период действия прайса.
      * Версия 2022 года
      * Она учитывает:
      * ежедневную оплату (pay_per_day, PPD);
@@ -436,7 +573,8 @@ class AbonModel extends UserModel {
 
 
     /**
-    * Возвращает активную месячную абонплату
+    * Возвращает сумарную месячную абонплату из переданных прайсовых фрагментов.
+    * Считает ppma, ppda и количество дней в указанном или текущем месяце.
     * @param array $pricess_apply_list -- все прикрепленные прайсы абонента
     * @param int $today -- день, который считается "сегодняшним" для определения активности прайса
     * @return float -- сумма прайсов за месяц
@@ -564,7 +702,7 @@ class AbonModel extends UserModel {
                             :   "AND "
                                 . "("
                                     . "`".PA::TABLE."`.`".PA::F_DATE_END."` IS NOT NULL "
-                                    . "OR "
+                                    . "AND "
                                     . "`".PA::TABLE."`.`".PA::F_DATE_END."` < UNIX_TIMESTAMP(CURDATE()) "
                                 . ") "
                         )
@@ -593,7 +731,7 @@ class AbonModel extends UserModel {
         // );
 
     }
-    
+
 
 
     function get_pa(int $pa_id):array {
@@ -1111,33 +1249,6 @@ class AbonModel extends UserModel {
 
 
 
-    /**
-     * Возвращает html строку '[x]' флажка, показывающую является ли абонент или пользователь плательщиком
-     * @param int|null $aid
-     * @param int|null $uid
-     */
-    function get_html_chek_payer(int|null $aid = null, int|null $uid = null) {
-        $payer = false;
-        if (!is_null($aid)) {
-            $abon = $this->get_abon($aid);
-            $payer = $abon['is_payer'];
-        } elseif (!is_null($uid)) {
-            $A = $this->get_rows_by_field(table: Abon::TABLE, field_name: Abon::F_USER_ID, field_value: $uid);
-            foreach ($A as $abon) {
-                if ($abon['is_payer']) {
-                    $payer = true;
-                    break;
-                }
-            }
-        }
-        $check0 = "<font size=-2 face=monospace color=gray>[<font color=".SILVER.">$</font>]</font>";
-        $check1 = "<font size=-2 face=monospace color=gray>[<font color=".GREEN.">$</font>]</font>";
-
-        return get_html_CHECK(has_check: $payer, title_on: 'Есть подключения в статусе "Плательщик"', title_off: 'Не "Плательщик" ', check0: $check0, check1: $check1);
-    }
-
-
-
     function get_ppp_my(int|null $active = null, int|null $type_id = null, int|null $abon_payments = null): array {
         $user_id = $_SESSION[User::SESSION_USER_REC][User::F_ID];
         $sql = "SELECT 
@@ -1161,131 +1272,6 @@ class AbonModel extends UserModel {
                 ."ORDER BY `".Ppp::TABLE."`.`".Ppp::F_TITLE."` ASC";
         // debug($sql, '$sql');
         return $this->get_rows_by_sql($sql);
-    }
-
-
-
-    /**
-     * версия 2021 года
-     * @param int $recalc_abon_id -- ID абонента, если нужно обновить только его прайсы (по умолчанию — 0, значит все)
-     * @return bool
-     */
-    function update_prices_cost_all(int $recalc_abon_id = 0): bool // версия 2021 года
-    {
-        $cost_value = 0.0; //* echo 'инициализируем поле "начислено"<br>';
-        $cost_date = time(); //* echo 'инициализируем поле "дата начисления"<br>';
-        $ret = true;
-
-        $sql = "SELECT
-            `prices_apply`.`id`,
-            `prices_apply`.`abon_id`,
-            `prices_apply`.`date_start`,
-            `prices_apply`.`date_end`,
-            `prices_apply`.`".PA::F_CLOSED."`,
-            `prices_apply`.`cost_value`,
-            `prices_apply`.`cost_date`,
-            `prices`.`pay_per_day` AS ".PA::F_PRICE_PPD.",
-            `prices`.`pay_per_month` AS ".PA::F_PRICE_PPM."
-            FROM prices_apply
-            LEFT JOIN `billing`.`prices` ON `prices_apply`.`prices_id` = `prices`.`id`
-            LEFT JOIN `billing`.`abons` ON `prices_apply`.`abon_id` = `abons`.`id`
-            ".(($recalc_abon_id>0) ? "WHERE `prices_apply`.`abon_id` = ".$recalc_abon_id : "WHERE `abons`.`is_payer`=1")." ";
-
-        $model = new AbonModel();
-        // запрашиваем список прайсовых фрагментов
-        $rows =  $model->get_rows_by_sql($sql); 
-        if ($rows) {
-            foreach ($rows as $row) {
-                // дата обновления стоимости ПФ
-                $cost_date = time();
-                // считаем стоимость ПФ
-                $cost_value = self::get_price_apply_cost($row);
-                if ($recalc_abon_id > 0) {
-                    MsgQueue::msg(MsgType::INFO_AUTO, "price_apply_id: {$row[PA::F_ID]}: {$cost_value}");
-                }
-                // обновить данные в таблицах;
-                $sql = "UPDATE `".PA::TABLE."` "
-                        . "SET `".PA::F_COST_VALUE."`='{$cost_value}',`".PA::F_COST_DATE."`={$cost_date} "
-                        . "WHERE `".PA::F_ID."`={$row[PA::F_ID]}";
-                if (!$model->execute($sql)) {
-                    $this->errors[] = __('Ошибка обновления стоимости прайсового начисления') . " [{$sql}]";
-                    $ret = false;
-                }
-            }
-        } else {
-            $this->errors[] = __('Ошибка выборки прайсовых фрагментов, или прайсовые фрагменты не прикреплены для abon_id') . " [{$recalc_abon_id}]";
-            $ret = false;
-        }
-        return $ret;
-    }
-
-
-
-    /**
-     * Версия 2021 года
-     * 1️⃣ — обновляет поля активных прайсов,
-     * 2️⃣ — обнуляет поля у неактивных (закрытых) прайсов.
-     * Функция ставит или сбрасывает текущие значения активной абонплаты (PPDA_value, PPMA_value) 
-     * только для тех строк, у которых прайсовый фрагмнт активен на текущий момент.
-     * @param int $recalc_abon_id -- ID абонента, если нужно обновить только его прайсы (по умолчанию — 0, значит "все")
-     * @return bool
-     */
-    function update_prices_active_all(int $recalc_abon_id = 0): bool // Версия 2021 года
-    {
-        $ret = true;
-
-        /**
-         * Устанавливаем поле активного прайса в открытых прайсах
-         */
-        $sql = "UPDATE  prices_apply
-                LEFT JOIN billing.prices ON prices_apply.prices_id = prices.id
-                SET
-                prices_apply.PPDA_value=prices.pay_per_day,
-                prices_apply.PPMA_value=prices.pay_per_month
-                WHERE
-                ".(($recalc_abon_id > 0) ? "prices_apply.abon_id=".$recalc_abon_id." AND" : "")."
-                (
-                    (
-                        !isnull(`prices_apply`.`date_end`)
-                        AND (`prices_apply`.`date_end` > UNIX_TIMESTAMP())
-                    ) OR (
-                        isnull(`prices_apply`.`date_end`)
-                        AND (`prices_apply`.`date_start` < UNIX_TIMESTAMP())
-                    )
-                ) = 1
-                ";
-
-        if (!$this->execute($sql)) {
-            $this->errors[] = __('Ошибка установки полей `PPDA_value` и `PPMA_value` для активных прайсовых фрагментов');
-            $ret = false;
-        }
-
-        /**
-         * Обнуляем поле активного прайса в закрытых прайсах
-         */
-        $sql = "UPDATE `prices_apply`
-                LEFT JOIN `billing`.`prices` ON `prices_apply`.`prices_id` = `prices`.`id`
-                SET
-                `prices_apply`.`PPDA_value`=0,
-                `prices_apply`.`PPMA_value`=0
-                WHERE
-                    ".(($recalc_abon_id > 0) ? "(`prices_apply`.`abon_id`=" . $recalc_abon_id . ") AND" : "")."
-                    (
-                        (
-                            !isnull(`prices_apply`.`date_end`)
-                            AND (`prices_apply`.`date_end` > UNIX_TIMESTAMP())
-                        ) OR (
-                            isnull(`prices_apply`.`date_end`)
-                            AND (`prices_apply`.`date_start` < UNIX_TIMESTAMP())
-                        )
-                    ) = 0
-                ";
-
-        if (!$this->execute($sql)) {
-            $this->errors[] = __('Ошибка обнуления полей `PPDA_value` и `PPMA_value` для закрытых прайсовых фрагментов');
-            $ret = false;
-        }
-        return $ret;
     }
 
 
@@ -1340,13 +1326,111 @@ class AbonModel extends UserModel {
     }
 
 
+    /**
+     * Возвращает html строку '[$]' флажка, показывающую является ли абонент или пользователь плательщиком
+     * @param int|null $aid
+     * @param int|null $uid
+     */
+    function get_html_chek_payer(int|null $aid = null, int|null $uid = null) {
+        $payer = false;
+        if (!is_null($aid)) {
+            $abon = $this->get_abon($aid);
+            $payer = $abon[Abon::F_IS_PAYER];
+        } elseif (!is_null($uid)) {
+            $A = $this->get_rows_by_field(Abon::TABLE, field_name: Abon::F_USER_ID, field_value: $uid);
+            foreach ($A as $abon) {
+                if ($abon[Abon::F_IS_PAYER]) {
+                    $payer = true;
+                    break;
+                }
+            }
+        }
+        $check0 = "<font size=-1 face=monospace color=gray>[<font color=". GRAY.">$</font>]</font>";
+        $check1 = "<font size=-1 face=monospace color=gray>[<font color=".GREEN.">$</font>]</font>";
+
+        return get_html_CHECK(has_check: $payer, title_on: 'Есть подключения в статусе "Плательщик"', title_off: 'Не "Плательщик" ', check0: $check0, check1: $check1);
+    }
 
 
 
+    /**
+     * Возвращает текстовую строку-ссылку на страницу пользователя
+     * @param int $user_id
+     * @return string -- Строка с html-кодом
+     */
+    function url_user_form(int $user_id): string {
+        $c = $this->get_html_chek_payer(uid: $user_id);
+        return "<nobr><a href='".Abon::URI_VIEW."/{$user_id}' target=_blank title='". $this->get_user_name($user_id)."' >$user_id</a>&nbsp;{$c}</nobr>";
+    }
 
 
 
+    /**
+     * Возвращает текстовую строку-ссылку на страницу абонента (пользователя
+     * @param int $abon_id
+     * @return string -- Строка с html-кодом
+     */
+    function url_abon_form(int $abon_id): string {
+        if (is_null($abon_id) || $abon_id == 0 || !$this->validate_id("abons", $abon_id)) { return $abon_id; }
+        $c = $this->get_html_chek_payer(aid: $abon_id);
+        return "<nobr>" . a(href: Abon::URI_VIEW . "/{$abon_id}", text: "{$abon_id}", title: $this->get_abon_address($abon_id), target: "_blank") . "&nbsp;{$c}</nobr>";
+    }
 
+
+
+    /**
+     * Обновляет стоимости начислений ПФ 
+     * (PA::F_COST_VALUE),
+     * активные абонплаты
+     * (PA::F_PPMA_VALUE, PA::F_PPDA_VALUE)
+     * для всех ПФ указанного абонента.
+     * Остатки для указанного абонента
+     * (AbonRest::F_SUM_COST, AbonRest::F_SUM_PPMA, AbonRest::F_SUM_PPDA)
+     * @param int $abon_id
+     * @return bool
+     */
+    function recalc_abon(int $abon_id): bool {
+        $result = true;
+        if ($this->validate_id(Abon::TABLE, $abon_id, Abon::F_ID)) {
+
+            /**
+             * Обновление стоимосьти ПФ
+             */
+            MsgQueue::msg(MsgType::INFO_AUTO, __("COST") . ': ' . __("Обновляем стоимость начисления в прайсовых фрагментах") . " [".$abon_id."]...");
+            if ($this->update_prices_cost_all($abon_id)) {
+                MsgQueue::msg(MsgType::INFO_AUTO, __("COST") . ': ' . __("Успешно."));
+            } else {
+                MsgQueue::msg(MsgType::INFO_AUTO, __("COST") . ': ' . __("Ошибка"));
+                MsgQueue::msg(MsgType::ERROR, $this->errorInfo());
+                $result = false;
+            }
+
+            /**
+             * Обновление активных абонплат
+             */
+            MsgQueue::msg(MsgType::INFO_AUTO, __("PA") . ': ' . __('Обновляем активные абонплаты прайсовых фрагментов') . " [".$abon_id."]...");
+            if ($this->update_prices_active_all($abon_id)) {
+                MsgQueue::msg(MsgType::INFO_AUTO, __("PA") . ': ' . __("Успешно."));
+            } else {
+                MsgQueue::msg(MsgType::INFO_AUTO, __("PA") . ': ' . __("Ошибка"));
+                MsgQueue::msg(MsgType::ERROR, $this->errorInfo());
+                $result = false;
+            }
+
+            /**
+             * Обновление остатков
+             */
+            MsgQueue::msg(MsgType::INFO_AUTO, __("REST") . ': ' . __('Обновляем активные остатки') . " [".$abon_id."]...");
+            if ($this->update_abon_rest_all($abon_id)) {
+                MsgQueue::msg(MsgType::INFO_AUTO, __("REST") . ': ' . __("Успешно."));
+            } else {
+                MsgQueue::msg(MsgType::INFO_AUTO, __("REST") . ': ' . __("Ошибка"));
+                MsgQueue::msg(MsgType::ERROR, $this->errorInfo());
+                $result = false;
+            }
+        }
+        return $result;
+    }
 
 
 

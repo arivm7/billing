@@ -85,16 +85,9 @@ class AppBaseModel extends Model
 
 
     function get_tp(int $id): array {
-        //echo "get_tp(int $id)<br>";
         if (!array_key_exists($id, self::$CASHE_TP_LIST)) {
-            self::$CASHE_TP_LIST[$id] = $this->get_row_by_id("tp_list", $id);
-
-            self::$CASHE_TP_LIST[$id][TP::F_MIK_PORT]     = (int)self::$CASHE_TP_LIST[$id][TP::F_MIK_PORT];     // просто переделыание в int. После исправления базы убрать
-            self::$CASHE_TP_LIST[$id][TP::F_MIK_PORT_SSL] = (int)self::$CASHE_TP_LIST[$id][TP::F_MIK_PORT_SSL]; // просто переделыание в int. После исправления базы убрать
-            self::$CASHE_TP_LIST[$id][TP::F_MIK_FTP_PORT] = (int)self::$CASHE_TP_LIST[$id][TP::F_MIK_FTP_PORT]; // просто переделыание в int. После исправления базы убрать
-
-            self::$CASHE_TP_LIST[$id][TP::F_RANG_TITLE]   = (self::$CASHE_TP_LIST[$id]["rang_id"]   > 0 ? $this->get_row_by_id("tp_rangs", self::$CASHE_TP_LIST[$id]["rang_id"])["title"] : "");
-            self::$CASHE_TP_LIST[$id][TP::F_UPLINK_TITLE] = (self::$CASHE_TP_LIST[$id]["uplink_id"] > 0 ? $this->get_tp(self::$CASHE_TP_LIST[$id]["uplink_id"])["title"] : "");
+            self::$CASHE_TP_LIST[$id] = $this->get_row_by_id(TP::TABLE, $id, TP::F_ID);
+            $this->normalize_tp(self::$CASHE_TP_LIST[$id]);
         }
         return self::$CASHE_TP_LIST[$id];
     }
@@ -170,6 +163,37 @@ class AppBaseModel extends Model
     }
 
 
+    function normalize_tp(array &$tp): void {
+        $tp[TP::F_MIK_PORT]     = (int)$tp[TP::F_MIK_PORT];     // просто переделыание в int. После исправления базы убрать !!!
+        $tp[TP::F_MIK_PORT_SSL] = (int)$tp[TP::F_MIK_PORT_SSL]; // просто переделыание в int. После исправления базы убрать !!!
+        $tp[TP::F_MIK_FTP_PORT] = (int)$tp[TP::F_MIK_FTP_PORT]; // просто переделыание в int. После исправления базы убрать !!!
+        $tp[TP::F_RANG_TITLE]   = ($tp[TP::F_RANG_ID]   > 0 ? $this->get_row_by_id("tp_rangs", $tp["rang_id"])["title"] : "");
+
+        $template = [];
+        if (!empty($tp[TP::F_IP]) && validate_ip($tp[TP::F_IP])) {
+            $template[TP::TEMPLATE_IP] = $tp[TP::F_IP];
+        }
+
+        foreach (TP::TEMPLATES_FIELDS as $field => $value) {
+            if (!empty($tp[$field])) { // array_key_exists($field, $tp)
+                $tp[$value] = untemplate($tp[$field], $template);
+            } else {
+                $tp[$value] = '';
+            }
+        }
+        if (
+                !empty($tp[TP::F_UPLINK_ID]) && 
+                $this->validate_id(TP::TABLE, $tp[TP::F_UPLINK_ID], TP::F_ID)
+            ) 
+        {
+            $tp[TP::F_UPLINK] = $this->get_tp($tp[TP::F_UPLINK_ID]);
+            $tp[TP::F_UPLINK_TITLE] = $tp[TP::F_UPLINK][TP::F_TITLE];
+        } else {
+            $tp[TP::F_UPLINK_ID] = null;
+        }
+    }
+
+
 
     /**
      * Возвращает спискок ТП.
@@ -191,7 +215,11 @@ class AppBaseModel extends Model
             int|null    $rang    = null     // 1 — Абонентский узел. 2 — AP...
             ): array
     {
-        return $this->get_rows_by_sql($this->get_sql_tp_list($user_id, $id_list, $status, $deleted, $managed, $rang));
+        $list = $this->get_rows_by_sql($this->get_sql_tp_list($user_id, $id_list, $status, $deleted, $managed, $rang));
+        foreach ($list as &$tp) {
+            $this->normalize_tp($tp);
+        }
+        return $list;
     }
 
 
@@ -289,17 +317,17 @@ class AppBaseModel extends Model
      *                            В рапись этого абонента будут добавлены поля
      */
     function get_abons_edges_PA(array &$PA_list, int|null $tp_id = null) {
-        $sum = 0.0;
+        $cost_sum = 0.0;
         $PPMA = 0.0;
         $PPDA = 0.0;
         $tp_list = array();
         foreach ($PA_list as &$PA) {
-            $sum += $PA['cost_value'];
+            $cost_sum += $PA['cost_value'];
             if (!is_null($tp_id) && $PA['net_router_id'] != $tp_id) { continue; }
             $PPMA += $PA['PPMA_value'];
             $PPDA += $PA['PPDA_value'];
         }
-        $A['COST_PA_SUM'] = $sum;
+        $A['COST_PA_SUM'] = $cost_sum;
         $A['PPMA'] = $PPMA;
         $A['PPDA'] = $PPDA;
         return $A;
@@ -371,61 +399,6 @@ class AppBaseModel extends Model
                     ];
             }
         }
-    }
-
-
-
-
-
-
-    /**
-     * Возвращает html строку '[$]' флажка, показывающую является ли абонент или пользователь плательщиком
-     * @param int|null $aid
-     * @param int|null $uid
-     */
-    function get_html_chek_payer(int|null $aid = null, int|null $uid = null) {
-        $payer = false;
-        if (!is_null($aid)) {
-            $abon = $this->get_abon($aid);
-            $payer = $abon[Abon::F_IS_PAYER];
-        } elseif (!is_null($uid)) {
-            $A = $this->get_rows_by_field(Abon::TABLE, field_name: Abon::F_USER_ID, field_value: $uid);
-            foreach ($A as $abon) {
-                if ($abon[Abon::F_IS_PAYER]) {
-                    $payer = true;
-                    break;
-                }
-            }
-        }
-        $check0 = "<font size=-1 face=monospace color=gray>[<font color=". GRAY.">$</font>]</font>";
-        $check1 = "<font size=-1 face=monospace color=gray>[<font color=".GREEN.">$</font>]</font>";
-
-        return get_html_CHECK(has_check: $payer, title_on: 'Есть подключения в статусе "Плательщик"', title_off: 'Не "Плательщик" ', check0: $check0, check1: $check1);
-    }
-
-
-
-    /**
-     * Возвращает текстовую строку-ссылку на страницу пользователя
-     * @param int $user_id
-     * @return string -- Строка с html-кодом
-     */
-    function url_user_form(int $user_id): string {
-        $c = $this->get_html_chek_payer(uid: $user_id);
-        return "<nobr><a href='".Abon::URI_VIEW."/{$user_id}' target=_blank title='". $this->get_user_name($user_id)."' >$user_id</a>&nbsp;{$c}</nobr>";
-    }
-
-
-
-    /**
-     * Возвращает текстовую строку-ссылку на страницу абонента (пользователя
-     * @param int $abon_id
-     * @return string -- Строка с html-кодом
-     */
-    function url_abon_form(int $abon_id): string {
-        if (is_null($abon_id) || $abon_id == 0 || !$this->validate_id("abons", $abon_id)) { return $abon_id; }
-        $c = $this->get_html_chek_payer(aid: $abon_id);
-        return "<nobr>" . a(href: Abon::URI_VIEW . "/{$abon_id}", text: "{$abon_id}", title: $this->get_abon_address($abon_id), target: "_blank") . "&nbsp;{$c}</nobr>";
     }
 
 

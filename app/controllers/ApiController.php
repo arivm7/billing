@@ -503,6 +503,10 @@ class ApiController extends AppBaseController {
 
                     if ($model->update_row_by_id(PA::TABLE, $pa, PA::F_ID)) {
                         MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Данные в базе обновлены успешно'));
+                        /**
+                         * Пересчёт остатков и начислений по абоненту
+                         */
+                        $model->recalc_abon($pa[PA::F_ABON_ID]);
                     } else {
                         MsgQueue::msg(MsgType::ERROR_AUTO, __('Ошибка обновления данных в базе'));
                         MsgQueue::msg(MsgType::ERROR_AUTO, $model->errorInfo());

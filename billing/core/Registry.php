@@ -62,6 +62,14 @@ class Registry {
 
 
 
+    /**
+     * Имя массива в сессии для сохранения значений конфигов для конкретных пользователей
+     * @var string
+     */
+    const F_SESSION = 'reg_config';
+    const F_SESSION_TIME = 60 * 60 * 24 * 31; // месяц
+
+
     protected function __construct() {
         self::$config = require DIR_CONFIG . '/config.php';
         foreach (self::$config['autoload'] as $name => $component) {
@@ -71,18 +79,36 @@ class Registry {
 
 
 
-    public function set_config(string $name, mixed $value) {
+    public function set_config(string $name, mixed $value, bool $to_session = false) {
         self::$config[$name] = $value;
+        if ($to_session) {
+            $_SESSION[self::F_SESSION][$name] = $value;
+        }
+
     }
 
 
 
+    /**
+     * Возвращает значение переменной конфига.
+     * Значение переменной сперва ищет 
+     * в php-сессии авторизованного пользователя, если там нет, то 
+     * в куках сайта в этом браузере, если там нет, то 
+     * возвращает значение прямо из конфига.
+     * @param string $name
+     * @throws \Exception
+     * @return mixed
+     */
     public function get_config(string $name): mixed {
         if (isset(self::$config[$name])) {
-            return self::$config[$name];
+            return 
+                (isset($_SESSION[self::F_SESSION][$name]) 
+                    ?   $_SESSION[self::F_SESSION][$name]
+                    :   self::$config[$name]
+                );
         }
         throw new Exception("Не верный config-ключ [{$name}] ");
-//        return nx ull;
+//        return null;
     }
 
 

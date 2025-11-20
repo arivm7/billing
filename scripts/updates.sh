@@ -38,7 +38,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PHP_BIN="$(command -v php || echo '/usr/bin/php')"
 
 LOG_TITLE="RI-BILLING"
-COUNT_LAST_LOG=20
+COUNT_LAST_LOG=40
 
 help() 
 {

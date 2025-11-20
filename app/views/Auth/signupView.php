@@ -120,7 +120,7 @@ foreach ($LeftFields as $key => $value) {
             </div>
 
             <div class="col-auto">
-                <button type="submit" class="btn btn-primary mb-3 disabled"><?= __('Register');?></button>
+                <button type="submit" class="btn btn-primary mb-3"><?= __('Register');?></button>
             </div>
 
         </form>

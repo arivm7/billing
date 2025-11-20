@@ -73,7 +73,7 @@ $model = new AbonModel();
 /**
  * Обновление остатков на ЛС всех абонентов (формируется в отдельной таблице `abon_rest`)
 */
-if ($model->update_abon_rest()) {
+if ($model->update_abon_rest_all()) {
     $msg = 'REST обновление выполнено успешно';
     $log->info($msg, [$model->errorInfo()]);
     echo "{$msg}\n";

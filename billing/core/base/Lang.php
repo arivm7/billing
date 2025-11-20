@@ -132,7 +132,7 @@ class Lang {
                         throw new Exception("Не найден языковой файл Вида | Language file for View not found: '{$lang_view_file}'");
                 }
             }
-            self::$lang_data = array_merge(self::$lang_layout, self::$lang_view);
+            self::$lang_data = array_merge(self::$lang_layout, self::$lang_controller, self::$lang_view);
         }
     }
 

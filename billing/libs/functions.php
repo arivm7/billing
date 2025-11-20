@@ -1759,7 +1759,7 @@ function url_abon_form(int $abon_id): string {
  */
 function url_user_form(int $user_id): string {
     // !!! Убрать обращение к базе
-    $model = new UserModel();
+    $model = new AbonModel();
     return $model->url_user_form($user_id);
 }
 
@@ -1977,8 +1977,6 @@ function highlight_like_groups(string $text, string $likePattern): string {
 
 
 
-
-
 function detect_invoker(): string {
     // 1) очевидный веб
     if (php_sapi_name() !== 'cli' && PHP_SAPI !== 'cli') {
@@ -2048,7 +2046,7 @@ function detect_invoker(): string {
 function get_count_rows_for_textarea(string $text, int $count_rows_min=0, int $count_rows_max=0): int {
     if ($count_rows_min < 1) { $count_rows_min = App::get_config('textarea_rows_min'); }
     if ($count_rows_max < 1) { $count_rows_max = App::get_config('textarea_rows_max'); }
-    $count_lines_comment = substr_count($text, "\n");
+    $count_lines_comment = (empty($text) ? 0 : substr_count($text, "\n") + 1);
     return
         (($count_lines_comment <= $count_rows_min)
             ?   $count_rows_min
@@ -2058,6 +2056,7 @@ function get_count_rows_for_textarea(string $text, int $count_rows_min=0, int $c
                 )
         );    
 }
+
 
 
 /**
@@ -2211,7 +2210,13 @@ function get_diff_fields(array $new, array $prev, string|null $field_id = 'id'):
          */
         return [];
     }
+}
 
 
 
+function untemplate(string $text, array $templates = []): string {
+    foreach ($templates as $key => $value) {
+        $text = str_replace($key, $value, $text);
+    }
+    return $text;
 }

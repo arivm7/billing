@@ -246,26 +246,9 @@ class PaController extends AppBaseController {
                         
                         if (self::need_recalc_cost($data)) {
                             /**
-                             * Обновление стоимосьти ПФ
+                             * Пересчет стоимости прайсовых фрагментов и начислений
                              */
-                            MsgQueue::msg(MsgType::INFO_AUTO, __('Обновляем стоимость начисления в прайсовых фрагментах') . " [".$pa[PA::F_ABON_ID]."]...");
-                            if ($model->update_prices_cost_all($pa[PA::F_ABON_ID])) {
-                                MsgQueue::msg(MsgType::INFO_AUTO, __("Успешно."));
-                            } else {
-                                MsgQueue::msg(MsgType::INFO_AUTO, __("Ошибка"));
-                                MsgQueue::msg(MsgType::ERROR, $model->errorInfo());
-                            }
-                            /**
-                             * Обновление активных абонплат
-                             */
-                            MsgQueue::msg(MsgType::INFO_AUTO, __('Обновляем активные абонплаты прайсовых фрагментов') . " [".$pa[PA::F_ABON_ID]."]...");
-                            if ($model->update_prices_active_all($pa[PA::F_ABON_ID])) {
-                                MsgQueue::msg(MsgType::INFO_AUTO, __("Успешно."));
-                            } else {
-                                MsgQueue::msg(MsgType::INFO_AUTO, __("Ошибка"));
-                                MsgQueue::msg(MsgType::ERROR, $model->errorInfo());
-                            }
-
+                            $model->recalc_abon($pa[PA::F_ABON_ID]);
                         }
                         // MsgQueue::msg(MsgType::SUCCESS, $data);
                     } else {
