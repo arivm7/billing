@@ -23,9 +23,10 @@
  */
 
 return [
-    'Select the period for drawing up the Reconciliation Report' => 'Select the period for drawing up the Reconciliation Report',
+    'Select the contract number to display the Reconciliation Report' => 'Select the contract number to display the Reconciliation Report',
     'Abonent' => 'Abonent',
     'Disabled' => 'Disabled',
     'There are no subscriber connections' => 'There are no subscriber connections',
     'No information to display' => 'No information to display',
+    'Select an interval' => 'Select an interval',
 ];

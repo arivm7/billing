@@ -27,7 +27,7 @@ require_once DIR_LIBS . '/form_functions.php';
 
 <div class="container my-3">
     <?php if (can_use([Module::MOD_MY_CONCILIATION, Module::MOD_CONCILIATION])) : ?>
-        <h2 class="h4 mb-3"><?=__('Select the period for drawing up the Reconciliation Report')?></h2>
+        <h2 class="h4 mb-3"><?=__('Select the contract number to display the Reconciliation Report')?></h2>
         <h3 class="h4 mb-3"><span class="text text-secondary"><?=num_len($user[User::F_ID], 6);?> |</span> <?=$user[User::F_NAME_FULL];?>:</h3>
         <?php if ($user[Abon::TABLE]) : ?>
             <?php foreach ($user[Abon::TABLE] as $abon) : ?>
@@ -43,9 +43,9 @@ require_once DIR_LIBS . '/form_functions.php';
                     </div>
                     <div class="card-body">
                         <?php if ($abon['is_payer']) : ?>
-                            <a class="btn btn-outline-primary btn-sm small" href="<?= Conciliation::URI_INTERVALS . '/' . $abon[Abon::F_ID]; ?>"><?=__('Выбрать интервал');?></a>
+                            <a class="btn btn-outline-primary btn-sm small" href="<?= Conciliation::URI_INTERVALS . '/' . $abon[Abon::F_ID]; ?>"><?=__('Select an interval');?></a>
                         <?php else: ?>
-                            <a class="btn btn-outline-secondary btn-sm small" href="<?= Conciliation::URI_INTERVALS . '/' . $abon[Abon::F_ID]; ?>"><?=__('Выбрать интервал');?></a>
+                            <a class="btn btn-outline-secondary btn-sm small" href="<?= Conciliation::URI_INTERVALS . '/' . $abon[Abon::F_ID]; ?>"><?=__('Select an interval');?></a>
                         <?php endif; ?>
                     </div>
                 </div>

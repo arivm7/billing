@@ -23,9 +23,10 @@
  */
 
 return [
-    'Select the period for drawing up the Reconciliation Report' => 'Выберите период составления Акта сверки',
+    'Select the contract number to display the Reconciliation Report' => 'Выберите номер договора для вывода Акта сверки',
     'Abonent' => 'Абонент',
     'Disabled' => 'Отключён',
     'There are no subscriber connections' => 'Абоненских подключений нет',
     'No information to display' => 'Нет информации для отображения',
+    'Select an interval' => 'Выбрать интервал',
 ];
