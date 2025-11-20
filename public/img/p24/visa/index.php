@@ -1,3 +1,0 @@
-<?php
-    echo "<META HTTP-EQUIV=\"REFRESH\" CONTENT=\"0;URL=".$_SERVER[REQUEST_SCHEME]."://".$_SERVER[SERVER_NAME].":".$_SERVER[SERVER_PORT]."/\">";
-?>
