@@ -54,6 +54,8 @@ class PaymentsController extends AppBaseController {
 
         $model = new AbonModel();
         $pay_id = $this->route[F_ALIAS] ?? 0;
+        $pay = $model->get_pay($pay_id);
+        $abon_id = $pay[Pay::F_ABON_ID] ?? 0;
 
         if (empty($pay_id) || !$model->validate_id(table_name: Pay::TABLE, id_value: $pay_id, field_id: Pay::F_ID)) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('ID платежа не верен'));
@@ -63,6 +65,7 @@ class PaymentsController extends AppBaseController {
         if ($model->delete_rows_by_field(table: Pay::TABLE, value_id: $pay_id, field_id: Pay::F_ID)) {
             // !!! Доавить логирование удаления платежа !!!
             MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Платёж удалён'));
+            $model->recalc_abon($abon_id);
             redirect();
         } else {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('Ошибка удаления платежа'));
@@ -181,6 +184,7 @@ class PaymentsController extends AppBaseController {
             $pay[Pay::F_CREATION_UID] = App::get_user_id();
             if ($model->insert_row(Pay::TABLE, $pay)) {
                 MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Платеж сохранен'));
+                $model->recalc_abon($pay[Pay::F_ABON_ID]);
                 redirect(url: Pay::URI_LIST .'/'. $pay[Pay::F_ABON_ID]);
             } else {
                 $_SESSION[SessionFields::FORM_DATA] = $pay;
@@ -199,6 +203,7 @@ class PaymentsController extends AppBaseController {
             $pay[Pay::F_MODIFIED_UID] = App::get_user_id();
             if ($model->update_row_by_id(table: Pay::TABLE,  row: $pay,  field_id: Pay::F_ID)) {
                 MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Платёж обновлен'));
+                $model->recalc_abon($pay[Pay::F_ABON_ID]);
                 redirect(url: Pay::URI_LIST.'/'.$pay[Pay::F_ABON_ID]);
             } else {
                 $_SESSION[SessionFields::FORM_DATA] = $pay;

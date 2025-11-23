@@ -1429,6 +1429,9 @@ class AbonModel extends UserModel {
                 MsgQueue::msg(MsgType::ERROR, $this->errorInfo());
                 $result = false;
             }
+        } else {
+            MsgQueue::msg(MsgType::ERROR, 'RECALC: ' . __("Нет такого абонента") . " [".$abon_id."]");
+            $result = false;
         }
         return $result;
     }
