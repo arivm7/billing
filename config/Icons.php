@@ -127,4 +127,8 @@ class Icons {
     const SRC_ICON_MIK_ABON_NET_ON      = '/img/icon_mik_abon_net_on.svg';
 
 
+
+    const SRC_ICON_ZABBIX               = '/img/icon_zabbix.svg';
+
+
 }

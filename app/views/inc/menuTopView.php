@@ -26,6 +26,8 @@ use config\tables\Module;
 use config\tables\User;
 use app\widgets\LangSelector\LangSelector;
 use billing\core\base\Lang;
+use config\Icons;
+
 Lang::load_inc(__FILE__);
 if (App::$auth->isAuth) {
     $user = $_SESSION[User::SESSION_USER_REC];
@@ -38,8 +40,13 @@ $path=strtolower('/' . ($this->route[F_PREFIX] ? $this->route[F_PREFIX] . '/' : 
             <img src="/public/img/ri_logo2.svg" alt="[RILAN-admin]" title="<?=__('Rilan');?>. <?=__('Subscriber personal cabinet');?>." height="75" class="d-inline-block align-text-top">
         </a>
         <a class="navbar-brand" href="https://prev.ri.net.ua/" title="<?=__('Rilan');?>. <?=__('Old version of personal cabinet');?>." >
-            <img src="/public/img/ri_icon.ico" alt="[RI-network]" height="40" class="d-inline-block align-text-top">
+            <img src="/public/img/ri_icon.ico" alt="[RI-network]" height="30px" class="d-inline-block align-text-top">
         </a>
+        <?php if (can_view(Module::MOD_MONITORING)) : ?>
+        <a class="navbar-brand" href="https://my.ri.net.ua/zabbix/" title="<?=__('Zabbix');?> :: <?=__('Monitoring system');?>." >
+            <img src="<?= Icons::SRC_ICON_ZABBIX ?>" alt="[Zabbix]" height="30px" class="d-inline-block align-text-top">
+        </a>
+        <?php endif; ?>
         <div class="ms-auto">
 <?php if (App::$auth->isAuth) : ?>
             <ul class="nav nav-pills me-auto">

@@ -58,6 +58,8 @@ class Module {
     const MOD_WEB_DEBUG     = 39;
     const MOD_PPP           = 43;
     const MOD_ADMIN_MENU    = 27;
+    const MOD_MONITORING    = 44;
+
 
 
 
