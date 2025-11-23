@@ -18,6 +18,7 @@
  */
 
 use billing\core\Pagination;
+use config\Icons;
 use config\tables\Abon;
 use config\tables\Module;
 use config\tables\User;
@@ -57,13 +58,20 @@ $view_my = can_view(Module::MOD_MY_PAYMENTS) && $user[User::F_ID] == $user[Abon:
                 <th class="text-center align-middle"><?=__('Description');?></th>
                 <th class="text-center align-middle"><?=__('Bank No');?></th>
                 <th class="text-center align-middle"><?=__('Service info about payment');?></th>
+                <th class="text-center align-middle"><?=__('Действия');?></th>
                 <?php endif; ?>
             </tr>
         </thead>
         <tbody>
         <?php foreach ($payments as $pay_one) : ?>
             <tr>
-                <td class="text-center align-middle"><?=date('Y-m-d H:i:s', $pay_one[Pay::F_DATE])?></td>
+                <td class="text-center align-middle">
+                    <?php if ($view_all) : ?>
+                        <?=str_replace(' ', '<br>', date('Y-m-d H:i:s', $pay_one[Pay::F_DATE]))?>
+                    <?php else : ?>
+                        <?=date('Y-m-d H:i:s', $pay_one[Pay::F_DATE])?>
+                    <?php endif; ?>
+                </td>
                 <td class="text-end align-middle"><?=number_format($pay_one[Pay::F_PAY_FAKT], 2, '.', ' ')?></td>
                 <?php if ($view_all) : ?>
                 <td class="text-end align-middle"><?=number_format($pay_one[Pay::F_PAY_ACNT], 2, '.', ' ')?></td>
@@ -75,6 +83,19 @@ $view_my = can_view(Module::MOD_MY_PAYMENTS) && $user[User::F_ID] == $user[Abon:
                     <span title="<?=__('Payment type');?>"><?=h($pay_one[Pay::F_TYPE_ID])?> : <?=h($pay_one[Pay::F_TYPE_TITLE])?></span><br>
                     <span title="<?=__('PAP through which payment came');?>"><?=h($pay_one[Pay::F_PPP_ID])?> : <?=h($pay_one[Pay::F_PPP_TITLE])?></span><br>
                     <span title="<?=__('Who and when modified record');?>"><?=date('Y-m-d H:i:s', $pay_one[Pay::F_MODIFIED_DATE])?> : <?=h($pay_one[Pay::F_MODIFIED_UID])?></span>
+                </td>
+                <td class="text-start align-middle">
+                    <?php if (can_edit(Module::MOD_PAYMENTS)) : ?>
+                        <a href="<?=Pay::URI_FORM;?>/<?=h($pay_one[Pay::F_ID]);?>" 
+                            class="btn btn-sm btn-outline-info" 
+                            title="<?=__('Edit');?>"><img src="<?=Icons::SRC_EDIT_REC;?>" alt="[Edit]" height="22px"></a>
+                    <?php endif; ?>
+                    <?php if (can_del(Module::MOD_PAYMENTS)) : ?>
+                        <a href="<?=Pay::URI_DEL;?>/<?=h($pay_one[Pay::F_ID]);?>" 
+                            class="btn btn-sm btn-outline-danger" 
+                            onclick="return confirm('[X] <?=__('Удалить этот платёж?');?>');"
+                            title="<?=__('Delete');?>"><img src="<?=Icons::SRC_ICON_TRASH;?>" alt="[Del]" height="22px"></a>
+                    <?php endif; ?>
                 </td>
                 <?php endif; ?>
             </tr>

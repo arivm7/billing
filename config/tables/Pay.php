@@ -25,24 +25,20 @@ class Pay {
      */
 
     const URI_PAY = '/pay';
-    
 
     /*
-     * URI для административного управления платежами
+     * URI для управления платежами
      */
 
-    const URI_ADM_LIST      = '/admin/payments/list';
-    const URI_ADM_FORM      = '/admin/payments/form';
-    const URI_ADM_DEL       = '/admin/payments/delete';
-    const URI_ADM_ACCESS    = '/admin/payments/access';
+    const URI_FORM      = '/payments/form';
+    const URI_DEL       = '/payments/delete';
 
 
     /*
      * URI для личного кабинета абонента
      */
     const URI_MY            = '/payments';
-    const URI_MY_LIST       = '/payments/list';
-    const URI_LIST       = '/payments/list';
+    const URI_LIST          = '/payments/list';
 
 
 
@@ -57,7 +53,7 @@ class Pay {
 
     const TYPES = [
         self::TYPE_MONEY => [
-            'uk' => 'Грошове поповнення ЛЗ',
+            'uk' => 'Грошове поповнення ОР',
             'ru' => 'Денежное пополнение ЛС',
             'en' => 'Cash replenishment of personal account',
         ],
@@ -84,18 +80,22 @@ class Pay {
     const F_PAY_FAKT        = "pay_fakt";       // Фактическая сумма, пришедшая на счёт
     const F_PAY_ACNT        = "pay";            // Сумма платежа, вносимая на ЛС
     const F_DATE            = "pay_date";       // Дата платежа
+    const F_DATE_STR        = "pay_date_str";   // Дата платежа в строковом формате
     const F_BANK_NO         = "pay_bank_no";    // Банковский номер операции
     const F_TYPE_ID         = "pay_type_id";    // ИД Типа платежа
     const F_PPP_ID          = "pay_ppp_id";     // ППП
     const F_DESCRIPTION     = "description";    // Описание платежа
-    const F_CREATED_DATE    = "created_date";   // Дата создания записи
-    const F_CREATED_UID     = "created_uid";    // Юзер, создавший запись
+    const F_CREATION_DATE   = "created_date";   // Дата создания записи
+    const F_CREATION_UID    = "created_uid";    // Юзер, создавший запись
     const F_MODIFIED_DATE   = "modified_date";  // Дата изменения записи
     const F_MODIFIED_UID    = "modified_uid";   // Кто изменил запись
 
     /*
      * Вычисляемые поля
      */
+    // const F_AGENT           = "agent";          // Массив запись User того, кто внёс запись (вычисляемое)
+    // const F_PPP             = "ppp";            // Массив запись ППП (вычисляемое)
+    // const F_TYPE            = "type";           // Массив запись Типа платежа (вычисляемое)
     const F_AGENT_TITLE     = "agent_title";    // Имя того, кто внёс запись (вычисляемое)
     const F_TYPE_TITLE      = "pay_type_title"; // Имя Типа платежа (вычисляемое)
     const F_PPP_TITLE       = "pay_ppp_title";  // Имя ППП (вычисляемое)

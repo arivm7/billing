@@ -241,13 +241,17 @@ $attr_off  =
             <!-- Панель действий -->
             <div class="row container-fluid mt-4">
                 <div class="col justify-content-start">
+                    <!-- Форма "Сверка платежей" -->
+                    <?php if (can_view([Module::MOD_MY_CONCILIATION, Module::MOD_CONCILIATION])) : ?>
+                        <a href="<?=Conciliation::URI_INTERVALS;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3"><?= __('Reconciliation'); ?></a>
+                    <?php endif; ?>
                     <!-- Список платежей -->
                     <?php if (can_view([Module::MOD_MY_PAYMENTS, Module::MOD_PAYMENTS])) : ?>
                             <a href="<?=Pay::URI_LIST;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3" target="_blank"><span class="fw-bold">₴</span> <?= __('Платежі'); ?></a>
                     <?php endif; ?>
-                    <!-- Форма "Сверка платежей" -->
-                    <?php if (can_view([Module::MOD_MY_CONCILIATION, Module::MOD_CONCILIATION])) : ?>
-                        <a href="<?=Conciliation::URI_INTERVALS;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3"><?= __('Reconciliation'); ?></a>
+                    <!-- Внесение платежа -->
+                    <?php if (can_add([Module::MOD_PAYMENTS])) : ?>
+                            <a href="<?=Pay::URI_FORM;?>?<?=Abon::F_GET_ID;?>=<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3" target="_blank"><span class="fw-bold">+₴</span> <?= __('Внести платіж'); ?></a>
                     <?php endif; ?>
                 </div>
             </div>

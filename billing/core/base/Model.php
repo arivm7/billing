@@ -580,9 +580,9 @@ abstract class Model {
      * Поле 'id' не обязательно, но если оно указано, то оно будет использовано при вставке.
      * @param string $table
      * @param array $row
-     * @return bool -- Успешность встваки строки
+     * @return int|false -- Успешность встваки строки
      */
-    function insert_row(string $table, array $row): bool {
+    function insert_row(string $table, array $row): int|false {
         $fields = [];
         $values = [];
         foreach ($row as $key => $value) {
@@ -590,7 +590,12 @@ abstract class Model {
             $values[] = (is_null($value) ? "NULL" : "" . $this->quote($value) . "");
         }
         $sql = "INSERT INTO `{$table}`(".implode(',', $fields).") VALUES (".implode(',', $values).")";
-        return $this->execute($sql);
+        $rez = $this->execute($sql);
+        if ($rez) {
+            return (int)$this->lastInsertId();
+        } else {
+            return false;
+        }
     }
 
 

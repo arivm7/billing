@@ -1249,8 +1249,8 @@ class AbonModel extends UserModel {
 
 
 
-    function get_ppp_my(int|null $active = null, int|null $type_id = null, int|null $abon_payments = null): array {
-        $user_id = $_SESSION[User::SESSION_USER_REC][User::F_ID];
+    function get_ppp_my(int|null $active = null, int|null $type_id = null, int|null $abon_payments = null, int|null $owner_id = null): array {
+        $user_id = App::get_user_id();
         $sql = "SELECT 
                 * 
                 FROM 
@@ -1266,9 +1266,10 @@ class AbonModel extends UserModel {
                     AND (`".TP::F_STATUS."`=1)
                     GROUP BY `".TP::F_FIRM_ID."`
                 ) "
-                .(!is_null($active) ? "AND (`active`=$active) " : "")
-                .(!is_null($type_id) ? "AND (`type_id`=$type_id) " : "")
-                .(!is_null($abon_payments) ? "AND (`abon_payments`=$abon_payments) " : "")
+                .(!is_null($active)         ? "AND (`".Ppp::F_ACTIVE."`=$active) "               : "")
+                .(!is_null($type_id)        ? "AND (`".Ppp::F_TYPE_ID."`=$type_id) "             : "")
+                .(!is_null($abon_payments)  ? "AND (`".Ppp::F_ABON_PAYMENTS."`=$abon_payments) " : "")
+                .(!is_null($owner_id)       ? "AND (`".Ppp::F_OWNER_ID."`=$owner_id) "           : "")
                 ."ORDER BY `".Ppp::TABLE."`.`".Ppp::F_TITLE."` ASC";
         // debug($sql, '$sql');
         return $this->get_rows_by_sql($sql);

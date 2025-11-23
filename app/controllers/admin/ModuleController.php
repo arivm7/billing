@@ -172,9 +172,9 @@ class ModuleController extends AdminBaseController
                 $row[Module::F_CREATION_DATE] = time();
                 $row[Module::F_MODIFIED_UID] = $_SESSION[User::SESSION_USER_REC][User::F_ID];
                 $row[Module::F_MODIFIED_DATE] = time();
-                if ($model->insert_row(table: Module::TABLE, row: $row)) {
+                $module_id = $model->insert_row(table: Module::TABLE, row: $row);
+                if ($module_id) {
                     MsgQueue::msg(MsgType::SUCCESS, __('Новый модуль с описанием добавлен.'));
-                    $module_id = $model->lastInsertId();
                     MsgQueue::msg(MsgType::SUCCESS, __("ID нового модуля: %s.", $module_id));
                     redirect(Module::URI_FORM . '/' . $module_id );
                 } else {

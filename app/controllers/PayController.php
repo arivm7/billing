@@ -72,6 +72,8 @@ require_once DIR_LIBS . '/bank_api.php';
 class PayController extends AppBaseController
 {
 
+
+
     public function indexAction(){
         // debug($_GET, '$_GET');
         // debug($_POST, '$_POST');

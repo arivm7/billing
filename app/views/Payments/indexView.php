@@ -39,9 +39,9 @@ require_once DIR_LIBS . '/form_functions.php';
                   </div>
                   <div class="card-body">
                         <?php if ($abon['is_payer']) : ?>
-                            <a class="btn btn-outline-primary btn-sm small" href="<?= Pay::URI_MY_LIST . '/' . $abon[Abon::F_ID]; ?>"><?=__('Show payment list');?></a>
+                            <a class="btn btn-outline-primary btn-sm small" href="<?= Pay::URI_LIST . '/' . $abon[Abon::F_ID]; ?>"><?=__('Show payment list');?></a>
                         <?php else: ?>
-                            <a class="btn btn-outline-secondary btn-sm small" href="<?= Pay::URI_MY_LIST . '/' . $abon[Abon::F_ID]; ?>"><?=__('Show payment list');?></a>
+                            <a class="btn btn-outline-secondary btn-sm small" href="<?= Pay::URI_LIST . '/' . $abon[Abon::F_ID]; ?>"><?=__('Show payment list');?></a>
                         <?php endif; ?>
                   </div>
                 </div>

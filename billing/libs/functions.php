@@ -2220,3 +2220,15 @@ function untemplate(string $text, array $templates = []): string {
     }
     return $text;
 }
+
+
+function validate_date_str(string $date): bool {
+    $ts = strtotime($date);
+    $isValid = $ts !== false;
+    return $isValid;
+}
+
+
+function validate_timestamp(int|string $ts): bool {
+    return ctype_digit((string)$ts) && $ts >= 0;
+}

@@ -31,6 +31,7 @@ require_once DIR_LIBS . '/billing_functions.php';
 require_once DIR_LIBS . '/inc_functions.php';
 
 /** @var array $user */
+/** @var int $for_abon_id */
 
 ?>
 <div class="container">
@@ -88,7 +89,8 @@ require_once DIR_LIBS . '/inc_functions.php';
                     <?php if (!empty($user[Abon::TABLE])) : ?>
                         <?= get_html_accordion(
                                     table: $user[Abon::TABLE],
-                                    open_index: array_key_first($user[Abon::TABLE]),
+                                    open_index: !empty($for_abon_id) ? $for_abon_id : $user[Abon::TABLE][array_key_first($user[Abon::TABLE])][Abon::F_ID],
+                                    field_index: Abon::F_ID,
                                     file_view: DIR_INC . '/abon_card.php',
                                     func_get_title: function(array $abon) {
                                             return get_html_content_left_right(

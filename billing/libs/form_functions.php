@@ -109,6 +109,7 @@ function get_html_accordion(
     string|null $field_title = null,
     ?callable $func_get_title = null,
     int|string|null $open_index = null, // индекс элемента, который открыть по умолчанию. по умолчанию всё закрыто, кроме указанного индекса.
+    int|string|null $field_index = null, // имя поля, рассматриваемое как индекс, который открыть по умолчанию.
     array $variables = [] // Дополнительные переменные, переаваемые в функцию, для использования в include-файлах
 ): string {
     /**
@@ -126,7 +127,14 @@ function get_html_accordion(
         $collapse_id = __accordion_id();
 
         // Определяем, должен ли элемент быть открыт
-        $is_open = $open_index !== null && $index == $open_index;
+        $is_open = is_null($open_index) 
+            ? false 
+            : (is_null($field_index) 
+                ? $index == $open_index 
+                : $item[$field_index] == $open_index
+        );
+        
+        $index == $open_index;
         $button_class = $is_open ? 'accordion-button' : 'accordion-button collapsed';
         $collapse_class = $is_open ? 'accordion-collapse collapse show' : 'accordion-collapse collapse';
         $aria_expanded = $is_open ? 'true' : 'false';

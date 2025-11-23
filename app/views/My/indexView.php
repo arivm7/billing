@@ -29,7 +29,7 @@ require_once DIR_LIBS . '/billing_functions.php';
 require_once DIR_LIBS . '/inc_functions.php';
 
 /** @var array $user */
-
+/** @var int $for_abon_id */
 
 /**
  * Главный вид карточки абонента

@@ -1307,6 +1307,7 @@ class AbonController extends AppBaseController {
         $this->setVariables([
             'title'=> __('Карта Пользователя') . ' [' . $user[User::F_ID].']',
             'user' => $user,
+            'for_abon_id' => $for_abon_id,
         ]);
     }
 

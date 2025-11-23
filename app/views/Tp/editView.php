@@ -106,9 +106,9 @@ $fields = [
                         $title = trim($title);
                     ?>
                     <?php if (!empty($label)): ?>
-                        <label class="col-sm-3 col-form-label"><?=$label?></label>
+                        <label class="col-3 col-form-label"><?=$label?></label>
                     <?php endif; ?>
-                    <div class="col-sm-<?=($opt['col_w'] ?? '9');?>" title="<?=$title?>">
+                    <div class="col-<?=($opt['col_w'] ?? '9');?>" title="<?=$title?>">
                         <?php if($opt['type']=='text' || $opt['type']=='number'): ?>
                             <input type="<?=$opt['type']?>"
                                 class="form-control <?=($opt['class'] ?? '');?>"

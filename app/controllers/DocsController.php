@@ -432,8 +432,7 @@ class DocsController extends AppBaseController {
                 redirect(Docs::URI_EDIT . "?".Docs::F_GET_ID.'='.$docs_rec[Docs::F_ID]);
             } else {
                 // новая новость
-                $model->insert_row(table: Docs::TABLE, row: $docs_rec);
-                $docs_id = $model->lastInsertId();
+                $docs_id = $model->insert_row(table: Docs::TABLE, row: $docs_rec);
                 MsgQueue::msg(MsgType::SUCCESS_AUTO, __('New %s entry added successfully', $docs_id));
                 redirect(Docs::URI_EDIT . "?".Docs::F_GET_ID.'='.$docs_id);
             }

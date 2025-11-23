@@ -254,8 +254,7 @@ class NewsController extends AppBaseController {
                 redirect("/news/edit?".News::F_GET_ID.'='.$news_rec[News::F_ID]);
             } else {
                 // новая новость
-                $model->insert_row(table: News::TABLE, row: $news_rec);
-                $news_id = $model->lastInsertId();
+                $news_id = $model->insert_row(table: News::TABLE, row: $news_rec);
                 $model->add_success_info(__('Новая запись %s успешно добавлена', $news_id));
                 $model->successToSession();
                 redirect("/news/edit?".News::F_GET_ID.'='.$news_id);

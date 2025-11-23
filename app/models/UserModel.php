@@ -225,8 +225,8 @@ class UserModel extends AppBaseModel{
             User::F_MODIFIED_UID => User::UID_BILLING,
             User::F_MODIFIED_DATE => time(),
         ];
-        if ($this->insert_row(table: User::TABLE, row: $userRecord)) {
-            $id = $this->lastInsertId();
+        $id = $this->insert_row(table: User::TABLE, row: $userRecord);
+        if ($id) {
             $row = $this->get_row_by_id(User::TABLE, $id, User::F_ID);
             if (empty($row[User::F_LOGIN]))      { $row[User::F_LOGIN] = $id; }
             if (empty($row[User::F_NAME_FULL]))  { $row[User::F_NAME_FULL] = $id; }

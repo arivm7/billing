@@ -65,7 +65,7 @@ class App {
 
 
     /**
-     * Djpdhfoftn ID пользователя
+     * Возвращает ID пользователя
      * Обёртка для $_SESSION[User::SESSION_USER_REC][User::F_ID]
      * @return int|null
      */
