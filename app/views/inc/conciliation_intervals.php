@@ -43,6 +43,7 @@ $uri = Conciliation::URI_PRINT . '/' . $id;
 
     <table class="table table-bordered table-striped table-hover align-middle">
         <tbody>
+            <!-- Баннер предупреждение -->
             <tr>
                 <td class="bg-warning-subtle">
                     <div class="small text-muted mt-1">
@@ -54,6 +55,7 @@ $uri = Conciliation::URI_PRINT . '/' . $id;
                 </td>
             </tr>
 
+            <!-- Весь период -->
             <tr>
                 <td>
                     <div class="small text-muted mt-1 bukvitca"><?=__('From the activation date to the current month, Including');?>.</div>
@@ -69,21 +71,7 @@ $uri = Conciliation::URI_PRINT . '/' . $id;
                 </td>
             </tr>
 
-            <tr>
-                <td>
-                    <div class="small text-muted mt-1 bukvitca"><?=__('From the beginning of this year to the current month inclusive');?>.</div>
-                    <div class="text-end">
-                        <a class="btn btn-primary btn-sm" target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= year(); ?>-01-01"><?=__('This year');?></a>
-                        <a class="btn btn-primary btn-sm" target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= year(); ?>-01-01&<?= Conciliation::F_SHTAMP; ?>=1" title="<?=__('Full with stamp');?>"><?=__('Beautiful');?></a>
-                    </div>
-                </td>
-                <td class="text-end">
-                    <?php if (can_use(Module::MOD_CONCILIATION)) : ?>
-                    <a target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= year(); ?>-01-01&<?= Conciliation::F_DEBUG; ?>=1" class="link-secondary"><?=__('Debugging');?></a>
-                    <?php endif; ?>
-                </td>
-            </tr>
-
+            <!-- Прошлый год -->
             <tr>
                 <td>
                     <div class="small text-muted mt-1 bukvitca"><?=__('Last year, from');?> <span class="text-info"><?= (year() - 1); ?>-01-01</span> <?=__('by');?> <span class="text-info"><?= (year() - 1); ?>-12-31</span> <?=__('including');?>.</div>
@@ -95,6 +83,22 @@ $uri = Conciliation::URI_PRINT . '/' . $id;
                 <td class="text-end">
                     <?php if (can_use(Module::MOD_CONCILIATION)) : ?>
                     <a target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= (year() - 1); ?>-01-01&<?= Conciliation::F_DATE2_STR; ?>=<?= (year() - 1); ?>-12-31&<?= Conciliation::F_DEBUG; ?>=1" class="link-secondary"><?=__('Debugging');?></a>
+                    <?php endif; ?>
+                </td>
+            </tr>
+
+            <!-- Этот год -->
+            <tr>
+                <td>
+                    <div class="small text-muted mt-1 bukvitca"><?=__('From the beginning of this year to the current month inclusive');?>.</div>
+                    <div class="text-end">
+                        <a class="btn btn-primary btn-sm" target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= year(); ?>-01-01"><?=__('This year');?></a>
+                        <a class="btn btn-primary btn-sm" target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= year(); ?>-01-01&<?= Conciliation::F_SHTAMP; ?>=1" title="<?=__('Full with stamp');?>"><?=__('Beautiful');?></a>
+                    </div>
+                </td>
+                <td class="text-end">
+                    <?php if (can_use(Module::MOD_CONCILIATION)) : ?>
+                    <a target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= year(); ?>-01-01&<?= Conciliation::F_DEBUG; ?>=1" class="link-secondary"><?=__('Debugging');?></a>
                     <?php endif; ?>
                 </td>
             </tr>

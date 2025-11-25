@@ -30,6 +30,9 @@ use config\tables\Price;
 use config\tables\TP;
 use config\tables\User;
 use billing\core\base\Lang;
+use config\Icons;
+use config\tables\Abon;
+use config\tables\Module;
 
 $tp[TP::F_FIRM_NAME] = ($firm ? $firm[Firm::F_NAME_TITLE] . ' | ' . $firm[Firm::F_NAME_SHORT] : "-");
 $tp[TP::F_ADMIN_OWNER_NAME] = ($admin_owner ? $admin_owner[User::F_NAME_FULL] : "-");
@@ -37,9 +40,37 @@ $tp[TP::F_UPLINK_NAME] = ($uplink ? $uplink[TP::F_TITLE] : "-");
 
 $prices_list = array_column($prices, Price::F_TITLE, Price::F_ID);
 
+$title_label = 
+"<div class='d-flex justify-content-between align-items-center'>
+    <div>
+        <span class='fs-3'>Title</span>
+    </div>
+    <div>"
+    . (can_view(Module::MOD_ABON) 
+        ? "<a href=" . Abon::URI_INDEX.'?tp='.$tp[TP::F_ID] . " class='btn btn-sm btn-outline-success' title='" . __('Список абонентов') . "'>
+            <img src='" . Icons::SRC_ABON . "' height='22rem' alt='[A]' class='me-0 align-text-bottom'></a>"
+        : ""
+    )
+    . "</div>
+</div>";
+
+$coord_label = 
+"<div class='d-flex justify-content-between align-items-center'>
+    <div>
+        Coord Google Maps
+    </div>
+    <div>"
+    . (!empty($tp[TP::F_COORD]) 
+        ? "<a href='https://www.google.com.ua/maps/place/".$tp[TP::F_COORD]."/' class='btn btn-sm btn-outline-success p-0 mb-1' title='" . __('Показать на Google Maps') . "' target='_blank'>
+            <img src='" . Icons::SRC_ICON_MAPS . "' height='22rem' alt='[A]' class='m-0 align-text-bottom'></a>"
+        : ""
+    )
+    . "</div>
+</div>";
+
 // Список полей с типом и дополнительными параметрами
 $fields = [
-    [TP::F_TITLE                  => ['type'=>'text',        'class'=>'fs-3']],
+    [TP::F_TITLE                  => ['type'=>'text',        'class'=>'fs-3', 'label'=>$title_label]],
     [TP::F_RANG_ID                => ['type'=>'select_lang', 'col_w'=>'3', 'options'=>TP::TYPES, 'label'=>'Функциональный уровень']],
     [
         TP::F_STATUS              => ['type'=>'select',      'col_w'=>'2', 'options'=>[1=>'Работает',0=>'Отключен']],
@@ -58,12 +89,12 @@ $fields = [
     [TP::F_WEB_MANAGEMENT         => ['type'=>'text']],
     [TP::F_URL_ZABBIX             => ['type'=>'text']],
     [
-        TP::F_LOGIN               => ['type'=>'text',        'col_w'=>'3', 'title'=>'Логин'],
-        TP::F_PASS                => ['type'=>'text',        'col_w'=>'3', 'label'=>'', 'title'=>'Пароль'],
+        TP::F_LOGIN               => ['type'=>'text',        'col_w'=>'3', 'title'=>'Логин', 'placeholder'=>'Логин для доступа к TP'],
+        TP::F_PASS                => ['type'=>'text',        'col_w'=>'3', 'label'=>'', 'title'=>'Пароль', 'placeholder'=>'Пароль для доступа к TP'],
     ],
     [TP::F_URL                    => ['type'=>'text',        'label'=>'URL хз...', 'title'=>'Какой-то URL. Не понятно для чего его использовать']],
     [TP::F_ADDRESS                => ['type'=>'textarea',    'rows'=>get_count_rows_for_textarea($tp[TP::F_ADDRESS] ?? 2)]],
-    [TP::F_COORD                  => ['type'=>'text']],
+    [TP::F_COORD                  => ['type'=>'text',       'label'=>$coord_label, 'title'=>'Координаты TP для отображения на Google Maps. Формат: широта,долгота (например: 50.4501,30.5234)']],
     [
         TP::F_UPLINK_ID           => ['type'=>'number',      'col_w'=>'2'],
         TP::F_UPLINK_NAME         => ['type'=>'label',       'col_w'=>'7', 'label'=>''],
@@ -114,6 +145,7 @@ $fields = [
                                 class="form-control <?=($opt['class'] ?? '');?>"
                                 name="<?=TP::POST_REC?>[<?=$name?>]"
                                 value="<?=$value?>"
+                                placeholder="<?=($opt['placeholder'] ?? '');?>"
                                 <?=isset($opt['step'])?"step=\"{$opt['step']}\"":''?>>
                         <?php elseif($opt['type']=='textarea'): ?>
                             <textarea class="form-control"
@@ -140,11 +172,11 @@ $fields = [
             </div>
         <?php endforeach; ?>
         <div class="row mb-3">
-            <div class="col-sm-3 col-form-label text-secondary fs-6">
+            <div class="col-3 col-form-label text-secondary fs-6">
                 <?=$tp[TP::F_CREATION_UID].' :: '.date(DATETIME_FORMAT, $tp[TP::F_CREATION_DATE]).'<br>'
                   .$tp[TP::F_MODIFIED_UID].' :: '.date(DATETIME_FORMAT, $tp[TP::F_MODIFIED_DATE]).'';?>
             </div>
-            <div class="col-sm-9 mt-3 text-end">
+            <div class="col-9 mt-3 text-end">
                 <button type="submit" class="btn btn-primary"><?=__('Сохранить');?></button>
                 <a href="<?=TP::URI_INDEX;?>" class="btn btn-secondary"><?=__('Вернуться к списку');?></a>
             </div>

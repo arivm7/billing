@@ -42,8 +42,17 @@ $view_my = can_view(Module::MOD_MY_PAYMENTS) && $user[User::F_ID] == $user[Abon:
         <div class="card-header">
             <h3 class="fs-6 mb-3"><span class="text text-secondary"><?=num_len($user[User::F_ID], 6);?> ::</span> <?=$user[User::F_NAME_FULL];?>:</h3>
         </div>
-        <div class="card-body">
-            <span class="text text-secondary"><?=$user[Abon::REC][Abon::F_ID];?> ::</span> <?=$user[Abon::REC][Abon::F_ADDRESS];?>
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <div>
+                <span class="text text-secondary"><?=num_len($user[Abon::REC][Abon::F_ID], 6);?> ::</span> <?=$user[Abon::REC][Abon::F_ADDRESS];?>
+            </div>
+            <!-- Внесение платежа -->
+            <?php if (can_add([Module::MOD_PAYMENTS])) : ?>
+                <a href="<?=Pay::URI_FORM;?>?<?=Abon::F_GET_ID;?>=<?=$user[Abon::REC][Abon::F_ID];?>" class="btn btn-outline-info btn-sm" target="_self"><span class="fw-bold">+₴</span> <?= __('Внести платіж'); ?></a>
+            <?php endif; ?>
+
+
+
         </div>
     </div>
 
@@ -72,9 +81,9 @@ $view_my = can_view(Module::MOD_MY_PAYMENTS) && $user[User::F_ID] == $user[Abon:
                         <?=date('Y-m-d H:i:s', $pay_one[Pay::F_DATE])?>
                     <?php endif; ?>
                 </td>
-                <td class="text-end align-middle"><?=number_format($pay_one[Pay::F_PAY_FAKT], 2, '.', ' ')?></td>
+                <td class="text-end align-middle text-nowrap"><?=number_format($pay_one[Pay::F_PAY_FAKT], 2, '.', ' ')?></td>
                 <?php if ($view_all) : ?>
-                <td class="text-end align-middle"><?=number_format($pay_one[Pay::F_PAY_ACNT], 2, '.', ' ')?></td>
+                <td class="text-end align-middle text-nowrap"><?=number_format($pay_one[Pay::F_PAY_ACNT], 2, '.', ' ')?></td>
                 <td class="text-start align-middle"><?=nl2br(cleaner_html($pay_one[Pay::F_DESCRIPTION]))?></td>
                 <td class="text-start align-middle"><?=h($pay_one[Pay::F_BANK_NO])?></td>
                 <td class="text-start align-middle text-secondary small">

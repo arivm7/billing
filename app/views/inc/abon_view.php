@@ -24,6 +24,7 @@ use config\tables\PA;
 use config\tables\Module;
 use config\tables\AbonRest;
 use billing\core\base\Lang;
+use config\Icons;
 use config\tables\Pay;
 Lang::load_inc(__FILE__);
 
@@ -243,15 +244,18 @@ $attr_off  =
                 <div class="col justify-content-start">
                     <!-- Форма "Сверка платежей" -->
                     <?php if (can_view([Module::MOD_MY_CONCILIATION, Module::MOD_CONCILIATION])) : ?>
-                        <a href="<?=Conciliation::URI_INTERVALS;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3"><?= __('Reconciliation'); ?></a>
+                        <a href="<?=Conciliation::URI_INTERVALS;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3" title="<?= __('Reconciliation'); ?>">
+                            <img src="<?=Icons::SRC_GUH_REPORT;?>" alt="" width="18" height="18"><?= __('Reconciliation'); ?></a>
                     <?php endif; ?>
                     <!-- Список платежей -->
                     <?php if (can_view([Module::MOD_MY_PAYMENTS, Module::MOD_PAYMENTS])) : ?>
-                            <a href="<?=Pay::URI_LIST;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3" target="_blank"><span class="fw-bold">₴</span> <?= __('Платежі'); ?></a>
+                        <a href="<?=Pay::URI_LIST;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3" target="_blank" title="<?= __('Платежі'); ?>">
+                            <span class="fw-bold">₴</span> <?= __('Платежі'); ?></a>
                     <?php endif; ?>
                     <!-- Внесение платежа -->
                     <?php if (can_add([Module::MOD_PAYMENTS])) : ?>
-                            <a href="<?=Pay::URI_FORM;?>?<?=Abon::F_GET_ID;?>=<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3" target="_blank"><span class="fw-bold">+₴</span> <?= __('Внести платіж'); ?></a>
+                        <a href="<?=Pay::URI_FORM;?>?<?=Abon::F_GET_ID;?>=<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3" target="_blank" title="<?= __('Внести платіж'); ?>">
+                            <span class="fw-bold">+₴</span> <?= __('Внести платіж'); ?></a>
                     <?php endif; ?>
                 </div>
             </div>

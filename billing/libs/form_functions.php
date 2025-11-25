@@ -185,7 +185,7 @@ function inputRow(
         int $input_col = DEFAULT_INPUT_COL,
         LabelLayout $l_layout = LabelLayout::V,
         string $post_rec = 'item',
-        string $options = "class='mb-3 row'")
+        string $options = "class='mb-1 row'")
 {
     $id = ($id ?: 'input_' . $name);
     echo "<div {$options}>"
@@ -213,7 +213,7 @@ function checkboxRow(
         int $input_col = DEFAULT_INPUT_COL,
         LabelLayout $l_layout = LabelLayout::V,
         string $post_rec = 'item',
-        string $options = "class='row mb-3'")
+        string $options = "class='row mb-1'")
 {
     $id = ($id ?: 'input_' . $name);
     echo "<div {$options}>"
@@ -239,7 +239,7 @@ function dateRow(
         int $input_col = DEFAULT_INPUT_COL,
         LabelLayout $l_layout = LabelLayout::V,
         string $post_rec = 'item',
-        string|null $options = "class='mb-3 row'")
+        string|null $options = "class='mb-1 row'")
 {
     inputRow(label: $label, name: $name, value: $timestamp ? date(DATE_FORMAT, $timestamp) : '',
             type: InputType::DATE,
@@ -306,7 +306,7 @@ function selectRow(
         int $input_col = DEFAULT_INPUT_COL,
         LabelLayout $l_layout = LabelLayout::H,
         string $post_rec = 'item',
-        string $options = "class='mb-3 row'")
+        string $options = "class='mb-1 row'")
 {
     $id = 'input_' . $name;
     echo "<div {$options}>"

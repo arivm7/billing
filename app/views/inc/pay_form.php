@@ -158,8 +158,8 @@ $wcol2 = 12 - $wcol1; // ширина второй колонки
             </div>
             <!-- Действия -->
             <div class="card-footer text-center">
-                <button class="btn btn-primary" type="submit"><?=__('Сохранить')?></button>
-                <a href="<?=Pay::URI_LIST;?>/<?=$abon_id;?>" class="btn btn-secondary"><?=__('Вернуться к списку')?></a>
+                <button class="btn btn-primary me-2" type="submit"><?=__('Сохранить')?></button>
+                <a href="<?=Pay::URI_LIST;?>/<?=$abon_id;?>" class="btn btn-secondary"><?=__('К списку платежей')?></a>
             </div>
         </form>
     </div>

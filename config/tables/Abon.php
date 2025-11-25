@@ -21,6 +21,7 @@ namespace config\tables;
 class Abon {
     
     const URI_INDEX = "/abon";
+    const URI_LAST = "/abon/last";
     const URI_VIEW = "/abon/view";
     const URI_EDIT = "/abon/edit";
     const URI_UPDATE = "/abon/update";
