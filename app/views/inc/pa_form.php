@@ -55,7 +55,14 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
 <div class="col-12 col-md-10 col-lg-8">
     <div class="card mb-4 w-100 min-w-700">
         <div class="card-header">
-            <h2><?= isset($item[PA::F_ID]) ? __('Редактировать прайсовый фрагмент для абонента') . ' [' . $item[PA::F_ABON_ID] .']' : __('Новый прайсовый фрагмент'); ?></h2>
+            <h2 class="fs-4">
+                <?php if (isset($item[PA::F_ID])) : ?> 
+                    <span class="text-secondary fs-6"><?= num_len($item[PA::F_ABON_ID], 6) ?> :: <?= __abon($item[PA::F_ABON_ID], Abon::F_ADDRESS) ?></span><br>
+                    <?= __('Редактировать прайсовый фрагмент') ?>
+                <?php else: ?>
+                    <?= __('Новый прайсовый фрагмент'); ?>
+                <?php endif; ?>
+            </h2>
         </div>
         <form action="" method="post">
         <div class="card-body">

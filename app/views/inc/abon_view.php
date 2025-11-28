@@ -25,6 +25,8 @@ use config\tables\Module;
 use config\tables\AbonRest;
 use billing\core\base\Lang;
 use config\Icons;
+use config\Notice;
+use config\tables\Notify;
 use config\tables\Pay;
 Lang::load_inc(__FILE__);
 
@@ -256,6 +258,11 @@ $attr_off  =
                     <?php if (can_add([Module::MOD_PAYMENTS])) : ?>
                         <a href="<?=Pay::URI_FORM;?>?<?=Abon::F_GET_ID;?>=<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3" target="_blank" title="<?= __('Внести платіж'); ?>">
                             <span class="fw-bold">+₴</span> <?= __('Внести платіж'); ?></a>
+                    <?php endif; ?>
+                    <!-- Информационные уведомления -->
+                    <?php if (can_add([Module::MOD_NOTICE])) : ?>
+                        <a href="<?=Notify::URI_INFO;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3" target="_blank" title="<?= __('Информационные СМС'); ?>">
+                            <span class="fw-bold">SMS</span> <?= __('Инфо'); ?></a>
                     <?php endif; ?>
                 </div>
             </div>

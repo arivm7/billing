@@ -38,7 +38,6 @@ use billing\core\base\View;
         <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"> -->
         <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"> -->
 
-        <script src="/public/bootstrap/js/bootstrap.bundle.js"></script>
         <?=View::getMeta();?>
         <style>
 
@@ -111,6 +110,11 @@ use billing\core\base\View;
                 border-radius: 0.25em;
             }
 
+            .bukvitca::first-letter {
+                    font-size: 2em;
+                    font-weight: bold;
+            }
+
         </style>
     </head>
     <body>
@@ -170,7 +174,6 @@ use billing\core\base\View;
                     <!-- Блок с копирайтом -->
                     <div class="text-start fs-6 mt-2 mt-sm-0">
                         © RI-Network 2006-<?=date('Y');?>.<br>
-                        Контакти:<br>
                         <a href="tel:+380983633578">+38 (098) 363-35-78</a>, <a href="tel:+380936480009">+38 (093) 648-00-09</a><br>
                         <a href="tel:+380939576944">+38 (093) 957-69-44</a>, <a href="tel:+380502685229">+38 (050) 268-52-29</a>
                     </div>
@@ -200,6 +203,7 @@ use billing\core\base\View;
 
         </div>
 
+        <script src="/public/bootstrap/js/bootstrap.bundle.js"></script>
         <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
         <script type='text/javascript' src='/public/dcjqaccordion/js/jquery.cookie.js'></script>
         <script type='text/javascript' src='/public/dcjqaccordion/js/jquery.hoverIntent.minified.js'></script>

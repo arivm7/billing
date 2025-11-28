@@ -19,7 +19,7 @@
 
 
 
-const PAYMENT_MIN        = 20;   // сумма минимального платежа
+const PAYMENT_MIN        = 50;   // сумма минимального платежа
 
 
 /**
@@ -40,3 +40,5 @@ const API_TYPE_LIST = [
     API_TYPE_P24_MANUAL,
     API_TYPE_MONO_CARD,
 ];
+
+

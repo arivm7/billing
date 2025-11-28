@@ -172,6 +172,16 @@ function update_rest_fields(array &$rest): void {
     $rest[AbonRest::F_PREPAYED] = (cmp_float($rest[AbonRest::F_SUM_PP01A], 0) == 0 ? 0 : intval($rest[AbonRest::F_REST] / $rest[AbonRest::F_SUM_PP01A]));
 
     /**
+     * Оплата до конца текущего месяца
+     */
+    $days_for_end_m = (days_of_month() - day() + 1);
+    if ($rest[AbonRest::F_PREPAYED] > $days_for_end_m) {
+        $rest[AbonRest::F_PAY_CUR_MONTH] = 0;
+    } else {
+        $rest[AbonRest::F_PAY_CUR_MONTH] =  round_up(floatval((-$rest[AbonRest::F_PREPAYED] + $days_for_end_m) * $rest[AbonRest::F_SUM_PP01A]), 10);
+    }
+
+    /**
      * Рекомендуемая к оплате сумма
      */
     $rest[AbonRest::F_AMOUNT] = 

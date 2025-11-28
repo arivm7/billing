@@ -38,6 +38,7 @@ class AbonRest {
     const F_SUM_PP01A = 'sum_PP01A';  // Активная абонплата за 1 день
     const F_REST      = 'rest';       // Остаток на лицевом счету
     const F_PREPAYED  = 'prepayed';   // Количество предоплаченных дней
+    const F_PAY_CUR_MONTH = 'pay_current_month';     // Оплата за текущий месяц
     const F_AMOUNT    = 'amount';     // Рекомендуемая к оплате сумма
 
 

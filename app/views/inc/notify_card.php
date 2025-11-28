@@ -37,12 +37,12 @@ $type_title = Notify::get_type_title($notify[Notify::F_TYPE_ID] ?? Notify::TYPE_
 /**
  * Проверка административного разрешения
  */
-$can_admin = can_view(Module::MOD_NOTIFY);
+$can_admin = can_view(Module::MOD_NOTICE);
 
 /**
  * Проверка личного разрешения
  */
-$can_my    = ($user[User::F_ID] == $_SESSION[User::SESSION_USER_REC][User::F_ID]) && can_view(Module::MOD_MY_NOTIFY);
+$can_my    = ($user[User::F_ID] == $_SESSION[User::SESSION_USER_REC][User::F_ID]) && can_view(Module::MOD_MY_NOTICE);
 //$can_my    = ($notify[Notify::F_USER_ID] == $_SESSION[User::SESSION_USER_REC][User::F_ID]) && can_view(Module::MOD_MY_NOTIFY);
 
 ?>
@@ -60,7 +60,7 @@ $can_my    = ($user[User::F_ID] == $_SESSION[User::SESSION_USER_REC][User::F_ID]
             <table class="table table-bordered table-hover table-sm pt-3">
                 <tr>
                     <th><?= __('Message text');?></th>
-                    <td><pre class="h3 fs-5 mb-0"><?= cleaner_html($notify[Notify::F_TEXT]) ?></pre></td>
+                    <td><span class="h3 fs-5 mb-0 text-break"><?= cleaner_html($notify[Notify::F_TEXT]) ?></span></td>
                 </tr>
                 <tr>
                     <th><?= __('Recipient');?></th>

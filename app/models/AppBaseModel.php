@@ -297,7 +297,20 @@ class AppBaseModel extends Model
             $user_id = $_SESSION[User::SESSION_USER_REC][User::F_ID];
         }
 
-        if (!empty ($user_id)) {
+        if (!is_null($id_list)) {
+            return "SELECT "
+                    . "* "
+                    . "FROM `".TP::TABLE."` "
+                    . "WHERE "
+                    . "`".TP::F_ID."` IN (".implode(",", $id_list).") "
+                    . (is_null($status)  ? "" : "AND (`".TP::F_STATUS."` = {$status}) ")
+                    . (is_null($deleted) ? "" : "AND (`".TP::F_DELETED."` = {$deleted}) ")
+                    . (is_null($managed) ? "" : "AND (`".TP::F_IS_MANAGED."` = {$managed}) ")
+                    . (is_null($rang)    ? "" : "AND (`".TP::F_RANG_ID."` = {$rang}) ")
+                    . "ORDER BY `status` DESC, `deleted` ASC, `title` ASC";
+        }
+        
+        if (!is_null($user_id)) {
             return "SELECT "
                     . "* "
                     . "FROM `".TP::TABLE."` "
@@ -310,18 +323,6 @@ class AppBaseModel extends Model
                     . "ORDER BY `".TP::F_STATUS."` DESC, `".TP::F_DELETED."` ASC, `".TP::F_TITLE."` ASC";
         }
 
-        if (!empty($id_list)) {
-            return "SELECT "
-                    . "* "
-                    . "FROM `".TP::TABLE."` "
-                    . "WHERE "
-                    . "`".TP::F_ID."` IN (".implode(",", $id_list).") "
-                    . (is_null($status)  ? "" : "AND (`".TP::F_STATUS."` = {$status}) ")
-                    . (is_null($deleted) ? "" : "AND (`".TP::F_DELETED."` = {$deleted}) ")
-                    . (is_null($managed) ? "" : "AND (`".TP::F_IS_MANAGED."` = {$managed}) ")
-                    . (is_null($rang)    ? "" : "AND (`".TP::F_RANG_ID."` = {$rang}) ")
-                    . "ORDER BY `status` DESC, `deleted` ASC, `title` ASC";
-        }
         throw new \Exception("Не указан user_id, или не удалось его получить, и не указан id_list.");
     }
 

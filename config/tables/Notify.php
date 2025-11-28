@@ -22,6 +22,8 @@ use billing\core\base\Lang;
  */
 class Notify {
 
+    const URI_INFO = '/notice/info';    /*  /id -- Страница с информацией для отправки абоненту */
+
     /**
      * Имя поля с ID, передаваемого в _GET запросе
      */
@@ -44,6 +46,10 @@ class Notify {
     public const F_TEXT         = 'text';           // Текст СМС сообщения
     public const F_PHONENUMBER  = 'phonenumber';    // Номер телефона, на который отправили СМС
     public const F_METHOD       = 'method';         // Метод отправки СМС: скрипт, вэб-служба или что-то ещё
+
+
+
+    public const METHOD_KDE_CONNECT = 'KDE Connect';   // Метод отправки СМС: скрипт, вэб-служба или что-то ещё
 
 
     /**

@@ -634,8 +634,13 @@ class AbonModel extends UserModel {
         $sql_active = "
             SELECT *
             FROM `" . PA::TABLE . "`
-            WHERE `" . PA::F_ABON_ID . "` = {$abon_id}
-            AND (`" . PA::F_DATE_END . "` IS NULL OR `" . PA::F_DATE_END . "` = 0)
+            WHERE 
+                `" . PA::F_ABON_ID . "` = {$abon_id}
+                AND (
+                        `" . PA::F_DATE_END . "` IS NULL 
+                        OR `" . PA::F_DATE_END . "` = 0 
+                        OR `" . PA::F_DATE_END . "` >= UNIX_TIMESTAMP(CURDATE())
+                    )
             ORDER BY `" . PA::F_ID . "` ASC
         ";
 
@@ -643,19 +648,22 @@ class AbonModel extends UserModel {
 
         $rows = $this->get_rows_by_sql($sql_active);
 
-        // 2. Если активных нет — ищем последние закрытые (по максимальному дню закрытия)
+        // 2. Если активных нет — ищем последние на паузе (по максимальному дню паузы). Закрытые прайсы не рассматриваем.
         if (empty($rows)) {
             $sql_closed = "
                 SELECT *
                 FROM `" . PA::TABLE . "`
-                WHERE `" . PA::F_ABON_ID . "` = {$abon_id}
-                AND DATE(FROM_UNIXTIME(`" . PA::F_DATE_END . "`)) = (
-                    SELECT DATE(FROM_UNIXTIME(MAX(`" . PA::F_DATE_END . "`)))
-                    FROM `" . PA::TABLE . "`
-                    WHERE `" . PA::F_ABON_ID . "` = {$abon_id}
-                        AND `" . PA::F_DATE_END . "` IS NOT NULL
-                        AND `" . PA::F_DATE_END . "` > 0
-                )
+                WHERE 
+                    `" . PA::F_ABON_ID . "` = {$abon_id} 
+                    AND `" . PA::F_CLOSED . "` = 0
+                    AND DATE(FROM_UNIXTIME(`" . PA::F_DATE_END . "`)) = (
+                        SELECT DATE(FROM_UNIXTIME(MAX(`" . PA::F_DATE_END . "`)))
+                        FROM `" . PA::TABLE . "`
+                        WHERE 
+                            `" . PA::F_ABON_ID . "` = {$abon_id}
+                            AND `" . PA::F_DATE_END . "` IS NOT NULL
+                            AND `" . PA::F_DATE_END . "` > 0
+                    )
                 ORDER BY `" . PA::F_DATE_END . "` DESC
             ";
 
@@ -1244,7 +1252,12 @@ class AbonModel extends UserModel {
 
     function get_abon_rest(int $abon_id): array|null {
         $rest = $this->get_row_by_id(AbonRest::TABLE, $abon_id, AbonRest::F_ABON_ID);
-        return $rest ?: null;
+        if ($rest) { 
+            update_rest_fields($rest); 
+            return $rest;
+        } else {
+            return null;
+        }
     }
 
 
@@ -1273,6 +1286,33 @@ class AbonModel extends UserModel {
                 ."ORDER BY `".Ppp::TABLE."`.`".Ppp::F_TITLE."` ASC";
         // debug($sql, '$sql');
         return $this->get_rows_by_sql($sql);
+    }
+
+
+
+    function get_ppp_for_pay(?int $abon_id = null, ?array $from_pa_list = null): array {
+        if (!$abon_id && !$from_pa_list) {
+            throw new \InvalidArgumentException("Один из параметров должен быть установлен", 1);
+        }
+        /**
+         * 1. Прайсовые фрагменты. Из них берём техплощадки
+         */
+        $pa_list = $from_pa_list ?? $this->get_pa_active_or_last($abon_id); // нужна проверка: может быть пустым
+        $tp_id_list = array_unique(array_column(array: $pa_list, column_key: PA::F_TP_ID), SORT_NUMERIC);
+        $tp_list = $this->get_tp_list(id_list: $tp_id_list, status: 1  /* active */);
+        /**
+         * 2. Из ТП получаем обслуживаемые предприятия
+         */
+        $firm_id_list = array_unique(array_column($tp_list, TP::F_FIRM_ID), SORT_NUMERIC);
+        /**
+         * 3. Из списка обслуживаемых предприятий получаем список методов получения платежей (ППП -- пункты приёма платежей)
+         */
+        $ppp_list = $this->get_rows_by_where(
+                table: Ppp::TABLE,
+                where: Ppp::F_FIRM_ID . ' IN (' . implode(',', $firm_id_list) . ') AND ' . Ppp::F_ABON_PAYMENTS . '=1',
+                order_by: Ppp::F_ORDER_NUM . ' ASC, ' . Ppp::F_TITLE . ' ASC'
+            );
+        return $ppp_list;
     }
 
 
@@ -1435,8 +1475,6 @@ class AbonModel extends UserModel {
         }
         return $result;
     }
-
-
 
 
 

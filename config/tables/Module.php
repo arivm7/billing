@@ -48,7 +48,7 @@ class Module {
     const MOD_PA            =  6;   const MOD_MY_PA           = 26;
     const MOD_FIRM          = 22;   const MOD_MY_FIRM         = 31;
     const MOD_CONCILIATION  = 35;   const MOD_MY_CONCILIATION = 34;
-    const MOD_NOTIFY        = 37;   const MOD_MY_NOTIFY       = 38;
+    const MOD_NOTICE        = 37;   const MOD_MY_NOTICE       = 38;
     const MOD_PAYMENTS      = 40;   const MOD_MY_PAYMENTS     = 41;
     const MOD_FIRM_STATUS   = 33;
     const MOD_MODULES       = 32;

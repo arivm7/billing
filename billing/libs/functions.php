@@ -2232,3 +2232,19 @@ function validate_date_str(string $date): bool {
 function validate_timestamp(int|string $ts): bool {
     return ctype_digit((string)$ts) && $ts >= 0;
 }
+
+
+
+function round_up(float $value, int $rounder = 1): int {
+    return ceil($value / $rounder) * $rounder; // округление до $rounder вверх;
+}
+
+function first_line_attr(string $text, string $attribute, string $line_separator = '<br>'): string {
+    // Разбиваем текст на строки
+    $lines = explode($line_separator, $text);
+    // Оборачиваем первую строку в <span>
+    $lines[0] = "<span {$attribute}>" . h($lines[0]) . "</span>";
+    // Склеиваем обратно, заменяя переходы строки на <br>
+    $result = implode($line_separator, $lines);
+    return $result;
+}

@@ -98,7 +98,7 @@ class MyController extends AppBaseController  {
                     //     $pa_one[PA::F_USER_ID] = $my[User::F_ID];
                     // }
 
-                    if (can_use([Module::MOD_MY_NOTIFY, Module::MOD_NOTIFY])) {
+                    if (can_use([Module::MOD_MY_NOTICE, Module::MOD_NOTICE])) {
                         /** Общее количество записей в базе */
                         $abon[Notify::F_COUNT] = $this->model->get_count_by_sql($this->model->get_sql_notify_by_abon_id($abon[Abon::F_ID]));
                         /** Отображаемые записи */

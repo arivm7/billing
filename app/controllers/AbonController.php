@@ -106,18 +106,21 @@ class AbonController extends AppBaseController {
 
         // <!-- Форма "Сверка платежей" -->
         if (can_view([Module::MOD_MY_CONCILIATION, Module::MOD_CONCILIATION])) {
-            $conciliation_url = "<a href='".Conciliation::URI_INTERVALS."/". $data[Abon::F_ID] ."' class='btn btn-outline-info btn-sm me-1' title='". __('Reconciliation') ."'>"."<img src='".Icons::SRC_GUH_REPORT."' alt='' width='18' height='18'>"."</a>";
+            $conciliation_url = "<a href='".Conciliation::URI_INTERVALS."/". $data[Abon::F_ID] ."' class='btn btn-outline-info btn-sm me-1 mb-1' title='". __('Reconciliation') ."'>"."<img src='".Icons::SRC_GUH_REPORT."' alt='' width='18' height='18'>"."</a>";
         }
         // <!-- Список платежей -->
         if (can_view([Module::MOD_MY_PAYMENTS, Module::MOD_PAYMENTS])) {
-            $payments_url = "<a href='".Pay::URI_LIST."/". $data[Abon::F_ID] ."' class='btn btn-outline-info btn-sm me-1' target='_blank' title='". __('Платежі') ."' ><span class='fw-bold'>₴₴</span></a>";
+            $payments_url = "<a href='".Pay::URI_LIST."/". $data[Abon::F_ID] ."' class='btn btn-outline-info btn-sm me-1 mb-1' target='_blank' title='". __('Платежі') ."' ><span class='fw-bold'>₴₴</span></a>";
         }
         // <!-- Внесение платежа -->
         if (can_add([Module::MOD_PAYMENTS])) {
-            $add_payment_url = "<a href='".Pay::URI_FORM."?".Abon::F_GET_ID."=".$data[Abon::F_ID]."' class='btn btn-outline-info btn-sm me-1' target='_blank' title='". __('Внести платіж') ."'><span class='fw-bold'>+₴</span></a>";
+            $add_payment_url = "<a href='".Pay::URI_FORM."?".Abon::F_GET_ID."=".$data[Abon::F_ID]."' class='btn btn-outline-info btn-sm me-1 mb-1' target='_blank' title='". __('Внести платіж') ."'><span class='fw-bold'>+₴</span></a>";
         }
-
-        return  "{$conciliation_url} {$payments_url} {$add_payment_url} SMS СФ2&nbsp;";
+        // <!-- Информационные уведомления -->
+        if (can_add([Module::MOD_NOTICE])) {
+            $notify_url = "<a href='".Notify::URI_INFO."/".$data[Abon::F_ID]."' class='btn btn-outline-info btn-sm me-1 mb-1' target='_blank' title='".__('Информационные СМС')."'><span class='fw-bold'>SMS</span></a>";
+        }
+        return  "{$conciliation_url} {$payments_url} {$add_payment_url} {$notify_url} СФ2&nbsp;";
     }
 
 
@@ -1416,7 +1419,7 @@ class AbonController extends AppBaseController {
             /**
              * Подгружаем уведомления, если есть права
              */
-            if (can_use(Module::MOD_NOTIFY)) {
+            if (can_use(Module::MOD_NOTICE)) {
 
                 /** Общее количество записей в базе */
                 $abon[Notify::F_COUNT] = $model->get_count_by_sql($model->get_sql_notify_by_abon_id($abon[Abon::F_ID]));

@@ -159,6 +159,16 @@ $config = [
     'port_max_digits' => 6,
     
 
+    /**
+     * Параметры уведомлений SMS, email и прочие
+     */
+
+    'sms_cost1'     => 1.50, //Стоимость 1 СМС, грн
+    'sms_chars1sms' => 69,  //Количество символов в 1 СМС.
+    'sms_sender'    => '/home/ar/bin/sms_sender.sh',
+    'sms_command'   => 'echo "{NUM}/{COUNT}. {ABON_ID} | {ADDRESS} | {NAME_SHORT}"\n'
+                        . '{SENDER} {PHONE} "{TEXT}"\n',
+
 ];
 
 return $config;
