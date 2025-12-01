@@ -288,7 +288,7 @@ define('NULL_HAS_NULL',   true);
  * @param bool $ignore_time
  * @return mixed
  */
-function get_between_days($date1, $date2, $null_has_today = NULL_HAS_TODAY, $ignore_time = IGNORE_TIME_ON) {
+function get_between_days(int $date1, int $date2, bool $null_has_today = NULL_HAS_TODAY, bool $ignore_time = IGNORE_TIME_ON) {
     global $TODAY;
     if((is_null($date1) || ($date1 == NA)) && $null_has_today) {
         $date1 = $TODAY;

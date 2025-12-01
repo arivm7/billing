@@ -587,8 +587,8 @@ class AbonModel extends UserModel {
        $PPMA = 0.0;
        foreach ($pricess_apply_list as $PA) {
            if (get_price_apply_age($PA, $today)->value & (PAStatus::CURRENT->value | PAStatus::PAUSE_TODAY->value)) {
-               $PPDA += $PA['pay_per_day'];
-               $PPMA += $PA['pay_per_month'];
+               $PPDA += $PA[PA::F_PPDA_VALUE];
+               $PPMA += $PA[PA::F_PPMA_VALUE];
            }
        }
        return $PPDA * days_of_month($today) + $PPMA;
@@ -773,10 +773,10 @@ class AbonModel extends UserModel {
     /**
      * Возвращает список активных прайсовых фрагментов на указанной ТП
      * @param int $tp_id -- ID ТП
-     * @param int|null $PA_AGE
+     * @param PAStatus $PA_AGE
      * @return array массив прайсовых фрагментов
      */
-    function get_prices_apply_by_tp(int $tp_id, int|null $PA_AGE = (PAStatus::CURRENT->value | PAStatus::PAUSE_TODAY->value)): array {
+    function get_prices_apply_by_tp(int $tp_id, PAStatus $PA_AGE = PAStatus::ACTIVE_TODAY): array {
         $pa_list_raw = $this-> get_rows_by_field(
                             table: PA::TABLE,
                             field_name: PA::F_TP_ID,
@@ -787,7 +787,7 @@ class AbonModel extends UserModel {
         } else {
             $pa_list = array();
             foreach ($pa_list_raw as $pa_one) {
-                if ($PA_AGE & get_price_apply_age($pa_one)->value) {
+                if ($PA_AGE->value & get_price_apply_age($pa_one)->value) {
                     $pa_list[] = $pa_one;
                 }
             }

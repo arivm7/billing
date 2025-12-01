@@ -19,6 +19,7 @@ use billing\core\MsgType;
 use config\tables\Abon;
 use config\SessionFields;
 use config\tables\User;
+use PDO;
 
 /**
  * Description of Model.php
@@ -207,8 +208,10 @@ abstract class Model {
                 $rez = $this->findBySql("SELECT `{$field_id}` FROM `{$table_name}` WHERE `{$field_id}` = {$id_value}");
                 self::$CACHE_ID_BY_TABLE[$table_name][$id_value] = (count($rez)==1);
             } catch (\Exception $exc) {
-                echo "<pre>" . $exc->getTraceAsString()."</pre><hr>";
-                throw new \Exception("validate_id({$table_name}[{$id_value}]): SQL Error: <br>" . print_r($exc->errorInfo, 1) . "<br>");
+                throw new \Exception(
+                    "<pre>" . $exc->getTraceAsString()."</pre><hr>"
+                    . "validate_id({$table_name}[{$id_value}]): SQL Error: "
+                    . "<br>" . print_r($exc->getMessage(), 1) . "<br>");
             }
         }
         return self::$CACHE_ID_BY_TABLE[$table_name][$id_value];
@@ -624,7 +627,7 @@ abstract class Model {
             return self::NO_MODULE;
         } else {
             echo "<h3>Запрос вернул более 1 строки. Должна быть 1 строка или 0 строк.<h3>";
-            throw new \Exception("get_module_id_by_route({$route_name}[{$field_id}]): SQL Error: " . \PDO::errorInfo . "<br>");
+            throw new \Exception("get_module_id_by_route({$route_name}[{$field_id}]): SQL Error: " . parce_msg($this->errorInfo()) . "<br>");
         }
 
 
@@ -688,7 +691,7 @@ abstract class Model {
 
 
 
-    function delete_rows_by_field(string $table, string $field_id, string $value_id): bool {
+    function delete_rows_by_field(string $table, string $field_id, int|string $value_id): bool {
         $sql = "DELETE FROM `{$table}` WHERE `{$field_id}`={$value_id}";
         return $this->execute($sql);
     }

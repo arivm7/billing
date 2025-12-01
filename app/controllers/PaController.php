@@ -184,7 +184,7 @@ class PaController extends AppBaseController {
      */
     public static function need_recalc_cost(array $data): bool {
         foreach (PA::NEED_RECALC_FIELDS as $field) {
-            if (isset($data[$field])) {
+            if (array_key_exists($field, $data)) {
                 return true;
             }
         }
@@ -192,6 +192,139 @@ class PaController extends AppBaseController {
     }
 
 
+    public static function clone(int|null $pa_id = null, array|null $pa = null): int|false {
+        $model = new AbonModel();
+        if (empty($pa)) { 
+            $pa = $model->get_pa($pa_id); 
+        }
+
+        unset($pa[PA::F_ID]);
+        $pa[PA::F_DATE_START] = TODAY();
+        $pa[PA::F_DATE_END] = null;
+        $pa[PA::F_CREATION_UID] = App::get_user_id();
+        $pa[PA::F_CREATION_DATE] = time();
+        $pa[PA::F_MODIFIED_UID] = App::get_user_id();
+        $pa[PA::F_MODIFIED_DATE] = time();
+
+        $pa_new_id = $model->insert_row(PA::TABLE, $pa);
+        if ($pa_new_id) {
+            return $pa_new_id;
+        } else {
+            return false;
+        }
+    }
+
+
+    public static function enable(int|null $pa_id = null, array|null $pa = null, bool|int $ena = 1, int|bool $force = 0): int|false {
+
+        $ena = ($ena ? true : false);
+        $force = ($force ? true : false);
+        $model = new AbonModel();
+
+        if (empty($pa)) { 
+            $pa = $model->get_pa($pa_id); 
+        }
+
+        $tp = $model->get_tp($pa[PA::F_TP_ID]);
+
+        /**
+         * Установка (включение/выключение) услуги на микротике
+         */
+        if ($tp[TP::F_STATUS] && $tp[TP::F_IS_MANAGED]) {
+            if (($mik = Api::tp_connector(tp: $tp)) === false) {
+                MsgQueue::msg(MsgType::ERROR_AUTO, "Не удалось подключиться к ТП");
+                return false;
+            }
+            if (!Api::set_mik_abon_ip($mik, $pa[PA::F_NET_IP], $ena, true)) {
+                MsgQueue::msg(MsgType::ERROR_AUTO, "Не удалось установить услугу на микротике. Изменение в базе отменено.");
+                return false;
+            }
+            MsgQueue::msg(MsgType::SUCCESS_AUTO, "Услуга установлена на микротике");
+        }
+
+        if ($ena) {
+            /**
+             * Проверяем давно ли установлена пауза
+             */
+            if  (
+                    !$force && 
+                    get_between_days($pa[PA::F_DATE_END], TODAY()) > App::get_config('pa_unpaused_days')
+                ) 
+            {
+                /**
+                 * Закрыт давно
+                 * Создаём копию и открываем клонированный ПФ
+                 */
+                if (($pa_new_id = self::clone(pa: $pa)) === false) {
+                    MsgQueue::msg(MsgType::ERROR_AUTO, "Не удалось клонировать ПФ для открытия");
+                    return false;
+                }
+                MsgQueue::msg(MsgType::SUCCESS_AUTO, "ПФ на паузе давно. Клонирован");
+                /**
+                 * Запись для обновления в базе
+                 */
+                $pa_rec = [
+                    PA::F_ID => $pa_new_id,
+                    PA::F_DATE_END => null,
+                ];
+
+            } else {
+                /**
+                 * Закрыт недавно
+                 * Просто открываем ПФ
+                 */
+                MsgQueue::msg(MsgType::SUCCESS_AUTO, "ПФ на паузе недавно (или force). Открываем");
+                /**
+                 * Запись для обновления в базе
+                 */
+                $pa_rec = [
+                    PA::F_ID => $pa[PA::F_ID],
+                    PA::F_DATE_END => null,
+                ];
+            }
+
+        } else {
+            /**
+             * Запись для обновления в базе
+             */
+            $pa_rec = [
+                PA::F_ID => $pa[PA::F_ID],
+                PA::F_DATE_END => TODAY(),
+            ];
+        }
+
+        /**
+         * Внесение параметра услуги в базу
+         */
+        if ($model->update_row_by_id(PA::TABLE, $pa_rec, PA::F_ID)) {
+            MsgQueue::msg(MsgType::SUCCESS_AUTO, "Услуга установлена");
+            return $pa_rec[PA::F_ID];
+        } else {
+            MsgQueue::msg(MsgType::SUCCESS_AUTO, "Ошибка установки параметров услуги в базе. Требуется проверка.");
+            return false;
+        }
+    }
+
+    
+    public static function delete(int $pa_id): bool {
+        $model = new AbonModel();
+        $ret = false;
+        if ($model->validate_id(PA::TABLE, $pa_id, PA::F_ID)) {
+            if ($model->delete_rows_by_field(PA::TABLE, PA::F_ID, $pa_id)) {
+                $ret = true;
+            } else {
+                MsgQueue::msg(MsgType::ERROR_AUTO, __('Ошибка удаления ПФ'));
+                MsgQueue::msg(MsgType::ERROR_AUTO, $model->errorInfo());
+                $ret = false;
+            }
+        } else {
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('ID ПФ не верен'));
+            $ret = false;
+        }
+        return $ret;
+    }
+
+    
 
     public function editAction() {
 

@@ -1401,8 +1401,7 @@ class AbonController extends AppBaseController {
             /**
              * Получение остатков по абоненту и сумм активных прайсовых фрагментов
              */
-            $abon[AbonRest::TABLE] = $model->get_row_by_id(table_name: AbonRest::TABLE, id_value: $abon[Abon::F_ID], field_id: AbonRest::F_ABON_ID);
-            !is_null($abon[AbonRest::TABLE]) && update_rest_fields($abon[AbonRest::TABLE]);
+            $abon[AbonRest::TABLE] = $model->get_abon_rest($abon[Abon::F_ID]);
 
             /**
              * Подгружаем прайсовые фрагенты

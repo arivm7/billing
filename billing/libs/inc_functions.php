@@ -133,20 +133,31 @@ function get_html_btn_abon_ip_turn(int $tp_id, string $ip, bool|int $enable, str
 
 
 
-function get_html_btn_pause(int|null $pa_id = null, array|null $pa = null, bool|int $set = 1, string $title = '', string $options = 'class="btn"', string $target = '_self'): string {
+/**
+ * Генерация кнопок для работы с услугой (ПФ + Мик)
+ * пауза, снаятие с паузы, форсированное включение
+ * @param int|null $pa_id
+ * @param array|null $pa
+ * @param bool|int $ena
+ * @param bool|int $force
+ * @param string $title
+ * @param string $options
+ * @param string $target
+ * @return string
+ */
+function get_html_btn_serv_ena(int|null $pa_id = null, array|null $pa = null, bool|int $ena = 1, bool|int $force = 0, string $title = '', string $options = 'class="btn"', string $target = '_self'): string {
     global $TODAY;
-
 
     if (empty($pa)) {
         $model = new AbonModel();
         $pa = $model->get_pa($pa_id);
         if (empty($pa)) {
             // throw new Exception("PA ID No Valid");
-            MsgQueue::msg(MsgType::ERROR, __('ID прайсового фрагмента не верен'));
+            MsgQueue::msg(MsgType::ERROR, __('Прайсовый фрагмент не верен'));
             if (can_use(Module::MOD_WEB_DEBUG)) {
                 MsgQueue::msg(MsgType::ERROR, "pa_id: [{$pa_id}]");
                 if (is_array($pa)) {
-                    MsgQueue::msg(MsgType::ERROR, "pa:");
+                    MsgQueue::msg(MsgType::ERROR, "PA:");
                     MsgQueue::msg(MsgType::ERROR, $pa);
                 }
             }
@@ -155,10 +166,10 @@ function get_html_btn_pause(int|null $pa_id = null, array|null $pa = null, bool|
     }
 
     if  (
-            empty($pa[PA::F_ID]) ||
-            empty($pa[PA::F_TP_ID]) ||
-            empty($pa[PA::F_NET_IP]) || !validate_ip($pa[PA::F_NET_IP])
-        ) 
+            empty($pa[PA::F_ID]) 
+            || empty($pa[PA::F_TP_ID])
+         // || empty($pa[PA::F_NET_IP]) || !validate_ip($pa[PA::F_NET_IP])
+        )
     {
         // throw new Exception("PA Struct No Valid");
         MsgQueue::msg(MsgType::ERROR, __('Ошибка структуры прайсового фрагмента'));
@@ -166,7 +177,7 @@ function get_html_btn_pause(int|null $pa_id = null, array|null $pa = null, bool|
             MsgQueue::msg(MsgType::ERROR, __('Проверяемые поля:'));
             MsgQueue::msg(MsgType::ERROR, PA::F_ID . ': ' . $pa[PA::F_ID]);
             MsgQueue::msg(MsgType::ERROR, PA::F_TP_ID . ': ' . $pa[PA::F_TP_ID]);
-            MsgQueue::msg(MsgType::ERROR, PA::F_NET_IP . ': ' . $pa[PA::F_NET_IP] . ' (с валидацией)');
+            // MsgQueue::msg(MsgType::ERROR, PA::F_NET_IP . ': ' . $pa[PA::F_NET_IP] . ' (с валидацией)');
         }
         return '';
     }
@@ -180,28 +191,35 @@ function get_html_btn_pause(int|null $pa_id = null, array|null $pa = null, bool|
 
     $query =  http_build_query(
         [
-            Api::F_CMD      => Api::CMD_PAUSE,
-            Api::F_TP_ID    => $pa[PA::F_TP_ID],
+            Api::F_CMD      => Api::CMD_SERV_ENA,
             Api::F_PA_ID    => $pa[PA::F_ID],
-            Api::F_DATE_END => ($set ? $TODAY : null),
-            Api::F_IP       => $pa[PA::F_NET_IP],
-            Api::F_ENABLED  => $set ? 1 : 0,
+            Api::F_FORCE    => $force ? 1 : 0,
+            Api::F_ENABLED  => $ena ? 1 : 0,
         ],
         "", null, PHP_QUERY_RFC1738 // PHP_QUERY_RFC3986
     );
 
+    $title = ($title ?: 
+        ($ena 
+            ?   ($force 
+                    ? __("Форсированно включить услугу:".CR
+                        . "1. Обнулить поле date_end".CR
+                        . "2. Активировать IP " . ($pa[PA::F_NET_IP] ?: "")." на микротике".CR
+                        . "Игнорирует количество дней паузы.".CR
+                        . "Использовать с осторожностью, чтобы не нарушать начисление.")
+                    : __("Отменить паузу -- снова активировать этот прайс:".CR
+                        . "1. Обнулить поле date_end".CR
+                        . "2. Активировать IP " . ($pa[PA::F_NET_IP] ?: "")." на микротике".CR
+                        . "Использовать для недавно закрытого прайса (не более ".UNPAUSED_DAYS_ENABLE." прайсовых дней), ".CR
+                        . "чтобы не нарушать начисление.")
+                )
+            : __('Поставить на паузу сейчас: '.CR
+                . '1. Закрывает текущий прайсовый фрагмент '.CR
+                . '2. отключает IP адрес на ТП, по возможности.') 
+        ));
 
-    $title = ($title ?: ($set 
-                ? __('Поставить на паузу сейчас: '.CR
-                    . '1. Закрывает текущий прайсовый фрагмент '.CR
-                    . '2. отключает IP адрес на ТП, по возможности.') 
-                : __("Отменить паузу -- снова активировать этот прайс:".CR
-                    . "1. Обнулить поле date_end".CR
-                    . "2. Активировать IP " . ($pa[PA::F_NET_IP] ?: "")." на микротике".CR
-                    . "Использовать для недавно закрытого прайса (не более ".UNPAUSED_DAYS_ENABLE." прайсовых дней), ".CR
-                    . "чтобы не нарушать начисление.")));
-    $src = ($set ? Icons::SRC_PAUSE : Icons::SRC_PAUSE_PLAY);
-    $alt = ($set ? '[On]' : '[Off]');
+    $src = ($ena ? ($force ? Icons::SRC_UNPAUSE_FORCE : Icons::SRC_UNPAUSE) : Icons::SRC_PAUSE);
+    $alt = ($ena ? ($force ? "⏩" : "⏯") : "⏸"); // [On] [Off]
 
     $html = "<a ".($options ?:'')." href='".Api::URI_CMD."?{$query}' title='{$title}' target='{$target}'>"
                 ."<img src='{$src}' alt='{$alt}' height='24rem'></img>"
@@ -226,9 +244,9 @@ function get_html_btn_clone(int|null $pa_id = null, string $title = '', string $
 
     $title = ($title ?: 
         "Клонировать этот прайс. " . CR
-        . "Создать открытый прайсовый фрагмент " . CR
+        . "Создать открытый прайсовый фрагмент, активированный текущей датой " . CR
         . "с сетевыми параметрами этого фрагмента " . CR
-        . "и активировать на техплощадке, если ТП управляемая."
+        . "без изменения параметров на ТП."
     );
     
     $src = Icons::SRC_CLONE;
@@ -237,6 +255,37 @@ function get_html_btn_clone(int|null $pa_id = null, string $title = '', string $
     $html = "<a ".($options ?:'')." href='".Api::URI_CMD."?{$query}' title='{$title}' target='{$target}'>"
                 ."<img src='{$src}' alt='{$alt}' height='24rem'></img>"
             ."</a>";
+    return $html;
+}
+
+
+function get_html_btn_pa_delete(int|null $pa_id = null, string $title = '', string $options = 'class="btn"', string $target = '_self'): string {
+
+    // ?cmd=price_apply_open_clone
+    // &cloned_price_apply_id=2760
+
+    $query =  http_build_query(
+        [
+            Api::F_CMD      => Api::CMD_PA_DELETE,
+            Api::F_PA_ID    => $pa_id,
+        ],
+        "", null, PHP_QUERY_RFC1738 // PHP_QUERY_RFC3986
+    );
+
+    $title = ($title ?: 
+        "Удалить этот прайсовый фрагмент. " . CR
+        . "Влияет на начисление услуги, лучше это не нажимать."
+    );
+    
+    $src = Icons::SRC_DELETE;
+    $alt = '[x]';
+
+    $html = "<a ".($options ?:'')." href='".Api::URI_CMD."?{$query}' title='{$title}' target='{$target}' "
+                . "onclick=\"return confirm('Подтвердите удаление прайсового фрагмента. Влияет на начисление за услуги.');\""
+                . ">"
+                ."<img src='{$src}' alt='{$alt}' height='24rem'></img>"
+                . "</a>";
+            
     return $html;
 }
 

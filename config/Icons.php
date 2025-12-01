@@ -33,7 +33,9 @@ class Icons {
     const SRC_CLONE           = '/img/btn_clone.svg';
     const SRC_PAUSE           = '/img/btn_pause.svg';
     const SRC_PAUSE_GRAY      = '/img/btn_pause_gray.svg';
-    const SRC_PAUSE_PLAY      = '/img/btn_pause_play.svg';
+    const SRC_UNPAUSE         = '/img/btn_pause_play.svg';
+    const SRC_UNPAUSE_FORCE   = '/img/btn_unpause_force.svg';
+    const SRC_DELETE          = '/img/btn_delete.svg';
 
 
 

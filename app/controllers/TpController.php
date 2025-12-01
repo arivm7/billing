@@ -88,9 +88,12 @@ class TpController extends AppBaseController {
                     if (in_array($tp_id, $my_tp_list)) {
                         $tp = $this->db->get_tp($tp_id);
                         $prices = $this->db->get_prices(tp_id: $tp_id);
-                        $admin_owner = $this->db->get_user($tp[TP::F_ADMIN_OWNER_ID]);
+                        $admin_owner = $this->db->get_user($tp[TP::F_ADMIN_OWNER_ID] ?? 0);
                         $uplink = (empty($tp[TP::F_UPLINK_ID]) ? null : $this->db->get_tp($tp[TP::F_UPLINK_ID]));
-                        $firm = $this->db->get_row_by_id(table_name: Firm::TABLE, field_id: Firm::F_ID, id_value: $tp[TP::F_FIRM_ID]);
+                        $firm = ( $tp[TP::F_FIRM_ID] 
+                                    ? $this->db->get_row_by_id(table_name: Firm::TABLE, field_id: Firm::F_ID, id_value: $tp[TP::F_FIRM_ID])
+                                    : 0
+                                );
                         $this->setVariables([
                                 'prices' => $prices,
                                 'admin_owner' => $admin_owner,

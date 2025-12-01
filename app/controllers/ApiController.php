@@ -24,6 +24,7 @@ use billing\core\MsgType;
 use billing\core\Api;
 use config\Icons;
 use config\Mik;
+use config\tables\Abon;
 use config\tables\Module;
 use config\tables\PA;
 use config\tables\TP;
@@ -438,31 +439,78 @@ class ApiController extends AppBaseController {
             $cmd = h($_GET[Api::F_CMD]);
             switch ($cmd) {
                 case Api::CMD_IP_ENABLE:
-                    $tp_id  = intval($_GET[Api::F_TP_ID]);
-                    $ip     = $_GET[Api::F_IP];
-                    $ena    = boolval($_GET[Api::F_ENABLED]);
-                    if (Api::set_mik_abon_ip(Api::tp_connector($tp_id), $ip, $ena, true)) {
-                        MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Статус установлен успешно'));
-                        if (Api::$errors) {
-                            MsgQueue::msg(MsgType::SUCCESS_AUTO, Api::$errors);
+                    if (can_edit(Module::MOD_PA)) {
+                        $tp_id  = intval($_GET[Api::F_TP_ID]);
+                        $ip     = $_GET[Api::F_IP];
+                        $ena    = boolval($_GET[Api::F_ENABLED]);
+                        if (Api::set_mik_abon_ip(Api::tp_connector($tp_id), $ip, $ena, true)) {
+                            MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Статус установлен успешно'));
+                            if (Api::$errors) {
+                                MsgQueue::msg(MsgType::SUCCESS_AUTO, Api::$errors);
+                            }
+                        } else {
+                            MsgQueue::msg(MsgType::ERROR, __('Ошибка установления статуса IP адреса'));
+                            if (Api::$errors) {
+                                MsgQueue::msg(MsgType::ERROR, Api::$errors);
+                            }
                         }
                     } else {
-                        MsgQueue::msg(MsgType::ERROR, __('Ошибка установления статуса IP адреса'));
-                        if (Api::$errors) {
-                            MsgQueue::msg(MsgType::ERROR, Api::$errors);
-                        }
+                        MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
                     }
                     redirect();
                     break;
                     
+                case Api::CMD_SERV_ENA:
+                    /**
+                     * Поставить/Снять паузу
+                     */
+                    if (can_edit(Module::MOD_PA)) {
+                        $ena   = (($_GET[Api::F_ENABLED] ?? 0) ? 1 : 0);
+                        $force = (($_GET[Api::F_FORCE] ?? 0) ? 1 : 0);
+                        $pa_id = intval($_GET[Api::F_PA_ID] ?? 0);
+                        $model = new AbonModel();
+                        $pa = $model->get_pa($pa_id);
+                        $pa_new_id = PaController::enable(pa: $pa, ena: $ena, force: $force);
+                        $model->recalc_abon($pa[PA::F_ABON_ID]);
+                        if ($pa_new_id && ($pa_new_id != $pa_id)) {
+                            redirect(PA::URI_EDIT . '/' . $pa_new_id);
+                        }
+                    } else {
+                        MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+                    }
+                    redirect();
+                    break;
+
+                case Api::CMD_PA_CLONE:
+                    /**
+                     * Клонировать ПФ
+                     */
+                    if (can_add(Module::MOD_PA)) {
+                        $pa_id = intval($_GET[Api::F_PA_ID] ?? 0);
+                        $model = new AbonModel();
+                        $pa = $model->get_pa($pa_id);
+                        $pa_new_id = PaController::clone(pa: $pa);
+                        $model->recalc_abon($pa[PA::F_ABON_ID]);
+                        redirect(PA::URI_EDIT . '/' . $pa_new_id);
+                    } else {
+                        MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+                        redirect();
+                    }
+                    break;
+
                 case Api::CMD_PA_CLOSE:
                     /**
                      * Закрыть ПФ
                      */
+                    if (!can_edit(Module::MOD_PA)) {
+                        MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+                        redirect();
+                    }
+
                     $model = new AbonModel();
 
                     if (!isset($_GET[Api::F_PA_ID]) || !$model->validate_id(PA::TABLE, $_GET[Api::F_PA_ID], PA::F_ID)) {
-                        MsgQueue::msg(MsgType::ERROR_AUTO, __('не верный ID ПФ'));
+                        MsgQueue::msg(MsgType::ERROR_AUTO, __('Не верный ID ПФ'));
                     }
 
                     $pa_id  = intval($_GET[Api::F_PA_ID]);
@@ -472,7 +520,7 @@ class ApiController extends AppBaseController {
                     /**
                      * Отключить IP на микротике
                      */
-                    if ((__pa_age($pa) == PAStatus::ACTIVE) && $tp[TP::F_STATUS] && $tp[TP::F_IS_MANAGED]) {
+                    if ((__pa_age($pa) == PAStatus::ACTIVE_TODAY) && $tp[TP::F_STATUS] && $tp[TP::F_IS_MANAGED]) {
                         $ip = $pa[PA::F_NET_IP];
                         if (Api::set_mik_abon_ip(Api::tp_connector(tp: $tp), $ip, false, true)) {
                             MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Отключение услуги выполнени успешно'));
@@ -514,6 +562,28 @@ class ApiController extends AppBaseController {
                     redirect();
                     break;
                     
+                case Api::CMD_PA_DELETE:
+                    /**
+                     * Удалить ПФ
+                     */
+                    if (can_del(Module::MOD_PA)) {
+                        $pa_id = intval($_GET[Api::F_PA_ID] ?? 0);
+                        $model = new AbonModel();
+                        $pa = $model->get_pa($pa_id);
+                        if (PaController::delete($pa_id)) {
+                            MsgQueue::msg(MsgType::SUCCESS, __('Прайсовый фрагмент успешно удалён'));
+                            MsgQueue::msg(MsgType::INFO, $pa);
+                            $model->recalc_abon($pa[PA::F_ABON_ID]);
+                            redirect(Abon::URI_VIEW . '/' . $pa[PA::F_ABON_ID]);
+                        } else {
+                            redirect();
+                        }
+                    } else {
+                        MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+                        redirect();
+                    }
+                    break;
+
                 default:
                     # code...
                     break;

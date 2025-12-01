@@ -25,6 +25,8 @@ use config\tables\TP;
 use config\tables\Price;
 use config\SessionFields;
 use billing\core\base\Lang;
+use config\tables\Module;
+
 Lang::load_inc(__FILE__);
 
 require_once DIR_LIBS . '/form_functions.php';
@@ -58,7 +60,7 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
             <h2 class="fs-4">
                 <?php if (isset($item[PA::F_ID])) : ?> 
                     <span class="text-secondary fs-6"><?= num_len($item[PA::F_ABON_ID], 6) ?> :: <?= __abon($item[PA::F_ABON_ID], Abon::F_ADDRESS) ?></span><br>
-                    <?= __('Редактировать прайсовый фрагмент') ?>
+                    <?= __('Редактировать прайсовый фрагмент') ?> <span class="text-secondary"><?= $pa[PA::F_ID] ?></span>
                 <?php else: ?>
                     <?= __('Новый прайсовый фрагмент'); ?>
                 <?php endif; ?>
@@ -143,23 +145,39 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
                                 name='<?=PA::POST_REC;?>[<?=PA::F_NET_IP_SERVICE;?>]'
                                 value='1' <?=($item[PA::F_NET_IP_SERVICE] ? 'checked' : '');?>>
                         </div>
-                        <?php if ($item['net_ip_service']) : ?>
-                            <div class='col-8 d-flex align-items-center justify-content-end'>
-                                <?php if ($item[PA::F_NET_IP_SERVICE] && !$item[PA::F_CLOSED] && $tp[TP::F_STATUS] && $tp[TP::F_IS_MANAGED]) : ?>
-                                <!-- Статус IP-MAC из ARP-таблицы микротика -->
-                                <span class="badge text-bg-info mt-3 fs-6">
+                        <div class='col-8 d-flex align-items-center justify-content-end'>
+                            <?php /*if ($item[PA::F_NET_IP_SERVICE] && !$item[PA::F_CLOSED] && $tp[TP::F_STATUS] && $tp[TP::F_IS_MANAGED]) :*/ ?>
+                            <?php if (!$item[PA::F_CLOSED] && $item[PA::F_NET_IP_SERVICE]) : ?>
+                            <!-- Статус IP-MAC из ARP-таблицы микротика -->
+                            <span class="badge text-bg-info mt-3 fs-6">
+                                <?php if ($tp[TP::F_IS_MANAGED]) : ?>
                                     <?= get_html_abon_ip_status($abon_ip_on); ?>&nbsp;
                                     <?= ($arp ? Api::get_status_mac_from_arp_rec($arp) : 'Нет данных ARP'); ?> |
-                                    <!-- Действия с IP -->
+                                    <!-- Кнопки -->
+                                    <!-- Отключить IP на микротике -->
                                     <?=get_html_btn_abon_ip_turn($item[PA::F_TP_ID], $item[PA::F_NET_IP], 0, options: 'class="btn btn-light p-1"');?>
+                                    <!-- Включить IP на микротике -->
                                     <?=get_html_btn_abon_ip_turn($item[PA::F_TP_ID], $item[PA::F_NET_IP], 1, options: 'class="btn btn-light p-1"');?>
-                                    <?=get_html_btn_pause(pa: $item, set: 1, options: 'class="btn btn-light p-1"');?>
-                                    <?=get_html_btn_pause(pa: $item, set: 0, options: 'class="btn btn-light p-1"');?>
-                                    <?=get_html_btn_clone(pa_id: $item[PA::F_ID], options: 'class="btn btn-light p-1"');?>
-                                </span>
                                 <?php endif; ?>
-                            </div>
-                        <?php endif; ?>
+                                <?php if (__pa_age($item)->value & PAStatus::ACTIVE->value) : ?>
+                                    <!-- Поставить услугу на паузу -->
+                                    <?=get_html_btn_serv_ena(pa: $item, ena: 0, options: 'class="btn btn-light p-1"');?>
+                                <?php endif; ?>
+                                <?php if (__pa_age($item)->value & PAStatus::INACTIVE->value) : ?>
+                                    <!-- Снять с паузы услугу -->
+                                    <?=get_html_btn_serv_ena(pa: $item, ena: 1, options: 'class="btn btn-light p-1"');?>
+                                    <!-- Снять с паузы услугу форсированно, без клонирования прайса -->
+                                    <?=get_html_btn_serv_ena(pa: $item, ena: 1, force: 1, options: 'class="btn btn-light p-1"');?>
+                                <?php endif; ?>
+                                <!-- Клонировать ПФ -->
+                                <?=get_html_btn_clone(pa_id: $item[PA::F_ID], options: 'class="btn btn-light p-1"');?>
+                                <?php if (can_del(Module::MOD_PA)) : ?>
+                                    <!-- Удалить ПФ -->
+                                    <?=get_html_btn_pa_delete(pa_id: $item[PA::F_ID], options: 'class="btn btn-light p-1"');?>
+                                <?php endif; ?>
+                            </span>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </legend>
                 <!-- IP услуга -->

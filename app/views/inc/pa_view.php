@@ -17,16 +17,24 @@
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
 
+use app\models\AbonModel;
 use billing\core\Api;
 use config\tables\Module;
 use config\tables\PA;
 use billing\core\base\Lang;
+use config\tables\TP;
+
 Lang::load_inc(__FILE__);
 
 /**
  * @var array $item — массив с данными по одной записи prices_apply
  * Ключи соответствуют константам PA::F_*
  */
+
+// !!! Не нормально. Данные должны приходить готовыми
+$model = new AbonModel();
+$tp = $model->get_tp($item[PA::F_TP_ID]);
+
 ?>
 <div class="container mt-4">
     <div class="card shadow-sm">
@@ -133,15 +141,33 @@ Lang::load_inc(__FILE__);
         <!-- Панель действий -->
         <div class="card-footer d-flex gap-2">
             <?php if (can_edit(Module::MOD_PA)) : ?>
-                <?php if (!$item[PA::F_CLOSED]) : ?>
-                    <a href="<?= Api::URI_CMD; ?>?<?=Api::F_CMD;?>=<?=Api::CMD_PA_CLOSE;?>&<?=Api::F_PA_ID;?>=<?= $item[PA::F_ID]; ?>"
-                        class="btn btn-outline-info btn-sm"
-                        onclick="return confirm('<?=__('Вы точно хотите остановить услугу и закрыть прайсовый фрагмент?');?>')">&#9209; <?= __('Закрыть прайс'); ?>
-                    </a>
-                <?php endif; ?>
-                <a href="?<?= PA::F_ID ?>=<?= $item[PA::F_ID] ?>&action=pause"
-                    class="btn btn-outline-secondary btn-sm"
-                    onclick="return confirm(__('Отправить запрос на остановку услуги?'))">&#9208; <?= __('Поставить на паузу'); ?></a>
+                <span class="badge text-bg-secondary mt-3 fs-6">
+                    <?php if (!$item[PA::F_CLOSED]) : ?>
+                        <a href="<?= Api::URI_CMD; ?>?<?=Api::F_CMD;?>=<?=Api::CMD_PA_CLOSE;?>&<?=Api::F_PA_ID;?>=<?= $item[PA::F_ID]; ?>"
+                            class="btn btn-outline-info btn-sm"
+                            onclick="return confirm('<?=__('Вы точно хотите остановить услугу и закрыть прайсовый фрагмент?');?>')">&#9209; <?= __('Закрыть прайс'); ?>
+                        </a>
+                    <?php endif; ?>
+                    <?php if (!$item[PA::F_CLOSED]) : ?>
+                        <!-- Статус IP-MAC из ARP-таблицы микротика -->
+                        <?php if (__pa_age($item)->value & PAStatus::ACTIVE->value) : ?>
+                            <!-- Поставить услугу на паузу -->
+                            <?=get_html_btn_serv_ena(pa: $item, ena: 0, options: 'class="btn btn-light p-1"');?>
+                        <?php endif; ?>
+                        <?php if (__pa_age($item)->value & PAStatus::INACTIVE->value) : ?>
+                            <!-- Снять с паузы услугу -->
+                            <?=get_html_btn_serv_ena(pa: $item, ena: 1, options: 'class="btn btn-light p-1"');?>
+                            <!-- Снять с паузы услугу форсированно, без клонирования прайса -->
+                            <?=get_html_btn_serv_ena(pa: $item, ena: 1, force: 1, options: 'class="btn btn-light p-1"');?>
+                        <?php endif; ?>
+                        <!-- Клонировать ПФ -->
+                        <?=get_html_btn_clone(pa_id: $item[PA::F_ID], options: 'class="btn btn-light p-1"');?>
+                        <?php if (can_del(Module::MOD_PA)) : ?>
+                            <!-- Удалить ПФ -->
+                            <?=get_html_btn_pa_delete(pa_id: $item[PA::F_ID], options: 'class="btn btn-light p-1"');?>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                </span>
             <?php endif; ?>
         </div>
     </div>

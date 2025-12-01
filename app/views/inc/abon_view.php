@@ -251,18 +251,18 @@ $attr_off  =
                     <?php endif; ?>
                     <!-- Список платежей -->
                     <?php if (can_view([Module::MOD_MY_PAYMENTS, Module::MOD_PAYMENTS])) : ?>
-                        <a href="<?=Pay::URI_LIST;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3" target="_blank" title="<?= __('Платежі'); ?>">
-                            <span class="fw-bold">₴</span> <?= __('Платежі'); ?></a>
+                        <a href="<?=Pay::URI_LIST;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3" target="_blank" title="<?= __('Полный список платежей абонента'); ?>">
+                            <span class="fw-bold">₴₴</span> <?= __('Платежи'); ?></a>
                     <?php endif; ?>
                     <!-- Внесение платежа -->
                     <?php if (can_add([Module::MOD_PAYMENTS])) : ?>
-                        <a href="<?=Pay::URI_FORM;?>?<?=Abon::F_GET_ID;?>=<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3" target="_blank" title="<?= __('Внести платіж'); ?>">
-                            <span class="fw-bold">+₴</span> <?= __('Внести платіж'); ?></a>
+                        <a href="<?=Pay::URI_FORM;?>?<?=Abon::F_GET_ID;?>=<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3" target="_blank" title="<?= __('Внести средства на лицевой счёт'); ?>">
+                            <span class="fw-bold">+₴</span> <?= __('Внести платёж'); ?></a>
                     <?php endif; ?>
                     <!-- Информационные уведомления -->
                     <?php if (can_add([Module::MOD_NOTICE])) : ?>
-                        <a href="<?=Notify::URI_INFO;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3" target="_blank" title="<?= __('Информационные СМС'); ?>">
-                            <span class="fw-bold">SMS</span> <?= __('Инфо'); ?></a>
+                        <a href="<?=Notify::URI_INFO;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3" target="_blank" title="<?= __('Список информационных СМС'); ?>">
+                            <span class="fw-bold">SMS</span> <?= __('Информеры'); ?></a>
                     <?php endif; ?>
                 </div>
             </div>

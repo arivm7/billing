@@ -43,12 +43,14 @@ class Api {
     public const F_TP_ID        = 'tpid';
     public const F_IP           = 'ip';
     public const F_ENABLED      = 'ena';
+    public const F_FORCE        = 'force';
     public const F_PA_ID        = 'paid';
     public const F_DATE_END     = 'date_end';
-    public const CMD_IP_ENABLE  = 'ipena';
-    public const CMD_PAUSE      = 'set_abon_pause';
-    public const CMD_PA_CLONE   = 'pa_clone';
-    public const CMD_PA_CLOSE   = 'pa_close';
+    public const CMD_IP_ENABLE  = 'cmd_ipena';
+    public const CMD_SERV_ENA   = 'cmd_serv_ena';
+    public const CMD_PA_CLONE   = 'cmd_pa_clone';
+    public const CMD_PA_CLOSE   = 'cmd_pa_close';
+    public const CMD_PA_DELETE  = 'cmd_pa_del';
     
 // prices_apply_id=2760
 // date_end=null
@@ -98,9 +100,9 @@ class Api {
      * @param int|null $tp_id -- ID техплощадки
      * @param array|null $tp -- Массив с параметрами техплощадки
      * @throws \Exception
-     * @return bool|MikroLink -- Возвращаемій объект.
+     * @return false|MikroLink -- Возвращаемій объект.
      */
-    public static function tp_connector(int|null $tp_id = null, array|null $tp = null): MikroLink|bool  {
+    public static function tp_connector(int|null $tp_id = null, array|null $tp = null): MikroLink|false  {
         if (is_null($tp_id) && is_null($tp)) {
             throw new \Exception('Нужно указать или ID ТП или массив TP');
         }
@@ -822,6 +824,7 @@ class Api {
 
         if (!(validate_ip($ip) || is_ip_net($ip))) {
             self::$errors[] = __('IP %s не верен или не указан', "[{$ip}]");
+            if ($disconect_on_end) { $mik->disconnect(); };
             return null;
         }
 
@@ -833,13 +836,15 @@ class Api {
                 );
             
         if (count($rez) == 1) {
-            return ($rez[0]['disabled'] === Mik::OFF);
+            $res = ($rez[0]['disabled'] === Mik::OFF);
         } elseif (count($rez) == 0) {
-            return false;
+            $res = false;
         } else {
             self::$errors[] = __('В таблице ABON нет указанного IP-адреса');
-            return null;
+            $res = null;
         }
+        if ($disconect_on_end) { $mik->disconnect(); };
+        return $res;
     }
 
 
