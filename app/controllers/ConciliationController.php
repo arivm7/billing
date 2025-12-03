@@ -259,6 +259,10 @@ class ConciliationController extends AbonController {
         //
         // Упаковка таблицы по месяцам
         //
+        if (!$events) {
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Событий нет'));
+            redirect();
+        }
         $months         = array();
         $current_month  = month($events[0]['date']);
         //echo "Первый месяц: ".$current_month."<br>";

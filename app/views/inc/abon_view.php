@@ -123,6 +123,8 @@ $attr_off  =
                 : ""
         );
 
+$rest[AbonRest::F_SUM_PP30A] ??= 0;
+
 ?>
 <div class="container mt-4">
 
@@ -174,7 +176,8 @@ $attr_off  =
                 <!-- Остаток на лицевом счете -->
                 <tr>
                     <td><strong><?=__('Balance');?>:</strong></td>
-                    <td><span <?=$abon_attr;?> title='<?=__('Остаток на лицевом счету.') . CR . '----' . CR . get_description_by_warn($dutyWarn);?>'><?=number_format($rest[AbonRest::F_REST], 2, ",", " ");?></span></td>
+                    <td><span <?=$abon_attr;?> 
+                        title='<?=__('Остаток на лицевом счету.') . CR . '----' . CR . get_description_by_warn($dutyWarn);?>'><?=number_format($rest[AbonRest::F_REST] ?? 0, 2, ",", " ");?></span></td>
                 </tr>
                 <!-- Количество предоплаченных дней -->
                 <tr>

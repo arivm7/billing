@@ -57,9 +57,9 @@ $attr_off  = (!$data[Abon::F_DUTY_AUTO_OFF] || is_null($data[AbonRest::F_PREPAYE
     </td>
 </tr>
 <tr>
-    <td nowrap style="width: 34%; text-align: center;" <?=($data[AbonRest::F_SUM_PPMA] ? "" : "class='text-secondary'");?> title='<?=__('Абонплата за месяц');?>'><?=number_format($data[AbonRest::F_SUM_PPMA],(abs($data[AbonRest::F_SUM_PPMA]) < 10 ? 2 : 0),","," ");?></td>
-    <td nowrap style="width: 33%; text-align: center;" <?=($data[AbonRest::F_SUM_PPDA] ? "" : "class='text-secondary'");?> title='<?=__('Абонплата за сутки');?>'><?=number_format($data[AbonRest::F_SUM_PPDA],(abs($data[AbonRest::F_SUM_PPDA]) < 10 ? 2 : 0),","," ");?></td>
-    <td nowrap style="width: 33%; text-align: center;" <?=($data[AbonRest::F_SUM_PP30A] ? "" : "class='text-secondary'");?> title='<?=__('Сумарная абонплата за месяц');?>'><?=number_format($data[AbonRest::F_SUM_PP30A],(abs($data[AbonRest::F_SUM_PP30A]) < 10 ? 2 : 0),","," ");?></td>
+    <td nowrap style="width: 34%; text-align: center;" <?=($data[AbonRest::F_SUM_PPMA] ? "class='text-success-emphasis'" : "class='text-secondary'");?> title='<?=__('Абонплата за месяц');?>'><?=number_format($data[AbonRest::F_SUM_PPMA],(abs($data[AbonRest::F_SUM_PPMA]) < 10 ? 2 : 0),","," ");?></td>
+    <td nowrap style="width: 33%; text-align: center;" <?=($data[AbonRest::F_SUM_PPDA] ? "class='text-success-emphasis'" : "class='text-secondary'");?> title='<?=__('Абонплата за сутки');?>'><?=number_format($data[AbonRest::F_SUM_PPDA],(abs($data[AbonRest::F_SUM_PPDA]) < 10 ? 2 : 0),","," ");?></td>
+    <td nowrap style="width: 33%; text-align: center;" <?=($data[AbonRest::F_SUM_PP30A] ? "class='text-success-emphasis'" : "class='text-warning'");?> title='<?=__('Сумарная абонплата за месяц');?>'><?=number_format($data[AbonRest::F_SUM_PP30A],(abs($data[AbonRest::F_SUM_PP30A]) < 10 ? 2 : 0),","," ");?></td>
 </tr>
 <tr>
     <td nowrap style="width: 34%; text-align: center;" title='<?=__('Число оплаченных дней, %s при пересечении котрого нужно уведомлять', CR);?>'><span <?=$attr_warn;?>><?=$data[Abon::F_DUTY_MAX_WARN];?></span></td>

@@ -33,10 +33,19 @@ require_once DIR_LIBS . '/inc_functions.php';
 /** @var array $user */
 /** @var int $for_abon_id */
 
+$for_abon = [];
+foreach ($user[Abon::TABLE] as $abon) {
+    if ($abon[Abon::F_ID] == $for_abon_id) {
+        $for_abon = $abon;
+        break;
+    }
+}
+
 ?>
 <div class="container">
     <?php if (App::$auth->isAuth) : ?>
         <h2 class="fs-3 text-center"><?=$title;?></h2>
+        <h5 class="fs-6 text-center text-secondary pb-2"><?= $user[User::F_NAME_FULL] ?> :: <?= $for_abon[Abon::F_ADDRESS] ?? ""; ?> </h5>
         <div class="container-fluid">
 
             <!-- Грлавный список вкладок -->
