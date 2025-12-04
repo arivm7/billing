@@ -34,6 +34,7 @@ use config\tables\TP;
 use DebugView;
 use Valitron\Validator;
 use config\SessionFields;
+use config\tables\Abon;
 
 class PaController extends AppBaseController {
 
@@ -456,8 +457,13 @@ class PaController extends AppBaseController {
                 column_key: TP::F_TITLE,
                 index_key: TP::F_ID);
 
+        $abon = $model->get_abon($pa[PA::F_ABON_ID]);
+        $user = $model->get_user($abon[Abon::F_USER_ID]);
+
         View::setMeta(title: __('Редактирование прайсового фрагмента'));
         $this->setVariables([
+            'user'=> $user,
+            'abon'=> $abon,
             'pa'=> $pa,
             'price'=> $price,
             'tp'=> $tp,

@@ -584,6 +584,21 @@ class ApiController extends AppBaseController {
                     }
                     break;
 
+                case Api::CMD_PASS_DEF:
+                    /**
+                     * Установить начальный пароль
+                     */
+                    if (can_edit(Module::MOD_USER_CARD)) {
+                        $uid = intval($_GET[Api::F_UID] ?? 0);
+                        $model = new AbonModel();
+                        $user = $model->get_user($uid);
+                        UserController::update_pass($user, 1);
+                    } else {
+                        MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+                    }
+                    redirect();
+                    break;
+
                 default:
                     # code...
                     break;

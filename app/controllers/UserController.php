@@ -21,8 +21,10 @@ use billing\core\base\View;
 use billing\core\MsgQueue;
 use billing\core\MsgType;
 
-use Config\Auth;
+use config\Auth;
+use config\AutoCorrect;
 use config\SessionFields;
+use config\tables\Abon;
 use config\tables\Module;
 use config\tables\User;
 use Valitron\Validator;
@@ -207,9 +209,16 @@ class UserController extends AppBaseController {
     public function normalize(array &$data) {
 
         // Убираем лишние пробелы
-        foreach (User::T_FIELDS as $field) {
+        foreach (User::T_FIELDS as $field=>$default) {
             if (isset($data[$field]) && is_string($data[$field])) {
                 $data[$field] = trim($data[$field]);
+            }
+        }
+
+        // Автозамены
+        foreach (User::AUTOREPLACES as $field) {
+            if (isset($data[$field]) && is_string($data[$field])) {
+                $data[$field] = AutoCorrect::correct($data[$field]);
             }
         }
 
@@ -258,15 +267,76 @@ class UserController extends AppBaseController {
 
 
 
-    public function update_new_pass(array &$data) {
+    /**
+     * Генерация и запись в базу нового или дефолтного пароля.
+     * Для генерации нужно поле User::F_PHONE_MAIN
+     * Для изменения нужні поля User::F_FORM_PASS, User::F_FORM_PASS2
+     * Для записи нужно поле User::F_ID
+     * @param array $data -- запись типа User с данными из формы, при необходимости
+     * @param int|bool $defaul -- нужно ли генерировать новый пароль
+     * @return bool
+     */
+    public static function update_pass(array &$data, int|bool $defaul = false): bool {
+        $new_rec = [];
+        if ($defaul) {
+            $phone = simpleCleaningPhoneNumber($data[User::F_PHONE_MAIN] ?? "103"); // Если телефон не указан, то звонить в "скорую" :-)
+            $new_pass =  mb_substr($phone, -10);
+            $new_rec = [
+                User::F_ID => $data[User::F_ID],
+                User::F_PASS_HASH => Model::get_hash_pass($new_pass),
+            ];
+            MsgQueue::msg(MsgType::INFO_AUTO, __('Начальный пароль успешно сгенерирован'));
+        } else {
+            if  (
+                    !empty($data[User::F_FORM_PASS]) &&
+                    !empty($data[User::F_FORM_PASS2]) &&
+                    ($data[User::F_FORM_PASS] == $data[User::F_FORM_PASS2])
+                )
+            {
+                $new_rec = [
+                    User::F_ID => $data[User::F_ID],
+                    User::F_PASS_HASH => Model::get_hash_pass(pass: $data[User::F_FORM_PASS]),
+                ];
+                MsgQueue::msg(MsgType::INFO_AUTO, 'Новый пароль успешно сгенерирован');
+            } else {
+                MsgQueue::msg(MsgType::ERROR_AUTO, 'Данные для нового парола не совпадают');
+            }
+            unset($data[User::F_FORM_PASS]);
+            unset($data[User::F_FORM_PASS2]);
+        }
+
+        if ($new_rec) {
+            $model = new UserModel();
+            if ($model->update_row_by_id(User::TABLE, $new_rec, User::F_ID)) {
+                MsgQueue::msg(MsgType::INFO_AUTO, 'Пароль успешно записан в базу.');
+                return true;
+            } else {
+                MsgQueue::msg(MsgType::ERROR_AUTO, 'Не удалось записать пароль в базу.');
+                MsgQueue::msg(MsgType::ERROR_AUTO, $model->errorInfo());
+            }
+        } else {
+            MsgQueue::msg(MsgType::INFO_AUTO, 'Пароль не изменён');
+        }
+        return false;
+    }
+
+
+
+    /**
+     * Проверяет, переданы ли данные для изменения пароля.
+     * Если переданы, то запускает изменение пароля.
+     * Удаляет поля User::F_FORM_PASS, User::F_FORM_PASS2
+     * @param array $data -- запис типа User, полученная из формы
+     * @return void
+     */
+    public function check_pass_new(array &$data) {
         if  (
                 !empty($data[User::F_FORM_PASS]) &&
                 !empty($data[User::F_FORM_PASS2]) &&
                 ($data[User::F_FORM_PASS] == $data[User::F_FORM_PASS2])
             )
         {
-            $data[User::F_PASS_HASH] = Model::get_hash_pass(pass: $data[User::F_FORM_PASS]);
-            MsgQueue::msg(MsgType::INFO_AUTO, 'Пароль успешно обновлён.');
+            self::update_pass($data);
         }
         unset($data[User::F_FORM_PASS]);
         unset($data[User::F_FORM_PASS2]);
@@ -315,7 +385,7 @@ class UserController extends AppBaseController {
             if ($this->validate($user_rec)) {
 
                 // Проверка и обновление пароля
-                $this->update_new_pass($user_rec);
+                $this->check_pass_new($user_rec);
 
                 // проверка наличия ID
                 if (empty($user_rec[User::F_ID])) {
@@ -324,15 +394,6 @@ class UserController extends AppBaseController {
 
                 // Выборка только изменённых полей
                 $modified = get_diff_fields($user_rec, $user, User::F_ID);
-
-                // // сравнение новой записи и старой
-                // $equals = true;
-                // foreach ($user_rec as $field => $value) {
-                //     if ($user[$field] != $value) {
-                //         $equals = false;
-                //         break;
-                //     }
-                // }
 
                 if ($modified) {
                     // Данные различаются
@@ -344,7 +405,7 @@ class UserController extends AppBaseController {
                     }
                 } else {
                     // Новые данные равны старым данным
-                    MsgQueue::msg(MsgType::INFO_AUTO, 'Изменений нет');
+                    MsgQueue::msg(MsgType::INFO_AUTO, 'Изменений данных нет');
                 }
             } else {
                 $_SESSION[SessionFields::FORM_DATA][User::POST_REC] = $_POST[User::POST_REC];
@@ -374,9 +435,12 @@ class UserController extends AppBaseController {
                 $model->validate_id(User::TABLE, intval($this->route[F_ALIAS]), User::F_ID)
             )
         {
-            $user = $model->get_row_by_id(User::TABLE, intval($this->route[F_ALIAS]), User::F_ID);
+            $user = $model->get_user(intval($this->route[F_ALIAS]));
+            $abon_list = $model->get_abons($user[User::F_ID]);
+            $abon_list_addresses = array_column($abon_list, Abon::F_ADDRESS, Abon::F_ID);
             View::setMeta(__('Редактирование карточки пользователя'));
             $this->setVariables([
+                'address' => implode(" | ", $abon_list_addresses),
                 'user'=> $user,
             ]);
         } else {    

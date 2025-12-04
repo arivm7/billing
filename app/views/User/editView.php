@@ -18,6 +18,11 @@
  */
 
 
+/**
+ * @var string $address
+ * @var array $user
+ */
+
 include DIR_INC . "/user_form.php";
 
 ?>

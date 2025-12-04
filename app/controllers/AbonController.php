@@ -1290,8 +1290,10 @@ class AbonController extends AppBaseController {
             )
         {
             $abon = $model->get_row_by_id(Abon::TABLE, intval($this->route[F_ALIAS]), Abon::F_ID);
+            $user = $model->get_user($abon[Abon::F_USER_ID]);
             View::setMeta(__('Редактирование карточки пользователя'));
             $this->setVariables([
+                'user'=> $user,
                 'abon'=> $abon,
             ]);
         } else {    

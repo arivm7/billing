@@ -55,10 +55,11 @@ class User {
     const F_PASS_HASH           = 'password2';
     const F_PASS_MD5            = 'password';
     const F_SALT                = 'salt';
-    const F_NAME_SHORT          = 'name_short';
-    const F_NAME_FULL           = 'name';
+    const F_NAME_SHORT          = 'name_short';         // Краткое имя пользователя (отображаемое)
+    const F_NAME_FULL           = 'name';               // Полное имя пользователя (отображаемое)
     const F_SURNAME             = 'surname';
     const F_FAMILY              = 'family';
+    const F_DESCRIPTION         = 'description';        // Дополнительная информация. Служебное поле 
     const F_PHONE_MAIN          = 'phone_main';
     const F_SMS_DO_SEND         = 'do_send_sms';
     const F_EMAIL_MAIN          = 'mail_main';
@@ -99,6 +100,7 @@ class User {
         self::F_NAME_FULL        => '',
         self::F_SURNAME          => '',
         self::F_FAMILY           => '',
+        self::F_DESCRIPTION      => '',
         self::F_PHONE_MAIN       => '',
         self::F_SMS_DO_SEND      => 1,
         self::F_EMAIL_MAIN       => '',
@@ -181,5 +183,17 @@ class User {
         self::F_WHATSAPP => [ 'field' => self::F_WHATSAPP, 'send' => self::F_WHATSAPP_DO_SEND ],
     ];
 
+    /**
+     * Поля, в которых производится автоподстановка символов
+     * типа "<<" -> "«"
+     */
+    const AUTOREPLACES = [
+        self::F_NAME_SHORT,
+        self::F_NAME_FULL,
+        self::F_SURNAME,
+        self::F_FAMILY,
+        self::F_DESCRIPTION,
+        self::F_ADDRESS_INVOICE,
+    ];
 
 }

@@ -40,6 +40,7 @@ class Api {
 
 
     public const F_CMD          = 'cmd';
+    public const F_UID          = 'uid';
     public const F_TP_ID        = 'tpid';
     public const F_IP           = 'ip';
     public const F_ENABLED      = 'ena';
@@ -51,6 +52,7 @@ class Api {
     public const CMD_PA_CLONE   = 'cmd_pa_clone';
     public const CMD_PA_CLOSE   = 'cmd_pa_close';
     public const CMD_PA_DELETE  = 'cmd_pa_del';
+    public const CMD_PASS_DEF   = 'cmd_pass_def';
     
 // prices_apply_id=2760
 // date_end=null

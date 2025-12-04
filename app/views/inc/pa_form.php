@@ -26,6 +26,7 @@ use config\tables\Price;
 use config\SessionFields;
 use billing\core\base\Lang;
 use config\tables\Module;
+use config\tables\User;
 
 Lang::load_inc(__FILE__);
 
@@ -33,6 +34,8 @@ require_once DIR_LIBS . '/form_functions.php';
 require_once DIR_LIBS . '/inc_functions.php';
 
 /** 
+ * @var array $user
+ * @var array $abon
  * @var array $item -- ПФ. элемент из функции Аккордеона
  * @var array $pa -- ПФ. элемент из контроллера
  * @var array $price -- Прайс, установленны сейчас в ПФ
@@ -59,10 +62,23 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
         <div class="card-header">
             <h2 class="fs-4">
                 <?php if (isset($item[PA::F_ID])) : ?> 
-                    <span class="text-secondary fs-6"><?= num_len($item[PA::F_ABON_ID], 6) ?> :: <?= __abon($item[PA::F_ABON_ID], Abon::F_ADDRESS) ?></span><br>
-                    <?= __('Редактировать прайсовый фрагмент') ?> <span class="text-secondary"><?= $pa[PA::F_ID] ?></span>
+                    <h3><?= __('Редактировать прайсовый фрагмент') ?> <span class="text-secondary">[<?= $pa[PA::F_ID] ?>]</span></h3>
+                    <h5 class="text-secondary fs-6">
+                        <span title="User ID"><?= num_len($user[User::F_ID], 6); ?></span> :: 
+                        <span title="User Name"><?= h($user[User::F_NAME_SHORT]); ?></span>
+                    </h5>
+                    <h5 class="text-secondary fs-6">
+                        <span title="Абон ID"><?= num_len($abon[Abon::F_ID], 6); ?></span> :: 
+                        <span title="Abon Address"><?= h($abon[Abon::F_ADDRESS]); ?>
+                    </h5>
+                    <h5 class="text-secondary fs-6">
+                        <span><?= __('Прайсовый фрагмент') ?>: </span>
+                        <span title="PA ID" class="fw-light"><?= $item[PA::F_ID]; ?></span> :: 
+                        <span title="PA net name" class="fw-bolder"><?= $pa[PA::F_NET_NAME] ?></span>
+                    </h5>
                 <?php else: ?>
                     <?= __('Новый прайсовый фрагмент'); ?>
+                    <h5 class="text-secondary"><span title="User ID"><?= $user[User::F_ID] ?></span> :: <span title="User Name"><?= h($user[User::F_NAME_SHORT]); ?></span> :: <span title="Abon Address"><?= h($abon(Abon::F_ADDRESS)); ?></h5>
                 <?php endif; ?>
             </h2>
         </div>

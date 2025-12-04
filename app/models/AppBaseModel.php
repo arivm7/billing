@@ -498,6 +498,9 @@ class AppBaseModel extends Model
     }
 
 
+    function get_abons(int $user_id): array {
+        return $this->get_rows_by_field(Abon::TABLE, Abon::F_USER_ID, $user_id);
+    }
 
     /**
      * Обновляет поле записи абонента, добавляя в него следющие поля:

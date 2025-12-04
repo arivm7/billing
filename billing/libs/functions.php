@@ -2184,7 +2184,12 @@ function get_diff_fields(array $new, array $prev, string|null $field_id = 'id'):
      * Добавляем только изменившиеся поля
      */
     foreach ($new as $key => $value) {
-        if ($prev[$key] != $value) {
+        
+        if  (
+                array_key_exists($key, $prev) &&
+                $prev[$key] != $value
+            ) 
+        {
             $differences[$key] = $value;
         }
     }

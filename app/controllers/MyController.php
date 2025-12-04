@@ -114,14 +114,18 @@ class MyController extends AppBaseController  {
 
         }
 
+        $for_abon_id = (empty($user[Abon::TABLE]) 
+                            ? 0
+                            : array_key_first($my[Abon::TABLE]));
+
         $this->setVariables([
             'title'=> __('Abonent personal account'),
+            'for_abon_id' => $for_abon_id,
             'user' => $my,
         ]);
 
         View::setMeta(
             title: __('Rilan') . " :: " . __('Abonent personal account'),
-         // descr: __('Административный сайт сети %s. Данные абонента, парамеры услуги.', __('Rilan')),
         );
 
     }

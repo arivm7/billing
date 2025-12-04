@@ -23,6 +23,8 @@ use \config\tables\Abon;
 use billing\core\base\Lang;
 use config\SessionFields;
 use config\tables\Module;
+use config\tables\User;
+
 Lang::load_inc(__FILE__);
 
 /**
@@ -37,6 +39,7 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
     $form_data = [];
 }
 
+/** @var array $user */
 /** @var array $abon */
 
 if (!isset($abon) || !is_array($abon)) {
@@ -59,7 +62,8 @@ $count_lines_comment = get_count_rows_for_textarea($comment);
     <div class="card mb-4 w-100 min-w-700">
 
         <div class="card-header">
-            <h2><?=$form_data_fn(Abon::F_ID) . '<br>' . h($form_data_fn(Abon::F_ADDRESS));?></h2>
+            <h3><?= __('Редактирование записи абонента: ') ?><?=$form_data_fn(Abon::F_ID)?></h3>
+            <h5><span class="text-secondary"><span title="User ID"><?= $user[User::F_ID] ?></span> :: <span title="User Name"><?= $user[User::F_NAME_SHORT] ?></span> :: </span><span title="Abon Address"><?= h($form_data_fn(Abon::F_ADDRESS)); ?></h5>
         </div>
         <form action="<?=Abon::URI_UPDATE;?>/<?=$form_data_fn(Abon::F_ID);?>" method="post">
             <div class="card-body">
