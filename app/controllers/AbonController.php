@@ -313,14 +313,15 @@ class AbonController extends AppBaseController {
             $t = [];
         }
 
-
+        $title = __("List of subscribers by technical platforms | Список абонентов по техническим площадкам | Список абонентів за технічними майданчиками");
         $this->setVariables([
+            'title' => $title,
             'pager' => $pager,
             't'     => $t,
         ]);
 
         View::setMeta(
-            title: __("List of subscribers by technical platforms | Список абонентов по техническим площадкам | Список абонентів за технічними майданчиками"),
+            title: $title,
             descr: __("The list of subscribers by technical sites attached to the current authorized user | Список абонентов по техплощадкам, прикреплённым к текущему авторизованному пользователю | Список абонентів по техмайданчиках, прикріплених до поточного авторизованого користувача"),
         );
 
@@ -378,6 +379,8 @@ class AbonController extends AppBaseController {
          * Список ID абонентов с полученных выше техплощадок
          */
         $abon_id_list = $model->get_abons_id_by_tp(tp_list: $tp_list, field_id: TP::F_ID);
+        $abon_id_list = $model->get_last_actions_abon_id_list($abon_id_list);
+        // debug($abon_id_list, '$abon_id_list', die:1);
 
         /**
          * Есть ли список абонентов
@@ -390,6 +393,7 @@ class AbonController extends AppBaseController {
             /**
              * Запрос полной выборки абонентов и объединение с таблицей остатков (rest)
              */
+            $ids = implode(',', $abon_id_list);
             $sql = "SELECT "
                     . "".Abon::TABLE.".*, "
                     . "".AbonRest::TABLE.".".AbonRest::F_SUM_PAY.", "
@@ -399,10 +403,11 @@ class AbonController extends AppBaseController {
                     . "FROM ".Abon::TABLE." "
                     . "JOIN ".AbonRest::TABLE." ON ".Abon::TABLE.".".Abon::F_ID." = ".AbonRest::TABLE.".".AbonRest::F_ABON_ID." "
                     . "WHERE "
-                        . "(".Abon::TABLE.".".Abon::F_ID." IN (".implode(',', $abon_id_list).")) "
+                        . "(".Abon::TABLE.".".Abon::F_ID." IN (".$ids.")) "
                         . "and "
                         . "".(isset($filters['is_payer']) && !is_null($filters['is_payer']) ? "(abons.is_payer = {$filters['is_payer']})" : "1")." "
-                    . "";
+                    . "ORDER BY FIELD(id, ".$ids.")";
+
             // debug($sql, '$sql');
             $pager = new Pagination(per_page: $filters['per_page'], sql: $sql);
             $rows = $pager->get_rows();
@@ -454,13 +459,15 @@ class AbonController extends AppBaseController {
 
         $this->view = 'index';
 
+        $title = __("Список абонентов по последним действиям с услугами: активация и пауза");
         $this->setVariables([
+            'title' => $title,
             'pager' => $pager,
             't'     => $t,
         ]);
 
         View::setMeta(
-            title: __("List of subscribers by technical platforms | Список абонентов по техническим площадкам | Список абонентів за технічними майданчиками"),
+            title: $title,
             descr: __("The list of subscribers by technical sites attached to the current authorized user | Список абонентов по техплощадкам, прикреплённым к текущему авторизованному пользователю | Список абонентів по техмайданчиках, прикріплених до поточного авторизованого користувача"),
         );
 

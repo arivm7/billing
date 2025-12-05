@@ -1,6 +1,7 @@
 <?php
 
 use billing\core\App;
+use billing\core\Pagination;
 use config\Icons;
 use config\tables\Module;
 /*
@@ -21,12 +22,15 @@ use config\tables\Module;
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
 
+/** @var string $title */
+/** @var Pagination $pager */
 /** @var array $t */
+
 ?>
 <div class="container">
     <?php if (App::isAuth()) : ?>
         <?php if (can_use(Module::MOD_ABON)) : ?>
-            <h3>Список Абонентов</h3>
+            <h3><?= $title ?? "" ?></h3>
             <br>
             <?php include DIR_VIEWS . '/inc/pager.php'; ?>
             <?= get_html_table(t: $t); ?>

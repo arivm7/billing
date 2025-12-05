@@ -572,6 +572,42 @@ class AbonModel extends UserModel {
 
 
 
+    function get_last_actions_abon_id_list(array $abon_id_list = []): array {
+        $sql = 
+            "WITH ordered AS ( "
+                ."SELECT "
+                    ."".PA::F_ID.", "
+                    ."".PA::F_ABON_ID.", "
+                    ."".PA::F_DATE_START.", "
+                    ."".PA::F_DATE_END.", "
+                    ."ROW_NUMBER() OVER ( "
+                        ."PARTITION BY ".PA::F_ABON_ID." "
+                        ."ORDER BY "
+                            ."(".PA::F_DATE_END." IS NULL) DESC, "
+                            ."CASE "
+                                ."WHEN ".PA::F_DATE_END." IS NULL THEN ".PA::F_DATE_START." "
+                            ."ELSE ".PA::F_DATE_END." "
+                        ."END DESC "
+                    .") AS rn "
+                ."FROM ".PA::TABLE." "
+                ."WHERE ".PA::F_CLOSED." = 0 "
+                    . ($abon_id_list ? "AND ".PA::F_ABON_ID." IN (".implode(',', array_map('intval', $abon_id_list)).")" : "")
+            .") "
+            ."SELECT ".PA::F_ABON_ID." "
+            ."FROM ordered "
+            ."WHERE rn = 1 "
+            ."ORDER BY "
+                ."(".PA::F_DATE_END." IS NULL) DESC, "
+                ."CASE "
+                    ."WHEN ".PA::F_DATE_END." IS NULL THEN ".PA::F_DATE_START." "
+                    ."ELSE ".PA::F_DATE_END." "
+                ."END DESC; "
+            ."";
+
+        return $this->query(sql: $sql, fetchVector: 0);
+    }
+
+
     /**
     * Возвращает сумарную месячную абонплату из переданных прайсовых фрагментов.
     * Считает ppma, ppda и количество дней в указанном или текущем месяце.
