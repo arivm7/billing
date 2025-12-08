@@ -35,6 +35,7 @@ use config\tables\AbonRest;
 use config\tables\PA;
 use ServiceType;
 use billing\core\base\Lang;
+use config\tables\Invoice;
 
 require_once DIR_LIBS . '/billing_functions.php';
 
@@ -725,7 +726,7 @@ class AbonModel extends UserModel {
      * @param bool|null $active -- делает выборку активных или закрытых прайсов. Если NULL, то выбирает всех.
      * @return array
      */
-    function get_pa_by_abon_id(int $abon_id, bool|null $active = null): array
+    function get_pa_by_abon_id(int $abon_id, int|bool|null $active = null): array
     {
         $sql = "SELECT "
                 . "`".Price::TABLE."`.`".Price::F_TITLE."` AS ".PA::F_PRICE_TITLE.", "
@@ -1514,5 +1515,37 @@ class AbonModel extends UserModel {
 
 
 
+    function get_invoice(int $id): array {
+        return $this->get_row_by_id(Invoice::TABLE, $id, Invoice::F_ID);
+    }
+
+
+
+    function get_invoices_sql(int $abon_id): string {
+        return "SELECT * FROM `".Invoice::TABLE."` WHERE `".Invoice::F_ABON_ID."`={$abon_id} ORDER BY `".Invoice::TABLE."`.`".Invoice::F_ID."` DESC";
+    }
+
+
+
+    function get_agent_id_list(int $abon_id): array {
+        $pa_list = $this->get_pa_by_abon_id($abon_id, active: 1);
+        $tp_id_list = array_unique(array_column($pa_list, PA::F_TP_ID));
+        if ($tp_id_list) {
+            $tp_list = $this->get_tp_list(id_list: $tp_id_list, status: 1);
+            $agent_id_list = array_unique(array_column($tp_list, TP::F_FIRM_ID));
+            return $agent_id_list;
+        }
+        return [];
+    }
+
+
+    function get_agent_list(int $abon_id): array {
+        $agent_id_list = $this->get_agent_id_list($abon_id);
+        if ($agent_id_list) {
+            return $this->get_firms(firm_id_list: $agent_id_list, has_active: 1);
+        }
+        return [];
+    }
+    
 
 }

@@ -379,7 +379,9 @@ class AppBaseModel extends Model
             int|null    $rang    = null     // 1 — Абонентский узел. 2 — AP...
             ): array
     {
-        $list = $this->get_rows_by_sql($this->get_sql_tp_list($user_id, $id_list, $status, $deleted, $managed, $rang));
+        $list = $this->get_rows_by_sql(
+            $this->get_sql_tp_list($user_id, $id_list, $status, $deleted, $managed, $rang)
+        );
         foreach ($list as &$tp) {
             $this->normalize_tp($tp);
         }

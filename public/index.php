@@ -129,9 +129,14 @@ Router::add('^pay/(?P<' . F_ALIAS . '>[0-9]+)$', [
     F_ACTION     => ACT_INDEX,
 ]);
 
-Router::add('^abon/?\?id=[0-9]+$', [F_CONTROLLER => 'abon', F_ACTION => 'form']);
-Router::add('^page/(?P<'.F_ACTION.'>[0-9a-z-]+)/(?P<'.F_ALIAS.'>[0-9a-z-]+)$', [F_CONTROLLER => CTR_PAGE]);
-Router::add('^page/(?P<'.F_ALIAS.'>[0-9a-z-]+)$', [F_CONTROLLER => CTR_PAGE, F_ACTION => ACT_VIEW]);
+Router::add('^invoice/(?P<' . F_ALIAS . '>[0-9]+)$', [
+    F_CONTROLLER => 'invoice',
+    F_ACTION     => ACT_INDEX,
+]);
+
+// Router::add('^abon/?\?id=[0-9]+$', [F_CONTROLLER => 'abon', F_ACTION => 'form']);
+// Router::add('^page/(?P<'.F_ACTION.'>[0-9a-z-]+)/(?P<'.F_ALIAS.'>[0-9a-z-]+)$', [F_CONTROLLER => CTR_PAGE]);
+// Router::add('^page/(?P<'.F_ALIAS.'>[0-9a-z-]+)$', [F_CONTROLLER => CTR_PAGE, F_ACTION => ACT_VIEW]);
 
 
 /**

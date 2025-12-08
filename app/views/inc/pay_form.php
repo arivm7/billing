@@ -150,7 +150,7 @@ $wcol2 = 12 - $wcol1; // ширина второй колонки
                         <label class="form-label" for="<?=Pay::F_DESCRIPTION?>">Описание</label>
                         <textarea class="form-control" id="<?=Pay::F_DESCRIPTION?>" 
                                 name="<?=Pay::POST_REC?>[<?=Pay::F_DESCRIPTION?>]" 
-                                rows="<?=get_count_rows_for_textarea($form_data_fn(Pay::F_DESCRIPTION));?>" 
+                                rows="<?=get_count_rows_for_textarea($form_data_fn(Pay::F_DESCRIPTION), 3);?>" 
                                 required><?=$form_data_fn(Pay::F_DESCRIPTION)?></textarea>
                         <div class="invalid-feedback">Required</div>
                     </div>

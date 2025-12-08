@@ -26,6 +26,7 @@ use config\tables\AbonRest;
 use billing\core\base\Lang;
 use config\Icons;
 use config\Notice;
+use config\tables\Invoice;
 use config\tables\Notify;
 use config\tables\Pay;
 Lang::load_inc(__FILE__);
@@ -249,23 +250,28 @@ $rest[AbonRest::F_SUM_PP30A] ??= 0;
                 <div class="col justify-content-start">
                     <!-- Форма "Сверка платежей" -->
                     <?php if (can_view([Module::MOD_MY_CONCILIATION, Module::MOD_CONCILIATION])) : ?>
-                        <a href="<?=Conciliation::URI_INTERVALS;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3" title="<?= __('Reconciliation'); ?>">
+                        <a href="<?=Conciliation::URI_INTERVALS;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3" target="_self" title="<?= __('Reconciliation'); ?>">
                             <img src="<?=Icons::SRC_GUH_REPORT;?>" alt="" width="18" height="18"><?= __('Reconciliation'); ?></a>
                     <?php endif; ?>
                     <!-- Список платежей -->
                     <?php if (can_view([Module::MOD_MY_PAYMENTS, Module::MOD_PAYMENTS])) : ?>
-                        <a href="<?=Pay::URI_LIST;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3" target="_blank" title="<?= __('Полный список платежей абонента'); ?>">
+                        <a href="<?=Pay::URI_LIST;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3" target="_self" title="<?= __('Полный список платежей абонента'); ?>">
                             <span class="fw-bold">₴₴</span> <?= __('Платежи'); ?></a>
                     <?php endif; ?>
                     <!-- Внесение платежа -->
                     <?php if (can_add([Module::MOD_PAYMENTS])) : ?>
-                        <a href="<?=Pay::URI_FORM;?>?<?=Abon::F_GET_ID;?>=<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3" target="_blank" title="<?= __('Внести средства на лицевой счёт'); ?>">
+                        <a href="<?=Pay::URI_FORM;?>?<?=Abon::F_GET_ID;?>=<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3" target="_self" title="<?= __('Внести средства на лицевой счёт'); ?>">
                             <span class="fw-bold">+₴</span> <?= __('Внести платёж'); ?></a>
                     <?php endif; ?>
                     <!-- Информационные уведомления -->
                     <?php if (can_add([Module::MOD_NOTICE])) : ?>
-                        <a href="<?=Notify::URI_INFO;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3" target="_blank" title="<?= __('Список информационных СМС'); ?>">
+                        <a href="<?=Notify::URI_INFO;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3" target="_self" title="<?= __('Список информационных СМС'); ?>">
                             <span class="fw-bold">SMS</span> <?= __('Информеры'); ?></a>
+                    <?php endif; ?>
+                    <!-- Счета -- Акты -->
+                    <?php if (can_view([Module::MOD_INVOICES])) : ?>
+                        <a href="<?=Invoice::URI_LIST;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3" target="_self" title="<?= __('Посмотреть список выписанных счетов и актов'); ?>">
+                            <i class="bi bi-receipt"></i> <?= __('Счета'); ?></a>
                     <?php endif; ?>
                 </div>
             </div>

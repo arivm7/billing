@@ -11,6 +11,8 @@
  *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
  */
 
+use billing\core\Pagination;
+
 /**
  * Description of pager.php
  *
@@ -18,9 +20,11 @@
  */
 
 if (!isset($pager)) return;
-/** @var \billing\core\Pagination $pager */
+
+/** @var Pagination $pager */
+
 ?>
-<div class="text-center">
+<div class="text-center p-0 m-0">
     <?php if ($pager->count_pages > 1) : ?>
         <?=$pager;?>
     <?php endif; ?>

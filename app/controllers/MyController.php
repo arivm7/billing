@@ -118,14 +118,15 @@ class MyController extends AppBaseController  {
                             ? 0
                             : array_key_first($my[Abon::TABLE]));
 
+        $title = __('Abonent personal account');
         $this->setVariables([
-            'title'=> __('Abonent personal account'),
+            'title'=> $title,
             'for_abon_id' => $for_abon_id,
             'user' => $my,
         ]);
 
         View::setMeta(
-            title: __('Rilan') . " :: " . __('Abonent personal account'),
+            title: __('Rilan') . " :: " . $title,
         );
 
     }

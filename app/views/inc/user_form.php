@@ -143,32 +143,36 @@ $form_data_fn = function(string $field) use ($form_data, $user): int|float|strin
                 <div class="col-2">:::</div>
             </div>
 
-            <!-- Отчество -->
-            <div class="row mb-3">
-                <label for="<?=User::F_SURNAME;?>" class="col-2 col-form-label"><?=__('Отчество');?></label>
-                <div class="col-6">
-                    <input type="text" class="form-control" id="<?=User::F_SURNAME;?>" name="<?=User::POST_REC;?>[<?=User::F_SURNAME;?>]" value="<?=h($form_data_fn(User::F_SURNAME));?>">
+            <?php if (can_edit(Module::MOD_USER_CARD)): ?>
+                <!-- Отчество -->
+                <div class="row mb-3">
+                    <label for="<?=User::F_SURNAME;?>" class="col-2 col-form-label"><?=__('Отчество');?></label>
+                    <div class="col-6">
+                        <input type="text" class="form-control" id="<?=User::F_SURNAME;?>" name="<?=User::POST_REC;?>[<?=User::F_SURNAME;?>]" value="<?=h($form_data_fn(User::F_SURNAME));?>">
+                    </div>
+                    <div class="col-2">:::</div>
                 </div>
-                <div class="col-2">:::</div>
-            </div>
 
-            <!-- Фамилия -->
-            <div class="row mb-3">
-                <label for="<?=User::F_FAMILY;?>" class="col-2 col-form-label"><?=__('Фамилия');?></label>
-                <div class="col-6">
-                    <input type="text" class="form-control" id="<?=User::F_FAMILY;?>" name="<?=User::POST_REC;?>[<?=User::F_FAMILY;?>]" value="<?=h($form_data_fn(User::F_FAMILY));?>">
+                <!-- Фамилия -->
+                <div class="row mb-3">
+                    <label for="<?=User::F_FAMILY;?>" class="col-2 col-form-label"><?=__('Фамилия');?></label>
+                    <div class="col-6">
+                        <input type="text" class="form-control" id="<?=User::F_FAMILY;?>" name="<?=User::POST_REC;?>[<?=User::F_FAMILY;?>]" value="<?=h($form_data_fn(User::F_FAMILY));?>">
+                    </div>
+                    <div class="col-2">:::</div>
                 </div>
-                <div class="col-2">:::</div>
-            </div>
+            <?php endif; ?>
 
             <!-- Описание. Служебное поле -->
-            <div class="row mb-3">
-                <label for="user_description" class="col-2 col-form-label"><?=__('Описание (служебное)');?></label>
-                <div class="col-6">
-                    <textarea class="form-control" id="user_description" name="<?= User::POST_REC;?>[<?=User::F_DESCRIPTION;?>]" rows="<?=get_count_rows_for_textarea($form_data_fn(User::F_DESCRIPTION));?>"><?= h($form_data_fn(User::F_DESCRIPTION));?></textarea>
+            <?php if (can_edit(Module::MOD_USER_CARD)): ?>
+                <div class="row mb-3">
+                    <label for="user_description" class="col-2 col-form-label"><?=__('Описание (служебное)');?></label>
+                    <div class="col-6">
+                        <textarea class="form-control" id="user_description" name="<?= User::POST_REC;?>[<?=User::F_DESCRIPTION;?>]" rows="<?=get_count_rows_for_textarea($form_data_fn(User::F_DESCRIPTION));?>"><?= h($form_data_fn(User::F_DESCRIPTION));?></textarea>
+                    </div>
+                    <div class="col-2">:::</div>
                 </div>
-                <div class="col-2">:::</div>
-            </div>
+            <?php endif; ?>
 
             <!-- Основной номер телефона -->
             <div class="row mb-3">

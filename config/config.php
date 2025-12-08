@@ -176,6 +176,13 @@ $config = [
     'sms_command'   => 'echo "{NUM}/{COUNT}. {ABON_ID} | {ADDRESS} | {NAME_SHORT}"\n'
                         . '{SENDER} {PHONE} "{TEXT}"\n',
 
+    /**
+     * Счета-фактуры и Акты
+     */
+    'inv_per_page' => 12,
+    // Максимальная длина номера Счёта-фактуры
+    'inv_max_length_number' => 24,
+
 ];
 
 return $config;

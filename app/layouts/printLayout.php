@@ -21,8 +21,37 @@ use billing\core\base\View;
         <link rel="shortcut icon" href="/public/favicon.ico" type="image/x-icon" />
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <?= View::getMeta();?>
+        <style>
+        /* Кнопки фиксируем в углу, поверх контента */
+        .print-buttons {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        display: flex;
+        gap: 10px;
+        z-index: 9999; /* всегда сверху */
+        }
+
+        .print-buttons button {
+        padding: 6px 12px;
+        font-size: 14px;
+        cursor: pointer;
+        }
+
+        /* Скрываем при печати */
+        @media print {
+        .print-buttons {
+            display: none !important;
+        }
+        }
+        </style>
     </head>
     <body>
+        <div class="print-buttons">
+            <button onclick="window.close();">Закрыть</button>
+            <!--<button onclick="window.history.back();">Назад</button>-->
+            <button onclick="window.print();">Печать</button>
+        </div>
         <?= $content ?>
     </body>
 </html>

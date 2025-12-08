@@ -95,7 +95,16 @@ class Icons {
     const SRC_ICON_EMAIL_OFF  = '/img/icon_email_gray.svg';
     const SRC_ICON_PHONE      = '/img/icon_phone.svg';
     const SRC_ICON_UAH        = '/img/icon_uah.svg';
+    const SRC_ICON_UAH_OK     = '/img/icon_uah_ok.svg';
+    const SRC_ICON_UAH_QUERY  = '/img/icon_uah_query.svg';
     const SRC_ICON_UAH2PAY    = '/img/icon_uah2pay.svg';
+    const SRC_FAXIMILE        = '/img/ar_shtamp_podpis.jpg';
+
+    const SRC_ICON_INV_ACT_SHTAMP   = '/img/inv_act_shtamp.png ';
+    const SRC_ICON_INV_ACT          = '/img/inv_act.png';
+    const SRC_ICON_INV_SHTAMP       = '/img/inv_shtamp.png';
+    const SRC_ICON_INV              = '/img/inv.png';
+
     const SRC_ICON_FILER      = '/img/icon_filter.svg';
     const SRC_ICON_MAPS       = '/img/google-maps_064.png';
     const SRC_ICON_CLIPBOARD  = '/img/icon_copy_clipboard.svg';

@@ -58,40 +58,11 @@ if(isset($_GET['debug']) && ($_GET['debug']=='1')) {
 }
 ?>
 <style>
-/* Кнопки фиксируем в углу, поверх контента */
-.print-buttons {
-  position: fixed;
-  top: 10px;
-  left: 10px;
-  display: flex;
-  gap: 10px;
-  z-index: 9999; /* всегда сверху */
-}
-
-.print-buttons button {
-  padding: 6px 12px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-/* Скрываем при печати */
-@media print {
-  .print-buttons {
-    display: none !important;
-  }
-}
-</style>
-<style>
     body {
         margin-left: 1.5cm; /* 28.346px; 1 см */
         margin-top: 0cm;
     }
 </style>
-<div class="print-buttons">
-    <button onclick="window.close();">Закрыть</button>
-    <!--<button onclick="window.history.back();">Назад</button>-->
-    <button onclick="window.print();">Печать</button>
-</div>
 <div style='width:17cm;'>
 <h1 align=center><font size=5>Акт звіряння розрахунків<br>
     станом на <?=date("d.m.Y", $today);?> р.</font><br>

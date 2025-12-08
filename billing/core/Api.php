@@ -47,12 +47,14 @@ class Api {
     public const F_FORCE        = 'force';
     public const F_PA_ID        = 'paid';
     public const F_DATE_END     = 'date_end';
+    public const F_INVOICE_ID   = 'inv_id';
     public const CMD_IP_ENABLE  = 'cmd_ipena';
     public const CMD_SERV_ENA   = 'cmd_serv_ena';
     public const CMD_PA_CLONE   = 'cmd_pa_clone';
     public const CMD_PA_CLOSE   = 'cmd_pa_close';
     public const CMD_PA_DELETE  = 'cmd_pa_del';
     public const CMD_PASS_DEF   = 'cmd_pass_def';
+    public const CMD_INVOICE_PAY_CONFIRM  = 'cmd_inv_pay_confirm';
     
 // prices_apply_id=2760
 // date_end=null

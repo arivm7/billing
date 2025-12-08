@@ -313,20 +313,51 @@ class UserModel extends AppBaseModel{
 
 
     /**
-     * Возвращает список предприятий, подключённых к пользователю
-     * @param int $user_id
+     * Возвращает список предприятий.
+     * Если параметр указа, то он используется, 
+     * если не указан то он не используется в фильтрах.
+     * @param int|null $user_id                 -- подключённых к пользователю
+     * @param array|null $firm_id_list          -- указанных в списке
+     * @param int|bool|null $has_active         -- активных
+     * @param int|bool|null $has_delete         -- удалённых
+     * @param int|bool|null $has_agent          -- агентов, провайдеров
+     * @param int|bool|null $has_client         -- клиентов, абонентов
+     * @param int|bool|null $has_all_visible    -- отображаемый для всех (не используется)
+     * @param int|bool|null $has_all_linking    -- подключаемое ко всем (не используется)
      * @return array
      */
-    function get_firms(int $user_id): array {
+    function get_firms(
+        int|null $user_id = null,               // Пользователь, к которому привязаны предприятия через TSUserFirm
+        array|null $firm_id_list = null,        // Список ID препдриятий
+        int|bool|null $has_active = null, 	    // Предприятие "активно", в списках выписки документов
+        int|bool|null $has_delete = null, 	    // запись о предприятии считается удалённой
+        int|bool|null $has_agent = null,        // предприятие-агент (наше)
+        int|bool|null $has_client = null,       // предприятие-клиент
+        int|bool|null $has_all_visible = null,  // Видимое для всех
+        int|bool|null $has_all_linking = null,  // Разрешить подключать всем
+        ): array 
+    {
         $sql = "SELECT "
                     . "* "
                 . "FROM "
                     . "`".Firm::TABLE."` "
-                . "WHERE "
-                    . "`".Firm::F_ID."` IN ("
-                        . "SELECT `".TSUserFirm::F_FIRM_ID."` FROM `".TSUserFirm::TABLE."` WHERE `".TSUserFirm::F_USER_ID."`={$user_id}"
-                    . ")";
-        return $this->get_rows_by_sql(sql: $sql);
+                . "WHERE 1"
+                    . (is_null($user_id)         ? "" : " AND (`".Firm::F_ID."` IN (SELECT `".TSUserFirm::F_FIRM_ID."` FROM `".TSUserFirm::TABLE."` WHERE `".TSUserFirm::F_USER_ID."`={$user_id}))")
+                    . (is_null($firm_id_list)    ? "" : " AND (`".Firm::F_ID."` IN (".implode(',', $firm_id_list)."))")
+                    . (is_null($has_active)      ? "" : " AND `has_active`      = ".($has_active      ? 1 : 0)."")
+                    . (is_null($has_delete)      ? "" : " AND `has_delete`      = ".($has_delete      ? 1 : 0)."")
+                    . (is_null($has_agent)       ? "" : " AND `has_agent`       = ".($has_agent       ? 1 : 0)."")
+                    . (is_null($has_client)      ? "" : " AND `has_client`      = ".($has_client      ? 1 : 0)."")
+                    . (is_null($has_all_visible) ? "" : " AND `has_all_visible` = ".($has_all_visible ? 1 : 0)."")
+                    . (is_null($has_all_linking) ? "" : " AND `has_all_linking` = ".($has_all_linking ? 1 : 0)."")
+                ;
+        return $this->get_rows_by_sql(sql: $sql, row_id_by: Firm::F_ID);
+    }
+
+    
+
+    function get_firm($firm_id): array|null {
+        return $this->get_row_by_id(Firm::TABLE, $firm_id, Firm::F_ID);
     }
 
 

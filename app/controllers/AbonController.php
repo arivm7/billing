@@ -38,6 +38,7 @@ use config\tables\PA;
 use config\tables\User;
 use Valitron\Validator;
 use config\SessionFields;
+use config\tables\Invoice;
 use config\tables\Pay;
 
 require_once DIR_LIBS . '/datetime_functions.php';
@@ -107,20 +108,39 @@ class AbonController extends AppBaseController {
         // <!-- Форма "Сверка платежей" -->
         if (can_view([Module::MOD_MY_CONCILIATION, Module::MOD_CONCILIATION])) {
             $conciliation_url = "<a href='".Conciliation::URI_INTERVALS."/". $data[Abon::F_ID] ."' class='btn btn-outline-info btn-sm me-1 mb-1' title='". __('Reconciliation') ."'>"."<img src='".Icons::SRC_GUH_REPORT."' alt='' width='18' height='18'>"."</a>";
+        } else {
+            $conciliation_url = "";
         }
+
         // <!-- Список платежей -->
         if (can_view([Module::MOD_MY_PAYMENTS, Module::MOD_PAYMENTS])) {
             $payments_url = "<a href='".Pay::URI_LIST."/". $data[Abon::F_ID] ."' class='btn btn-outline-info btn-sm me-1 mb-1' target='_blank' title='". __('Платежі') ."' ><span class='fw-bold'>₴₴</span></a>";
+        } else {
+            $payments_url = "";
         }
+
         // <!-- Внесение платежа -->
         if (can_add([Module::MOD_PAYMENTS])) {
             $add_payment_url = "<a href='".Pay::URI_FORM."?".Abon::F_GET_ID."=".$data[Abon::F_ID]."' class='btn btn-outline-info btn-sm me-1 mb-1' target='_blank' title='". __('Внести платіж') ."'><span class='fw-bold'>+₴</span></a>";
+        } else {
+            $add_payment_url = "";
         }
+
         // <!-- Информационные уведомления -->
         if (can_add([Module::MOD_NOTICE])) {
             $notify_url = "<a href='".Notify::URI_INFO."/".$data[Abon::F_ID]."' class='btn btn-outline-info btn-sm me-1 mb-1' target='_blank' title='".__('Информационные СМС')."'><span class='fw-bold'>SMS</span></a>";
+        } else {
+            $notify_url = "";
         }
-        return  "{$conciliation_url} {$payments_url} {$add_payment_url} {$notify_url} СФ2&nbsp;";
+
+        // <!-- СФ -->
+        if (can_use([Module::MOD_INVOICES])) {
+            $invoices_url = "<a href='".Invoice::URI_LIST."/".$data[Abon::F_ID]."' class='btn btn-outline-info btn-sm me-1 mb-1' target='_blank' title='".__('Счета-фактуры, Акты')."'><span class='fw-bold'>СФ</span></a>";
+        } else {
+            $invoices_url = "";
+        }
+
+        return  "{$conciliation_url} {$payments_url} {$add_payment_url} {$notify_url} {$invoices_url}";
     }
 
 

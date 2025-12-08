@@ -30,16 +30,23 @@ require_once DIR_LIBS . '/form_functions.php';
 require_once DIR_LIBS . '/billing_functions.php';
 require_once DIR_LIBS . '/inc_functions.php';
 
-/** @var array $user */
+/** @var string $title */
 /** @var int $for_abon_id */
+/** @var array $user */
 
 $for_abon = [];
-foreach ($user[Abon::TABLE] as $abon) {
-    if ($abon[Abon::F_ID] == $for_abon_id) {
-        $for_abon = $abon;
-        break;
+if (!empty($user[Abon::TABLE])) {
+    foreach ($user[Abon::TABLE] as $abon) {
+        if ($abon[Abon::F_ID] == $for_abon_id) {
+            $for_abon = $abon;
+            break;
+        }
     }
+    $active_tab = 2;
+} else {
+    $active_tab = 1;
 }
+
 
 ?>
 <div class="container">
@@ -52,18 +59,18 @@ foreach ($user[Abon::TABLE] as $abon) {
             <ul class="nav nav-tabs justify-content-start" id="my_tab_user_abon" role="tablist">
                 <!-- Вкладка пользователя -->
                 <li class="nav-item" role="presentation">
-                    <a class="nav-link" data-bs-toggle="tab" href="#tab_user_<?=$user[User::F_ID];?>" role="tab"><small><?=__('User card');?></small></a>
+                    <a class="nav-link<?= ($active_tab==1) ? " active" : "" ?>" data-bs-toggle="tab" href="#tab_user_<?=$user[User::F_ID];?>" role="tab"><small><?=__('User card');?></small></a>
                 </li>
                 <!-- Вкладка Абонентов -->
                 <li class="nav-item" role="presentation">
-                    <a class="nav-link active" data-bs-toggle="tab" href="#tab_abons_<?=$user[User::F_ID];?>" role="tab"><small><?=__('Abonent services');?></small></a>
+                    <a class="nav-link<?= ($active_tab==2) ? " active" : "" ?>" data-bs-toggle="tab" href="#tab_abons_<?=$user[User::F_ID];?>" role="tab"><small><?=__('Abonent services');?></small></a>
                 </li>
             </ul>
 
             <div class="tab-content">
 
                 <!-- [ Контент Вкладки пользователя ] -->
-                <div class="tab-pane fade" id="tab_user_<?=$user[User::F_ID];?>" role="tabpanel">
+                <div class="tab-pane fade<?= ($active_tab==1) ? " show active" : "" ?>" id="tab_user_<?=$user[User::F_ID];?>" role="tabpanel">
                     <?php require DIR_INC . '/user_view.php'; ?>
                     <!-- < ?php require DIR_INC . '/user_tabs.php'; ?> -->
                     <hr>
@@ -92,7 +99,7 @@ foreach ($user[Abon::TABLE] as $abon) {
 
 
                 <!-- [ Контент Вкладки Абонентов ] -->
-                <div class="tab-pane fade show active" id="tab_abons_<?=$user[User::F_ID];?>" role="tabpanel">
+                <div class="tab-pane fade<?= ($active_tab==2) ? " show active" : "" ?>" id="tab_abons_<?=$user[User::F_ID];?>" role="tabpanel">
                     <!-- Перебор подключенных абонентов -->
                     <div class="container-fluid mt-4">
                     <?php if (!empty($user[Abon::TABLE])) : ?>

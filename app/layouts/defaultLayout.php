@@ -66,12 +66,12 @@ use billing\core\base\View;
             .w-90 { width: 90% !important; }
 
             /* размер текста */
-            .fs-7  {font-size:0.85rem !important; }
-            .fs-8  {font-size:0.7rem !important; }
-            .fs-9  {font-size:0.6rem !important; }
-            .fs-10 {font-size:0.5rem !important; }
-            .fs-11 {font-size:0.4rem !important; }
-            .fs-12 {font-size:0.3rem !important; }
+            .fs-7  {font-size:0.90rem !important; }
+            .fs-8  {font-size:0.80rem !important; }
+            .fs-9  {font-size:0.70rem !important; }
+            .fs-10 {font-size:0.60rem !important; }
+            .fs-11 {font-size:0.50rem !important; }
+            .fs-12 {font-size:0.40rem !important; }
 
             /* Лэйаут страницы */
             .my-layout {

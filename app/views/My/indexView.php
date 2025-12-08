@@ -12,7 +12,9 @@
  */
 
 /**
- * Description of indexView.php
+ * Вид для 
+ *  /my
+ *  /abon/view/<id>
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
@@ -28,8 +30,9 @@ require_once DIR_LIBS . '/form_functions.php';
 require_once DIR_LIBS . '/billing_functions.php';
 require_once DIR_LIBS . '/inc_functions.php';
 
-/** @var array $user */
+/** @var string $title */
 /** @var int $for_abon_id */
+/** @var array $user */
 
 /**
  * Главный вид карточки абонента
