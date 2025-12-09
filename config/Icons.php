@@ -100,10 +100,12 @@ class Icons {
     const SRC_ICON_UAH2PAY    = '/img/icon_uah2pay.svg';
     const SRC_FAXIMILE        = '/img/ar_shtamp_podpis.jpg';
 
-    const SRC_ICON_INV_ACT_SHTAMP   = '/img/inv_act_shtamp.png ';
-    const SRC_ICON_INV_ACT          = '/img/inv_act.png';
-    const SRC_ICON_INV_SHTAMP       = '/img/inv_shtamp.png';
-    const SRC_ICON_INV              = '/img/inv.png';
+    const SRC_ICON_INV_ACT_SHTAMP   = '/img/inv_act_shtamp.svg';
+    const SRC_ICON_INV_ACT          = '/img/inv_act.svg';
+    const SRC_ICON_INV_SHTAMP       = '/img/inv_shtamp.svg';
+    const SRC_ICON_INV              = '/img/inv.svg';
+    const SRC_ICON_ACT_SHTAMP       = '/img/icon_akt_shtamp.svg';
+    const SRC_ICON_ACT              = '/img/icon_akt.svg';
 
     const SRC_ICON_FILER      = '/img/icon_filter.svg';
     const SRC_ICON_MAPS       = '/img/google-maps_064.png';

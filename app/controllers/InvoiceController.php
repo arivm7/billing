@@ -238,7 +238,11 @@ class InvoiceController extends AppBaseController
         // debug($agent, '$agent');
         // debug($contragent, '$contragent');
 
-        $title = "RILAN-INVOICE-".$invoice[Invoice::F_ABON_ID]."-".mb_substr($invoice[Invoice::F_INV_DATE_STR], 6, 4)."-".mb_substr($invoice[Invoice::F_INV_DATE_STR], 3, 2);
+        $title = ($show_inv 
+                ? "RILAN-INVOICE-".$invoice[Invoice::F_ABON_ID]."-".mb_substr($invoice[Invoice::F_INV_DATE_STR], 6, 4)."-".mb_substr($invoice[Invoice::F_INV_DATE_STR], 3, 2)
+                : "RILAN-AKT-"    .$invoice[Invoice::F_ABON_ID]."-".mb_substr($invoice[Invoice::F_AKT_DATE_STR], 6, 4)."-".mb_substr($invoice[Invoice::F_AKT_DATE_STR], 3, 2)
+            );
+
         View::setMeta($title);
         $this->setVariables([
             'title'           => $title,
@@ -253,7 +257,7 @@ class InvoiceController extends AppBaseController
         ]);
 
         $this->layout  = 'print';
-
+        // debug($this->view, '$this->view', die:0);
     }
 
 

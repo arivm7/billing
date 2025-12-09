@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: localhost:3306
--- Время создания: Ноя 05 2025 г., 23:12
+-- Время создания: Дек 09 2025 г., 19:22
 -- Версия сервера: 8.0.44
 -- Версия PHP: 8.2.29
 
@@ -73,7 +73,8 @@ CREATE TABLE `abon_rest` (
   `sum_pay` double NOT NULL DEFAULT '0' COMMENT 'Сумма платежей и внесений на ЛС',
   `sum_cost` double NOT NULL DEFAULT '0' COMMENT 'Сумма начислений за услуги price_apply',
   `sum_PPMA` double NOT NULL DEFAULT '0' COMMENT 'PPMA - Price Per Month Active',
-  `sum_PPDA` double NOT NULL DEFAULT '0' COMMENT 'PPDA - Price Per Day Active'
+  `sum_PPDA` double NOT NULL DEFAULT '0' COMMENT 'PPDA - Price Per Day Active',
+  `modified` int UNSIGNED NOT NULL DEFAULT (unix_timestamp())
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
@@ -137,13 +138,16 @@ INSERT INTO `adm_menu` (`id`, `parent_id`, `module_id`, `anon_visible`, `visible
 (19, 0, 29, 0, 1, 130, ':: ТП', ':: ТП', ':: ТП', '', '', '', '', 0, NULL, NULL, 1, 1756591041),
 (20, 0, 25, 0, 1, 40, '::&nbsp;История&nbsp;платежей', '::&nbsp;Історія&nbsp;платежів', '::&nbsp;Payment&nbsp;history', 'История платежей', 'Історія платежів', 'Payment history', '/payments', 0, NULL, NULL, 1, 1758504380),
 (22, 0, 30, 0, 1, 70, ':: Документы', ':: Документи', ':: Documents', 'Документы', 'Документи', 'Documents', '', 0, NULL, NULL, 1, 1756591163),
-(23, 0, 0, 1, 1, 35, '::&nbsp;Правила&nbsp;сети', '::&nbsp;Правила&nbsp;мережі', '::&nbsp;Network&nbsp;Rules', '', '', '', '/rules', 0, NULL, NULL, 1, 1758504325),
-(24, 0, 0, 1, 1, 55, ':: Защита от DDoS', ':: Захист від DDoS', ':: DDoS protection', 'Краткая инструкция по обнаружению и удалению вредоносных программ.', 'Коротка інструкція щодо виявлення та видалення шкідливих програм.', 'A brief guide to detecting and removing malware.', '/flood', 0, NULL, NULL, 461, 1756567723),
+(23, 0, 0, 1, 1, 55, ':: Правила сети', ':: Правила мережі', ':: Network Rules', '', '', '', '/rules', 0, NULL, NULL, 1, 1762487721),
+(24, 0, 0, 1, 1, 60, ':: Защита от DDoS', ':: Захист від DDoS', ':: DDoS protection', 'Краткая инструкция по обнаружению и удалению вредоносных программ.', 'Коротка інструкція щодо виявлення та видалення шкідливих програм.', 'A brief guide to detecting and removing malware.', '/flood', 0, NULL, NULL, 1, 1762487710),
 (25, 22, NULL, 0, 1, 10, 'Документы', 'Документы', 'Документы', 'Редактор документов', 'Редактор документов', 'Редактор документов', '/docs', 0, NULL, NULL, NULL, NULL),
 (26, 22, NULL, 0, 1, 20, 'Файлы', 'Файлы', 'Файлы', 'Управление публичными и личными файлами, документами, изображениями', 'Управление публичными и личными файлами, документами, изображениями', 'Управление публичными и личными файлами, документами, изображениями', '/files', 0, NULL, NULL, NULL, NULL),
 (27, 19, 29, 0, 1, 10, 'Список ТП', 'Перелік ТП', 'TP List', '', '', '', '/tp', 0, NULL, NULL, 1, 1760911701),
 (28, 19, 31, 0, 1, 20, 'Предприятия', 'Підприємства', 'Firms', '', '', '', '/firms', 0, NULL, NULL, 1, 1760911769),
-(29, 19, 43, 0, 1, 30, 'Список ППП', 'Перелік ППП', 'POP List', '', '', '', '/ppp?active=1', 0, NULL, NULL, 1, 1760983922);
+(29, 19, 43, 0, 1, 30, 'Список ППП', 'Перелік ППП', 'POP List', '', '', '', '/ppp?active=1', 0, NULL, NULL, 1, 1760983922),
+(30, 2, 0, 0, 0, 20, 'Последние подключенные', 'Останні підключені', 'Last connected', 'Список абонентов. Вверху последние подключенные ', 'Перелік абонентів. Вгорі останні підключені', 'The list of subscribers. At the top are the last connected ones', '/abon/last', 0, NULL, NULL, 1, 1763944609),
+(31, 0, 37, 0, 1, 80, ':: Уведомления', ':: Сповіщення', ':: Notices', '', '', '', '', 0, NULL, NULL, 1, 1764204444),
+(32, 31, 37, 0, 0, 10, 'Инфо-тексты', 'Інфо-тексти', 'Info-texts', '', '', '', '/notice/info', 0, NULL, NULL, 1, 1764204634);
 
 -- --------------------------------------------------------
 
@@ -203,13 +207,16 @@ INSERT INTO `adm_module_list` (`id`, `uk_title`, `ru_title`, `en_title`, `uk_des
 (34, 'Акт звірки платежів (My)', 'Акт сверки платежей (My)', 'Conciliation (My)', 'Акт звірки взаємних розрахунків зареєстрованого користувача (Мої)', 'Акт сверки взаимных расчётов зарегистрированного пользователя (Мои)', 'Reconciliation report of mutual settlements of a registered user (My)', '', '', 1, 1756803986, 4, 1760460242),
 (35, 'Акт звірки платежів', 'Акт сверки платежей', 'Conciliation', 'Акт звірки взаємних розрахунків', 'Акт сверки взаимных расчётов', 'The act of reconciliation of mutual settlements', '', '', 1, 1756804026, 4, 1760460244),
 (36, 'Поиск', 'Поиск', 'Поиск', '', '', '', '', '', 1, 1756923436, 1, 1756923436),
-(37, 'Повідомлення', 'Уведомления', 'Notify', '', '', '', '', '', 458, 1757066739, 1, 1757498598),
-(38, 'Повідомлення (My)', 'Уведомления (My)', 'Notify (My)', '', '', '', '', '', 458, 1757066783, 1, 1757498595),
+(37, 'Повідомлення', 'Уведомления', 'Notice', '', '', '', '', '', 458, 1757066739, 1, 1764191886),
+(38, 'Повідомлення (My)', 'Уведомления (My)', 'Notice (My)', '', '', '', '', '', 458, 1757066783, 1, 1764192018),
 (39, 'Web Debug', 'Web Debug', 'Web Debug', 'Показ налагоджувальної інформації', 'Показ отладочной информации', 'Show debug information', '', '', 1, 1757370881, 1, 1760466407),
 (40, 'Платежі', 'Платежи', 'Payments', 'Доступ до функцій роботи з платежами', 'Доступ к функциям работы с платежами', 'Access to payment functions', '', '', 1, 1757491880, 4, 1760460737),
 (41, 'Платежі (My)', 'Платежи (My)', 'Payments (My)', 'Доступ до функцій роботи з моїми платежами (My)', 'Доступ к функциям работы с моими платежами (My)', 'Access to My Payments (My) functionality', '', '', 1, 1757492014, 4, 1760460735),
 (42, 'Картка користувача', 'Карточка пользователя', 'User Card', '', '', '', '', '', 1, 1760368719, 1, 1760368719),
-(43, 'ППП', 'ППП', 'PAP', 'Пункт прийому платежів (механізм отримання платежів)', 'Пункт приёма платежей (механизм получения платежей)', 'Payment acceptance point (payment receipt mechanism)', '', '', 1, 1760874151, 1, 1760874170);
+(43, 'ППП', 'ППП', 'PAP', 'Пункт прийому платежів (механізм отримання платежів)', 'Пункт приёма платежей (механизм получения платежей)', 'Payment acceptance point (payment receipt mechanism)', '', '', 1, 1760874151, 1, 1760874170),
+(44, 'Моніторинг', 'Мониторинг', 'Monitoring', 'Сайт системи моніторингу', 'Сайт системы мониторинга', 'Monitoring system website', '', '', 1, 1763858142, 1, 1763858142),
+(45, 'Рахунки - Акти', 'Счета - Акты', 'Accounts - Acts', 'Рахунки-фактури, Акти виконаних робіт', 'Счета-фактуры, Акты выполненных работ', 'Invoices, Act of Completion', '', '', 1, 1764972653, 1, 1764973059),
+(46, 'Рахунки - Акти (My)', 'Счета - Акты (My)', 'Accounts - Acts (My)', 'Рахунки-фактури, Акти виконаних робіт. Абонентська видима частина.', 'Счета-фактуры, Акты выполненных работ. Абонентская видимая часть.', 'Invoices, Act of Completion. Subscriber\'s visible part.', '', '', 1, 1764973010, 1, 1764973054);
 
 -- --------------------------------------------------------
 
@@ -319,6 +326,9 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (1, 41, 0),
 (1, 42, 15),
 (1, 43, 15),
+(1, 44, 15),
+(1, 45, 15),
+(1, 46, 0),
 (2, 3, 15),
 (2, 6, 15),
 (2, 22, 15),
@@ -339,10 +349,13 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (2, 37, 15),
 (2, 38, 0),
 (2, 39, 1),
-(2, 40, 5),
+(2, 40, 15),
 (2, 41, 0),
 (2, 42, 15),
 (2, 43, 15),
+(2, 44, 15),
+(2, 45, 15),
+(2, 46, 0),
 (3, 3, 0),
 (3, 6, 0),
 (3, 22, 0),
@@ -367,6 +380,9 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (3, 41, 1),
 (3, 42, 0),
 (3, 43, 0),
+(3, 44, 0),
+(3, 45, 0),
+(3, 46, 1),
 (4, 3, 0),
 (4, 6, 0),
 (4, 22, 0),
@@ -391,6 +407,9 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (4, 41, 0),
 (4, 42, 0),
 (4, 43, 0),
+(4, 44, 0),
+(4, 45, 0),
+(4, 46, 0),
 (5, 3, 0),
 (5, 6, 1),
 (5, 22, 0),
@@ -406,7 +425,7 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (5, 32, 0),
 (5, 33, 0),
 (5, 34, 0),
-(5, 35, 0),
+(5, 35, 1),
 (5, 36, 0),
 (5, 37, 0),
 (5, 38, 0),
@@ -415,6 +434,9 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (5, 41, 0),
 (5, 42, 1),
 (5, 43, 15),
+(5, 44, 1),
+(5, 45, 0),
+(5, 46, 0),
 (6, 3, 0),
 (6, 6, 1),
 (6, 22, 0),
@@ -439,6 +461,9 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (6, 41, 0),
 (6, 42, 1),
 (6, 43, 0),
+(6, 44, 1),
+(6, 45, 0),
+(6, 46, 0),
 (7, 3, 0),
 (7, 6, 1),
 (7, 22, 0),
@@ -463,6 +488,9 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (7, 41, 0),
 (7, 42, 1),
 (7, 43, 0),
+(7, 44, 1),
+(7, 45, 0),
+(7, 46, 0),
 (8, 3, 7),
 (8, 6, 3),
 (8, 22, 1),
@@ -487,6 +515,9 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (8, 41, 0),
 (8, 42, 7),
 (8, 43, 0),
+(8, 44, 1),
+(8, 45, 1),
+(8, 46, 0),
 (9, 3, 7),
 (9, 6, 3),
 (9, 22, 1),
@@ -511,6 +542,9 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (9, 41, 0),
 (9, 42, 7),
 (9, 43, 0),
+(9, 44, 1),
+(9, 45, 1),
+(9, 46, 0),
 (10, 3, 5),
 (10, 6, 0),
 (10, 22, 1),
@@ -531,10 +565,13 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (10, 37, 1),
 (10, 38, 0),
 (10, 39, 0),
-(10, 40, 7),
+(10, 40, 1),
 (10, 41, 0),
 (10, 42, 1),
 (10, 43, 0),
+(10, 44, 0),
+(10, 45, 15),
+(10, 46, 0),
 (11, 3, 5),
 (11, 6, 0),
 (11, 22, 1),
@@ -555,10 +592,13 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (11, 37, 1),
 (11, 38, 0),
 (11, 39, 0),
-(11, 40, 5),
+(11, 40, 1),
 (11, 41, 0),
 (11, 42, 1),
 (11, 43, 0),
+(11, 44, 0),
+(11, 45, 7),
+(11, 46, 0),
 (12, 3, 0),
 (12, 6, 0),
 (12, 22, 1),
@@ -579,10 +619,13 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (12, 37, 1),
 (12, 38, 0),
 (12, 39, 0),
-(12, 40, 5),
+(12, 40, 15),
 (12, 41, 0),
 (12, 42, 1),
 (12, 43, 0),
+(12, 44, 0),
+(12, 45, 1),
+(12, 46, 0),
 (13, 3, 0),
 (13, 6, 0),
 (13, 22, 1),
@@ -603,10 +646,13 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (13, 37, 1),
 (13, 38, 0),
 (13, 39, 0),
-(13, 40, 5),
+(13, 40, 7),
 (13, 41, 0),
 (13, 42, 1),
 (13, 43, 0),
+(13, 44, 0),
+(13, 45, 1),
+(13, 46, 0),
 (14, 3, 5),
 (14, 6, 3),
 (14, 22, 1),
@@ -631,6 +677,9 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (14, 41, 0),
 (14, 42, 7),
 (14, 43, 0),
+(14, 44, 0),
+(14, 45, 1),
+(14, 46, 0),
 (15, 3, 5),
 (15, 6, 3),
 (15, 22, 1),
@@ -655,6 +704,9 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (15, 41, 0),
 (15, 42, 7),
 (15, 43, 0),
+(15, 44, 0),
+(15, 45, 1),
+(15, 46, 0),
 (16, 3, 5),
 (16, 6, 3),
 (16, 22, 1),
@@ -679,6 +731,9 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (16, 41, 0),
 (16, 42, 7),
 (16, 43, 0),
+(16, 44, 1),
+(16, 45, 1),
+(16, 46, 0),
 (17, 3, 5),
 (17, 6, 3),
 (17, 22, 1),
@@ -702,7 +757,10 @@ INSERT INTO `adm_role_module_permissions` (`role_id`, `module_id`, `permissions`
 (17, 40, 1),
 (17, 41, 0),
 (17, 42, 7),
-(17, 43, 0);
+(17, 43, 0),
+(17, 44, 1),
+(17, 45, 1),
+(17, 46, 0);
 
 -- --------------------------------------------------------
 
@@ -958,6 +1016,27 @@ CREATE TABLE `contacts_types` (
 -- ССЫЛКИ ТАБЛИЦЫ `contacts_types`:
 --
 
+--
+-- Очистить таблицу перед добавлением данных `contacts_types`
+--
+
+TRUNCATE TABLE `contacts_types`;
+--
+-- Дамп данных таблицы `contacts_types`
+--
+
+INSERT INTO `contacts_types` (`id`, `name`, `uk_title`, `ru_title`, `en_title`) VALUES
+(1, 'AUTO', 'Автоматичний', 'Автоматический', 'Auto select'),
+(2, 'PHONE', 'Телефон', 'Телефон', 'Phone'),
+(3, 'EMAIL', 'Ел. адреса', 'Эл. почта', 'E-mail'),
+(4, 'TELEGRAM', 'Телеграм', 'Телеграм', 'Telegram'),
+(5, 'VIBER', 'Viber', 'Viber', 'Viber'),
+(6, 'SIGNAL', 'Signal', 'Signal', 'Signal'),
+(7, 'WHATSAPP', 'WhatsApp', 'WhatsApp', 'WhatsApp'),
+(8, 'NEXTCLOUD', 'NextCloud', 'NextCloud', 'NextCloud'),
+(9, 'IRC', 'IRC', 'IRC', 'IRC'),
+(10, 'ADDRESS', 'Поштова адреса', 'Почтовый адрес', 'Postal Address');
+
 -- --------------------------------------------------------
 
 --
@@ -1119,39 +1198,39 @@ CREATE TABLE `files_list` (
 DROP TABLE IF EXISTS `firm_list`;
 CREATE TABLE `firm_list` (
   `id` int UNSIGNED NOT NULL,
+  `name_short` tinytext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL COMMENT 'Краткое название предприятия',
+  `name_long` tinytext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL COMMENT 'Полное название предприятия',
+  `name_title` tinytext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci COMMENT 'Название сети для почтовой рассылки',
   `has_active` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'Предприятие "активно", в списках выписки документов',
   `has_delete` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'запись о предприятии считается удалённой',
   `has_agent` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'предприятие-агент (наше)',
   `has_client` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'предприятие-клиент',
   `has_all_visible` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Видимое для всех',
   `has_all_linking` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Разрешить подключать всем',
-  `name_short` tinytext NOT NULL COMMENT 'Краткое название предприятия',
-  `name_long` tinytext NOT NULL COMMENT 'Полное название предприятия',
-  `name_title` tinytext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci COMMENT 'Название сети для почтовой рассылки',
-  `manager_job_title` tinytext COMMENT 'Должность ответственного лица',
-  `manager_name_short` tinytext COMMENT 'ФИО',
-  `manager_name_long` tinytext COMMENT 'Фамилия Имя Отчество',
-  `cod_EDRPOU` tinytext COMMENT 'ЕДРПОУ - Єдиний державний реєстр підприємств та організацій України',
-  `cod_IPN` tinytext COMMENT 'ИПН',
+  `manager_job_title` tinytext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci COMMENT 'Должность ответственного лица',
+  `manager_name_short` tinytext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci COMMENT 'ФИО',
+  `manager_name_long` tinytext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci COMMENT 'Фамилия Имя Отчество',
+  `cod_EDRPOU` tinytext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci COMMENT 'ЕДРПОУ - Єдиний державний реєстр підприємств та організацій України',
+  `cod_IPN` tinytext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci COMMENT 'ИПН',
   `registration` text CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci COMMENT 'Данные о регистрации',
-  `address_registration` tinytext COMMENT 'Адрес регистрации юридического лица',
-  `address_office_full` tinytext COMMENT 'Адрес офиса',
-  `address_post_person` tinytext COMMENT 'Від кого:  Іванов Іван Іванович',
-  `address_post_index` tinytext COMMENT 'адрес почтовый',
-  `address_post_ul` tinytext COMMENT 'Улица',
-  `address_post_dom` tinytext COMMENT 'Дім _____ корп. _____ стр. _____ кв. _____',
-  `address_post_sity` tinytext COMMENT 'Город',
-  `address_post_region` tinytext COMMENT 'Республіка, край, область',
-  `address_post_country` tinytext COMMENT 'Страна',
+  `address_registration` tinytext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci COMMENT 'Адрес регистрации юридического лица',
+  `address_office_full` tinytext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci COMMENT 'Адрес офиса',
+  `address_post_person` tinytext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci COMMENT 'Від кого:  Іванов Іван Іванович',
+  `address_post_index` tinytext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci COMMENT 'адрес почтовый',
+  `address_post_ul` tinytext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci COMMENT 'Улица',
+  `address_post_dom` tinytext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci COMMENT 'Дім _____ корп. _____ стр. _____ кв. _____',
+  `address_post_sity` tinytext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci COMMENT 'Город',
+  `address_post_region` tinytext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci COMMENT 'Республіка, край, область',
+  `address_post_country` tinytext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci COMMENT 'Страна',
   `address_office_courier` tinytext COMMENT 'адрес доставки дл курьеров',
-  `office_phones` tinytext COMMENT 'Контактные телефоны предприятия (бухгалтерии)',
+  `office_phones` tinytext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci COMMENT 'Контактные телефоны предприятия (бухгалтерии)',
   `bank_IBAN` tinytext COMMENT 'Банковский р/с IBAN',
   `bank_name` tinytext COMMENT 'название банка',
   `ppp_default_id` int UNSIGNED DEFAULT NULL COMMENT 'ППП <<по умолчанию>> используемый в форме внесения платежа.',
   `creation_uid` int UNSIGNED DEFAULT NULL COMMENT 'Кто создал запись',
-  `creation_date` int NOT NULL DEFAULT '0' COMMENT 'Дата создания записи',
+  `creation_date` int UNSIGNED DEFAULT NULL COMMENT 'Дата создания записи',
   `modified_uid` int UNSIGNED DEFAULT NULL COMMENT 'ID пользователя, который изменил запись',
-  `modified_date` int NOT NULL COMMENT 'Дата-время модификации записи'
+  `modified_date` int UNSIGNED DEFAULT NULL COMMENT 'Дата-время модификации записи'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='Список предприятий с реквизитами';
 
 --
@@ -1257,9 +1336,9 @@ CREATE TABLE `payments` (
   `pay_type_id` int UNSIGNED NOT NULL COMMENT 'ИД Типа платежа',
   `pay_ppp_id` int UNSIGNED NOT NULL COMMENT 'Пункт приёма платежей (ППП) -- счёт, агент или предприятие куда поступили средства.',
   `description` text CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL COMMENT 'Описание платежа',
-  `created_date` int NOT NULL DEFAULT '0' COMMENT 'Юзер, создавший запись',
+  `created_date` int UNSIGNED NOT NULL DEFAULT '0' COMMENT 'Юзер, создавший запись',
   `created_uid` int UNSIGNED NOT NULL DEFAULT '0' COMMENT 'Дата создания записис в базе',
-  `modified_date` int NOT NULL DEFAULT '0' COMMENT 'Кто изменил запись',
+  `modified_date` int UNSIGNED NOT NULL DEFAULT '0' COMMENT 'Кто изменил запись',
   `modified_uid` int UNSIGNED NOT NULL DEFAULT '0' COMMENT 'Дата изменения записи'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='Платежи';
 
@@ -1575,7 +1654,7 @@ CREATE TABLE `prices_apply` (
   `PPMA_value` float NOT NULL DEFAULT '0' COMMENT 'Price Per Montch - Значение активной абонплаты',
   `PPDA_value` float NOT NULL DEFAULT '0' COMMENT 'Price Per Day - Текущая абонплата в день',
   `creation_uid` int UNSIGNED DEFAULT NULL COMMENT 'ID пользователя, создавшего запись',
-  `creation_date` int DEFAULT NULL COMMENT 'Дата создания записи',
+  `creation_date` int UNSIGNED DEFAULT (unix_timestamp()),
   `modified_uid` int UNSIGNED DEFAULT NULL COMMENT 'Кто изменил запись',
   `modified_date` int DEFAULT NULL COMMENT 'Дата изменения записи в базе'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
@@ -1603,17 +1682,19 @@ CREATE TABLE `sf_list` (
   `firm_agent_id` int UNSIGNED NOT NULL DEFAULT '0' COMMENT 'предприятие-Исполнитель',
   `user_id` int UNSIGNED DEFAULT NULL COMMENT 'ID Пользователь',
   `abon_id` int UNSIGNED NOT NULL COMMENT 'ID Абонент',
-  `sf_no` tinytext NOT NULL COMMENT 'СФ №',
-  `sf_date` text NOT NULL COMMENT 'Дата счёта',
-  `sf_firm` text NOT NULL COMMENT 'Предприятие плательщик',
+  `sf_no` tinytext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL COMMENT 'СФ №',
+  `sf_date` text CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL COMMENT 'Дата счёта',
+  `sf_firm` text CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL COMMENT 'Предприятие плательщик',
   `sf_count` float NOT NULL COMMENT 'Количество',
   `sf_cost_1` float NOT NULL COMMENT 'Цена за 1',
   `sf_cost_all` float NOT NULL COMMENT 'Цена всего',
-  `sf_text` text NOT NULL COMMENT 'Назначение платежа',
+  `sf_text` text CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL COMMENT 'Назначение платежа',
   `sf_is_paid` tinyint(1) NOT NULL COMMENT 'Счёт оплачен',
   `akt_date` text NOT NULL COMMENT 'Дата Акта',
-  `modified_date` int NOT NULL COMMENT 'Дата-время модификации записи',
-  `modified_uid` int UNSIGNED NOT NULL COMMENT 'ID пользователя, который изменил запись'
+  `modified_uid` int UNSIGNED NOT NULL COMMENT 'ID пользователя, который изменил запись',
+  `modified_date` int UNSIGNED NOT NULL COMMENT 'Дата-время модификации записи',
+  `creation_uid` int UNSIGNED DEFAULT NULL COMMENT 'Кто создал заппись',
+  `creation_date` int UNSIGNED DEFAULT (unix_timestamp()) COMMENT 'Дата создания записи'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='Список выписанных счетов';
 
 --
@@ -1954,9 +2035,10 @@ CREATE TABLE `users` (
   `password` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL COMMENT 'пароль хэшированный md5 (устаревший)',
   `salt` varchar(3) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL DEFAULT '0' COMMENT '«соль», используемая для «примеси» к паролю, varchar(3)',
   `name_short` tinytext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL COMMENT 'Краткое имя пользователя (отображаемое)',
-  `name` varchar(80) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
+  `name` varchar(80) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL COMMENT 'Полное имя пользователя (отображаемое) ',
   `surname` text CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci COMMENT 'Отчество',
   `family` text CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci COMMENT 'Фамилия',
+  `description` text COMMENT 'Дополнительная информация. Служебное поле',
   `phone_main` varchar(60) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL COMMENT 'Основной номер телефона',
   `do_send_sms` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'Отправлять автоматические СМС-уведомления в общем списке',
   `mail_main` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL COMMENT 'email, которые можно изменить в профиле пользователя',
@@ -2358,13 +2440,13 @@ ALTER TABLE `abons`
 -- AUTO_INCREMENT для таблицы `adm_menu`
 --
 ALTER TABLE `adm_menu`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT COMMENT 'ID элемента меню', AUTO_INCREMENT=30;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT COMMENT 'ID элемента меню', AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT для таблицы `adm_module_list`
 --
 ALTER TABLE `adm_module_list`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'ID административного модуля', AUTO_INCREMENT=44;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'ID административного модуля', AUTO_INCREMENT=47;
 
 --
 -- AUTO_INCREMENT для таблицы `adm_role_list`
@@ -2418,7 +2500,7 @@ ALTER TABLE `cards_pools`
 -- AUTO_INCREMENT для таблицы `contacts_types`
 --
 ALTER TABLE `contacts_types`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT для таблицы `devices_list`
@@ -2695,348 +2777,11 @@ ALTER TABLE `ts_user_tp`
 ALTER TABLE `users_actions`
   ADD CONSTRAINT `users_actions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-
 --
 -- Метаданные
 --
 USE `phpmyadmin`;
 
---
--- Метаданные для таблицы abons
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы abon_rest
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы adm_menu
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы adm_module_list
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы adm_role_list
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы adm_role_module_permissions
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы adm_user_role
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы adr_countries
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы adr_district
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы adr_regions
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы bank_p24_acc
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы bank_p24_card
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы cards
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы cards_on_ppp
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы cards_pools
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы contacts_types
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы devices_list
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы devices_types
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы documents
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы files_list
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы firm_list
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы mail_list
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы nat_forward
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы news
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы payments
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы payments_calculates
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы payments_types
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы phone_numbers
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы ppp_list
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы ppp_types
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы prices
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы prices_apply
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы sf_list
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы sms_list
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы tcp_proto_numbers
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы todo_list
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы todo_priority
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы todo_titles
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы todo_types
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы tp_group_list
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы tp_list
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы tp_rangs
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы ts_abons_templates
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы ts_firms_users
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы ts_user_tp
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы users
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для таблицы users_actions
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
-
---
--- Метаданные для базы данных billing
---
--- Ошибка считывания данных таблицы phpmyadmin.pma__bookmark: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__bookmark&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__relation: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__relation&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__savedsearches: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__savedsearches&#039;
--- Ошибка считывания данных таблицы phpmyadmin.pma__central_columns: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__central_columns&#039;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

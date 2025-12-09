@@ -47,11 +47,11 @@ use billing\core\base\View;
         </style>
     </head>
     <body>
+        <?= $content ?>
         <div class="print-buttons">
             <button onclick="window.close();">Закрыть</button>
             <!--<button onclick="window.history.back();">Назад</button>-->
             <button onclick="window.print();">Печать</button>
         </div>
-        <?= $content ?>
     </body>
 </html>
