@@ -52,14 +52,13 @@ class Search {
     const SEARCH_PLACES = [
 
         [
-            // 1 -- искать в этой таблице
-            self::F_SEARCH_HERE       => 1,
+            self::F_SEARCH_HERE       => 1, // 1 -- искать в этой таблице
             self::F_TITLE             => "Пользователи",
             self::F_TABLE             => User::TABLE,
-            self::F_SEARSH_IN_FIELDS  => [               "name",       "name_short", User::F_SURNAME, User::F_FAMILY, User::F_DESCRIPTION, "phone_main",   "mail_main",    "address_invoice", "jabber_main",  "viber",        "telegram",     "signal_messenger", "whatsapp"],
-            self::F_SHOW_FIELDS       => ["id",          "name",       "name_short", User::F_SURNAME, User::F_FAMILY, User::F_DESCRIPTION, "phone_main",   "mail_main",    "address_invoice", "jabber_main",  "viber",        "telegram",     "signal_messenger", "whatsapp"],
-            self::F_COL_TITLES        => ["User ID",     "name",       "name_short", User::F_SURNAME, User::F_FAMILY, User::F_DESCRIPTION, "Телефон",      "Эл. почта",    "Почтовый адрес",  "Jabber/XMPP",  "Viber",        "Telegram",     "Signal",           "WhatsApp"],
-            self::F_CELL_ATTRIBUTES   => ["align=right", "align=left", "align=left", "align=left",    "align=left",   "align=left",        "align=center", "align=center", "align=center",    "align=center", "align=center", "align=center", "align=center",     "align=center"],
+            self::F_SEARSH_IN_FIELDS  => [               User::F_NAME_FULL, User::F_NAME_SHORT, User::F_SURNAME, User::F_FAMILY, User::F_DESCRIPTION, "phone_main",   "mail_main",    "address_invoice", "jabber_main",  "viber",        "telegram",     "signal_messenger", "whatsapp"],
+            self::F_SHOW_FIELDS       => ["id",          User::F_NAME_FULL, User::F_NAME_SHORT, User::F_SURNAME, User::F_FAMILY, User::F_DESCRIPTION, "phone_main",   "mail_main",    "address_invoice", "jabber_main",  "viber",        "telegram",     "signal_messenger", "whatsapp"],
+            self::F_COL_TITLES        => ["User ID",     "name",            "name_short",       "Отчество",      "Фамилия",      User::F_DESCRIPTION, "Телефон",      "Эл. почта",    "Почтовый адрес",  "Jabber/XMPP",  "Viber",        "Telegram",     "Signal",           "WhatsApp"],
+            self::F_CELL_ATTRIBUTES   => ["align=right", "align=left",      "align=left",       "align=left",    "align=left",   "align=left",        "align=center", "align=center", "align=center",    "align=center", "align=center", "align=center", "align=center",     "align=center"],
             self::F_REPLACE_FIELDS    => [
                 [self::F_FIELD => 'id', self::F_FUNC => 'url_user_form']
             ]

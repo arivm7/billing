@@ -33,9 +33,31 @@ require_once DIR_LIBS ."/functions.php";
 
 class SearchController extends AppBaseController {
 
+
+
+    public static function isSearchPage(): bool
+    {
+        if (empty($_SERVER['REQUEST_URI'])) { return false; }
+        $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        return $path === Search::URI_QUERY;
+    }
+    
+
+
+    public static function getSearchText(): string
+    {
+        if (self::isSearchPage() && isset($_GET[Search::F_QUERY])) {
+            return (string) $_GET[Search::F_QUERY];
+        } 
+        return '';
+    }
+
+
+
     function queryAction() {
         // debug($_GET, '$_GET');
         // debug($_POST, '$_POST');
+        // debug($_REQUEST, '$_REQUEST');
 
         if  (
                 !App::isAuth() ||

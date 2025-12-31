@@ -17,6 +17,7 @@
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
 
+use app\controllers\SearchController;
 use app\widgets\Theme\ThemeSelector;
 use billing\core\App;
 use config\Auth;
@@ -50,15 +51,15 @@ $path=strtolower('/' . ($this->route[F_PREFIX] ? $this->route[F_PREFIX] . '/' : 
         <div class="ms-auto">
 <?php if (App::$auth->isAuth) : ?>
             <ul class="nav nav-pills me-auto">
-                <?php if (can_view(Module::MOD_SEARCH)) : ?>
                 <?php if (can_use(Module::MOD_ADMIN_MENU)) : ?>
                 <li class="nav-item pe-2 d-flex align-items-center">
                     <a class="btn btn-outline-success btn-sm <?=(str_contains($path, 'admin/') ? "active" : "");?>" href="/admin/admin/menuedit">Admin</a>
                 </li>
-                <?php endif; ?>
                 <li class="nav-item pe-2 d-flex align-items-center">
                     <a class="btn btn-outline-success btn-sm disabled" href="/help">Help</a>
                 </li>
+                <?php endif; ?>
+                <?php if (can_use(Module::MOD_SEARCH)) : ?>
                 <li class="nav-item pe-2">
                     <form class="d-flex" role="search" method="get" action="<?=Abon::URI_VIEW;?>">
                         <div class="input-group input-group-sm w-auto" style="max-width: 120px;">
@@ -70,7 +71,7 @@ $path=strtolower('/' . ($this->route[F_PREFIX] ? $this->route[F_PREFIX] . '/' : 
                 <li class="nav-item pe-2">
                     <form class="d-flex" role="search" method="get" action="<?=Search::URI_QUERY;?>">
                         <div class="input-group align-items-center">
-                            <input class="form-control form-control-sm" type="search" name="<?=Search::F_QUERY;?>" placeholder="<?=__('Search fragment');?>" aria-label="Search" title="<?=__('Search');?>">
+                            <input class="form-control form-control-sm" type="search" value="<?= SearchController::getSearchText(); ?>" name="<?=Search::F_QUERY;?>" placeholder="<?=__('Search fragment');?>" aria-label="Search" title="<?=__('Search');?>">
                             <button class="btn btn-outline-success btn-sm" type="submit"><?=__('Search');?></button>
                         </div>
                     </form>
