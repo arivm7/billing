@@ -31,4 +31,12 @@ return [
     'Automatically disable service' => 'Автоматически отключать услугу',
     'Number of waiting days before disabling' => 'Количество дней ожидания перед отключением',
     'Reconciliation' => 'Сверка платежей',
+    'Full list of subscriber payments' => 'Полный список платежей абонента',
+    'Payments' => 'Платежи',
+    'Deposit funds to your personal account' => 'Внести средства на лицевой счёт',
+    'Make a payment' => 'Внести платёж',
+    'List of Information messages' => 'Список информационных сообщений',
+    'Informers' => 'Информеры',
+    'View the list of issued invoices and acts' => 'Посмотреть список выписанных счетов и актов',
+    'Bills' => 'Счета',
 ];

@@ -17,6 +17,7 @@
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
 
+use app\controllers\MyController;
 use billing\core\Pagination;
 use config\Icons;
 use config\tables\Abon;
@@ -26,10 +27,16 @@ use config\tables\Pay;
 use billing\core\base\Lang;
 Lang::load_inc(__FILE__);
 
-/** @var array $user */
-/** @var Pagination $pager */
-/** @var array $payments */
-/** @var array $pay_one — запись из таблицы payments */
+/**
+ * Данные передаваемые из контроллера:
+ * @var array $user
+ * @var Pagination $pager
+ * @var array $payments
+ */
+
+/** 
+ * @var array $pay_one — запись из таблицы payments 
+ */
 
 $view_all = can_view([Module::MOD_PAYMENTS]);
 $view_my = can_view(Module::MOD_MY_PAYMENTS) && $user[User::F_ID] == $user[Abon::REC][Abon::F_USER_ID];
@@ -46,13 +53,18 @@ $view_my = can_view(Module::MOD_MY_PAYMENTS) && $user[User::F_ID] == $user[Abon:
             <div>
                 <span class="text text-secondary"><?=num_len($user[Abon::REC][Abon::F_ID], 6);?> ::</span> <?=$user[Abon::REC][Abon::F_ADDRESS];?>
             </div>
-            <!-- Внесение платежа -->
-            <?php if (can_add([Module::MOD_PAYMENTS])) : ?>
-                <a href="<?=Pay::URI_FORM;?>?<?=Abon::F_GET_ID;?>=<?=$user[Abon::REC][Abon::F_ID];?>" class="btn btn-outline-info btn-sm" target="_self"><span class="fw-bold">+₴</span> <?= __('Внести платіж'); ?></a>
-            <?php endif; ?>
-
-
-
+            <div>
+                <!-- Внесение платежа -->
+                <?php if (can_add([Module::MOD_PAYMENTS])) : ?>
+                    <a href="<?=Pay::URI_FORM;?>?<?=Abon::F_GET_ID;?>=<?=$user[Abon::REC][Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-1" target="_self"><span class="fw-bold">+₴</span> <?= __('Внести платіж'); ?></a>
+                <?php endif; ?>
+                <!-- Вернуться в карточку абонента -->
+                <?php if (can_use([Module::MOD_ABON])) : ?>
+                    <a href="<?=Abon::URI_VIEW;?>/<?=$user[Abon::REC][Abon::F_ID];?>" class="btn btn-outline-info btn-sm" target="_self"><span class="fw-bold">🅐</span> <?= __('Картка'); ?></a> <!-- ⒶⒶⒶ -->
+                <?php else: ?>
+                    <a href="/my" class="btn btn-outline-info btn-sm" target="_self"><span class="fw-bold">ⒶⒶ🅐Ⓐ(A)</span> <?= __('Картка'); ?></a>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 

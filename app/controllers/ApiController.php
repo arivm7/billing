@@ -507,58 +507,9 @@ class ApiController extends AppBaseController {
                         redirect();
                     }
 
-                    $model = new AbonModel();
-
-                    if (!isset($_GET[Api::F_PA_ID]) || !$model->validate_id(PA::TABLE, $_GET[Api::F_PA_ID], PA::F_ID)) {
-                        MsgQueue::msg(MsgType::ERROR_AUTO, __('Не верный ID ПФ'));
-                    }
-
-                    $pa_id  = intval($_GET[Api::F_PA_ID]);
-                    $pa = $model->get_pa($pa_id);
-                    $tp = $model->get_tp($pa[PA::F_TP_ID]);
-
-                    /**
-                     * Отключить IP на микротике
-                     */
-                    if ((__pa_age($pa) == PAStatus::ACTIVE_TODAY) && $tp[TP::F_STATUS] && $tp[TP::F_IS_MANAGED]) {
-                        $ip = $pa[PA::F_NET_IP];
-                        if (Api::set_mik_abon_ip(Api::tp_connector(tp: $tp), $ip, false, true)) {
-                            MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Отключение услуги выполнени успешно'));
-                            if (Api::$errors) {
-                                MsgQueue::msg(MsgType::SUCCESS_AUTO, Api::$errors);
-                            }
-                        
-                        } else {
-                            MsgQueue::msg(MsgType::ERROR, __('Ошибка отключения IP адреса на ТП'));
-                            if (Api::$errors) {
-                                MsgQueue::msg(MsgType::ERROR, Api::$errors);
-                            }
-                        }
-                    }
-
-                    /** 
-                     * закрытие ПФ
-                     */
-                    $pa[PA::F_CLOSED] = 1;
-                    if (empty($pa[PA::F_DATE_END])) {
-                        $pa[PA::F_DATE_END] = today();
-                        MsgQueue::msg(MsgType::WARN, __('Дата закрытия ПФ была пустой. Установлена в сегодняшнюю. Проверьте правильность.'));
-                    }
-                    if ($pa[PA::F_NET_IP_SERVICE] == 1) {
-                        $pa[PA::F_NET_IP_SERVICE] = 0;
-                        MsgQueue::msg(MsgType::WARN, __('Флаг [IP_SERVICE] принудительно отключён в связи с закрытием прайсового фрагмента. Проверьте правильность.'));
-                    }
-
-                    if ($model->update_row_by_id(PA::TABLE, $pa, PA::F_ID)) {
-                        MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Данные в базе обновлены успешно'));
-                        /**
-                         * Пересчёт остатков и начислений по абоненту
-                         */
-                        $model->recalc_abon($pa[PA::F_ABON_ID]);
-                    } else {
-                        MsgQueue::msg(MsgType::ERROR_AUTO, __('Ошибка обновления данных в базе'));
-                        MsgQueue::msg(MsgType::ERROR_AUTO, $model->errorInfo());
-                    }
+                    $pa_id  = intval($_GET[Api::F_PA_ID] ?? 0);
+                    $abon_off = ($_GET[Api::F_ABON_OFF_ON_TP] ?? 0) ? true : false;
+                    PaController::pa_close($pa_id, $abon_off);
                     redirect();
                     break;
                     

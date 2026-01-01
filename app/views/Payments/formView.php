@@ -17,5 +17,11 @@
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
 
+/** Данные из контроллера    */
+/** @var string $title       */
+/** @var array  $pay         */
+/** @var int    $pay_type_id */
+/** @var array  $ppp_list    */
+
 ?>
 <?php require DIR_INC . '/pay_form.php'; ?>

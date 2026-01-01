@@ -117,12 +117,19 @@ $config = [
      */
     'pa_unpaused_days' => 3, // правильное значение -- 2 !!!
 
+    /**
+     * Количество дней паузы, при превышении котрого прайсовый фрагмент не активируется вновь при оплате.
+     * Если количество дней превышает это значение, то прайсовый фрагмент остаётся закрытым.
+     */
+    'pa_no_reactivate_days' => 30,
+
 
     /**
      * Параметры логина, если логин отличается от номера договора
      */
     'login_length_min' => 2,
     'login_length_max' => 25,
+    
     /**
      * ВАЖНО: 
      * в фрагменте {1,24} долны быть значения на 1 меньше чем в предыдущих полях 'login_length_min' и 'login_length_max'
@@ -142,7 +149,8 @@ $config = [
      */
     'textarea_rows_min' => 2,
     'textarea_rows_max' => 10,
-
+    'textarea_approximate_chars_per_line' => 60,
+    
 
     /**
      * Список абонентов.
@@ -172,7 +180,7 @@ $config = [
 
     'sms_cost1'     => 1.50, //Стоимость 1 СМС, грн
     'sms_chars1sms' => 69,  //Количество символов в 1 СМС.
-    'sms_sender'    => '/home/ar/bin/sms_sender.sh',
+    'sms_sender'    => '~/bin/sms_sender.sh',
     'sms_command'   => 'echo "{NUM}/{COUNT}. {ABON_ID} | {ADDRESS} | {NAME_SHORT}"\n'
                         . '{SENDER} {PHONE} "{TEXT}"\n',
 
@@ -182,6 +190,25 @@ $config = [
     'inv_per_page' => 12,
     // Максимальная длина номера Счёта-фактуры
     'inv_max_length_number' => 24,
+
+
+    /**
+     * 
+     */
+    'bank_payment_min'        => 50, // сумма минимального платежа
+    'bank_date_interval'      => 10*24*60*60, // 10 дней. Для листания в web-форме
+    'bank_date_interval_auto' => 2*24*60*60, // 2 дня.  Для скриптов автоматического внесения платежей.
+    'bank_http_user_agent'    => "Mozilla/5.0 BASH (Linux x86_64)", // "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.214 Safari/537.36";
+    'bank_get_iteration_max'  => 10, // Максимальное количество итераций для выборки транзакций
+    'bank_limit_per_page'     => 25,
+    'bank_comission_text'     => [
+            "за вычетом комиссии банка в размере 3.00грн",
+            "утрим. комісія банку 3.00грн"
+        ],
+    'bank_comission_value'    => 3.00, // Значение комиссии банка в грн
+    'bank_liqpay_ident_text'  => "LIQPAY",
+
+
 
 ];
 

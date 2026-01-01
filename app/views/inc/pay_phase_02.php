@@ -38,8 +38,6 @@ use config\tables\AbonRest;
 use billing\core\base\Lang;
 Lang::load_inc(__FILE__);
 
-require_once DIR_LIBS . '/bank_api.php';
-
 /**
  * @var int $phase -- Фаза проведения платежа
  * @var string $title -- Заголовок формы
@@ -97,14 +95,14 @@ require_once DIR_LIBS . '/bank_api.php';
                     class="form-control text-end"
                     placeholder="<?=__('Payment amount (recommended by %s)', number_format($rest[AbonRest::F_AMOUNT], 2, '.', ' '));?>"
                     value="<?=h($rest[AbonRest::F_AMOUNT]);?>"
-                    min="<?=PAYMENT_MIN;?>"
+                    min="<?=App::get_config('bank_payment_min');?>"
                     step="0.01"
                     lang="en"
                     required
                 >
                 <span class="input-group-text"><?=__('UAH');?>.</span>
                 <div class="invalid-feedback text-start">
-                    <?=__('Enter the correct amount (a number of %s or more)', PAYMENT_MIN);?>
+                    <?=__('Enter the correct amount (a number of %s or more)', App::get_config('bank_payment_min'));?>
                 </div>
             </div>
         </div>

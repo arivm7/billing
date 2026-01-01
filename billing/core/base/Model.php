@@ -13,11 +13,13 @@
 
 namespace billing\core\base;
 
+use billing\core\App;
 use billing\core\Db;
 use billing\core\MsgQueue;
 use billing\core\MsgType;
 use config\tables\Abon;
 use config\SessionFields;
+use config\tables\Ppp;
 use config\tables\User;
 use PDO;
 
@@ -35,9 +37,13 @@ abstract class Model {
     public const NO_MODULE  = -1;
 
     /**
-     * Дефолтное имя ID поля
+     * Дефолтные поля таблиц
      */
     public const F_ID       = 'id';
+    public const F_CREATION_DATE   = "created_date";   // Дата создания записи
+    public const F_CREATION_UID    = "created_uid";    // Юзер, создавший запись
+    public const F_MODIFIED_DATE   = "modified_date";  // Дата изменения записи
+    public const F_MODIFIED_UID    = "modified_uid";   // Кто изменил запись
 
     /**
      * Класс подключеня к базе
@@ -153,7 +159,7 @@ abstract class Model {
 
 
 
-    public function query(string $sql, ?array $params = [], int|null $fetchCell = null, int|null $fetchVector = null): array|int|string {
+    public function query(string $sql, ?array $params = [], int|null $fetchCell = null, int|null $fetchVector = null): array|int|string|false {
         return $this->db->query(sql: $sql, params: $params, fetchCell: $fetchCell, fetchVector: $fetchVector);
     }
 
@@ -217,6 +223,15 @@ abstract class Model {
         return self::$CACHE_ID_BY_TABLE[$table_name][$id_value];
     }
 
+
+    /**
+     * Обёртка для проверки валидности ППП ID
+     * @param int $id
+     * @return bool
+     */
+    public function validate_ppp(int $id): bool {
+        return $this->validate_id(Ppp::TABLE, $id, Ppp::F_ID);
+    }
 
 
     /**
@@ -351,10 +366,10 @@ abstract class Model {
      * @param string $sql
      * @return int
      */
-    function get_count_by_sql(string $sql, string $field_count = self::F_ID) {
+    function get_count_by_sql(string $sql, string $field_count = self::F_ID): int|false {
         $sql = $this->get_prepared_sql_for_count($sql, $field_count);
         $rez = $this->query($sql, []);
-        return $rez[0]['COUNT'];
+        return $rez[0]['COUNT'] ?? false;
     }
 
 
@@ -552,8 +567,8 @@ abstract class Model {
         $update_items = array();
         foreach ($row as $key => $value) {
             if  (   ($key == $field_id) ||
-                    ($key == 'creation_date') || ($key == 'creation_uid') ||
-                    ($key == 'modified_date') || ($key == 'modified_uid')
+                    ($key ==  self::F_CREATION_DATE) || ($key == self::F_CREATION_UID) ||
+                    ($key == self::F_MODIFIED_DATE) || ($key == self::F_MODIFIED_UID)
                 )
             {
                 continue;
@@ -567,10 +582,9 @@ abstract class Model {
         $sql = "UPDATE `{$table}` SET "
                 . implode(", ", $update_items)
                 . ", "
-                . "`modified_date`='" . time() . "', "
-                . "`modified_uid`='" . (isset($_SESSION[User::SESSION_USER_REC]) ? $_SESSION[User::SESSION_USER_REC][User::F_ID] : User::UID_BILLING)."' "
+                . "`" . self::F_MODIFIED_DATE . "`='" . time() . "', "
+                . "`" . self::F_MODIFIED_UID . "`='" . (isset($_SESSION[User::SESSION_USER_REC]) ? $_SESSION[User::SESSION_USER_REC][User::F_ID] : User::UID_BILLING)."' "
                 . "WHERE `{$field_id}`={$row[$field_id]}";
-//        debug($sql, 'update_row_by_id: $sql', die: 1);
         return $this->execute($sql);
     }
 
@@ -695,6 +709,37 @@ abstract class Model {
         $sql = "DELETE FROM `{$table}` WHERE `{$field_id}`={$value_id}";
         return $this->execute($sql);
     }
+
+
+
+    /**
+     * Установка значения одного поля в таблице по ID записи
+     * @param string $table_name
+     * @param string $field_id
+     * @param int $value_id
+     * @param string $field
+     * @param mixed $value
+     * @param bool $update_access_time
+     * @throws \Exception
+     * @return bool
+     */
+    function set_field_value(string $table_name, string $field_id, int $value_id, string $field, mixed $value, bool $update_access_time = true): bool {
+        if($this->validate_id($table_name, $value_id, $field_id)) {
+            $sql="UPDATE `$table_name` SET "
+                    . "`$field`='$value', "
+                    . ($update_access_time 
+                        ?   "`". self::F_MODIFIED_DATE . "`=" . time() . ", "
+                          . "`". self::F_MODIFIED_UID . "`=" . App::get_user_id() . " "
+                        :   ""
+                    )
+                    . "WHERE `$field_id`=$value_id";
+            return $this->execute($sql);
+        } else {
+            throw new \Exception("ID не верен<br>"
+                    . "Вызов: set_field_value(string $table_name, string $field_id, int $value_id, string $field, mixed $value, bool $update_access_time = true)");
+        }
+    }
+
 
 
 

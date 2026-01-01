@@ -42,7 +42,7 @@ class PppController extends AppBaseController{
         }
 
         $model = new AppBaseModel();
-        if (!$model->validate_id(table_name: Ppp::TABLE, field_id: Ppp::F_ID, id_value: $ppp_id)) {
+        if (!$model->validate_ppp($ppp_id)) {
             MsgQueue::msg(MsgType::ERROR, __('Не верный ID ППП'));
             redirect();
         }
@@ -152,7 +152,7 @@ class PppController extends AppBaseController{
         $ppp_id = (int)$this->route[F_ALIAS];
 
         $model = new AppBaseModel();
-        if (!$model->validate_id(table_name: Ppp::TABLE, field_id: Ppp::F_ID, id_value: $ppp_id)) {
+        if (!$model->validate_ppp($ppp_id)) {
             MsgQueue::msg(MsgType::ERROR, __('Не верный ID ППП'));
             redirect();
         }

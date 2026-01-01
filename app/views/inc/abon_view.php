@@ -135,10 +135,16 @@ $rest[AbonRest::F_SUM_PP30A] ??= 0;
                 <!-- left -->
                 <h4><?= __('Subscriber connection parameters') ?></h4>
                 <!-- right -->
-                <!-- Кнопка перехода на Форму редактирования -->
-                <?php if (can_edit(Module::MOD_ABON)) : ?>
-                    <a href="<?=Abon::URI_EDIT;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3" target="_self"><i class="bi bi-pencil-square"></i> <?= __('Edit'); ?></a>
-                <?php endif; ?>
+                <div>
+                    <!-- Кнопка перехода на Форму редактирования -->
+                    <?php if (can_edit(Module::MOD_ABON)) : ?>
+                        <a href="<?=Abon::URI_EDIT;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-1" target="_self"><i class="bi bi-pencil-square"></i> <?= __('Edit'); ?></a>
+                    <?php endif; ?>
+                    <!-- Кнопка Обновления остатков -->
+                    <?php if (can_view(Module::MOD_ABON)) : ?>
+                        <a href="<?=Abon::URI_REST_UPDATE;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-0" target="_self" title="<?= __('Обновить данные по этому абоненту'); ?>" ><?= __('Обновить остатки'); ?></a>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
         <div class="card-body">
@@ -250,28 +256,28 @@ $rest[AbonRest::F_SUM_PP30A] ??= 0;
                 <div class="col justify-content-start">
                     <!-- Форма "Сверка платежей" -->
                     <?php if (can_view([Module::MOD_MY_CONCILIATION, Module::MOD_CONCILIATION])) : ?>
-                        <a href="<?=Conciliation::URI_INTERVALS;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3" target="_self" title="<?= __('Reconciliation'); ?>">
+                        <a href="<?=Conciliation::URI_INTERVALS;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-1" target="_self" title="<?= __('Reconciliation'); ?>">
                             <img src="<?=Icons::SRC_GUH_REPORT;?>" alt="" width="18" height="18"><?= __('Reconciliation'); ?></a>
                     <?php endif; ?>
                     <!-- Список платежей -->
                     <?php if (can_view([Module::MOD_MY_PAYMENTS, Module::MOD_PAYMENTS])) : ?>
-                        <a href="<?=Pay::URI_LIST;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3" target="_self" title="<?= __('Полный список платежей абонента'); ?>">
-                            <span class="fw-bold">₴₴</span> <?= __('Платежи'); ?></a>
+                        <a href="<?=Pay::URI_LIST;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-1" target="_self" title="<?= __('Full list of subscriber payments'); ?>">
+                            <span class="fw-bold">₴₴</span> <?= __('Payments'); ?></a>
                     <?php endif; ?>
                     <!-- Внесение платежа -->
                     <?php if (can_add([Module::MOD_PAYMENTS])) : ?>
-                        <a href="<?=Pay::URI_FORM;?>?<?=Abon::F_GET_ID;?>=<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3" target="_self" title="<?= __('Внести средства на лицевой счёт'); ?>">
-                            <span class="fw-bold">+₴</span> <?= __('Внести платёж'); ?></a>
+                        <a href="<?=Pay::URI_FORM;?>?<?=Abon::F_GET_ID;?>=<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-1" target="_self" title="<?= __('Deposit funds to your personal account'); ?>">
+                            <span class="fw-bold">+₴</span> <?= __('Make a payment'); ?></a>
                     <?php endif; ?>
                     <!-- Информационные уведомления -->
                     <?php if (can_add([Module::MOD_NOTICE])) : ?>
-                        <a href="<?=Notify::URI_INFO;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3" target="_self" title="<?= __('Список информационных СМС'); ?>">
-                            <span class="fw-bold">SMS</span> <?= __('Информеры'); ?></a>
+                        <a href="<?=Notify::URI_INFO;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-1" target="_self" title="<?= __('List of Information messages'); ?>">
+                            <span class="fw-bold">SMS</span> <?= __('Informers'); ?></a>
                     <?php endif; ?>
                     <!-- Счета -- Акты -->
-                    <?php if (can_view([Module::MOD_INVOICES])) : ?>
-                        <a href="<?=Invoice::URI_LIST;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-3" target="_self" title="<?= __('Посмотреть список выписанных счетов и актов'); ?>">
-                            <i class="bi bi-receipt"></i> <?= __('Счета'); ?></a>
+                    <?php if (can_view([Module::MOD_INVOICES, Module::MOD_MY_INVOICES])) : ?>
+                        <a href="<?=Invoice::URI_LIST;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-1" target="_self" title="<?= __('View the list of issued invoices and acts'); ?>">
+                            <i class="bi bi-receipt"></i> <?= __('Bills'); ?></a>
                     <?php endif; ?>
                 </div>
             </div>

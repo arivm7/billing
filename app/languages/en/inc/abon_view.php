@@ -31,4 +31,12 @@ return [
     'Automatically disable service' => 'Automatically disable service',
     'Number of waiting days before disabling' => 'Number of waiting days before disabling',
     'Reconciliation' => 'Reconciliation',
+    'Full list of subscriber payments' => 'Full list of subscriber payments',
+    'Payments' => 'Payments',
+    'Deposit funds to your personal account' => 'Deposit funds to your personal account',
+    'Make a payment' => 'Make a payment',
+    'List of Information messages' => 'List of Information messages',
+    'Informers' => 'Informers',
+    'View the list of issued invoices and acts' => 'View the list of issued invoices and acts',
+    'Bills' => 'Bills',
 ];

@@ -68,37 +68,45 @@ $item_contragent = (isset($contragent_list[$item[Invoice::F_FIRM_CONTRAGENT_ID]]
                 <div>
                     <nobr>
                     <!-- Печатать Счёт=1 Акт=1 Штамп=1 -->
+                    <?php if (can_view(Module::MOD_INVOICES)): ?>
                     <a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=1&<?= Invoice::F_URI_ACT ?>=1&<?= Invoice::F_URI_SHTAMP ?>=1" class="btn btn-sm btn-outline-success me-1 px-0 py-1" title="<?= __('Показать для вывода на печать: '.CR.'Счёт, Акт и факсимиле'); ?>" target="_blank">
                         <img src="<?= Icons::SRC_ICON_INV_ACT_SHTAMP ?>" alt="Счёт-Акт с подписью" height="28px"></a> <!-- <i class="bi bi-printer"></i> -->
+                    <?php endif; ?>
                     <!-- Печатать Счёт=1 Акт=1 Штамп=0 -->
                     <a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=1&<?= Invoice::F_URI_ACT ?>=1&<?= Invoice::F_URI_SHTAMP ?>=0" class="btn btn-sm btn-outline-success me-1 px-0 py-1" title="<?= __('Показать для вывода на печать: '.CR.'Счёт, Акт'); ?>" target="_blank">
                         <img src="<?= Icons::SRC_ICON_INV_ACT ?>" alt="Счёт-Акт" height="28px"></a> <!-- <i class="bi bi-printer"></i> -->
                     <!-- Печатать Счёт=1 Акт=0 Штамп=1 -->
+                    <?php if (can_view(Module::MOD_INVOICES)): ?>
                     <a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=1&<?= Invoice::F_URI_ACT ?>=0&<?= Invoice::F_URI_SHTAMP ?>=1" class="btn btn-sm btn-outline-success me-1 px-0 py-1" title="<?= __('Показать для вывода на печать: '.CR.'Счёт с факсимиле'); ?>" target="_blank">
                         <img src="<?= Icons::SRC_ICON_INV_SHTAMP ?>" alt="Счёт с подписью" height="28px"></a> <!-- <i class="bi bi-printer"></i> -->
+                    <?php endif; ?>
                     <!-- Печатать Счёт=1 Акт=0 Штамп=0 -->
                     <a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=1&<?= Invoice::F_URI_ACT ?>=0&<?= Invoice::F_URI_SHTAMP ?>=0" class="btn btn-sm btn-outline-success me-1 px-0 py-1" title="<?= __('Показать для вывода на печать: '.CR.'Счёт'); ?>" target="_blank">
                         <img src="<?= Icons::SRC_ICON_INV ?>" alt="Счёт" height="28px"></a> <!-- <i class="bi bi-printer"></i> -->
                     <!-- Печатать Счёт=0 Акт=1 Штамп=1 -->
+                    <?php if (can_view(Module::MOD_INVOICES)): ?>
                     <a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=0&<?= Invoice::F_URI_ACT ?>=1&<?= Invoice::F_URI_SHTAMP ?>=1" class="btn btn-sm btn-outline-success me-1 px-0 py-1" title="<?= __('Показать для вывода на печать: '.CR.'Акт с факсимиле'); ?>" target="_blank">
                         <img src="<?= Icons::SRC_ICON_ACT_SHTAMP ?>" alt="Акт с подписью" height="28px"></a> <!-- <i class="bi bi-printer"></i> -->
+                    <?php endif; ?>
                     <!-- Печатать Счёт=0 Акт=1 Штамп=0 -->
                     <a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=0&<?= Invoice::F_URI_ACT ?>=1&<?= Invoice::F_URI_SHTAMP ?>=0" class="btn btn-sm btn-outline-success me-1 px-0 py-1" title="<?= __('Показать для вывода на печать: '.CR.'Акт'); ?>" target="_blank">
                         <img src="<?= Icons::SRC_ICON_ACT ?>" alt="Акт" height="28px"></a> <!-- <i class="bi bi-printer"></i> -->
                     <!-- Статус оплачен ли счёт -->
-                    <div class="btn btn-sm btn-outline-success me-1 px-1 py-1">
-                        <?php if ($item[Invoice::F_IS_PAID]): ?>
-                            <img src="<?= Icons::SRC_ICON_UAH_OK ?>" alt="[Ok]" height="26px" title="<?= __('Оплата подтверждена') ?>">
-                        <?php else: ?>
-                            <?php if (can_edit(Module::MOD_INVOICES)): ?>
-                                <a href="<?= Api::URI_CMD ?>?<?= Api::F_CMD ?>=<?= Api::CMD_INVOICE_PAY_CONFIRM ?>&<?= Api::F_INVOICE_ID ?>=<?= $item[Invoice::F_ID] ?>">
-                                    <img src="<?= Icons::SRC_ICON_UAH_QUERY ?>" alt="[?]" height="26px" title="<?= __('Оплата НЕ подтверждена') . CR . __('Нажмите для подтверждения платежа') ?>">
-                                </a>
+                    <?php if (can_edit(Module::MOD_INVOICES)): ?>
+                        <div class="btn btn-sm btn-outline-success me-1 px-1 py-1">
+                            <?php if ($item[Invoice::F_IS_PAID]): ?>
+                                <img src="<?= Icons::SRC_ICON_UAH_OK ?>" alt="[Ok]" height="26px" title="<?= __('Оплата подтверждена') ?>">
                             <?php else: ?>
-                                <img src="<?= Icons::SRC_ICON_UAH_QUERY ?>" alt="[?]" height="26px" title="<?= __('Оплата НЕ подтверждена') ?>">
+                                <?php if (can_edit(Module::MOD_INVOICES)): ?>
+                                    <a href="<?= Api::URI_CMD ?>?<?= Api::F_CMD ?>=<?= Api::CMD_INVOICE_PAY_CONFIRM ?>&<?= Api::F_INVOICE_ID ?>=<?= $item[Invoice::F_ID] ?>">
+                                        <img src="<?= Icons::SRC_ICON_UAH_QUERY ?>" alt="[?]" height="26px" title="<?= __('Оплата НЕ подтверждена') . CR . __('Нажмите для подтверждения платежа') ?>">
+                                    </a>
+                                <?php else: ?>
+                                    <img src="<?= Icons::SRC_ICON_UAH_QUERY ?>" alt="[?]" height="26px" title="<?= __('Оплата НЕ подтверждена') ?>">
+                                <?php endif; ?>
                             <?php endif; ?>
-                        <?php endif; ?>
-                    </div>
+                        </div>
+                    <?php endif; ?>
                     <!-- Редактировать -->
                     <?php if (can_edit(Module::MOD_INVOICES)): ?>
                         <a href="<?= Invoice::URI_EDIT ?>/<?= $item[Invoice::F_ID] ?>" class="btn btn-sm btn-outline-success me-1" title="<?= __('Редактировать'); ?>"><i class="bi bi-pencil-square"></i></a>

@@ -13,6 +13,7 @@
 
 namespace billing\core;
 
+use app\models\AbonModel;
 use app\models\AppBaseModel;
 use billing\core\MsgQueue;
 use billing\core\MsgType;
@@ -21,7 +22,8 @@ use config\tables\TP;
 use MikAbonStatus;
 use MikrotikApi\MikroLink;
 use config\Mik;
-
+use config\tables\PA;
+use PAStatus;
 
 /**
  * Description of Api.php
@@ -48,6 +50,7 @@ class Api {
     public const F_PA_ID        = 'paid';
     public const F_DATE_END     = 'date_end';
     public const F_INVOICE_ID   = 'inv_id';
+    public const F_ABON_OFF_ON_TP = 'ab_off_on_tp';
     public const CMD_IP_ENABLE  = 'cmd_ipena';
     public const CMD_SERV_ENA   = 'cmd_serv_ena';
     public const CMD_PA_CLONE   = 'cmd_pa_clone';
@@ -981,10 +984,6 @@ class Api {
         return $result;
     }    
         
-
-
-
-
 
 
 

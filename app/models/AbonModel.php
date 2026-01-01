@@ -15,6 +15,8 @@ namespace app\models;
 
 use AbonStatus;
 use AbonStatusTitle;
+use app\controllers\PaController;
+use billing\core\Api;
 use billing\core\App;
 use billing\core\MsgQueue;
 use billing\core\MsgType;
@@ -35,7 +37,10 @@ use config\tables\AbonRest;
 use config\tables\PA;
 use ServiceType;
 use billing\core\base\Lang;
+use config\Bank;
+use config\P24acc;
 use config\tables\Invoice;
+use config\tables\TSAbonTmpl;
 
 require_once DIR_LIBS . '/billing_functions.php';
 
@@ -1546,6 +1551,416 @@ class AbonModel extends UserModel {
         }
         return [];
     }
+ 
     
+    /**
+     * Получение списка ППП для нужного АПИ
+     * @param string $api_type
+     * @return array
+     */
+    function get_ppp_list_by_api(string $api_type):array {
+        $raw_list = $this->get_rows_by_where(
+            Ppp::TABLE, 
+            "`".Ppp::F_ACTIVE."`=1 AND
+                    `".Ppp::F_OWNER_ID."`=".App::get_user_id()." AND
+                    `".Ppp::F_API_TYPE."` like '%".$api_type."%'");
+        $ppp_list = [];
+        foreach ($raw_list as $ppp) {
+            if (is_supported_api($ppp, $api_type)) {
+                $ppp_list[] = $ppp;
+            }
+        }
+        return $ppp_list;
+    }
+
+
+
+
+
+    /**
+     * Считывает шаблоны из базы в локальный массив
+     * для дальнейшего исапользования этого массива,
+     * вместо обращения к базе
+     * @param int $ppp_id
+     * @return array -- массив с шаблонами для указанного ППП: []{abon_id, template}
+     */
+    function get_abons_templates(int $ppp_id): array {
+        $templates = $this->get_rows_by_where(table: TSAbonTmpl::TABLE, where: "(".TSAbonTmpl::F_PPP_ID."=".$ppp_id.")", order_by: TSAbonTmpl::TABLE.".".TSAbonTmpl::F_TEMPLATE." ASC");
+        return $templates;
+    }
+
+
+
+    function get_last_pay_on_ppp(int $ppp_id) {
+        $sql = "SELECT
+                * ,
+                DATE_FORMAT(from_unixtime((`".Pay::F_DATE."`)),'%Y-%m-%d %H:%i:%s') AS ".Pay::F_DATE_STR."
+                FROM `".Pay::TABLE."`
+                WHERE
+                (`".Pay::F_PPP_ID."` = ".$ppp_id.")
+                ORDER BY `".Pay::TABLE."`.`".Pay::F_DATE."` DESC
+                LIMIT 1";
+        return $this->query($sql)[0] ?? [];
+    }
+
+
+
+
+
+    function get_billing_payments_by_no(string $pay_bank_no, int $ppp_id): array {
+        if(empty($pay_bank_no)) { return []; }
+        $sql = "SELECT "
+                . "* "
+                . "FROM `".Pay::TABLE."` "
+                . "WHERE "
+                . Pay::F_BANK_NO . "='".$pay_bank_no."' "
+                . "AND "
+                . Pay::F_PPP_ID . "=".$ppp_id;
+        return $this->get_rows_by_sql($sql);
+    }
+
+
+
+    /**
+     * Ищет похожий платёж по pay_bank_no, timestamp, pay_fakt, ppp_id,
+     * $timestamp_strong -- указывает икать по дате_времени или только по дате
+     * @param string $pay_bank_no
+     * @param int $pay_date
+     * @param float $pay_fakt
+     * @param int $ppp_id
+     * @param bool $timestamp_strong = true
+     * @return array
+     */
+    function get_billing_payments_id_date_pay(string $pay_bank_no, int $pay_date, float $pay_fakt, int $ppp_id, bool $timestamp_strong = true) {
+        $sql = "SELECT
+                    id, agent_id, abon_id,
+                    pay_fakt, pay, pay_date,
+                    FROM_UNIXTIME(pay_date,'%Y-%m-%d  %H:%i:%s') AS pay_datetime_str,
+                    FROM_UNIXTIME(pay_date,'%Y-%m-%d')           AS pay_date_str,
+                    pay_bank_no, pay_type_id,
+                    pay_ppp_id, description
+                FROM
+                    payments
+                WHERE
+                    (
+                            (payments.pay_date = ".$pay_date.")
+                        ".(!$timestamp_strong?"OR  (UNIX_TIMESTAMP(FROM_UNIXTIME(payments.pay_date,'%Y-%m-%d')) = ". date_only($pay_date).")":"")."
+                    )
+                    AND (`pay_bank_no` = '".$pay_bank_no."')
+                    AND (`pay_fakt` = ".$pay_fakt.")
+                    AND (`pay_ppp_id` = ".$ppp_id.")";
+
+        return $this->get_rows_by_sql($sql);
+    }
+
+
+
+    function get_abon_id_from_text(string $text) {
+        $subject  = $text;
+        $pattern1 = '/.*?([\s\.\-№#^]([1-9][0-9]{'.(LEN_DOG_NUM_MIN-1).','.(LEN_DOG_NUM_MAX-1).'}).*?)+/';
+        $matches  = array();
+        $p = preg_match_all($pattern1, $subject, $matches);
+        if($p === false) {
+            die("Этого не должно быть: get_abon_id_from_text(string $text)");
+        } else {
+            //return $matches;
+            if((count($matches)>0)) {
+                foreach ($matches as $v1) {
+                    if(is_array($v1)) {
+                        foreach ($v1 as $v2) {
+                            $v2 = intval(trim($v2));
+                            if ($v2 == 0) { continue; }
+                            if($this->validate_id("abons", $v2)) {
+                                return $v2;
+                            }
+                        }
+                    } else {
+                        $v1 = intval(trim($v1));
+                        if ($v1 == 0) { continue; }
+                        if($this->validate_id("abons", trim($v1))) {
+                            return $v1;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+    }
+
+
+
+    function get_abon_id_one_by_payer_name(string $payer): int {
+        $sql = 'SELECT
+                abon_id
+                FROM payments
+                WHERE description LIKE "%'.$payer.'%"
+                ORDER BY pay_date DESC
+                LIMIT 1';
+        $abon_id = $this->query(sql: $sql, fetchCell: 0);
+        return ($abon_id !== false ? $abon_id : 0);
+    }
+
+
+
+    protected static $CASHE_PAY_TYPES = array();
+
+
+    function get_pay_type_x_(int $id): array {
+        if (empty(self::$CASHE_PAY_TYPES)) {
+            $sql = "SELECT * FROM `payments_types`";
+            self::$CASHE_PAY_TYPES = $this->get_rows_by_sql($sql, row_id_by: 'id');
+        }
+        // !!! как-то нужно обработать
+        // if(!array_key_exists($id, self::$CASHE_PAY_TYPES)) {
+        // }
+        return self::$CASHE_PAY_TYPES[$id];
+    }
+
+
+
+    function get_pay_types() {
+        if (empty(self::$CASHE_PAY_TYPES)) {
+            $sql = "SELECT * FROM `payments_types`";
+            self::$CASHE_PAY_TYPES = $this->get_rows_by_sql($sql, row_id_by: 'id');
+        }
+        return self::$CASHE_PAY_TYPES;
+    }
+
+
+
+    function get_unknown_payments(?int $ppp_id = null): array {
+        $sql = "SELECT "
+                ."* "
+                ."FROM ".Pay::TABLE." "
+                ."WHERE "
+                ."(".Pay::F_ABON_ID."=0)"
+                . ($ppp_id ? " AND (".Pay::F_PPP_ID."={$ppp_id})" : "");
+        return $this->get_rows_by_sql($sql);
+    }
+
+
+
+    function get_pa_off_last_by_abon_id(int $aid): array {
+        $sql = "SELECT
+                    id,
+                    abon_id,
+                    prices_id,
+                    date_start,
+                    date_end,
+                    net_ip,
+                    net_router_id
+                FROM
+                    prices_apply
+                WHERE
+                (
+                    (abon_id = $aid)
+                    AND
+                    !(
+                        (
+                            (date_start < UNIX_TIMESTAMP()) AND
+                            (isnull(date_end))
+                        )
+                        OR
+                        (
+                            date_end > UNIX_TIMESTAMP()
+                        )
+                    )
+                    AND
+                    (!isnull(date_end))
+                )";
+        // формирование списка отключённых прайсов
+        $pa_list = $this->get_rows_by_sql($sql);
+        foreach ($pa_list as &$pa) {
+            $pa['date_end'] = date_only(intval($pa['date_end']));
+        }
+
+        // сортировать по дате
+        for ($x = 0; $x < count($pa_list); $x++) {
+            for ($y = $x+1; $y < count($pa_list); $y++) {
+                if($pa_list[$x]['date_end'] < $pa_list[$y]['date_end']) {
+                    $pa_swop     = $pa_list[$x];
+                    $pa_list[$x] = $pa_list[$y];
+                    $pa_list[$y] = $pa_swop;
+                }
+            }
+        }
+        return $pa_list;
+    }
+
+
+
+    /**
+     * Автоматическое включение price_apply для абонента
+     * @param int $aid
+     */
+    function price_apply_auto_ON(int $aid) {
+
+        MsgQueue::msg(MsgType::INFO, "price_apply_auto_ON($aid):");
+
+        if($this->validate_id(Abon::TABLE, $aid)) {
+            if(!$this->price_apply_has_active($aid)) {
+                MsgQueue::msg(MsgType::INFO, "нет активных прайсов.");
+                if ($this->is_payer($aid)) {
+                    MsgQueue::msg(MsgType::INFO, "Попытка включения последних прайсов:");
+
+                    $pa_list = $this->get_pa_off_last_by_abon_id($aid);
+
+                    if(count($pa_list) > 0) {
+                        $rest = $this->get_abon_rest($aid);
+                        $unpaused_days = App::get_config('pa_unpaused_days'); // количество дней интервала автоактивации
+                        $base_date_end = $pa_list[0][PA::F_DATE_END]; // дата отключения самого последнего прайса
+                        $between_days = get_between_days(date_only($pa_list[0][PA::F_DATE_END]), date('Y-m-d'));
+
+                        /**
+                         * Проверка: не слишком ли давно отключен прайс.
+                         * Если слишком давно, то автоактивация не производится
+                         */
+                        if($between_days > App::get_config('pa_no_reactivate_days')) {
+                            MsgQueue::msg(MsgType::INFO, "Прайсовый фрагмент отключен очень давно. Автоактивация не производится.");
+                            return;
+                        }
+
+                        MsgQueue::msg(MsgType::INFO, "Дата отключения: ".date("Y-m-d", $base_date_end) . "; дней с отключения: ".$between_days."; интервал автоактивации: ".$unpaused_days." дней.");
+
+                        for ($i = 0; $i < count($pa_list); $i++) {
+
+                            if($base_date_end == $pa_list[$i][PA::F_DATE_END]) {
+
+                                MsgQueue::msg(MsgType::INFO, "активируем прайс");
+
+                                if ($rest[AbonRest::F_REST] > 0) {
+
+                                    MsgQueue::msg(MsgType::INFO, "Баланс положительный. Включаем прайс.");
+
+                                    /**
+                                     * Включение в биллинге
+                                     */
+
+                                    /**
+                                     * Решение о том, как включать прайс:
+                                     * 1. Если отключен недавно (в пределах unpaused_days), то просто реактивируем
+                                     * 2. Если отключен давно, то клонируем и активируем
+                                     */
+                                    if ($unpaused_days > 0 && $between_days >= 0 && $between_days < $unpaused_days) { 
+
+                                        MsgQueue::msg(MsgType::INFO, "Отключен недавно. Просто реактивируем.");
+                                        if($this->set_field_value(
+                                                table_name: PA::TABLE, 
+                                                field_id: PA::F_ID, 
+                                                value_id: $pa_list[$i][PA::F_ID], 
+                                                field: PA::F_DATE_END, 
+                                                value: null, 
+                                                update_access_time: false)) 
+                                        {
+                                            MsgQueue::msg(MsgType::INFO, "В биллинге включили.");
+                                        } else {
+                                            MsgQueue::msg(MsgType::INFO, "ОШИБКА: В биллинге не включили");
+                                            MsgQueue::msg(MsgType::ERROR, "ОШИБКА: В биллинге не включили");
+                                        }
+
+                                    } else {
+                                        MsgQueue::msg(MsgType::INFO, "Отключен давно. Клонируем и активируем.");
+                                        $pa_new_id = PaController::clone(pa: $pa_list[$i]);
+                                        if ($pa_new_id === false) {
+                                            MsgQueue::msg(MsgType::INFO, "ОШИБКА: В биллинге не клонировали и не включили");
+                                            MsgQueue::msg(MsgType::ERROR, "ОШИБКА: В биллинге не клонировали и не включили");
+                                        } else {
+                                            MsgQueue::msg(MsgType::INFO, "В биллинге клонировали и включили. Новый PA_ID: ".$pa_new_id);
+                                        }
+                                    }
+
+                                    /**
+                                     * Включение на ТП
+                                     */
+                                    if($this->tp_has_managed($pa_list[$i][PA::F_TP_ID])) {
+                                        MsgQueue::msg(MsgType::INFO, "ТП управляемая.");
+                                        if (Api::set_mik_abon_ip(Api::tp_connector($pa_list[$i][PA::F_TP_ID]), $pa_list[$i][PA::F_NET_IP], 1, true)) {
+                                            MsgQueue::msg(MsgType::INFO, "На ТП включили.");
+                                        } else {
+                                            MsgQueue::msg(MsgType::INFO, "ОШИБКА: На ТП включить не удалось");
+                                            MsgQueue::msg(MsgType::ERROR, "ОШИБКА: На ТП включить не удалось");
+                                        }
+                                        MsgQueue::msg(MsgType::INFO, "... включили.");
+                                    } else {
+                                        MsgQueue::msg(MsgType::INFO, "ТП не управляемая.");
+                                    }
+
+                                } else {
+                                    MsgQueue::msg(MsgType::INFO, "Баланс отрицательный. Прайс не включаем." );
+                                }
+
+                            } else {
+                                MsgQueue::msg(MsgType::INFO, "Дальше прайсы не активируем, поскольку дата другая.");
+                                return;
+                            }
+                        }
+                    } else {
+                        MsgQueue::msg(MsgType::INFO, "Отключённых прайсовых фрагментов нет. Действий нет.");
+                    }
+
+                } else {
+                    MsgQueue::msg(MsgType::INFO, "[$aid] - НЕ плательщик. Действий нет.");
+                    MsgQueue::msg(MsgType::INFO, "Требуется проверка.");
+                }
+
+            } else {
+                // есть активные прайсы
+                MsgQueue::msg(MsgType::INFO, "Есть активные прайсы. Действий нет.");
+            }
+        } else {
+            MsgQueue::msg(MsgType::INFO, "[$aid] - Не абонент. Действий нет.");
+            MsgQueue::msg(MsgType::INFO, "Требуется проверка.");
+        }
+    }
+
+
+
+    function price_apply_has_active($aid) {
+        $sql = "SELECT
+                    id
+                FROM
+                    prices_apply
+                WHERE
+                    (abon_id = $aid)
+                AND
+                (
+                    (
+                        (date_start < UNIX_TIMESTAMP()) AND
+                        (isnull(date_end))
+                    )
+                    OR
+                    (
+                        date_end > UNIX_TIMESTAMP()
+                    )
+                )";
+
+        $count = $this->get_count_by_sql($sql);
+        if ($count !== false) {
+            return $count > 0;
+        } else {
+            throw new \Exception("Ошибка запроса количества открытых прайсов для [".$aid."]: " . $this->errorInfo() . "", 1);
+        }
+    }
+
+    
+
+    /**
+     * Возвращает TRUE если ТП управляемая, иначе FALSE
+     * @param int $tp_id
+     * @return boolean
+     */
+    function tp_has_managed(int $tp_id) {
+        if($this->validate_id("tp_list", $tp_id)) {
+            $tp = $this->get_tp($tp_id);
+            return $tp['is_managed'] == 1;
+        } else {
+            MsgQueue::msg(MsgType::ERROR_AUTO, "Ошибка. ID ТП[".$tp_id."] не верен");
+            return false;
+        }
+    }
+
+
+
+
 
 }

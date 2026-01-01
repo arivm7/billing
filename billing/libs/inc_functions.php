@@ -290,3 +290,10 @@ function get_html_btn_pa_delete(int|null $pa_id = null, string $title = '', stri
 }
 
 
+
+function url_pay_form(int $id): string {
+    $model = new AbonModel();
+    return $model->url_pay_form($id);
+}
+
+

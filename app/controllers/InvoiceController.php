@@ -361,7 +361,7 @@ class InvoiceController extends AppBaseController
             redirect(Auth::URI_LOGIN);
         }
 
-        if (!can_use(Module::MOD_INVOICES)) {
+        if (!can_use([Module::MOD_INVOICES, Module::MOD_MY_INVOICES])) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав')); // !!! регистрировать
             redirect();
         }

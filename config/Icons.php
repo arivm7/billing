@@ -127,8 +127,6 @@ class Icons {
     const SRC_ICON_VISIBLE_ON  = '/img/icon_visible_on.svg';
     const SRC_ICON_VISIBLE_OFF = '/img/icon_visible_off.svg';
 
-
-
     const SRC_ICON_MIK_OFF              = '/img/icon_mik_off.svg';
     const SRC_ICON_MIK_ABON_IP_NO       = '/img/icon_mik_abon_ip_no.svg';
     const SRC_ICON_MIK_ABON_IP_OFF_RED  = '/img/icon_mik_abon_ip_off_red.svg';
@@ -139,7 +137,7 @@ class Icons {
     const SRC_ICON_MIK_ABON_NET_OFF     = '/img/icon_mik_abon_net_off.svg';
     const SRC_ICON_MIK_ABON_NET_ON      = '/img/icon_mik_abon_net_on.svg';
 
-
+    const SRC_ICON_PPP                  = '/img/icon_pap.svg';
 
     const SRC_ICON_ZABBIX               = '/img/icon_zabbix.svg';
 

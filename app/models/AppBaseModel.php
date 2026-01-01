@@ -42,7 +42,7 @@ class AppBaseModel extends Model
     function normalize_pay(array &$pay): void {
         $pay[Pay::F_AGENT_TITLE]    = $this->get_user_name_short($pay[Pay::F_AGENT_ID]);
         $pay[Pay::F_PPP_TITLE]      = $this->get_ppp_title($pay[Pay::F_PPP_ID]);
-        $pay[Pay::F_TYPE_TITLE]     = Pay::TYPES[$pay[Pay::F_TYPE_ID]][Lang::code()];
+        $pay[Pay::F_TYPE_TITLE]     = Pay::TYPES_TITLE[$pay[Pay::F_TYPE_ID]][Lang::code()];
         // $pay[Pay::F_TYPE_TITLE] = $this->get_ppp_type_title($pay[Pay::F_TYPE_ID]);
     }
 
@@ -575,7 +575,7 @@ class AppBaseModel extends Model
     function url_pay_form(int $id): string {
         // !!! требуется переписать
         $pay = $this->get_row_by_id(table_name: Pay::TABLE, id_value: $id, field_id: Pay::F_ID);
-        return "<a title='PAY: ". htmlentities(print_r($pay, true))."' href='/ad_abon1_pay.php?edit_pay={$id}' target=_blank ><img src='/img/icon_uah.svg' alt=CALL width=16 height=16></a>";
+        return "<a title='PAY: ". h(print_r($pay, true))."' href='".Pay::URI_FORM."/{$id}' target=_blank ><img src='".Icons::SRC_ICON_UAH."' alt=CALL width=18 height=18></a>";
     }
 
 
@@ -610,8 +610,8 @@ class AppBaseModel extends Model
 
 
     function url_ppp_form(string $ppp_id, bool $has_img = true, int $icon_width = ICON_WIDTH_DEF, int $icon_height = ICON_HEIGHT_DEF): string {
-        $ppp = $this->get_row_by_id('ppp_list', $ppp_id);
-        return "<a href='/ppp_edit.php?ppp_id=$ppp_id' title='Редактировать ППП [".$ppp_id."] ".$ppp['title']."' target=_blank>".($has_img?"<img src='/img/ppp_icon_064.png' alt='PPP' width=$icon_width height=$icon_height>":$ppp['title'])."</a>";
+        $ppp = $this->get_ppp($ppp_id);
+        return "<a href='".Ppp::URI_EDIT."/{$ppp_id}' title='Редактировать ППП [".$ppp_id."] ".$ppp[Ppp::F_TITLE]."' target=_blank>".($has_img?"<img src='".Icons::SRC_ICON_PPP."' alt='ППП' width=$icon_width height=$icon_height>":$ppp[Ppp::F_TITLE])."</a>";
     }
 
 

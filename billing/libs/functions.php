@@ -1921,6 +1921,29 @@ function isJabberFull(string $value): bool {
  */
 
 
+
+/**
+ * В каждом ППП есть строка в которой через ',' перечисляются поддерживаемые АПИ.
+ * Эта функция проверяет наличие указанно АПИ в этой строке
+ * и возвражает true / false
+ * @param array $ppp   -- запись ППП
+ * @param string $api  -- искомый АПИ
+ * @return boolean
+ */
+function is_supported_api(array $ppp, string $api): bool {
+    $supported_api_list = explode(",", $ppp['api_type']);
+    $supported = false;
+    foreach ($supported_api_list as $supported_api) {
+        if (trim($supported_api) == $api) {
+            $supported = true;
+            break;
+        }
+    }
+    return $supported;
+}
+
+
+
 /**
  * В одномерном ассоциативном массиве в указанном поле меняет значение указанного поля с помощью функции $func($value)
  * @param array $row
@@ -2043,16 +2066,18 @@ function detect_invoker(): string {
  * @param int $count_rows_max
  * @return int
  */
-function get_count_rows_for_textarea(string $text, int $count_rows_min=0, int $count_rows_max=0): int {
+function get_count_rows_for_textarea(string $text, int $count_rows_min=0, int $count_rows_max=0, ): int {
     if ($count_rows_min < 1) { $count_rows_min = App::get_config('textarea_rows_min'); }
     if ($count_rows_max < 1) { $count_rows_max = App::get_config('textarea_rows_max'); }
-    $count_lines_comment = (empty($text) ? 0 : substr_count($text, "\n") + 1);
+    $count_lines_cr = (empty($text) ? 0 : substr_count($text, "\n") + 1);
+    $count_lines_approximate = round_up(mb_strlen($text) / App::get_config('textarea_approximate_chars_per_line'));
+    $count_lines = ($count_lines_cr > $count_lines_approximate ? $count_lines_cr : $count_lines_approximate);
     return
-        (($count_lines_comment <= $count_rows_min)
+        (($count_lines <= $count_rows_min)
             ?   $count_rows_min
-            :   (($count_lines_comment > $count_rows_max)
+            :   (($count_lines > $count_rows_max)
                     ? $count_rows_max
-                    : $count_lines_comment
+                    : $count_lines
                 )
         );    
 }
@@ -2374,3 +2399,122 @@ function morph($n, $f1, $f2, $f5) {
     if ($n==1) { return $f1; }
     return $f5;
 }
+
+
+
+const FIELD_TYPE_DEF    = -1;
+const FIELD_TYPE_INT    =  1;
+const FIELD_TYPE_STRING =  2;
+const FIELD_TYPE_BOOL   =  3;
+const FIELD_TYPE_DATE   =  4;
+
+/**
+ * Сортирует индексный массив, элементы которого ассоциативные массивы.
+ * Сортировка проводится по указанному полю
+ * Поддерживаются сортировки дат, булевых значений
+ * и обычное сравнение оператором сравнения для чисел, строк и прочего содержимого.
+ * @param array $array -- ссылка на сортируемый массив
+ * @param string $compare_field -- имя поля по которому проводится сортировка
+ * @param int $field_type -- тип содержимого сортируемого поля FIELD_TYPE_DEF, FIELD_TYPE_INT, FIELD_TYPE_STRING, FIELD_TYPE_BOOL, FIELD_TYPE_DATE.
+ * @param bool $sort_asc -- сортировка по возрастанию/убыванию
+ * @return true
+ */
+function sort_array_by_field_(array &$array, string $compare_field, int $field_type = FIELD_TYPE_DEF, bool $sort_asc = true):bool {
+    for ($i = 0; $i < count($array)-1; $i++) {
+        for ($x = $i+1; $x < count($array); $x++) {
+            switch ($field_type) {
+                case FIELD_TYPE_DATE:
+                    if((strtotime($array[$i][$compare_field]) > strtotime($array[$x][$compare_field])) === $sort_asc) {
+                        $tmp = $array[$i];
+                        $array[$i] = $array[$x];
+                        $array[$x] = $tmp;
+                    }
+                    break;
+
+                case FIELD_TYPE_BOOL:
+                    if((($array[$i][$compare_field]?1:0) > ($array[$x][$compare_field]?1:0)) === $sort_asc) {
+                        $tmp = $array[$i];
+                        $array[$i] = $array[$x];
+                        $array[$x] = $tmp;
+                    }
+                    break;
+
+                case FIELD_TYPE_INT:
+                case FIELD_TYPE_STRING:
+                case FIELD_TYPE_DEF:
+                default:
+                    if(($array[$i][$compare_field] > $array[$x][$compare_field]) === $sort_asc) {
+                        $tmp = $array[$i];
+                        $array[$i] = $array[$x];
+                        $array[$x] = $tmp;
+                    }
+                    break;
+            }
+        }
+    }
+    return true;
+}
+
+
+function get_numeric_part(string $str, int $max_float_part = LEN_DOG_NUM_MAX): float|null {
+    $subject = $str;
+    $pattern = "/^\s*\-?\d+(\s\d{".LEN_DOG_NUM_MIN."})*([.,]\d{1,$max_float_part})?/";
+    $matches = array();
+    if(preg_match($pattern, $subject, $matches) === false) {
+        return null;
+    } else {
+        if(count($matches)>0) {
+            return floatval(str_replace(",", ".", str_replace(" ", "", $matches[0])));
+        } else {
+            return null;
+        }
+    }
+}
+
+
+
+
+/**
+ * Функция проверяет, содержится ли в строке $haystack хотя бы одна подстрока из:
+ * массива строк (array $needle), или
+ * одной строки (string $needle)
+ * и возвращает true или false.
+ * Проще: «Есть ли в строке $haystack хотя бы одно совпадение?»
+ * @param string $haystack
+ * @param array|string $needle
+ * @param bool $case_sensitive
+ * @return bool
+ */
+function str_contains_array(string $haystack, array|string $needle, bool $case_sensitive=false): bool {
+    if (is_array($needle)) {
+        /**
+         * Если $needle — массив:
+         * перебирается каждый элемент;
+         * если хотя бы один элемент найден в $haystack, функция возвращает true;
+         * если ни один не найден — false.
+         */
+        if ($case_sensitive) { $haystack = mb_strtoupper($haystack); }
+        foreach ($needle as $need) {
+            if ($case_sensitive) { $need = mb_strtoupper($need); }
+            if( !(stripos($haystack, $need) === false) ) {
+                return true;
+            }
+        }
+        return false;
+    } else {
+        /**
+         * Если $needle — строка:
+         * выполняется проверка наличия подстроки;
+         * возвращается true или false.
+         */
+        if ($case_sensitive) { $needle = mb_strtoupper($needle); }
+        if(stripos($haystack, $needle) === false) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+}
+
+
+

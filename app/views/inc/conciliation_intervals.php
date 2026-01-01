@@ -60,13 +60,13 @@ $uri = Conciliation::URI_PRINT . '/' . $id;
                 <td>
                     <div class="small text-muted mt-1 bukvitca"><?=__('From the activation date to the current month, Including');?>.</div>
                     <div class="text-end">
-                        <a class="btn btn-primary btn-sm" target="_self" href="<?= $uri; ?>"><?=__('Full');?></a>
-                        <a class="btn btn-primary btn-sm" target="_self" href="<?= $uri; ?>?<?= Conciliation::F_SHTAMP; ?>=1" title="<?=__('Full with stamp');?>"><?=__('Beautiful');?></a>
+                        <a class="btn btn-primary btn-sm" target="_blank" href="<?= $uri; ?>"><?=__('Full');?></a>
+                        <a class="btn btn-primary btn-sm" target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_SHTAMP; ?>=1" title="<?=__('Full with stamp');?>"><?=__('Beautiful');?></a>
                     </div>
                 </td>
                 <td class="text-end">
                     <?php if (can_use(Module::MOD_CONCILIATION)) : ?>
-                    <a target="_self" href="<?= $uri; ?>?<?= Conciliation::F_DEBUG; ?>=1" class="link-secondary"><?=__('Debugging');?></a>
+                    <a target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_DEBUG; ?>=1" class="link-secondary"><?=__('Debugging');?></a>
                     <?php endif; ?>
                 </td>
             </tr>
@@ -76,13 +76,13 @@ $uri = Conciliation::URI_PRINT . '/' . $id;
                 <td>
                     <div class="small text-muted mt-1 bukvitca"><?=__('Last year, from');?> <span class="text-info"><?= (year() - 1); ?>-01-01</span> <?=__('by');?> <span class="text-info"><?= (year() - 1); ?>-12-31</span> <?=__('including');?>.</div>
                     <div class="text-end">
-                        <a class="btn btn-primary btn-sm" target="_self" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= (year() - 1); ?>-01-01&<?= Conciliation::F_DATE2_STR; ?>=<?= (year() - 1); ?>-12-31"><?=__('Last year');?></a>
-                        <a class="btn btn-primary btn-sm" target="_self" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= (year() - 1); ?>-01-01&<?= Conciliation::F_DATE2_STR; ?>=<?= (year() - 1); ?>-12-31&<?= Conciliation::F_SHTAMP; ?>=1" title="<?=__('With a stamp');?>"><?=__('Beautiful');?></a>
+                        <a class="btn btn-primary btn-sm" target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= (year() - 1); ?>-01-01&<?= Conciliation::F_DATE2_STR; ?>=<?= (year() - 1); ?>-12-31"><?=__('Last year');?></a>
+                        <a class="btn btn-primary btn-sm" target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= (year() - 1); ?>-01-01&<?= Conciliation::F_DATE2_STR; ?>=<?= (year() - 1); ?>-12-31&<?= Conciliation::F_SHTAMP; ?>=1" title="<?=__('With a stamp');?>"><?=__('Beautiful');?></a>
                     </div>
                 </td>
                 <td class="text-end">
                     <?php if (can_use(Module::MOD_CONCILIATION)) : ?>
-                    <a target="_self" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= (year() - 1); ?>-01-01&<?= Conciliation::F_DATE2_STR; ?>=<?= (year() - 1); ?>-12-31&<?= Conciliation::F_DEBUG; ?>=1" class="link-secondary"><?=__('Debugging');?></a>
+                    <a target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= (year() - 1); ?>-01-01&<?= Conciliation::F_DATE2_STR; ?>=<?= (year() - 1); ?>-12-31&<?= Conciliation::F_DEBUG; ?>=1" class="link-secondary"><?=__('Debugging');?></a>
                     <?php endif; ?>
                 </td>
             </tr>
@@ -92,13 +92,13 @@ $uri = Conciliation::URI_PRINT . '/' . $id;
                 <td>
                     <div class="small text-muted mt-1 bukvitca"><?=__('From the beginning of this year to the current month inclusive');?>.</div>
                     <div class="text-end">
-                        <a class="btn btn-primary btn-sm" target="_self" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= year(); ?>-01-01"><?=__('This year');?></a>
-                        <a class="btn btn-primary btn-sm" target="_self" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= year(); ?>-01-01&<?= Conciliation::F_SHTAMP; ?>=1" title="<?=__('Full with stamp');?>"><?=__('Beautiful');?></a>
+                        <a class="btn btn-primary btn-sm" target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= year(); ?>-01-01"><?=__('This year');?></a>
+                        <a class="btn btn-primary btn-sm" target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= year(); ?>-01-01&<?= Conciliation::F_SHTAMP; ?>=1" title="<?=__('Full with stamp');?>"><?=__('Beautiful');?></a>
                     </div>
                 </td>
                 <td class="text-end">
                     <?php if (can_use(Module::MOD_CONCILIATION)) : ?>
-                    <a target="_self" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= year(); ?>-01-01&<?= Conciliation::F_DEBUG; ?>=1" class="link-secondary"><?=__('Debugging');?></a>
+                    <a target="_blank" href="<?= $uri; ?>?<?= Conciliation::F_DATE1_STR; ?>=<?= year(); ?>-01-01&<?= Conciliation::F_DEBUG; ?>=1" class="link-secondary"><?=__('Debugging');?></a>
                     <?php endif; ?>
                 </td>
             </tr>
@@ -106,7 +106,7 @@ $uri = Conciliation::URI_PRINT . '/' . $id;
             <!-- Форма: Этот год -->
             <tr>
                 <td class="text-end">
-                    <form action="<?= $uri; ?>" method="get" target="_self">
+                    <form action="<?= $uri; ?>" method="get" target="_blank">
                         <div class="row gy-2 gx-2 align-items-center justify-content-end">
                             <!-- <input type="hidden" name="abon_id" value="<?= $abon_id; ?>"> -->
                             <label class="col-auto col-form-label bukvitca"><?=__('This year');?>:</label>
@@ -145,7 +145,7 @@ $uri = Conciliation::URI_PRINT . '/' . $id;
             <!-- Форма: Весь период +1 мес. -->
             <tr>
                 <td class="text-end">
-                    <form action="<?= $uri; ?>" method="get" target="_self" class="row gy-2 gx-2 align-items-center justify-content-end">
+                    <form action="<?= $uri; ?>" method="get" target="_blank" class="row gy-2 gx-2 align-items-center justify-content-end">
                         <!-- <input type="hidden" name="abon_id" value="<?= $abon_id; ?>"> -->
                         <label class="col-auto col-form-label bukvitca"><?=__('The entire period +1 month.');?>:</label>
 

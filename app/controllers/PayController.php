@@ -35,8 +35,6 @@ use config\tables\PA;
 use config\tables\Firm;
 use config\tables\AbonRest;
 
-require_once DIR_LIBS . '/bank_api.php';
-
 
 
 /**
@@ -211,14 +209,14 @@ class PayController extends AppBaseController
                  * Получить сумму для оплаты
                  */
                 $amount = 
-                        (isset($_POST[Pay::POST_REC][AbonRest::F_AMOUNT]) && (floatval($_POST[Pay::POST_REC][AbonRest::F_AMOUNT]) >= PAYMENT_MIN)) 
+                        (isset($_POST[Pay::POST_REC][AbonRest::F_AMOUNT]) && (floatval($_POST[Pay::POST_REC][AbonRest::F_AMOUNT]) >= App::get_config('bank_payment_min'))) 
                             ? floatval($_POST[Pay::POST_REC][AbonRest::F_AMOUNT]) 
                             : 0.0;  
 
                 /**
                  * Проверка правильности суммы для оплаты
                  */
-                if ($amount < PAYMENT_MIN) {
+                if ($amount < App::get_config('bank_payment_min')) {
                     MsgQueue::msg(MsgType::ERROR, __('Phase 3: The payment amount is incorrect'));
                     redirect();
                 }

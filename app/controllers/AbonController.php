@@ -1493,7 +1493,40 @@ class AbonController extends AppBaseController {
     }
 
 
+    function restupdateAction() {
+        if (!App::isAuth()) {
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Авторизуйтесь, пожалуйста'));
+            redirect(Auth::URI_LOGIN);
+        }
+
+        if (!can_use(Module::MOD_ABON)) {
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+            redirect();
+        }
+
+        $model = new AbonModel();
+
+        if  (
+                empty($this->route[F_ALIAS]) ||
+                !$model->validate_id(table_name: Abon::TABLE, field_id: Abon::F_ID, id_value: (int)$this->route[F_ALIAS])
+            ) 
+        {
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('ID не верен'));
+            redirect();
+        }
+
+        if ($model->recalc_abon((int)$this->route[F_ALIAS])) {
+            MsgQueue::msg(MsgType::INFO_AUTO, __('Данные успешно обновлены'));
+            redirect();
+        } else {
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Ошибка обновления данных'));
+            redirect();
+        }
+
+    }
 
 
+
+    
 
 }

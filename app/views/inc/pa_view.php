@@ -143,7 +143,7 @@ $tp = $model->get_tp($item[PA::F_TP_ID]);
             <?php if (can_edit(Module::MOD_PA)) : ?>
                 <span class="badge text-bg-secondary mt-3 fs-6">
                     <?php if (!$item[PA::F_CLOSED]) : ?>
-                        <a href="<?= Api::URI_CMD; ?>?<?=Api::F_CMD;?>=<?=Api::CMD_PA_CLOSE;?>&<?=Api::F_PA_ID;?>=<?= $item[PA::F_ID]; ?>"
+                        <a href="<?= Api::URI_CMD; ?>?<?=Api::F_CMD;?>=<?=Api::CMD_PA_CLOSE;?>&<?=Api::F_PA_ID;?>=<?= $item[PA::F_ID]; ?>&<?=Api::F_ABON_OFF_ON_TP;?>=0"
                             class="btn btn-outline-info btn-sm"
                             onclick="return confirm('<?=__('Вы точно хотите остановить услугу и закрыть прайсовый фрагмент?');?>')">&#9209; <?= __('Закрыть прайс'); ?>
                         </a>

@@ -40,8 +40,13 @@ if (!can_use(Module::MOD_TP)) {
 
         <thead>
             <tr>
-                <th>No</th>
-                <th>ID | <?= __('Название') ?> | <?= __('Адрес') ?></th>
+                <th class="text-secondary">No</th>
+                <th>
+                    <div class="row">
+                        <div class="col-1 text-end text-secondary">id</div>
+                        <div class="col-11 text-start"><?= __('Название') ?> | <?= __('Описание') ?> | <?= __('Адрес') ?></div>
+                    </div>
+                </th>
                 <th><?= __('Статус') ?></th>
                 <th><?= __('Управление') ?></th>
             </tr>
@@ -56,20 +61,20 @@ if (!can_use(Module::MOD_TP)) {
             <?php else: ?>
                 <?php foreach ($tp_list as $tp): ?>
                     <tr>
-                        <td><span class="text-secondary text-end text- font-monospace fs-7"><?= ++$num ?></span></td>
+                        <td><span class="text-secondary font-monospace fs-7"><?= ++$num ?></span></td>
                         <td>
                             <div class="row">
                                 <div class="col-1 text-end">
                                     <span class="text-secondary font-monospace fs-7"><?= (int)$tp[TP::F_ID] ?></span>
                                 </div>
                                 <div class="col-11">
-                                    <div class="d-flex justify-content-between">
-                                        <div class="text-start">
-                                            <?= h($tp[TP::F_TITLE]) ?>
-                                        </div>
-                                        <div class="text-end">
-                                            <span class="text-secondary fs-7"><?= TP::get_type_name((int)$tp[TP::F_RANG_ID]) ?></span>
-                                        </div>
+                                    <!-- <div class="d-flex justify-content-between"> -->
+                                    <!-- </div> -->
+                                    <div class="text-start">
+                                        <?= h($tp[TP::F_TITLE]) ?>
+                                    </div>
+                                    <div class="text-start">
+                                        <span class="text-secondary fs-7"><?= TP::get_type_name((int)$tp[TP::F_RANG_ID]) ?></span>
                                     </div>
                                     <span class="text-secondary fs-7"><?= cleaner_html(nl2br(str_replace("\\n", "<br>", $tp[TP::F_ADDRESS] ?? ''))) ?></span>
                                 </div>

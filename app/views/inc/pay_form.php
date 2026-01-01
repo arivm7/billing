@@ -22,6 +22,9 @@ use billing\core\App;
 use config\SessionFields;
 use config\tables\Pay;
 use billing\core\base\Lang;
+use config\tables\Abon;
+use config\tables\Module;
+
 Lang::load_inc(__FILE__);
 require_once DIR_LIBS . '/functions.php';
 
@@ -124,7 +127,7 @@ $wcol2 = 12 - $wcol1; // ширина второй колонки
                     <div class="col-<?=$wcol2?>">
                         <select class="form-select" id="<?=Pay::F_TYPE_ID?>" name="<?=Pay::POST_REC?>[<?=Pay::F_TYPE_ID?>]" required>
                             <option value="">--</option>
-                            <?php foreach (Pay::TYPES as $type_id => $labels): ?>
+                            <?php foreach (Pay::TYPES_TITLE as $type_id => $labels): ?>
                                 <option value="<?=$type_id?>" <?=($type_id == $form_data_fn(Pay::F_TYPE_ID) ? 'selected' : '')?>><?=$labels[$lang]?></option>
                             <?php endforeach; ?>
                         </select>
@@ -158,8 +161,16 @@ $wcol2 = 12 - $wcol1; // ширина второй колонки
             </div>
             <!-- Действия -->
             <div class="card-footer text-center">
-                <button class="btn btn-primary me-2" type="submit"><?=__('Сохранить')?></button>
-                <a href="<?=Pay::URI_LIST;?>/<?=$abon_id;?>" class="btn btn-secondary"><?=__('К списку платежей')?></a>
+                <button class="btn btn-outline-primary btn-sm me-2" type="submit"><i class="bi bi-floppy"></i> <?=__('Сохранить')?></button>
+                <a href="<?=Pay::URI_LIST;?>/<?=$abon_id;?>" class="btn btn-outline-secondary btn-sm me-2"><span class="fw-bold">₴₴</span> <?=__('К списку платежей')?></a>
+                <!-- Вернуться в карточку абонента -->
+                <?php if ($abon_id) : ?>
+                    <?php if (can_use([Module::MOD_ABON])) : ?>
+                        <a href="<?=Abon::URI_VIEW;?>/<?=$abon_id;?>" class="btn btn-outline-secondary btn-sm" target="_self"><span class="fw-bold">🅐</span> <?= __('Картка'); ?></a>
+                    <?php else: ?>
+                        <a href="/my" class="btn btn-outline-secondary btn-sm" target="_self"><span class="fw-bold">(A)</span> <?= __('Картка'); ?></a>
+                    <?php endif; ?>
+                <?php endif; ?>
             </div>
         </form>
     </div>

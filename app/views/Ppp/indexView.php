@@ -17,7 +17,8 @@
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
 
-
+use billing\core\App;
+use config\tables\Module;
 use config\tables\Ppp;
 
 /** @var array $ppp_list -- массив всех ППП */
@@ -58,9 +59,14 @@ use config\tables\Ppp;
                         <td class="text-center"><?= $item[Ppp::F_ACTIVE] ? '✔' : '✖'; ?></td>
                         <td class="text-center"><?= $item[Ppp::F_ABON_PAYMENTS] ? '✔' : '✖'; ?></td>
                         <td class="text-nowrap">
-                            <a href="<?=Ppp::URI_EDIT;?>/<?= $item[Ppp::F_ID]; ?>" class="btn btn-sm btn-outline-primary"><?=__('Edit');?></a>
-                            <a href="<?=Ppp::URI_DELETE;?>/<?= $item[Ppp::F_ID]; ?>" class="btn btn-sm btn-outline-danger"
-                            onclick="return confirm('<?=__('Are you sure?');?>');"><?=__('Delete');?></a>
+                            <?php if (can_edit(Module::MOD_PPP)): ?>
+                                <a href="<?=Ppp::URI_EDIT;?>/<?= $item[Ppp::F_ID]; ?>" class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil-square"></i> <?=__('Edit');?></a>
+                            <?php endif; ?>
+                            <?php if (can_del(Module::MOD_PPP)): ?>
+                                <?php if ($item[Ppp::F_OWNER_ID] == App::get_user_id()): ?>
+                                    <a href="<?=Ppp::URI_DELETE;?>/<?= $item[Ppp::F_ID]; ?>" class="btn btn-sm btn-outline-danger me-1" onclick="return confirm('<?=__('Are you sure?');?>');" title="<?= __('Delete') . CR . __('Удаление записи из базы'); ?>"><i class="bi bi-x-circle"></i></a>
+                                <?php endif; ?>
+                            <?php endif; ?>
                         </td>
                     </tr>
                 <?php endforeach; ?>

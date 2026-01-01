@@ -25,6 +25,7 @@ class Abon {
     const URI_VIEW = "/abon/view";
     const URI_EDIT = "/abon/edit";
     const URI_UPDATE = "/abon/update";
+    const URI_REST_UPDATE = "/abon/restupdate"; // <id>
     
 
     /**

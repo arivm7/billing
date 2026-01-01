@@ -13,6 +13,9 @@
 
 namespace config\tables;
 
+use billing\core\App;
+use billing\core\base\Lang;
+
 /**
  * Description of Pay.php
  *
@@ -42,33 +45,6 @@ class Pay {
 
 
 
-    /**
-     * Соответствует ID из таблицы payments_types
-     * Фактически аблица типов не нужна,
-     * поскольку типов всего три и удобнее их использовать как константы
-     */
-    const TYPE_MONEY    = 1;    // Денежное пополнение ЛС | Внесение средств на ЛС для оплаты услуг
-    const TYPE_CORRECT  = 2;    // Корректировка ЛС       | Начисление для корректировки остатка ЛС, компенсац...
-    const TYPE_REQUEST  = 3;    // Начисление за услугу   | Начисление за дополнительную услугу (ремонт, настройка, задолженность за подключение и пр.) как правило, единоразовое начисление.
-
-    const TYPES = [
-        self::TYPE_MONEY => [
-            'uk' => 'Грошове поповнення ОР',
-            'ru' => 'Денежное пополнение ЛС',
-            'en' => 'Cash replenishment of personal account',
-        ],
-        self::TYPE_CORRECT => [
-            'uk' => 'Коригування залишку в особистому кабінеті',
-            'ru' => 'Корректировка остатка в личном кабинете',
-            'en' => 'Adjusting the balance in your personal account',
-        ],
-        self::TYPE_REQUEST => [
-            'uk' => 'Нарахування за додаткову разову послугу',
-            'ru' => 'Начисление за дополнительную разовую услугу',
-            'en' => 'Charge for additional one-time service',
-        ],
-    ];
-
     const POST_REC = 'payment';
 
     const TABLE = 'payments';
@@ -90,16 +66,71 @@ class Pay {
     const F_MODIFIED_DATE   = "modified_date";  // Дата изменения записи
     const F_MODIFIED_UID    = "modified_uid";   // Кто изменил запись
 
+
+
     /*
      * Вычисляемые поля
      */
-    // const F_AGENT           = "agent";          // Массив запись User того, кто внёс запись (вычисляемое)
-    // const F_PPP             = "ppp";            // Массив запись ППП (вычисляемое)
-    // const F_TYPE            = "type";           // Массив запись Типа платежа (вычисляемое)
     const F_AGENT_TITLE     = "agent_title";    // Имя того, кто внёс запись (вычисляемое)
     const F_TYPE_TITLE      = "pay_type_title"; // Имя Типа платежа (вычисляемое)
     const F_PPP_TITLE       = "pay_ppp_title";  // Имя ППП (вычисляемое)
 
 
+
+    /**
+     * 
+     * ТИПЫ ПЛАТЕЖЕЙ
+     * 
+     * Соответствует ID из таблицы payments_types
+     * Фактически аблица типов не нужна,
+     * поскольку типов всего три и удобнее их использовать как константы
+     */
+    const TYPE_MONEY    = 1;    // Денежное пополнение ЛС | Внесение средств на ЛС для оплаты услуг
+    const TYPE_CORRECT  = 2;    // Корректировка ЛС       | Начисление для корректировки остатка ЛС, компенсац...
+    const TYPE_REQUEST  = 3;    // Начисление за услугу   | Начисление за дополнительную услугу (ремонт, настройка, задолженность за подключение и пр.) как правило, единоразовое начисление.
+
+    const TYPES_TITLE = [
+        self::TYPE_MONEY => [
+            'uk' => 'Грошове поповнення ОР',
+            'ru' => 'Денежное пополнение ЛС',
+            'en' => 'Cash replenishment of personal account',
+        ],
+        self::TYPE_CORRECT => [
+            'uk' => 'Коригування залишку в особистому кабінеті',
+            'ru' => 'Корректировка остатка в личном кабинете',
+            'en' => 'Adjusting the balance in your personal account',
+        ],
+        self::TYPE_REQUEST => [
+            'uk' => 'Нарахування за додаткову разову послугу',
+            'ru' => 'Начисление за дополнительную разовую услугу',
+            'en' => 'Charge for additional one-time service',
+        ],
+    ];
+
+    const TYPES_DESCR = [
+        self::TYPE_MONEY => [
+            'uk' => 'Внесення коштів на ОР для оплати послуг',
+            'ru' => 'Внесение средств на ЛС для оплаты услуг',
+            'en' => 'Depositing funds to a personal account to pay for services',
+        ],
+        self::TYPE_CORRECT => [
+            'uk' => 'Нарахування для коригування залишку ОР, компенсації помилок та ін.',
+            'ru' => 'Начисление для корректировки остатка ЛС, компенсации ошибок и пр.',
+            'en' => 'Accrual for adjusting the balance of medicinal products, compensating for errors, etc.',
+        ],
+        self::TYPE_REQUEST => [
+            'uk' => 'Нарахування за додаткову послугу (ремонт, налаштування, заборгованість за підключення тощо), як правило, одноразове нарахування',
+            'ru' => 'Начисление за дополнительную услугу (ремонт, настройка, задолженность за подключение и пр.) как правило, единоразовое начисление',
+            'en' => 'Charge for additional one-time service (repair, setup, debt for connection, etc.), usually a one-time charge',
+        ],
+    ];
+
+    public static function title(int $type_id): string {
+        return self::TYPES_TITLE[$type_id][Lang::code()] ?? 'ERROR';
+    }
+
+    public static function description(int $type_id): string {
+        return self::TYPES_DESCR[$type_id][Lang::code()] ?? 'ERROR';
+    }
 
 }

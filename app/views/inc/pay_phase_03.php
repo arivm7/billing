@@ -26,9 +26,9 @@ use config\tables\Price;
 use config\tables\Ppp;
 use config\tables\Firm;
 use billing\core\base\Theme;
-Lang::load_inc(__FILE__);
+use config\Bank;
 
-require_once DIR_LIBS . '/bank_api.php';
+Lang::load_inc(__FILE__);
 
 /**
  * @var int $phase -- Фаза проведения платежа
@@ -55,7 +55,7 @@ require_once DIR_LIBS . '/bank_api.php';
 
             <!-- Оплата через LiqPay -->
 
-            <?php  if(str_contains($ppp[Ppp::F_API_TYPE], API_TYPE_P24_LIQPAY)) : ?>
+            <?php  if(str_contains($ppp[Ppp::F_API_TYPE], Bank::API_TYPE_P24_LIQPAY)) : ?>
                 <?php
                     $liqpay = new LiqPay($ppp[Ppp::F_API_LIQPAY_PUBLIC], $ppp[Ppp::F_API_LIQPAY_PRIVATE]);
                     $html_btn = $liqpay->cnb_form([
@@ -93,7 +93,7 @@ require_once DIR_LIBS . '/bank_api.php';
 
             <!-- Оплата через 24Pay -->
 
-            <?php if(str_contains($ppp[Ppp::F_API_TYPE], API_TYPE_P24PAY)) : ?>
+            <?php if(str_contains($ppp[Ppp::F_API_TYPE], Bank::API_TYPE_P24PAY)) : ?>
 
                 <div class="card my-5">
                     <?php $title_for = __('Payment via the Privatbank form'); ?>
@@ -123,7 +123,7 @@ require_once DIR_LIBS . '/bank_api.php';
 
             <!-- Реквизиты для самостоятельной оплаты на расчетный счет -->
 
-            <?php if(str_contains($ppp[Ppp::F_API_TYPE], API_TYPE_P24_ACC)) : ?>
+            <?php if(str_contains($ppp[Ppp::F_API_TYPE], Bank::API_TYPE_P24_ACC)) : ?>
 
                 <div class="card my-5">
                     <div class="card-header">
@@ -168,7 +168,7 @@ require_once DIR_LIBS . '/bank_api.php';
             
             <!-- Реквизиты для самостоятельной оплаты с помощью банковской карты -->
 
-            <?php if(str_contains($ppp[Ppp::F_API_TYPE], API_TYPE_BANK_CARD)) : ?>
+            <?php if(str_contains($ppp[Ppp::F_API_TYPE], Bank::API_TYPE_BANK_CARD)) : ?>
                 <div class="card my-5">
                     <div class="card-header">
                         <h5 class="card-title"><?=__('Details for self-payment using a bank card');?></h5>

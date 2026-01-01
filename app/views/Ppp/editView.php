@@ -24,8 +24,7 @@ use config\tables\User;
 use config\tables\Firm;
 use config\SessionFields;
 use billing\core\base\Lang;
-
-require_once DIR_LIBS ."/bank_api.php";
+use config\Bank;
 
 /** @var array $ppp_item        */
 /** @var callable $form_data_fn */
@@ -289,7 +288,7 @@ $templates = implode(
                             class="form-control"
                             id="sms_pay_info"
                             name="<?=Ppp::POST_REC;?>[<?=Ppp::F_SMS_PAY_INFO;?>]"
-                            rows="<?=get_count_rows_for_textarea($form_data_fn(Ppp::F_SMS_PAY_INFO));?>"
+                            rows="<?=get_count_rows_for_textarea($form_data_fn(Ppp::F_SMS_PAY_INFO), 3);?>"
                             placeholder="{PORT} {LOGIN} {SUM}"
                         ><?=h($form_data_fn(Ppp::F_SMS_PAY_INFO));?></textarea>
                         <div class="form-text"><?=__('May contain placeholders | Может содержать подстановки | Може містити підстановки | %s', $templates);?></div>
@@ -322,7 +321,7 @@ $templates = implode(
                             id="api_type"
                             name="<?=Ppp::POST_REC;?>[<?=Ppp::F_API_TYPE;?>]"
                             value="<?=$form_data_fn(Ppp::F_API_TYPE);?>">
-                        <div class="form-text"><?=__('Supported APIs | Поддерживаемые API | Підтримувані API');?>: <?=implode(', ', API_TYPE_LIST);?></div>
+                        <div class="form-text"><?=__('Supported APIs | Поддерживаемые API | Підтримувані API');?>: <?=implode(', ', Bank::API_TYPE_LIST);?></div>
                     </div>
                 </div>
 

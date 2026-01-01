@@ -31,7 +31,7 @@ define('TARGET_TOP',    '_top');
 const FORM_DATE_TIME = 'Y-m-d\TH:i';
 
 
-const ICON_SIZE       = 18; // размер иконок
+const ICON_SIZE       = 20; // размер иконок
 const ICON_WIDTH_DEF  = ICON_SIZE;      $ICON_WIDTH_DEF  = ICON_WIDTH_DEF;
 const ICON_HEIGHT_DEF = ICON_SIZE;      $ICON_HEIGHT_DEF = ICON_HEIGHT_DEF;
 

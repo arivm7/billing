@@ -107,13 +107,13 @@ class PaymentsController extends AppBaseController {
         }
 
         // const F_TYPE_ID         = "pay_type_id";    // ИД Типа платежа
-        if (empty($pay[Pay::F_TYPE_ID]) || !in_array($pay[Pay::F_TYPE_ID], array_keys(Pay::TYPES))) {
+        if (empty($pay[Pay::F_TYPE_ID]) || !in_array($pay[Pay::F_TYPE_ID], array_keys(Pay::TYPES_TITLE))) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('Тип платежа не верен'));
             $valid = false;
         }
 
         // const F_PPP_ID          = "pay_ppp_id";     // ППП
-        if (empty($pay[Pay::F_PPP_ID]) || !$model->validate_id(table_name: Ppp::TABLE, id_value: $pay[Pay::F_PPP_ID], field_id: Ppp::F_ID)) {
+        if (empty($pay[Pay::F_PPP_ID]) || !$model->validate_ppp($pay[Pay::F_PPP_ID])) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('ID ППП не верен'));
             $valid = false;
         }
@@ -266,6 +266,8 @@ class PaymentsController extends AppBaseController {
             }
             $pay = [
                 Pay::F_ABON_ID => $abon_id,
+                Pay::F_TYPE_ID  => Pay::TYPE_MONEY,
+                Pay::F_PPP_ID  => PppType::TYPE_CASH_DESK,
             ];
             $title = __('Внесение нового платежа');
             $pay_type_id = Pay::TYPE_MONEY;
