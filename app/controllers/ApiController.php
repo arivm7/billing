@@ -498,6 +498,31 @@ class ApiController extends AppBaseController {
                     }
                     break;
 
+                case Api::CMD_CHANGE_PRICE:
+                    /**
+                     * Сменить тарифный план
+                     */
+                    if (can_add(Module::MOD_PA)) {
+                        $pa_id = intval($_GET[Api::F_PA_ID] ?? 0);
+                        $on_date_str = h($_GET[Api::F_ON_DATE] ?? '');
+                        $to_price_id = intval($_GET[Api::F_TO_PRICE_ID] ?? 0);
+                        $to_tp_id = intval($_GET[Api::F_TO_TP_ID] ?? 0);
+                        $pa_new_id = PaController::change_price($pa_id, $on_date_str, $to_price_id, $to_tp_id);
+                        if ($pa_new_id === false) {
+                            redirect();
+                        } else {
+                            MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Тарифный план изменён успешно'));
+                            $model = new AbonModel();
+                            $pa = $model->get_pa($pa_new_id);
+                            $model->recalc_abon($pa[PA::F_ABON_ID]);
+                            redirect(PA::URI_EDIT . '/' . $pa_new_id);
+                        }
+                    } else {
+                        MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+                        redirect();
+                    }
+                    break;
+
                 case Api::CMD_PA_CLOSE:
                     /**
                      * Закрыть ПФ

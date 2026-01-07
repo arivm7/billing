@@ -49,6 +49,9 @@ class Api {
     public const F_FORCE        = 'force';
     public const F_PA_ID        = 'paid';
     public const F_DATE_END     = 'date_end';
+    public const F_ON_DATE      = 'on_date';        // Дата вступления в силу
+    public const F_TO_PRICE_ID  = 'to_price_id';    // ID прайса, на который нужно перейти
+    public const F_TO_TP_ID     = 'to_tp_id';       // ID ТП, на который нужно перейти
     public const F_INVOICE_ID   = 'inv_id';
     public const F_ABON_OFF_ON_TP = 'ab_off_on_tp';
     public const CMD_IP_ENABLE  = 'cmd_ipena';
@@ -57,6 +60,7 @@ class Api {
     public const CMD_PA_CLOSE   = 'cmd_pa_close';
     public const CMD_PA_DELETE  = 'cmd_pa_del';
     public const CMD_PASS_DEF   = 'cmd_pass_def';
+    public const CMD_CHANGE_PRICE = 'cmd_change_price';
     public const CMD_INVOICE_PAY_CONFIRM  = 'cmd_inv_pay_confirm';
     
 // prices_apply_id=2760

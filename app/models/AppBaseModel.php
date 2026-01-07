@@ -48,7 +48,7 @@ class AppBaseModel extends Model
 
 
     /**
-     * Кэш-таблица для function get_pay(int $id)
+     * Кэш-таблица для get_pay(int $id)
      */
     private static array $CASHE_PAY_LIST = array();
 
@@ -70,134 +70,134 @@ class AppBaseModel extends Model
 
 
 
-    /**
-     * Проверяет, есть ли такой платёж
-     * @param int    $abon_id      Абонент, на которого зачисляется поалёж
-     * @param float  $pay_fakt     Фактическая сумма пришедшая на р/с
-     * @param float  $pay          Сумма платежа вносимая на ЛС
-     * @param string $pay_date     Дата платежа
-     * @param int    $pay_type_id  ID Типа платежа
-     * @param int    $pay_ppp_id  ID ППП
-     * @param string $description Описание платежа
-     * @return bool TRUE если такой платёж есть
-     */
-    function pay_has_exist(
-        //$id,             //int
-        //$agent_id,       //int     ID того, кто внёс запись
-            $abon_id,        //int     Абонент, на которого зачисляется поалёж
-            $pay_fakt,       //float   Фактическая сумма пришедшая на p/c
-            $pay,            //float   Сумма платежа вносимая на ЛС
-            $pay_date,       //str     Дата платежа
-        //$pay_bank_no,    //tiny    Банковский номер операции
-            $pay_type_id,    //int     ID Типа платежа
-        //$pay_ppp_id,     //int     ID ППП
-        //$pay_sourse_id,  //int     На какой счёт пришёл платёж
-            $description     //text    Описание платежа
-            ) {
+    // /**
+    //  * Проверяет, есть ли такой платёж
+    //  * @param int    $abon_id      Абонент, на которого зачисляется поалёж
+    //  * @param float  $pay_fakt     Фактическая сумма пришедшая на р/с
+    //  * @param float  $pay          Сумма платежа вносимая на ЛС
+    //  * @param string $pay_date     Дата платежа
+    //  * @param int    $pay_type_id  ID Типа платежа
+    //  * @param int    $pay_ppp_id  ID ППП
+    //  * @param string $description Описание платежа
+    //  * @return bool TRUE если такой платёж есть
+    //  */
+    // function pay_has_exist(
+    //     //$id,             //int
+    //     //$agent_id,       //int     ID того, кто внёс запись
+    //         $abon_id,        //int     Абонент, на которого зачисляется поалёж
+    //         $pay_fakt,       //float   Фактическая сумма пришедшая на p/c
+    //         $pay,            //float   Сумма платежа вносимая на ЛС
+    //         $pay_date,       //str     Дата платежа
+    //     //$pay_bank_no,    //tiny    Банковский номер операции
+    //         $pay_type_id,    //int     ID Типа платежа
+    //     //$pay_ppp_id,     //int     ID ППП
+    //     //$pay_sourse_id,  //int     На какой счёт пришёл платёж
+    //         $description     //text    Описание платежа
+    //         ) {
 
-        $SQL = "SELECT `id` FROM `payments` "
-                . "WHERE "
-                . "`abon_id`='".$abon_id."' AND "
-                . "`pay_fakt`='".$pay_fakt."' AND "
-                . "`pay`='".$pay."' AND "
-                . "`pay_date`=UNIX_TIMESTAMP('".$pay_date."') AND "
-                . "`pay_type_id`='".$pay_type_id."' AND "
-            //. "`pay_ppp_id`='".$pay_ppp_id."' AND "
-                . "`description` like '%".my_real_escape_string(preg_replace('/\s+/', '%', trim($description)))."%' ";
-        //echo $SQL."<hr>";
-        return mysqli_num_rows(my_query($SQL))>0;
-    }
-
-
-
-
-    /**
-     * Добавление платежа на ЛС
-     * @param int    $abon_id        Абонент, на которого зачисляется поалёж
-     * @param float  $pay_fakt       Фактическая сумма пришедшая на р/с
-     * @param float  $pay            Сумма платежа вносимая на ЛС
-     * @param string $pay_date_str   Дата платежа
-     * @param string $pay_bank_no    Банковский номер операции
-     * @param int    $pay_type_id    ID Типа платежа
-     * @param int    $pay_ppp_id     ID ППП
-     * @param string $description    Описание платежа
-     */
-    function pay_add(
-            int    $abon_id,        //int     Абонент, на которого зачисляется поалёж
-            float  $pay_fakt,       //float   Фактическая сумма пришедшая на р/с
-            float  $pay,            //float   Сумма платежа вносимая на ЛС
-            string $pay_date_str,   //str     Дата платежа
-            string $pay_bank_no,    //tiny    Банковский номер операции
-            int    $pay_type_id,    //int     ИД Типа платежа
-            int    $pay_ppp_id,     //int     Изменить Изменить
-            string $description,    //text    Краткое описание платежа
-            $log_handler = null     //file handler для перенаправления логов
-            ) {
-
-        // Проверка чтобы такой записи небыло
-        if(!pay_has_exist($abon_id, $pay_fakt, $pay, $pay_date_str, $pay_type_id, $description)) {
-            // добавление новой записи
-            $SQL = "INSERT INTO `payments`"
-                    . "(agent_id, abon_id, pay_fakt, pay, pay_date, pay_bank_no, pay_type_id, pay_ppp_id, description, "
-                    . "created_date, created_uid, modified_date, modified_uid) "
-                    . "VALUES "
-                    . "("
-                    . "'".(isset($_SESSION['id'])?$_SESSION['id']:0)."', "
-                    . "'".$abon_id."', "
-                    . "'".$pay_fakt."', "
-                    . "'".$pay."', "
-                    . "UNIX_TIMESTAMP('".$pay_date_str."'), "
-                    . "'".$pay_bank_no."', "
-                    . "'".$pay_type_id."', "
-                    . "'".$pay_ppp_id."', "
-                    . "'".my_real_escape_string($description)."', "
-                    . "'".time()."', "
-                    . "'".(isset($_SESSION['id'])?$_SESSION['id']:0)."', "
-                    . "'".time()."', "
-                    . "'".(isset($_SESSION['id'])?$_SESSION['id']:0)."' "
-                    . ")";
-
-            if(my_query($SQL)) {
-                price_apply_auto_ON($abon_id, $log_handler);
-                return true;
-            }
-        } else {
-            echo "Такая запись в базе есть.<br>\n";
-        }
-        return false;
-    }
+    //     $SQL = "SELECT `id` FROM `payments` "
+    //             . "WHERE "
+    //             . "`abon_id`='".$abon_id."' AND "
+    //             . "`pay_fakt`='".$pay_fakt."' AND "
+    //             . "`pay`='".$pay."' AND "
+    //             . "`pay_date`=UNIX_TIMESTAMP('".$pay_date."') AND "
+    //             . "`pay_type_id`='".$pay_type_id."' AND "
+    //         //. "`pay_ppp_id`='".$pay_ppp_id."' AND "
+    //             . "`description` like '%".my_real_escape_string(preg_replace('/\s+/', '%', trim($description)))."%' ";
+    //     //echo $SQL."<hr>";
+    //     return mysqli_num_rows(my_query($SQL))>0;
+    // }
 
 
 
-    function pay_update(
-            int    $id,             //int     ID записи в базе
-            int    $abon_id,        //int     Абонент, на которого зачисляется поалёж
-            float  $pay_fakt,       //float   Фактическая сумма пришедшая на счёт
-            float  $pay,            //float   Сумма платежа
-            string $pay_date,       //str     Дата платежа
-            string $pay_bank_no,    //tiny    Банковский номер операции
-            int    $pay_type_id,    //int     ИД Типа платежа
-            int    $pay_ppp_id,     //int     Изменить Изменить
-            string $description     //text    Краткое описание платежа
-            ) {
 
-        // редактирование имеющейся записи
-        $SQL = "UPDATE payments SET "
-                . "agent_id='".$_SESSION['id']."',"
-                . "abon_id='".$abon_id."',"
-                . "pay_fakt='".$pay_fakt."',"
-                . "pay='".$pay."',"
-                . "pay_date=UNIX_TIMESTAMP('".$pay_date."'), "
-                . "pay_bank_no='".$pay_bank_no."',"
-                . (validate_id("payments_types", $pay_type_id) ? "pay_type_id='".$pay_type_id."'," : "")
-                . (validate_id("ppp_list", $pay_ppp_id) ? "pay_ppp_id='".$pay_ppp_id."'," : "")
-                . "description='".$description."',"
-                . "modified_date='".time()."',"
-                . "modified_uid='".$_SESSION['id']."' "
-                . "WHERE `id`='".$id."'";
-        //echo "sql:".$SQL."<br>";
-        return my_query($SQL);
-    }
+    // /**
+    //  * Добавление платежа на ЛС
+    //  * @param int    $abon_id        Абонент, на которого зачисляется поалёж
+    //  * @param float  $pay_fakt       Фактическая сумма пришедшая на р/с
+    //  * @param float  $pay            Сумма платежа вносимая на ЛС
+    //  * @param string $pay_date_str   Дата платежа
+    //  * @param string $pay_bank_no    Банковский номер операции
+    //  * @param int    $pay_type_id    ID Типа платежа
+    //  * @param int    $pay_ppp_id     ID ППП
+    //  * @param string $description    Описание платежа
+    //  */
+    // function pay_add(
+    //         int    $abon_id,        //int     Абонент, на которого зачисляется поалёж
+    //         float  $pay_fakt,       //float   Фактическая сумма пришедшая на р/с
+    //         float  $pay,            //float   Сумма платежа вносимая на ЛС
+    //         string $pay_date_str,   //str     Дата платежа
+    //         string $pay_bank_no,    //tiny    Банковский номер операции
+    //         int    $pay_type_id,    //int     ИД Типа платежа
+    //         int    $pay_ppp_id,     //int     Изменить Изменить
+    //         string $description,    //text    Краткое описание платежа
+    //         $log_handler = null     //file handler для перенаправления логов
+    //         ) {
+
+    //     // Проверка чтобы такой записи небыло
+    //     if(!pay_has_exist($abon_id, $pay_fakt, $pay, $pay_date_str, $pay_type_id, $description)) {
+    //         // добавление новой записи
+    //         $SQL = "INSERT INTO `payments`"
+    //                 . "(agent_id, abon_id, pay_fakt, pay, pay_date, pay_bank_no, pay_type_id, pay_ppp_id, description, "
+    //                 . "created_date, created_uid, modified_date, modified_uid) "
+    //                 . "VALUES "
+    //                 . "("
+    //                 . "'".(isset($_SESSION['id'])?$_SESSION['id']:0)."', "
+    //                 . "'".$abon_id."', "
+    //                 . "'".$pay_fakt."', "
+    //                 . "'".$pay."', "
+    //                 . "UNIX_TIMESTAMP('".$pay_date_str."'), "
+    //                 . "'".$pay_bank_no."', "
+    //                 . "'".$pay_type_id."', "
+    //                 . "'".$pay_ppp_id."', "
+    //                 . "'".my_real_escape_string($description)."', "
+    //                 . "'".time()."', "
+    //                 . "'".(isset($_SESSION['id'])?$_SESSION['id']:0)."', "
+    //                 . "'".time()."', "
+    //                 . "'".(isset($_SESSION['id'])?$_SESSION['id']:0)."' "
+    //                 . ")";
+
+    //         if(my_query($SQL)) {
+    //             price_apply_auto_ON($abon_id, $log_handler);
+    //             return true;
+    //         }
+    //     } else {
+    //         echo "Такая запись в базе есть.<br>\n";
+    //     }
+    //     return false;
+    // }
+
+
+
+    // function pay_update(
+    //         int    $id,             //int     ID записи в базе
+    //         int    $abon_id,        //int     Абонент, на которого зачисляется поалёж
+    //         float  $pay_fakt,       //float   Фактическая сумма пришедшая на счёт
+    //         float  $pay,            //float   Сумма платежа
+    //         string $pay_date,       //str     Дата платежа
+    //         string $pay_bank_no,    //tiny    Банковский номер операции
+    //         int    $pay_type_id,    //int     ИД Типа платежа
+    //         int    $pay_ppp_id,     //int     Изменить Изменить
+    //         string $description     //text    Краткое описание платежа
+    //         ) {
+
+    //     // редактирование имеющейся записи
+    //     $SQL = "UPDATE payments SET "
+    //             . "agent_id='".$_SESSION['id']."',"
+    //             . "abon_id='".$abon_id."',"
+    //             . "pay_fakt='".$pay_fakt."',"
+    //             . "pay='".$pay."',"
+    //             . "pay_date=UNIX_TIMESTAMP('".$pay_date."'), "
+    //             . "pay_bank_no='".$pay_bank_no."',"
+    //             . ($this->validate_id("payments_types", $pay_type_id) ? "pay_type_id='".$pay_type_id."'," : "")
+    //             . ($this->validate_id("ppp_list", $pay_ppp_id) ? "pay_ppp_id='".$pay_ppp_id."'," : "")
+    //             . "description='".$description."',"
+    //             . "modified_date='".time()."',"
+    //             . "modified_uid='".$_SESSION['id']."' "
+    //             . "WHERE `id`='".$id."'";
+    //     //echo "sql:".$SQL."<br>";
+    //     return my_query($SQL);
+    // }
 
 
 
@@ -208,7 +208,7 @@ class AppBaseModel extends Model
     private static array $CASHE_PRICE_LIST = array();
 
     /**
-     * Возвращает запись прайса их кэша $CASHE_PRICE_LIST.
+     * Возвращает запись прайса из кэша $CASHE_PRICE_LIST.
      * Если в кэше записи нет, то читает из базы, записывает туда, а затем возвращает.
      * @global array $CASHE_PRICE_LIST
      * @param int $id
@@ -331,7 +331,7 @@ class AppBaseModel extends Model
         $tp[TP::F_MIK_PORT]     = (int)$tp[TP::F_MIK_PORT];     // просто переделыание в int. После исправления базы убрать !!!
         $tp[TP::F_MIK_PORT_SSL] = (int)$tp[TP::F_MIK_PORT_SSL]; // просто переделыание в int. После исправления базы убрать !!!
         $tp[TP::F_MIK_FTP_PORT] = (int)$tp[TP::F_MIK_FTP_PORT]; // просто переделыание в int. После исправления базы убрать !!!
-        $tp[TP::F_RANG_TITLE]   = ($tp[TP::F_RANG_ID]   > 0 ? $this->get_row_by_id("tp_rangs", $tp["rang_id"])["title"] : "");
+        $tp[TP::F_RANG_TITLE]   = ($tp[TP::F_RANG_ID] > 0 ? $this->get_row_by_id("tp_rangs", $tp["rang_id"])["title"] : "");
 
         $template = [];
         if (!empty($tp[TP::F_IP]) && validate_ip($tp[TP::F_IP])) {
@@ -441,8 +441,14 @@ class AppBaseModel extends Model
         return $tp_list;
     }
 
+    
 
-
+    /**
+     * Проверяет, является ли указанный прайсовый фрагмент последним днём действия
+     * @param array $pa_rec -- запись прайсового фрагмента
+     * @param int   $today  -- дата "сегодня" в формате UNIX_TIMESTAMP. Если не указана, то берётся текущее время.
+     * @return bool TRUE - если прайсовый фрагмент заканчивается сегодня
+     */
     public function has_pa_last_day(array $pa_rec, int $today = NA): bool {
 
         $pa_rec['date_end'] = (($pa_rec['date_end'] > 0)
@@ -500,9 +506,12 @@ class AppBaseModel extends Model
     }
 
 
+
     function get_abons(int $user_id): array {
         return $this->get_rows_by_field(Abon::TABLE, Abon::F_USER_ID, $user_id);
     }
+
+
 
     /**
      * Обновляет поле записи абонента, добавляя в него следющие поля:
@@ -530,45 +539,45 @@ class AppBaseModel extends Model
 
 
 
-    /**
-     * Добавляет к записи Абонента массив со ссылками на ТП к которым этот абонент подключен.
-     * Функция изменяет переданный массив, добавляя в него данные.
-     * Обновляет поле записи абонента, добавляя в него следющие поля:
-     * array $A['TP']        == массив массивов хтмл-ссылолк на форму редактирования ТР, на которых есть активные прикрепленные прайсы,
-     *                          если все прайсовые фрагменты отключены, то сюда добавляются ТП
-     *                          с послених отключенных прайсовых фрагментов
-     * @param array $A       -- ссылка на запись абонента, в которй есть поле-массив с всеми прайсовыми фрагментами этого абонента.
-     *                          В запись этого абонента будут добавлены поля
-     * @param string $self_url -- http url указывающий на этот скрипт для формирование html ссылок
-     */
-    function update_abon_list_TP(array &$A, string|null $self_url = null) /* void */ {
-        if (is_null($self_url)) {
-            $self_url = get_http_script(false);
-        }
+    // /**
+    //  * Добавляет к записи Абонента массив со ссылками на ТП к которым этот абонент подключен.
+    //  * Функция изменяет переданный массив, добавляя в него данные.
+    //  * Обновляет поле записи абонента, добавляя в него следющие поля:
+    //  * array $A['TP']        == массив массивов хтмл-ссылолк на форму редактирования ТР, на которых есть активные прикрепленные прайсы,
+    //  *                          если все прайсовые фрагменты отключены, то сюда добавляются ТП
+    //  *                          с послених отключенных прайсовых фрагментов
+    //  * @param array $A       -- ссылка на запись абонента, в которй есть поле-массив с всеми прайсовыми фрагментами этого абонента.
+    //  *                          В запись этого абонента будут добавлены поля
+    //  * @param string $self_url -- http url указывающий на этот скрипт для формирование html ссылок
+    //  */
+    // function update_abon_list_TP(array &$A, string|null $self_url = null) /* void */ {
+    //     if (is_null($self_url)) {
+    //         $self_url = get_http_script(false);
+    //     }
 
-        $A['TP'] = array();
-        foreach ($A['PA'] as &$PA) {
-            if (get_price_apply_age($PA) <> PAStatus::PAUSE) {
-                $tp_title = $this->get_tp($PA['net_router_id'])['title'];
-                $A['TP'][$PA['net_router_id']] = [
-                    $this->url_tp_mik(tp_id: $PA['net_router_id'], icon_width: 16, icon_height: 16, show_gray: true),
-                    $this->url_tp_form(tp_id: $PA['net_router_id'], has_img: true),
-                    "<a href=".$self_url.(str_contains($self_url, "?")?"&":"?").CMD_SHOW_TP."=".$PA['net_router_id']." title='Вывести только абонентов этой ТП: ".$tp_title."' target=_self>".$tp_title."</a>"
-                    ];
-            }
-        }
-        if (count($A['TP']) == 0) {
-            $last = AbonModel::get_last_PA($A['id'], $A['PA']);
-            foreach ($last['off'] as $PA) {
-                $tp_title = $this->get_tp($PA['net_router_id'])['title'];
-                $A['TP'][$PA['net_router_id']] = [
-                    $this->url_tp_mik(tp_id: $PA['net_router_id'], icon_width: 16, icon_height: 16, show_gray: true),
-                    $this->url_tp_form(tp_id: $PA['net_router_id'], has_img: true),
-                    "<a href=".$self_url.(str_contains($self_url, "?")?"&":"?").CMD_SHOW_TP."=".$PA['net_router_id']." title='Вывести только абонентов этой ТП: ".$tp_title."' target=_self>".$tp_title."</a>"
-                    ];
-            }
-        }
-    }
+    //     $A['TP'] = array();
+    //     foreach ($A['PA'] as &$PA) {
+    //         if (get_price_apply_age($PA) <> PAStatus::PAUSE) {
+    //             $tp_title = $this->get_tp($PA['net_router_id'])['title'];
+    //             $A['TP'][$PA['net_router_id']] = [
+    //                 $this->url_tp_mik(tp_id: $PA['net_router_id'], icon_width: 16, icon_height: 16, show_gray: true),
+    //                 $this->url_tp_form(tp_id: $PA['net_router_id'], has_img: true),
+    //                 "<a href=".$self_url.(str_contains($self_url, "?")?"&":"?").CMD_SHOW_TP."=".$PA['net_router_id']." title='Вывести только абонентов этой ТП: ".$tp_title."' target=_self>".$tp_title."</a>"
+    //                 ];
+    //         }
+    //     }
+    //     if (count($A['TP']) == 0) {
+    //         $last = AbonModel::get_last_PA($A['id'], $A['PA']);
+    //         foreach ($last['off'] as $PA) {
+    //             $tp_title = $this->get_tp($PA['net_router_id'])['title'];
+    //             $A['TP'][$PA['net_router_id']] = [
+    //                 $this->url_tp_mik(tp_id: $PA['net_router_id'], icon_width: 16, icon_height: 16, show_gray: true),
+    //                 $this->url_tp_form(tp_id: $PA['net_router_id'], has_img: true),
+    //                 "<a href=".$self_url.(str_contains($self_url, "?")?"&":"?").CMD_SHOW_TP."=".$PA['net_router_id']." title='Вывести только абонентов этой ТП: ".$tp_title."' target=_self>".$tp_title."</a>"
+    //                 ];
+    //         }
+    //     }
+    // }
 
 
 

@@ -789,7 +789,7 @@ class AbonModel extends UserModel {
         if ($this->validate_id(PA::TABLE, $pa_id, PA::F_ID)) {
             return $this->get_row_by_id(PA::TABLE, $pa_id, PA::F_ID);
         } else {
-            self::$errors[] = "No Valid ID ".$pa_id."";
+            self::$errors[] = "No Valid ID [".$pa_id."]";
             return [];
         }
     }
@@ -1304,8 +1304,17 @@ class AbonModel extends UserModel {
 
 
 
-    function get_ppp_my(int|null $active = null, int|null $type_id = null, int|null $abon_payments = null, int|null $owner_id = null): array {
-        $user_id = App::get_user_id();
+    /**
+     * Получение списка пунктов приёма платежей (ППП), связанных с указанным или текущим пользователем.
+     * @param int|null $active
+     * @param int|null $type_id
+     * @param int|null $abon_payments
+     * @param int|null $owner_id
+     * @param int|null $user_id
+     * @return array
+     */
+    function get_ppp_my(int|null $active = null, int|null $type_id = null, int|null $abon_payments = null, int|null $owner_id = null, int|null $user_id = null): array {
+        if (is_null($user_id)) { $user_id = App::get_user_id(); }
         $sql = "SELECT 
                 * 
                 FROM 
@@ -1328,6 +1337,13 @@ class AbonModel extends UserModel {
                 ."ORDER BY `".Ppp::TABLE."`.`".Ppp::F_TITLE."` ASC";
         // debug($sql, '$sql');
         return $this->get_rows_by_sql($sql);
+    }
+
+
+    function is_ppp_my(int $ppp_id, int|null $user_id = null): bool {
+        $ppp_list = $this->get_ppp_my(user_id: $user_id);
+        $ppp = find_row_by_field_value($ppp_list, Ppp::F_ID, $ppp_id);
+        return !is_null($ppp);
     }
 
 

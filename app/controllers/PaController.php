@@ -217,6 +217,152 @@ class PaController extends AppBaseController {
     }
 
 
+
+
+    /**
+     * 1. Закрытие текущего прайсового фрагмента (установка даты закрытия)
+     * 2. Создание нового прайсового фрагмента с параметрами текущего
+     * 3. Новый фрагмент начинается с указанной даты
+     * 4. В новом фрагменте указывается новый прайс и новая техплощадка.
+     * 5. Фактическая услуга на устройстве не меняется.
+     * @param int $pa_id            -- ID текущего ПФ
+     * @param string $on_date_str   -- Дата вступления в силу нового ПФ (формат 'YYYY-MM-DD')
+     * @param int $to_price_id      -- ID нового прайса
+     * @param int $to_tp_id         -- ID новой техплощадки
+     * @return int|false            -- ID нового ПФ или false при ошибке
+     */
+    public static function change_price(
+            int $pa_id, 
+            string $on_date_str, 
+            int $to_price_id, 
+            int $to_tp_id): int|false 
+    {
+
+        // debug(
+        //     [
+        //         'pa_id' => $pa_id,
+        //         'on_date_str' => $on_date_str,
+        //         'to_price_id' => $to_price_id,
+        //         'to_tp_id' => $to_tp_id,
+        //     ],
+        //     'PaController::change_price input',
+        //     debug_view: DebugView::DUMP,
+        //     die: 0
+        // );
+
+        // debug(
+        //     $_GET,
+        //     '$_GET',
+        //     debug_view: DebugView::DUMP,
+        //     die: 0
+        // );
+
+        $model = new AbonModel();
+
+        /**
+         * Проверка исходного ПФ
+         */
+        $pa = $model->get_pa($pa_id); 
+        if (empty($pa)) {
+            MsgQueue::msg(MsgType::ERROR, "Не найден ПФ с ID: $pa_id");
+            MsgQueue::msg(MsgType::ERROR, $model->errorInfo());
+            return false;
+        }
+
+        /**
+         * Текущий ПФ должен быть открыт (без даты закрытия)
+         */
+        if (!empty($pa[PA::F_DATE_END])) {
+            MsgQueue::msg(MsgType::ERROR, "ПФ с ID: $pa_id уже закрыт. Смена прайса невозможна.");
+            return false;
+        }
+
+        /**
+         * Проверка даты начала нового ПФ
+         */
+        $on_date_start = strtotime($on_date_str);
+        if ($on_date_start === false) {
+            MsgQueue::msg(MsgType::ERROR, "Не верный формат даты: $on_date_str");
+            return false;
+        }
+        if ($on_date_start <= $pa[PA::F_DATE_START]) {
+            MsgQueue::msg(MsgType::ERROR, "Дата переключения должна быть больше даты начала текущего ПФ");
+            return false;
+        }
+
+        /**
+         * Проверка даты закрытия старого ПФ
+         */
+        $on_date_end = $on_date_start - 60*60*24; // минус один день
+        if ($on_date_end <= $pa[PA::F_DATE_START]) {
+            MsgQueue::msg(MsgType::ERROR, "Дата закрытия текущего ПФ должна быть больше даты открытия текущего ПФ");
+            return false;
+        }
+
+        /**
+         * Проверка нового прайса
+         */
+        $price = $model->get_price($to_price_id); 
+        if (empty($price)) {
+            MsgQueue::msg(MsgType::ERROR, "Не найден прайс с ID: $to_price_id");
+            MsgQueue::msg(MsgType::ERROR, $model->errorInfo());
+            return false;
+        }
+
+        /**
+         * Проверка ТП
+         */
+        $tp = $model->get_tp($to_tp_id); 
+        if (empty($tp)) {
+            MsgQueue::msg(MsgType::ERROR, "Не найден ТП с ID: $to_tp_id");
+            MsgQueue::msg(MsgType::ERROR, $model->errorInfo());
+            return false;
+        }
+
+        /**
+         * Создание нового ПФ с новыми параметрами
+         */
+        unset($pa[PA::F_ID]);
+        $pa[PA::F_DATE_START] = $on_date_start;
+        $pa[PA::F_DATE_END] = null;
+        $pa[PA::F_PRICE_ID] = $to_price_id;
+        $pa[PA::F_TP_ID] = $to_tp_id;
+        $pa[PA::F_CREATION_UID] = App::get_user_id();
+        $pa[PA::F_CREATION_DATE] = time();
+        $pa[PA::F_MODIFIED_UID] = App::get_user_id();
+        $pa[PA::F_MODIFIED_DATE] = time();
+        $pa_new_id = $model->insert_row(PA::TABLE, $pa);
+        if ($pa_new_id === false) {
+            MsgQueue::msg(MsgType::ERROR, "Ошибка создания нового ПФ");
+            MsgQueue::msg(MsgType::ERROR, $model->errorInfo());
+            return false;
+        }
+        MsgQueue::msg(MsgType::SUCCESS, "Создан новый ПФ с ID: $pa_new_id");
+        
+        /**
+         * Закрытие текущего ПФ установкой даты закрытия
+         */
+        if ($model->update_row_by_id(
+            PA::TABLE, 
+            [
+                PA::F_ID => $pa_id, 
+                PA::F_DATE_END => $on_date_end,
+                PA::F_MODIFIED_UID => App::get_user_id(),
+                PA::F_MODIFIED_DATE => time(),
+            ], 
+            PA::F_ID)) 
+        {
+            MsgQueue::msg(MsgType::SUCCESS, "Текущий ПФ с ID: $pa_id закрыт датой: ".date('Y-m-d', $on_date_end));
+            return $pa_new_id;
+        } else {
+            MsgQueue::msg(MsgType::ERROR, "Ошибка закрытия текущего ПФ с ID: $pa_id");
+            MsgQueue::msg(MsgType::ERROR, $model->errorInfo());
+            return false;
+        };
+    }
+
+
+
     public static function enable(int|null $pa_id = null, array|null $pa = null, bool|int $ena = 1, int|bool $force = 0): int|false {
 
         $ena = ($ena ? true : false);
@@ -414,10 +560,11 @@ class PaController extends AppBaseController {
 
         $price = $model->get_price($pa[PA::F_PRICE_ID]);
         $tp = $model->get_tp($pa[PA::F_TP_ID]);
+        $tp_default_price = $model->get_price($tp[TP::F_DEFAULT_PRICE_ID]);
 
         $arp = null;
         $abon_ip_on = null;
-        if  (
+        if  (                                           // если
                 $tp[TP::F_STATUS] &&                    // ТП активна
                 $tp[TP::F_IS_MANAGED] &&                // ТП управляемая
                 ($pa[PA::F_NET_IP_SERVICE] == 1) &&     // это IP услуга
@@ -468,6 +615,7 @@ class PaController extends AppBaseController {
             'pa'=> $pa,
             'price'=> $price,
             'tp'=> $tp,
+            'tp_default_price'=> $tp_default_price,
             'abon_ip_on'=> $abon_ip_on,
             'arp'=> $arp,
             'prices_list'=> $prices_list,

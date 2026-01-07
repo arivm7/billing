@@ -40,6 +40,7 @@ require_once DIR_LIBS . '/inc_functions.php';
  * @var array $pa -- ПФ. элемент из контроллера
  * @var array $price -- Прайс, установленны сейчас в ПФ
  * @var array $tp -- Текущая ТП к которой прикреплена услуга
+ * @var array $tp_default_price -- Дефолтный прайс для ТП
  * @var bool|null $abon_ip_on -- Enable/Disable статус IP-адреса в таблице ABON
  * @var array $arp -- Запись из таблицы ARP микротика со статусом IP-адреса
  * @var array $prices_list -- список прайсов, только названия
@@ -92,7 +93,7 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
             inputRow(label: 'Сетевое имя', post_rec: PA::POST_REC, name: 'net_name', value: $item['net_name'] ?? '', l_layout: LabelLayout::H, label_col: 3, input_col: 9);
             ?>
 
-            <div class='mb-3 row'>
+            <div class='row mb-3'>
                 <div class='col-sm-3'></div>
                 <?php
                 $w = (
@@ -104,8 +105,9 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
 
                 dateRow(label: 'Дата начала', post_rec: PA::POST_REC, name: 'date_start_str', timestamp: $item['date_start'] ?? null, label_col: 12, input_col: 12, options: "class='col-sm-3'");
                 dateRow(label: "<span class={$w}>Дата окончания</span>", post_rec: PA::POST_REC, name: 'date_end_str', timestamp: $item['date_end'] ?? null, label_col: 12, input_col: 12, options: "class='col-sm-3'");
-                checkboxRow(label: "<span class={$w}>Прайс закрыт</span>", post_rec: PA::POST_REC, name: 'price_closed', checked: !empty($item['price_closed']), label_col: 12, input_col: 12, options: "class='col-sm-3'");
+                checkboxRow(label: "<span class={$w}>Прайс закрыт</span>", post_rec: PA::POST_REC, name: 'price_closed', checked: !empty($item['price_closed']), label_col: 12, input_col: 12, options: "class='col-sm-2'");
                 ?>
+                <div class='col-sm-1'>:::</div>
             </div>
 
             <!-- ТП -->
@@ -175,7 +177,7 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
                                     <!-- Включить IP на микротике -->
                                     <?=get_html_btn_abon_ip_turn($item[PA::F_TP_ID], $item[PA::F_NET_IP], 1, options: 'class="btn btn-light p-1"');?>
                                 <?php endif; ?>
-                                <?php if (__pa_age($item)->value & PAStatus::ACTIVE->value) : ?>
+                                <?php if ((__pa_age($item)->value & PAStatus::ACTIVE->value) && (__pa_age($item)->value < PAStatus::FUTURE->value)) : ?>
                                     <!-- Поставить услугу на паузу -->
                                     <?=get_html_btn_serv_ena(pa: $item, ena: 0, options: 'class="btn btn-light p-1"');?>
                                 <?php endif; ?>
@@ -260,11 +262,110 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
                 <div class="col-3"></div>
                 <div class="col-6 text-center">
                     <button type="submit" class="btn btn-primary"><?= __('Сохранить'); ?></button>
-                    <a class="btn btn-secondary" href="<?=Abon::URI_VIEW;?>/<?=$item[PA::F_ABON_ID];?>"><?= __('В карточку абонента'); ?></a>
+                    <a class="btn btn-secondary" href="<?=Abon::URI_VIEW;?>/<?=$item[PA::F_ABON_ID];?>"><span class="fw-bolder">🅐</span> <?= __('В карточку абонента'); ?></a>
                 </div>
             </div>
         </div>
         </form>
     </div>
 </div>
+
+<!-- 
+    * ---------------------------------------------------------------------------------------------
+    * Начало блока Перевод на другой тариф
+-->
+
+<?php if (can_add(Module::MOD_PA)) : ?> 
+<?php if (isset($item[PA::F_ID])) : ?> 
+<div class="col-12 col-md-10 col-lg-8">
+    <div class="card mb-4 w-100 min-w-700">
+        <div class="card-header">
+            <h2 class="fs-4">
+                <h3><?= __('Перевод на другой тариф') ?></h3>
+                <h5 class="text-light fs-7">
+                    <ol>
+                        <li>Закрытие текущего прайсового фрагмента (установка даты закрытия)</li>
+                        <li>Создание нового открытого прайсового фрагмента</li>
+                        <li>Новый фрагмент начинается с указанной даты, имеет новый прайс и новая техплощадка.</li>
+                        <li>Фактическая услуга на устройстве не меняется.</li>
+                    </ol>
+                </h5>
+            </h2>
+        </div>
+        <div class="card-body">
+            <?php if(__pa_age($item) == PAStatus::CURRENT) : ?>
+                <?php if($item[PA::F_TP_ID] > 0) : ?>
+                    <?php
+                    $curr_pp30 = $item[PA::F_PPMA_VALUE] + ($item[PA::F_PPDA_VALUE] * 30);
+                    $new_pp30 = $tp_default_price[Price::F_PAY_PER_MONTH] + ($tp_default_price[Price::F_PAY_PER_DAY] * 30);
+                    $on_date_str = date("Y")."-".sprintf("%02d", (date("m")+1))."-01";
+                    ?>
+                    <div class="row">
+                        <div class="col-3 text-end">Текущий прайс:</div>
+                        <div class="col-3"><?= $price[Price::F_TITLE] ?></div>
+                        <div class="col-3"><span class="text-secondary font-monospace fs-7"><?= $curr_pp30 ?> грн/30дней | id: <?= $item[PA::F_PRICE_ID] ?></span></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-3 text-end">Дефолтный прайс:</div>
+                        <div class="col-3"><?= $tp_default_price[Price::F_TITLE] ?></div>
+                        <div class="col-3"><span class="text-secondary font-monospace fs-7"><?= $new_pp30 ?> грн/30дней | id: <?= $tp_default_price[Price::F_ID] ?></span></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-3 text-end">Переключить с даты:</div>
+                        <div class="col-3"><span class="text-info"><?= $on_date_str ?></span></div>
+                        <div class="col-3"></div>
+                    </div>
+                    <hr>
+                    <div class="row justify-content-center">
+                        <div class="col-auto">
+                            <form action="<?= Api::URI_CMD ?>" method="get" target="_self" 
+                                    onsubmit="return confirm('<?= __('Подтвердите \\n1. закрытие текущего ПФ, \\n2. создание нового ПФ и \\n3. смену тарифа и ТП'); ?>');"
+                                    class="d-flex flex-row flex-nowrap align-items-center gap-2">
+                                <input type='hidden' name='<?= Api::F_CMD ?>'       value='<?= Api::CMD_CHANGE_PRICE ?>'>
+                                <input type='hidden' name='<?= Api::F_PA_ID ?>'     value='<?= $item[PA::F_ID] ?>'>
+                                <input type='date'   name='<?= Api::F_ON_DATE ?>'   value='<?= $on_date_str ?>' size=8 class="form-control form-control-sm w-auto">&nbsp;&nbsp;
+                                <?= make_html_select(
+                                    data: $prices_list,
+                                    name: Api::F_TO_PRICE_ID,
+                                    selected_id: $tp_default_price[PA::F_ID],
+                                    show_keys: true,
+                                    select_opt: "class='form-select form-select-sm w-auto'"
+                                ); ?>&nbsp;&nbsp;
+                                <?= make_html_select(
+                                    data: $tp_list,
+                                    name: Api::F_TO_TP_ID,
+                                    selected_id: $item[PA::F_TP_ID],
+                                    show_keys: true,
+                                    select_opt: "class='form-select form-select-sm w-auto'"
+                                ); ?>&nbsp;&nbsp;
+                                <input type="submit" value="Сменить тариф" class="btn btn-primary btn-sm w-auto">
+                            </form>
+
+                        </div>
+                    </div>
+                    
+                <?php else: ?>
+                    <div class="alert alert-danger" role="alert">Нужно выбрать TP</div>
+                <?php endif; ?>
+            <?php else: ?>
+                <p align=justify style='font-size:12pt;'>&nbsp;&nbsp;&nbsp;&nbsp;Прикреплённый прайс не активный: или в &laquo;прошлом&raquo;, или в &laquo;будущем&raquo;.</p>
+                <p align=justify style='font-size:12pt;'>&nbsp;&nbsp;&nbsp;&nbsp;Переводить можно только текущий активный прайсовый фрагмент.
+                Сперва нужно &laquo;открыть&raquo; его: поле 'date_end' нужно или очистить или установить в сегодняшнюю или более позднюю дату, и нужно снять флажок с поля 'Closed:[_]'. При необходимости, учтите активацию или деактивацию фактической услуги на устройстве раздачи.</p>
+            <?php endif; ?>
+
+        </div>
+        <div class="card-footer text-start">
+            .
+        </div>
+    </div>
+</div>
+
+<?php endif; ?>
+<?php endif; ?>
+
+<!--
+    * Завершение блока Перевод на другой тариф
+    * ---------------------------------------------------------------------------------------------
+-->
+
 </div>

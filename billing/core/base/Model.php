@@ -291,7 +291,7 @@ abstract class Model {
      * @return array
      * @throws \Exception
      */
-    function get_rows_by_sql(string $sql, array $params = array(), string|null $row_id_by = null, bool $unset_row_id_by = false): array {
+    function get_rows_by_sql(string $sql, array $params = [], string|null $row_id_by = null, bool $unset_row_id_by = false): array {
         try {
             $rows = $this->findBySql($sql, $params);
         } catch (\Exception $exc) {

@@ -142,7 +142,7 @@ $tp = $model->get_tp($item[PA::F_TP_ID]);
         <div class="card-footer d-flex gap-2">
             <?php if (can_edit(Module::MOD_PA)) : ?>
                 <span class="badge text-bg-secondary mt-3 fs-6">
-                    <?php if (!$item[PA::F_CLOSED]) : ?>
+                    <?php if (!$item[PA::F_CLOSED] && __pa_age($item)->value < PAStatus::FUTURE->value) : ?>
                         <a href="<?= Api::URI_CMD; ?>?<?=Api::F_CMD;?>=<?=Api::CMD_PA_CLOSE;?>&<?=Api::F_PA_ID;?>=<?= $item[PA::F_ID]; ?>&<?=Api::F_ABON_OFF_ON_TP;?>=0"
                             class="btn btn-outline-info btn-sm"
                             onclick="return confirm('<?=__('Вы точно хотите остановить услугу и закрыть прайсовый фрагмент?');?>')">&#9209; <?= __('Закрыть прайс'); ?>
@@ -150,7 +150,7 @@ $tp = $model->get_tp($item[PA::F_TP_ID]);
                     <?php endif; ?>
                     <?php if (!$item[PA::F_CLOSED]) : ?>
                         <!-- Статус IP-MAC из ARP-таблицы микротика -->
-                        <?php if (__pa_age($item)->value & PAStatus::ACTIVE->value) : ?>
+                        <?php if ((__pa_age($item)->value & PAStatus::ACTIVE->value) && (__pa_age($item)->value < PAStatus::FUTURE->value)) : ?>
                             <!-- Поставить услугу на паузу -->
                             <?=get_html_btn_serv_ena(pa: $item, ena: 0, options: 'class="btn btn-light p-1"');?>
                         <?php endif; ?>

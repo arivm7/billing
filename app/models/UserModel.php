@@ -22,7 +22,7 @@ use config\tables\TP;
 use config\tables\TSUserTp;
 use config\tables\Contacts;
 use billing\core\base\Lang;
-
+use config\tables\Employees;
 
 /**
  * Время истечение срока действия cookie. Это метка времени Unix.
@@ -314,7 +314,7 @@ class UserModel extends AppBaseModel{
 
     /**
      * Возвращает список предприятий.
-     * Если параметр указа, то он используется, 
+     * Если параметр указан, то он используется, 
      * если не указан то он не используется в фильтрах.
      * @param int|null $user_id                 -- подключённых к пользователю
      * @param array|null $firm_id_list          -- указанных в списке
@@ -342,14 +342,14 @@ class UserModel extends AppBaseModel{
                 . "FROM "
                     . "`".Firm::TABLE."` "
                 . "WHERE 1"
-                    . (is_null($user_id)         ? "" : " AND (`".Firm::F_ID."` IN (SELECT `".TSUserFirm::F_FIRM_ID."` FROM `".TSUserFirm::TABLE."` WHERE `".TSUserFirm::F_USER_ID."`={$user_id}))")
+                    . (is_null($user_id)         ? "" : " AND (`".Firm::F_ID."` IN (SELECT `".Employees::F_FIRM_ID."` FROM `".Employees::TABLE."` WHERE `".Employees::F_USER_ID."`={$user_id}))")
                     . (is_null($firm_id_list)    ? "" : " AND (`".Firm::F_ID."` IN (".implode(',', $firm_id_list)."))")
-                    . (is_null($has_active)      ? "" : " AND `has_active`      = ".($has_active      ? 1 : 0)."")
-                    . (is_null($has_delete)      ? "" : " AND `has_delete`      = ".($has_delete      ? 1 : 0)."")
-                    . (is_null($has_agent)       ? "" : " AND `has_agent`       = ".($has_agent       ? 1 : 0)."")
-                    . (is_null($has_client)      ? "" : " AND `has_client`      = ".($has_client      ? 1 : 0)."")
-                    . (is_null($has_all_visible) ? "" : " AND `has_all_visible` = ".($has_all_visible ? 1 : 0)."")
-                    . (is_null($has_all_linking) ? "" : " AND `has_all_linking` = ".($has_all_linking ? 1 : 0)."")
+                    . (is_null($has_active)      ? "" : " AND `".Firm::F_HAS_ACTIVE."`      = ".($has_active      ? 1 : 0)."")
+                    . (is_null($has_delete)      ? "" : " AND `".Firm::F_HAS_DELETE."`      = ".($has_delete      ? 1 : 0)."")
+                    . (is_null($has_agent)       ? "" : " AND `".Firm::F_HAS_AGENT."`       = ".($has_agent       ? 1 : 0)."")
+                    . (is_null($has_client)      ? "" : " AND `".Firm::F_HAS_CLIENT."`      = ".($has_client      ? 1 : 0)."")
+                    . (is_null($has_all_visible) ? "" : " AND `".Firm::F_HAS_ALL_VISIBLE."` = ".($has_all_visible ? 1 : 0)."")
+                    . (is_null($has_all_linking) ? "" : " AND `".Firm::F_HAS_ALL_LINKING."` = ".($has_all_linking ? 1 : 0)."")
                 ;
         return $this->get_rows_by_sql(sql: $sql, row_id_by: Firm::F_ID);
     }
