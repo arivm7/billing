@@ -46,7 +46,7 @@ class NoticeController extends AppBaseController
     }
 
 
-
+    
     public function infoAction()
     {
 
@@ -96,7 +96,7 @@ class NoticeController extends AppBaseController
                     Notify::F_DATE => time(),
                     Notify::F_TEXT => $notice_rec['text'],
                 ];
-                if ($model->insert_row(Notify::TABLE, $notice)) {
+                if (Notify::save($notice)) {
                     MsgQueue::msg(MsgType::SUCCESS, __('Сообщение зарегистрировано'));
                 } else {
                     MsgQueue::msg(MsgType::ERROR, __('Ошибка регистрации сообщения') . ': ' . $model->errorInfo());

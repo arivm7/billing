@@ -140,31 +140,29 @@ class Registry {
      * @return void
      */
     public function __set(string $name, mixed $value): void {
-        if (!isset(self::$objects[$name])) {
-            if (is_string($value) && class_exists($value)) {
-                // передали имя класса → создаём объект
-                self::$objects[$name] = [
-                    self::F_TYPE  => self::TYPE_OBJECT,
-                    self::F_VALUE => new $value,
-                ];
-            } elseif (is_object($value)) {
-                // передали уже готовый объект
-                self::$objects[$name] = [
-                    self::F_TYPE  => self::TYPE_OBJECT,
-                    self::F_VALUE => $value,
-                ];
-            } elseif (is_array($value)) {
-                self::$objects[$name] = [
-                    self::F_TYPE  => self::TYPE_ARRAY,
-                    self::F_VALUE => $value,
-                ];
-            } else {
-                // скаляр (int, float, string, bool и т.п.)
-                self::$objects[$name] = [
-                    self::F_TYPE  => self::TYPE_SCALAR,
-                    self::F_VALUE => $value,
-                ];
-            }
+        if (is_string($value) && class_exists($value)) {
+            // передали имя класса → создаём объект
+            self::$objects[$name] = [
+                self::F_TYPE  => self::TYPE_OBJECT,
+                self::F_VALUE => new $value,
+            ];
+        } elseif (is_object($value)) {
+            // передали уже готовый объект
+            self::$objects[$name] = [
+                self::F_TYPE  => self::TYPE_OBJECT,
+                self::F_VALUE => $value,
+            ];
+        } elseif (is_array($value)) {
+            self::$objects[$name] = [
+                self::F_TYPE  => self::TYPE_ARRAY,
+                self::F_VALUE => $value,
+            ];
+        } else {
+            // скаляр (int, float, string, bool и т.п.)
+            self::$objects[$name] = [
+                self::F_TYPE  => self::TYPE_SCALAR,
+                self::F_VALUE => $value,
+            ];
         }
     }
 

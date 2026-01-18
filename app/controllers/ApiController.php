@@ -15,8 +15,9 @@ declare(strict_types=1);
 
 namespace app\controllers;
 
+use App\Controllers\NoticeController;
 use app\models\AbonModel;
-use app\models\AppBaseModel;
+use app\models\AuthModel;
 use billing\core\App;
 use billing\core\base\View;
 use billing\core\MsgQueue;
@@ -26,8 +27,10 @@ use config\Icons;
 use config\Mik;
 use config\tables\Abon;
 use config\tables\Module;
+use config\tables\Notify;
 use config\tables\PA;
 use config\tables\TP;
+use config\tables\User;
 use DebugView;
 use MikrotikApi\MikroLink;
 use PAStatus;
@@ -428,16 +431,12 @@ class ApiController extends AppBaseController {
             redirect('/');
         }
 
-
-        if (!can_edit(Module::MOD_PA)) {
-            MsgQueue::msg(MsgType::ERROR, __('Нет прав'));
-            redirect();
-        }
-
-
-        if (isset($_GET[Api::F_CMD])) {
-            $cmd = h($_GET[Api::F_CMD]);
+        if (isset($_GET[Api::F_CMD]) || isset($_POST[Api::F_CMD])) {
+            $cmd = h($_GET[Api::F_CMD] ?? $_POST[Api::F_CMD]);
             switch ($cmd) {
+
+
+
                 case Api::CMD_IP_ENABLE:
                     if (can_edit(Module::MOD_PA)) {
                         $tp_id  = intval($_GET[Api::F_TP_ID]);
@@ -460,6 +459,8 @@ class ApiController extends AppBaseController {
                     redirect();
                     break;
                     
+
+
                 case Api::CMD_SERV_ENA:
                     /**
                      * Поставить/Снять паузу
@@ -481,6 +482,8 @@ class ApiController extends AppBaseController {
                     redirect();
                     break;
 
+
+
                 case Api::CMD_PA_CLONE:
                     /**
                      * Клонировать ПФ
@@ -497,6 +500,8 @@ class ApiController extends AppBaseController {
                         redirect();
                     }
                     break;
+
+
 
                 case Api::CMD_CHANGE_PRICE:
                     /**
@@ -523,6 +528,8 @@ class ApiController extends AppBaseController {
                     }
                     break;
 
+
+
                 case Api::CMD_PA_CLOSE:
                     /**
                      * Закрыть ПФ
@@ -538,6 +545,8 @@ class ApiController extends AppBaseController {
                     redirect();
                     break;
                     
+
+
                 case Api::CMD_PA_DELETE:
                     /**
                      * Удалить ПФ
@@ -560,6 +569,8 @@ class ApiController extends AppBaseController {
                     }
                     break;
 
+
+
                 case Api::CMD_PASS_DEF:
                     /**
                      * Установить начальный пароль
@@ -575,18 +586,159 @@ class ApiController extends AppBaseController {
                     redirect();
                     break;
 
+
+
+                default:
+                    # code...
+                    break;
+
+            }
+
+        }
+
+        if (can_use(Module::MOD_WEB_DEBUG)) {
+            echo 'cmdAction(): Не обработанная ситуация.' . "\n";
+            debug($_GET, '$_GET');
+            debug($_POST, '$_POST');
+            debug($this->route, '$this->route');
+            die();
+        }
+    }
+
+
+    function cmd2Action() {
+
+        /**
+         * Чтение
+         *  -H "Authorization: Bearer ${TOKEN}" \
+         */
+
+        // 2. Получение заголовка Authorization
+        $authHeader =
+            $_SERVER['HTTP_AUTHORIZATION']
+            ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION']
+            ?? null;
+
+        if (
+            !$authHeader ||
+            !preg_match('/^Bearer\s+(.+)$/', $authHeader, $m)
+        ) {
+            http_response_code(401);
+            echo __('Missing or invalid Authorization header | Заголовок авторизации тсутствует или недействителен') . "\n";
+            exit(1);
+        }
+        $token = $m[1];
+
+        $model = new AuthModel();
+
+        /**
+         * 3. Авторизация по токену
+         */
+        if (!$model->login_by_token($token)) {
+            http_response_code(403);
+            echo __('Invalid token | Недействительный токен') . "\n";
+            exit(1);
+        }
+
+        if (isset($_POST[Api::F_CMD])) {
+            $cmd = h($_POST[Api::F_CMD]);
+            switch ($cmd) {
+
+
+                case Api::CMD_SMS_REG:
+                    /**
+                     * Зарегистрировать СМС в базе
+                     * Входные: token, abon_id, text
+                     */
+
+                    /**
+                     * Обработка POST API-запроса с Bearer-токеном и form-данными
+                     */
+
+                    // 1. Проверка метода
+                    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                        http_response_code(405);
+                        echo __('Метод не разрешен') . "\n";
+                        exit(1);
+                    }
+
+                    if (can_add(Module::MOD_NOTICE)) {
+
+                        // 4. Чтение POST-параметров
+                        // -d "${F_CMD}=${CMD_SMS_REG}" \ -- считано в начале
+                        // -d "${F_AID}=${abon_id}" \
+                        // -d "${F_TEXT}=${msg}"
+
+                        $abon_id = $_POST[Api::F_AID] ?? null;
+                        $phone_num = $_POST[Api::F_PHONE_NUMBER] ?? '';
+                        $text = trim($_POST[Api::F_TEXT] ?? '');
+
+                        $model = new AbonModel();
+
+                        if (!$model->validate_id(Abon::TABLE, $abon_id, Abon::F_ID) ) {
+                            echo __('Номер абонента не верен') . "\n";
+                            http_response_code(400);
+                            exit(1);
+                        }
+
+                        if (empty($text)) {
+                            echo __('Текст сообщения пуст') . "\n";
+                            http_response_code(400);
+                            exit(1);
+                        }
+
+                        if (empty($phone_num)) {
+                            $user = $model->get_user_by_abon_id($abon_id);
+                            $phone_num = $user[User::F_PHONE_MAIN] ?? '';
+                            if (empty($phone_num)) {
+                                http_response_code(400);
+                                echo __('Номер телефона не указан') . "\n";
+                                exit(1);
+                            }
+                        }
+
+                        $notice = [
+                            Notify::F_ABON_ID => $abon_id,
+                            Notify::F_TYPE_ID => Notify::TYPE_SMS,
+                            Notify::F_PHONENUMBER => $phone_num,
+                            Notify::F_METHOD => Notify::METHOD_KDE_CONNECT,
+                            Notify::F_DATE => time(),
+                            Notify::F_TEXT => $text,
+                        ];
+
+                        // debug($notice, '$notice', die: 1);
+
+                        if (Notify::save($notice)) {
+                            echo __('Сообщение зарегистрировано') . "\n";
+                            exit(0);
+                        } else {
+                            http_response_code(303);
+                            echo __('Ошибка регистрации сообщения') . ': ' . $model->errorInfo() . "\n";
+                            exit(1);
+                        }
+
+                    } else {
+                        http_response_code(403);
+                        echo __('Нет прав') . "\n";
+                        exit(1);
+                    }
+                    break;
+
+
+
                 default:
                     # code...
                     break;
             }
         }
 
-        debug($_GET, '$_GET');
-        debug($this->route, '$this->route', die:0);
-        echo 'abonIpAction(): не обработанная ситуация.';
-        die();
+        if (can_use(Module::MOD_WEB_DEBUG)) {
+            echo 'cmd2Action(): Не обработанная ситуация.' . "\n";
+            debug($_GET, '$_GET');
+            debug($_POST, '$_POST');
+            debug($this->route, '$this->route');
+            die(); 
+        }
     }
-
-
 
 }

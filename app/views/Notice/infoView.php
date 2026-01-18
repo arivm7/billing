@@ -54,6 +54,15 @@ $tp_print_num = 0;
  */
 $sms_print_num = 0;
 
+/**
+ * Переменные для файла-вставки 
+ * DIR_INC . '/notice_block.php'
+ * @var string $notice_title    -- Заголовок блока информера
+ * @var string $notice_text     -- Текст информера
+ * @var int $sms_print_num      -- Номер информера в массиве информеров на странице (для сохранения в базе при необходимости)
+ * @var int $first_line_attr    -- Опциональный параметр для первой строки информера для визуального оформления на странице
+ */
+
 ?>
 <form action='' method='post' name='f1' id='f1' target='_self' >
     <input name='<?=Notify::POST_REC;?>[<?=Notify::F_ABON_ID;?>]' type='hidden' value='<?=$abon[Abon::F_ID];?>'>

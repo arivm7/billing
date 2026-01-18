@@ -13,7 +13,10 @@
 
 namespace app\models;
 
+use billing\core\App;
 use billing\core\base\Model;
+use config\tables\Perm;
+use DebugView;
 use PHPMailer\PHPMailer\Exception;
 use config\tables\User;
 
@@ -26,7 +29,7 @@ class AuthModel extends UserModel {
 
     public bool $isAuth = false;
 
-        function __construct() {
+    function __construct() {
         parent::__construct();
         $this->attributes[User::F_ID] = $this->get_next_id();
         $this->attributes[User::F_LOGIN] = $this->attributes[User::F_ID];
@@ -49,6 +52,20 @@ class AuthModel extends UserModel {
     }
 
 
+    public function login_by_token(string $token): bool {
+        if (!empty($token)) {
+            $rows = $this->get_rows_by_field(User::TABLE, User::F_PASS_HASH, $token);
+            if ((count($rows) == 1) && $rows[array_key_first($rows)]) {
+                self::session_update($rows[array_key_first($rows)], false);
+                App::$auth->isAuth = true;
+                Perm::update_permissions();
+                return true;
+            }
+        }
+        return false;
+    }
+
+
     function session_valid(string $login, string|null $pass_hash, string|null $pass_md5): bool {
         $user = $this->get_user_by_login($login);
         return (($user[User::F_PASS_HASH] == $pass_hash) || ($user[User::F_PASS_MD5] == $pass_md5));
@@ -61,11 +78,13 @@ class AuthModel extends UserModel {
      * @param array $user_data
      * @return void
      */
-    static function session_update(array $user_data): void {
+    static function session_update(array $user_data, bool $setcookie = true): void {
         $_SESSION[User::SESSION_USER_REC] = $user_data;
-        self::setcookie(name: User::F_LOGIN,     value:  $user_data[User::F_LOGIN],                                           expires_or_options: self::COOKIE_EXPIRES);
-        self::setcookie(name: User::F_PASS_HASH, value: ($user_data[User::F_PASS_HASH] ? $user_data[User::F_PASS_HASH] : ''), expires_or_options: self::COOKIE_EXPIRES);
-        self::setcookie(name: User::F_PASS_MD5,  value: ($user_data[User::F_PASS_MD5]  ? $user_data[User::F_PASS_MD5]  : ''), expires_or_options: self::COOKIE_EXPIRES);
+        if ($setcookie) {
+            self::setcookie(name: User::F_LOGIN,     value:  $user_data[User::F_LOGIN],                                           expires_or_options: self::COOKIE_EXPIRES);
+            self::setcookie(name: User::F_PASS_HASH, value: ($user_data[User::F_PASS_HASH] ? $user_data[User::F_PASS_HASH] : ''), expires_or_options: self::COOKIE_EXPIRES);
+            self::setcookie(name: User::F_PASS_MD5,  value: ($user_data[User::F_PASS_MD5]  ? $user_data[User::F_PASS_MD5]  : ''), expires_or_options: self::COOKIE_EXPIRES);
+        }
     }
 
 

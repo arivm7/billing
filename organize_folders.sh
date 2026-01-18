@@ -78,6 +78,7 @@ EXEC_SCRIPTS=(
     "gen_lang_ctrl.sh"
     "gen_lang_dict.sh"
     "scripts/updates.sh"
+    "scripts/sms_sender.sh"
 )
 
 for f in "${EXEC_SCRIPTS[@]}"; do

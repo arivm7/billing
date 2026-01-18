@@ -36,7 +36,7 @@ class App {
         ThemeSelector::init();
         LangSelector::init();
         /**
-         * Роли текущего пользователя записываются в рееср
+         * Роли текущего пользователя записываются в реестр
          * @var array App::$app->permissions -- array[модуль] = разрешение
          */
         Perm::update_permissions();
@@ -71,9 +71,7 @@ class App {
      */
     static function get_user_id(): int|null {
         return 
-            App::$auth->isAuth 
-                ? $_SESSION[User::SESSION_USER_REC][User::F_ID]
-                : null;
+            $_SESSION[User::SESSION_USER_REC][User::F_ID] ?? null;
     }
 
     /**
@@ -83,8 +81,21 @@ class App {
      */
     static function get_user(): array|null {
         return 
-            App::$auth->isAuth 
-                ? $_SESSION[User::SESSION_USER_REC]
-                : null;
+            $_SESSION[User::SESSION_USER_REC] ?? null;
     }
+
+
+
+    /**
+     * Обёртка для 
+     * App::$app->permissions;
+     * @return array
+     */
+    static function get_permissions() {
+        return
+          App::$app->permissions;
+    }
+
+
+
 }

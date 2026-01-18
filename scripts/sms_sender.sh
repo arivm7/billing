@@ -1,0 +1,451 @@
+#!/bin/bash
+
+# 
+#  Project : my.ri.net.ua
+#  File    : sms_sender.sh
+#  Path    : scripts/sms_sender.sh
+#  Install : ~/bin/sms_sender.sh
+#  Purpose : Скрипт отправки SMS через KDE Connect и регистрацию в базе
+#  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+#  Org     : RI-Network, Kiev, UK
+#  Created : 18.01.2026
+#  License : GPL v3
+# 
+#  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+# 
+
+#notify-send "SMS: '$1': $2..."
+
+APP_TITLE="Скрипт отправки SMS через KDE Connect и регистрацию в базе https://my.ri.net.ua/api"
+COPYRIGHT="Copyright (C) 2006-2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK"
+VERSION="1.1.0 (2026-01-19)"
+LAST_CHANGES="\
+v1.0.0 (2026-01-18): Базовая проверка, отправка СМС и регистрация в базе
+v1.1.0 (2026-01-19): Добавление конфиг-файла для хранения параметров
+"
+
+APP_PATH=$(cd "$(dirname "$0")" && pwd)      # Путь размещения исполняемого скрипта
+APP_NAME=$(basename "$0")                    # Полное имя скрипта, включая расширение
+FILE_NAME="${APP_NAME%.*}"                   # Убираем расширение (если есть)
+CONFIG_DIRNAME="ri-network"
+CONFIG_PATH="${XDG_CONFIG_HOME:-${HOME}/.config}/${CONFIG_DIRNAME}"
+CONFIG_FILE="${CONFIG_PATH}/${FILE_NAME}.conf"
+
+
+
+##
+##  [CONFIG START] =========================================================================
+##  Начало секции конфига
+##
+##  Конфиг для скрипта sms_sender.sh
+##  Из пакета биллинговой системы RI-Network
+##  VERSION 1.0.0 (2026-01-18)
+##
+
+#
+#  Допустимо использование переменных типа ${HOME}
+#
+
+#
+#  Токен для авторизации для регистрации СМС
+#
+TOKEN=''
+
+#
+#  Устройство KDE Connect для отправки SMS
+#
+device_name=""
+device=""
+# Пример:
+# device_name="My Android Phone"
+# device="0123456789abcdef"
+
+#
+# Терминальные цвета для вывода информации
+#
+COLOR_USAGE="\033[1;32m"           # Терминальный цвет для вывода переменной статуса (светло-бирюзовый)
+COLOR_INFO="\033[1;36m"            # Терминальный цвет для вывода информации (об ошибке или причине выхода) (голубой)
+COLOR_INFO1="\033[2;32m"           # Терминальный цвет для вывода переменной статуса (тёмно-бирюзовый)
+COLOR_TEXT="\033[1;32m"            # Терминальный цвет для вывода переменной статуса (бирюзовый)
+COLOR_ERROR="\033[0;31m"           # Терминальный цвет для вывода ошибок (красный)
+COLOR_FILENAME="\033[1;36m"        # Терминальный цвет для вывода имён файлов (голубой)
+COLOR_STATUS="\033[0;36m"          # Терминальный цвет для вывода переменной статуса (бирюзовый)
+COLOR_OK="\033[0;32m"              # Терминальный цвет для вывода Ok-сообщения (зелёный)
+COLOR_OFF="\033[0m"                # Терминальный цвет для сброса цвета (по умолчанию)
+
+
+#
+#  Ожидание отправки сообщения в секундах
+#
+waitsending=5
+
+
+#
+#  Команда API для регистрации SMS
+#  из billing/core/Api.php
+#
+CMD_SMS_REG="sms_reg"
+F_AID="aid"
+F_CMD="cmd"
+F_TEXT="text";
+F_PHONE_NUMBER="phone_num"
+URI_CMD2="/api/cmd2"
+URL_API="https://my.ri.net.ua${URI_CMD2}"
+
+# -------------------------
+# Массив разрешённых кодов мобильных операторов Украины
+# -------------------------
+VALID_OPERATORS=(
+     "020" # Інтертелеком
+     "039" # Голден Телеком, тепер Київстар
+     "050" # Vodafone Україна[1]
+     "063" # lifecell
+     "066" # Vodafone Україна
+     "067" # Київстар
+     "068" # Київстар
+     "073" # lifecell[2]
+     "075" # Vodafone Україна[3]
+     "077" # Київстар
+     "089" # Інтертелеком для SIP-телефонії[4]
+     "091" # ТриМоб, тепер Укртелеком
+     "092" # PEOPLEnet
+     "093" # lifecell
+     "094" # Інтертелеком[5]
+     "095" # Vodafone Україна
+     "096" # Київстар
+     "097" # Київстар
+     "098" # Київстар
+     "099" # Vodafone Україна
+)
+
+# -------------------------
+# Префиксы для вывода сообщений
+# -------------------------
+PREFIX_OK="${COLOR_OK}[ok]${COLOR_OFF}"
+PREFIX_ERROR="${COLOR_ERROR}[!!]${COLOR_OFF}"
+PREFIX_INFO="${COLOR_INFO}[ii]${COLOR_OFF}"
+
+# Программа-редактор для редактирования конфиг-файла и списка папаок для копирования
+# (без пробелов в пути/и/названии)
+EDITOR="nano"
+
+# Путь к приложению awk
+# для извлечения фрагмента конфига из самого скрипта и создания конфиг-файла
+APP_AWK="/usr/bin/awk"
+
+#
+# Обязательные зависимости в виде ассоциаливного массива
+# [программа]=пакет
+# где "программа" -- собственно сама исполняемая програма
+#     "пакет"     -- пакет внутри которого находится эта программа 
+#                    для установки в систму
+declare -A DEPENDENCIES_REQUIRED=(
+    ["${APP_AWK}"]="gawk"
+    ["kdeconnect-cli"]="kdeconnect"
+    ["curl"]="curl"
+)
+
+
+##
+##  Конец секции конфига
+##  [CONFIG END] ---------------------------------------------------------------------------
+##
+
+
+
+#
+#  Записывает в конфиг файл фрагмент этого же скрипта между строками, содержащими [КОНФИГ СТАРТ] и [КОНФИГ ЕНД] 
+#  Используемые глобальные переменные 0 и CONFIG_FILE
+#
+save_config_file()
+{
+    mkdir -p "${CONFIG_PATH}"
+    echo  -e "${PREFIX_INFO} Инициализация конфиг-файла '${COLOR_FILENAME}${CONFIG_FILE}${COLOR_OFF}'"
+    if ! command -v "${APP_AWK}" >/dev/null 2>&1; then
+        exit_with_msg "${PREFIX_ERROR} Нет приложения ${COLOR_FILENAME}${APP_AWK}${COLOR_OFF}." 1
+    fi
+    # Извлечь фрагмент между [КОНФИГ СТАРТ] и [КОНФИГ ЕНД] из самого скрипта
+    [[ $DRY_RUN -eq 0 ]] && "${APP_AWK}" '/\[\s*CONFIG START\s*\]/,/\[\s*CONFIG END\s*\]/' "$0" > "${CONFIG_FILE}"
+}
+
+
+
+#
+#  Чтение конфигурационного файла.
+#  Если его нет, то создание.
+#
+read_config_file()
+{
+    #
+    # Перепределение переменных из конфиг-файла
+    # Если конфиг-файла нет, то создаём его
+    # load_config
+    #
+    if [ -f "${CONFIG_FILE}" ]; then
+        # shellcheck source="${XDG_CONFIG_HOME:-${HOME}/.config}/${CONFIG_DIRNAME}}/${FILE_NAME}.conf"
+        # shellcheck disable=SC1091
+        source "${CONFIG_FILE}"
+    else
+        save_config_file
+    fi
+}
+
+
+
+#
+# Проверка наличия команды в системе
+#
+is_installed() {
+    command -v "$1" &>/dev/null
+}
+
+
+#
+#  Проверка обязательных зависимостей
+#
+check_dependencies_required() {
+  local missing=()
+
+  for cmd in "${!DEPENDENCIES_REQUIRED[@]}"; do
+    if ! is_installed "$cmd"; then
+      missing+=("$cmd")
+    fi
+  done
+
+  if [ "${#missing[@]}" -eq 0 ]; then
+    echo -e "$PREFIX_OK Все обязательные зависимости установлены."
+    return 0
+  else
+    echo -e "$PREFIX_ERROR Обязательные зависимости не найдены:"
+    for cmd in "${missing[@]}"; do
+      local pkg="${DEPENDENCIES_REQUIRED[$cmd]}"
+      echo -e "${COLOR_STATUS}      - $cmd (пакет: ${pkg:-неизвестен})${COLOR_OFF}"
+    done
+    return 1
+  fi
+}
+
+
+
+
+# -------------------------
+# Показать краткое использование скрипта
+# -------------------------
+print_usage() 
+{
+echo -e "$(cat << EOF     
+${COLOR_INFO}${APP_TITLE}${COLOR_OFF}
+
+${COLOR_INFO}Использование:${COLOR_OFF} ${COLOR_USAGE}$APP_NAME${COLOR_OFF} <${COLOR_USAGE}PHONE${COLOR_OFF}> <${COLOR_USAGE}MESSAGE${COLOR_OFF}> [${COLOR_USAGE}ABON_ID${COLOR_OFF}]
+     
+Обязательные параметры:
+     ${COLOR_USAGE}PHONE${COLOR_OFF}     Номер телефона +380XXXXXXXXX, на который отправляется SMS
+     ${COLOR_USAGE}MESSAGE${COLOR_OFF}   Текст сообщения для отправки
+
+Необязательный параметр:
+     ${COLOR_USAGE}ABON_ID${COLOR_OFF}   ID абонента для регистрации сообщения в базе
+
+Флаги:
+     ${COLOR_USAGE}-h, --help${COLOR_OFF}      Показать полную справку
+     ${COLOR_USAGE}-u, --usage${COLOR_OFF}     Показать краткую подсказку
+     ${COLOR_USAGE}-v, --version${COLOR_OFF}   Показать версию скрипта
+
+EOF
+)"
+}
+
+
+
+# -------------------------
+# Показать полное описание / помощь
+# -------------------------
+print_help() 
+{
+echo -e "$(cat << EOF     
+$(print_usage)
+
+${COLOR_INFO}Описание:${COLOR_OFF}
+Скрипт отправляет SMS через KDE Connect 
+и регистрирует сообщение для указанного абонента в базе https://my.ri.net.ua/ через API.
+
+Примеры использования:
+     ${APP_NAME} +380931234567 'Текстовое сообщение'
+     ${APP_NAME} +380931234567 'Текстовое сообщение' 123
+
+Если не переданы обязательные параметры PHONE и MESSAGE, скрипт завершится с ошибкой.
+EOF
+)"
+}
+
+
+
+# -------------------------
+#  Вывод версии скрипта
+# -------------------------
+print_version()
+{
+echo -e "$(cat << EOF     
+${APP_TITLE}
+Скрипт       : ${APP_NAME}
+Версия       : ${VERSION}
+Путь скрипта : "${APP_PATH}"
+Конфиг       : "${CONFIG_FILE}"
+Последние изменения
+${LAST_CHANGES}
+${COPYRIGHT}
+EOF
+)"
+}
+
+
+
+# -------------------------
+# Функция проверки номера телефона
+# -------------------------
+is_valid_phone() {
+    local phone="$1"
+
+    # Проверяем общий формат: +380XXXXXXXXX
+    if [[ ! "$phone" =~ ^\+380[0-9]{9}$ ]]; then
+        return 1  # неверный формат
+    fi
+
+    # Извлекаем код оператора (три цифры после +380)
+    local operator="${phone:3:3}"
+
+    # Проверяем, есть ли код в массиве разрешённых операторов
+    for valid in "${VALID_OPERATORS[@]}"; do
+        if [[ "$operator" == "$valid" ]]; then
+            return 0  # номер валиден
+        fi
+    done
+
+    return 1  # оператор не разрешён
+}
+
+
+
+#
+# ----------------------------------- MAIN ------------------------------------
+#
+
+
+
+#
+# Чтение конфигурационного файла
+#
+read_config_file
+
+
+
+# -------------------------
+# Обработка специальных команд
+# -------------------------
+case "$1" in
+    -h|--help)
+        print_help
+        exit 0
+        ;;
+    -u|--usage)
+        print_usage
+        exit 0
+        ;;
+    -v|--version)
+        print_version
+        exit 0
+        ;;
+    -ec|--edit-conf)
+        echo "Редактирование конфига: ${CONFIG_FILE}"
+        exec "${EDITOR}" "${CONFIG_FILE}"
+        exit 0
+        ;;
+esac
+
+
+
+#
+# Проверка обязательных зависимостей
+#
+check_dependencies_required
+
+
+
+#
+# Номер телефона на который отправляется сообщение
+#
+phone="$1"
+
+#
+#  Отправляемое соощение
+#
+msg="$2"
+
+#
+#  Номер абонента для регистрации отправки сообщения в базе
+#
+abon_id="$3"
+
+#
+#  Проверка наличия обязательных параметров командной строки
+#
+if [ -z "$phone" ] || [ -z "$msg" ]; then
+    echo -e "${PREFIX_ERROR} Ошибка: не указаны обязательные параметры (PHONE: [$phone], MSG: [$msg])."
+    echo -e "${PREFIX_INFO} Справка по использованию: ${COLOR_USAGE}${APP_NAME} -u|--usage|-h|--help${COLOR_OFF}"
+    exit 1
+fi
+
+# -------------------------
+# Проверка перед отправкой
+# -------------------------
+if ! is_valid_phone "$phone"; then
+    echo -e "${PREFIX_ERROR} Номер телефона '$phone' невалидный или не принадлежит разрешённому оператору."
+    exit 1
+fi
+
+
+echo -e "${PREFIX_INFO} Адресат   : ${COLOR_INFO1}${phone} (через ${device_name} : ${device})${COLOR_OFF}"
+echo -e "${PREFIX_INFO} Сообщение : ${COLOR_TEXT}${msg}${COLOR_OFF}"
+
+#
+# Отправка SMS через KDE Connect
+#
+kdeconnect-cli -d "${device}"  --destination "${phone}" --send-sms "${msg}"
+rc=$?
+
+if (( rc != 0 )); then
+    echo -e "${PREFIX_ERROR} Ошибка отправки SMS через KDE Connect"
+else
+    echo -e "${PREFIX_OK} SMS отправлено"
+fi
+
+#
+#  Регистрация отправки сообщения в базе
+#
+if [ -n "${abon_id}" ]; then
+
+    echo -e "${PREFIX_INFO} Регистрация в базе"
+
+    response=$(curl -s -w "%{http_code}" -X POST "${URL_API}" \
+        -H "Authorization: Bearer ${TOKEN}" \
+        -d "${F_CMD}=${CMD_SMS_REG}" \
+        -d "${F_AID}=${abon_id}" \
+        -d "${F_PHONE_NUMBER}=${phone}" \
+        -d "${F_TEXT}=${msg}")
+
+    http_code="${response: -3}"       # последние 3 символа — код HTTP
+    body="${response:0:-3}"           # остальное — тело ответа
+
+    echo -en "$body"  # выводим сообщение от PHP
+
+    if [[ $http_code -ge 200 && $http_code -lt 300 ]]; then
+        echo -e "${PREFIX_OK} Сообщение зарегистрировано в базе"
+    else
+        echo -e "${PREFIX_ERROR} Ошибка записи в базу: код выхода ${http_code}"
+    fi
+else
+    echo -e "${PREFIX_INFO} Без регистрации в базе"
+fi
+
+echo "(Ожидание отправки ${waitsending} сек.)"
+sleep "${waitsending}"
+echo "===="

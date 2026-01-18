@@ -13,6 +13,8 @@
 
 namespace config\tables;
 
+use app\models\AbonModel;
+use app\models\AppBaseModel;
 use billing\core\base\Lang;
 
 /**
@@ -75,9 +77,9 @@ class Notify {
             Lang::C_EN => 'Notification type not specified',
         ],
         self::TYPE_SMS   => [
-            Lang::C_RU => 'SMS-уведомление',
-            Lang::C_UK => 'SMS-повідомлення',
-            Lang::C_EN => 'SMS-notifycation',
+            Lang::C_RU => 'SMS-Уведомление',
+            Lang::C_UK => 'SMS-Повідомлення',
+            Lang::C_EN => 'SMS-Notifycation',
         ],
         self::TYPE_EMAIL => [
             Lang::C_RU => 'Эл. почта',
@@ -96,5 +98,25 @@ class Notify {
     public static function get_type_title(?int $type_id): string {
         return self::TYPES[$type_id ?? self::TYPE_NA][Lang::code()];
     }
+
+
+
+    public static function save(array $notice): int|false
+    {
+
+        // $notice = [
+        //     Notify::F_ABON_ID => $abon_id,
+        //     Notify::F_TYPE_ID => Notify::TYPE_SMS,
+        //     Notify::F_PHONENUMBER => $user[User::F_PHONE_MAIN],
+        //     Notify::F_METHOD => Notify::METHOD_KDE_CONNECT,
+        //     Notify::F_DATE => time(),
+        //     Notify::F_TEXT => $notice_rec['text'],
+        // ];
+
+        $model = new AppBaseModel();
+        return ($model->insert_row(Notify::TABLE, $notice));
+    }
+
+
 
 }

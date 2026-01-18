@@ -71,10 +71,9 @@ class Perm {
      * @return void
      */
     public static function update_permissions(?int $user_id = null): void {
-
-        if (!empty(App::$app->permissions)) { return; }
-        App::$app->permissions = self::read_permissions($user_id);
-
+        if (empty(App::$app->permissions)) { 
+            App::$app->permissions = self::read_permissions($user_id);
+        }
     }
 
 
@@ -91,13 +90,16 @@ class Perm {
 
         $user_id =  ($model->validate_id(table_name: User::TABLE, field_id: User::F_ID, id_value: $user_id)
                         ?   $user_id
-                        :   (isset($_SESSION[User::SESSION_USER_REC])
-                                ? $_SESSION[User::SESSION_USER_REC][User::F_ID]
-                                : 0
-                            )
+                        :   App::get_user_id()
+                            // (isset($_SESSION[User::SESSION_USER_REC])
+                            //     ? $_SESSION[User::SESSION_USER_REC][User::F_ID]
+                            //     : 0
+                            // )
                     );
 
-
+        if (!$model->validate_id(User::TABLE, $user_id, User::F_ID)) {
+            return [];
+        }
 
         /*
          * Проверяем является ли пользователь абонентом,
@@ -112,11 +114,11 @@ class Perm {
                 . "END AS abon_role "
                 . "FROM " . Abon::TABLE . " "
                 . "WHERE " . Abon::F_USER_ID . " = {$user_id}";
-//        debug($sql, '$sql1');
+        // debug($sql, '$sql1', die: 1);
         $abon_role = (int)$model->query(sql: $sql, fetchCell: 0);
 
         /*
-         * Альтернативный select
+         * Выборка Ролей и Разрешений
          */
 
         $sql = "SELECT "
@@ -142,7 +144,6 @@ class Perm {
         foreach ($list as $row) {
             $permissions[$row[TSRoleModulePerm::F_MODULE_ID]] = $row[TSRoleModulePerm::F_PERMISSIONS];
         }
-
         return $permissions;
     }
 

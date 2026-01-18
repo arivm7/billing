@@ -665,7 +665,7 @@ abstract class Model {
 
 
     /**
-     * Возвращает md5-хэшированный пароль для сохранения в базе
+     * Возвращает 32-байтный md5-хэшированный пароль для сохранения в базе
      * @param string $pass
      * @param string $salt
      * @return string

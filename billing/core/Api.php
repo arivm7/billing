@@ -37,12 +37,14 @@ class Api {
 
 
 
-    public const URI_CMD = "/api/cmd";
+    public const URI_CMD  = "/api/cmd";
+    public const URI_CMD2 = "/api/cmd2";                // для авторизации токеном
 
 
 
-    public const F_CMD          = 'cmd';
+    public const F_CMD          = 'cmd';                // используется в sms_sender. Менять в двух местах
     public const F_UID          = 'uid';
+    public const F_AID          = 'aid';                // используется в sms_sender. Менять в двух местах
     public const F_TP_ID        = 'tpid';
     public const F_IP           = 'ip';
     public const F_ENABLED      = 'ena';
@@ -54,6 +56,8 @@ class Api {
     public const F_TO_TP_ID     = 'to_tp_id';       // ID ТП, на который нужно перейти
     public const F_INVOICE_ID   = 'inv_id';
     public const F_ABON_OFF_ON_TP = 'ab_off_on_tp';
+    public const F_TEXT         = 'text';               // используется в sms_sender. Менять в двух местах
+    public const F_PHONE_NUMBER = 'phone_num';           // используется в sms_sender. Менять в двух местах
     public const CMD_IP_ENABLE  = 'cmd_ipena';
     public const CMD_SERV_ENA   = 'cmd_serv_ena';
     public const CMD_PA_CLONE   = 'cmd_pa_clone';
@@ -62,6 +66,7 @@ class Api {
     public const CMD_PASS_DEF   = 'cmd_pass_def';
     public const CMD_CHANGE_PRICE = 'cmd_change_price';
     public const CMD_INVOICE_PAY_CONFIRM  = 'cmd_inv_pay_confirm';
+    public const CMD_SMS_REG    = 'sms_reg';
     
 // prices_apply_id=2760
 // date_end=null
