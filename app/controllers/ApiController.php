@@ -472,6 +472,19 @@ class ApiController extends AppBaseController {
                         $model = new AbonModel();
                         $pa = $model->get_pa($pa_id);
                         $pa_new_id = PaController::enable(pa: $pa, ena: $ena, force: $force);
+                        if ($ena) {
+                            /**
+                             * если включаем ПФ, то установить время ожидания оплаты (из конфига).
+                             */
+                            MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Устанавливаем время ожидания оплаты') . ' (' . App::get_config('pa_days_to_wait_payment') . ' ' . __('дней') . ')');
+                            $model->set_field_value(
+                                table_name: Abon::TABLE, 
+                                field_id: Abon::F_ID, 
+                                value_id: $pa[PA::F_ABON_ID], 
+                                field: Abon::F_DUTY_WAIT_DAYS, 
+                                value: App::get_config('pa_days_to_wait_payment'),
+                                update_access_time: false);
+                        }
                         $model->recalc_abon($pa[PA::F_ABON_ID]);
                         if ($pa_new_id && ($pa_new_id != $pa_id)) {
                             redirect(PA::URI_EDIT . '/' . $pa_new_id);

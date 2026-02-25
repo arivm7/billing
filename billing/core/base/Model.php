@@ -719,20 +719,21 @@ abstract class Model {
      * @param int $value_id
      * @param string $field
      * @param mixed $value
-     * @param bool $update_access_time
+     * @param bool $update_access_time -- устанавливать ли время изменения записи и ID изменившего её пользователя
      * @throws \Exception
      * @return bool
      */
     function set_field_value(string $table_name, string $field_id, int $value_id, string $field, mixed $value, bool $update_access_time = true): bool {
         if($this->validate_id($table_name, $value_id, $field_id)) {
             $sql="UPDATE `$table_name` SET "
-                    . "`$field`='$value', "
+                    . "`$field`='$value' " 
                     . ($update_access_time 
-                        ?   "`". self::F_MODIFIED_DATE . "`=" . time() . ", "
-                          . "`". self::F_MODIFIED_UID . "`=" . App::get_user_id() . " "
+                        ?   ", `". self::F_MODIFIED_DATE . "`=" . time() . ", "
+                            . "`". self::F_MODIFIED_UID . "`=" . App::get_user_id() . " "
                         :   ""
                     )
                     . "WHERE `$field_id`=$value_id";
+            // debug($sql, "set_field_value: ", die:1);
             return $this->execute($sql);
         } else {
             throw new \Exception("ID не верен<br>"
