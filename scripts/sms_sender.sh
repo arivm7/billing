@@ -18,15 +18,16 @@
 
 APP_TITLE="Скрипт отправки SMS через KDE Connect и регистрацию в базе https://my.ri.net.ua/api"
 COPYRIGHT="Copyright (C) 2006-2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK"
-VERSION="1.1.0 (2026-01-19)"
+VERSION="1.2.0 (2026-02-26)"
 LAST_CHANGES="\
-v1.0.0 (2026-01-18): Базовая проверка, отправка СМС и регистрация в базе
+v1.2.0 (2026-02-26): Добавление команды установки скрипта в указанное место, а также для перезаписи конфига.
 v1.1.0 (2026-01-19): Добавление конфиг-файла для хранения параметров
+v1.0.0 (2026-01-18): Базовая проверка, отправка СМС и регистрация в базе
 "
 
-APP_PATH=$(cd "$(dirname "$0")" && pwd)      # Путь размещения исполняемого скрипта
-APP_NAME=$(basename "$0")                    # Полное имя скрипта, включая расширение
-FILE_NAME="${APP_NAME%.*}"                   # Убираем расширение (если есть)
+APP_PATH=$(cd "$(dirname "$0")" && pwd)     # Путь размещения исполняемого скрипта
+APP_NAME=$(basename "$0")                   # Полное имя скрипта, включая расширение
+FILE_NAME="${APP_NAME%.*}"                  # Убираем расширение (если есть)
 CONFIG_DIRNAME="ri-network"
 CONFIG_PATH="${XDG_CONFIG_HOME:-${HOME}/.config}/${CONFIG_DIRNAME}"
 CONFIG_FILE="${CONFIG_PATH}/${FILE_NAME}.conf"
@@ -39,46 +40,37 @@ CONFIG_FILE="${CONFIG_PATH}/${FILE_NAME}.conf"
 ##
 ##  Конфиг для скрипта sms_sender.sh
 ##  Из пакета биллинговой системы RI-Network
-##  VERSION 1.0.0 (2026-01-18)
+##  VERSION 1.2.0 (2026-02-26)
 ##
 
 #
-#  Допустимо использование переменных типа ${HOME}
+#  Допустимо использование переменных окружения, типа ${HOME}
 #
 
 #
-#  Токен для авторизации для регистрации СМС
+#  Токен для авторизации для регистрации СМС через API https://my.ri.net.ua/api
+#  Получить токен можно из базы: hash pass2
 #
 TOKEN=''
 
 #
-#  Устройство KDE Connect для отправки SMS
+# ID устройства KDE Connect для отправки SMS через KDE Connect
+# Пример:
+# device="0123456789abcdef"
 #
-device_name=""
 device=""
+
+#
+# Человекочитаемое имя устройства для отображения в терминале
 # Пример:
 # device_name="My Android Phone"
-# device="0123456789abcdef"
-
 #
-# Терминальные цвета для вывода информации
-#
-COLOR_USAGE="\033[1;32m"           # Терминальный цвет для вывода переменной статуса (светло-бирюзовый)
-COLOR_INFO="\033[1;36m"            # Терминальный цвет для вывода информации (об ошибке или причине выхода) (голубой)
-COLOR_INFO1="\033[2;32m"           # Терминальный цвет для вывода переменной статуса (тёмно-бирюзовый)
-COLOR_TEXT="\033[1;32m"            # Терминальный цвет для вывода переменной статуса (бирюзовый)
-COLOR_ERROR="\033[0;31m"           # Терминальный цвет для вывода ошибок (красный)
-COLOR_FILENAME="\033[1;36m"        # Терминальный цвет для вывода имён файлов (голубой)
-COLOR_STATUS="\033[0;36m"          # Терминальный цвет для вывода переменной статуса (бирюзовый)
-COLOR_OK="\033[0;32m"              # Терминальный цвет для вывода Ok-сообщения (зелёный)
-COLOR_OFF="\033[0m"                # Терминальный цвет для сброса цвета (по умолчанию)
-
+device_name=""
 
 #
 #  Ожидание отправки сообщения в секундах
 #
 waitsending=5
-
 
 #
 #  Команда API для регистрации SMS
@@ -91,6 +83,8 @@ F_TEXT="text";
 F_PHONE_NUMBER="phone_num"
 URI_CMD2="/api/cmd2"
 URL_API="https://my.ri.net.ua${URI_CMD2}"
+
+
 
 # -------------------------
 # Массив разрешённых кодов мобильных операторов Украины
@@ -117,6 +111,23 @@ VALID_OPERATORS=(
      "098" # Київстар
      "099" # Vodafone Україна
 )
+
+
+
+#
+# Терминальные цвета для вывода информации
+#
+COLOR_USAGE="\033[1;32m"           # Терминальный цвет для вывода переменной статуса (светло-бирюзовый)
+COLOR_INFO="\033[0;33m"            # Терминальный цвет для вывода информации (об ошибке или причине выхода) (оранжевый)
+COLOR_INFO1="\033[2;32m"           # Терминальный цвет для вывода переменной статуса (тёмно-бирюзовый)
+COLOR_TEXT="\033[1;32m"            # Терминальный цвет для вывода переменной статуса (бирюзовый)
+COLOR_ERROR="\033[0;31m"           # Терминальный цвет для вывода ошибок (красный)
+COLOR_FILENAME="\033[1;36m"        # Терминальный цвет для вывода имён файлов (голубой)
+COLOR_STATUS="\033[0;36m"          # Терминальный цвет для вывода переменной статуса (бирюзовый)
+COLOR_OK="\033[0;32m"              # Терминальный цвет для вывода Ok-сообщения (зелёный)
+COLOR_OFF="\033[0m"                # Терминальный цвет для сброса цвета (по умолчанию)
+
+
 
 # -------------------------
 # Префиксы для вывода сообщений
@@ -145,6 +156,10 @@ declare -A DEPENDENCIES_REQUIRED=(
     ["curl"]="curl"
 )
 
+#
+# Рекомендуемый путь по умолчанию для установки скрипта
+#
+INSTALL_PATH="$HOME/bin"                        
 
 ##
 ##  Конец секции конфига
@@ -159,6 +174,13 @@ declare -A DEPENDENCIES_REQUIRED=(
 #
 save_config_file()
 {
+    #  Сохранение имеющегося конфиг-файла, если есть, с добавлением суффикса .old
+    if [ -f "${CONFIG_FILE}" ]; then
+        echo -e "${PREFIX_INFO} Обнаружен существующий конфиг-файл: ${COLOR_FILENAME}${CONFIG_FILE}${COLOR_OFF}."
+        echo -e "${PREFIX_INFO} Старый конфиг переименован в ${COLOR_FILENAME}${CONFIG_FILE}.old${COLOR_OFF}"
+        mv --force "${CONFIG_FILE}" "${CONFIG_FILE}.old"    
+    fi
+
     mkdir -p "${CONFIG_PATH}"
     echo  -e "${PREFIX_INFO} Инициализация конфиг-файла '${COLOR_FILENAME}${CONFIG_FILE}${COLOR_OFF}'"
     if ! command -v "${APP_AWK}" >/dev/null 2>&1; then
@@ -227,6 +249,85 @@ check_dependencies_required() {
 
 
 
+#
+# Установка скрипта в указанное место 
+# с проверкой существования файла и возможностью перезаписи
+# А также с проверкой наличия конфига 
+# Использование: APP --install "~/bin"
+#
+install() {
+    local dest_dir="$1"
+
+    if [[ -z "$dest_dir" ]]; then
+        if [[ -z "$INSTALL_PATH" ]]; then
+            echo -e "${PREFIX_ERROR} Переменная INSTALL_PATH не задана"
+            return 1
+        fi
+
+        echo -e "${PREFIX_INFO} Путь назначения не указан."
+        read -rp "Использовать путь по умолчанию (${INSTALL_PATH})? [y/N]: " ans
+        if [[ "$ans" =~ ^[Yy]$ ]]; then
+            dest_dir="$INSTALL_PATH"
+        else
+            echo "Установка отменена."
+            return 1
+        fi
+    fi
+
+    if [[ "$dest_dir" == "~"* ]]; then
+        dest_dir="${dest_dir/#\~/$HOME}"
+    fi
+
+    # Определяем путь к текущему скрипту
+    local src
+    src="$(realpath "${BASH_SOURCE[0]}")" || {
+        echo -e "${PREFIX_ERROR} Не удалось определить путь к исходному файлу"
+        return 1
+    }
+
+    # Проверка наличия каталога назначения
+    if [[ ! -d "$dest_dir" ]]; then
+        echo -e "${PREFIX_ERROR} Каталог назначения не существует: $dest_dir"
+        return 1
+    fi
+
+    # --- Проверка существования основного файла ---
+    local dest="$dest_dir/$APP_NAME"
+    if [[ -e "$dest" ]]; then
+        read -rp "Файл $dest уже существует. Перезаписать? [y/N]: " ans
+        [[ "$ans" =~ ^[Yy]$ ]] || {
+            echo -e "${PREFIX_INFO} Установка отменена."
+            return 0
+        }
+    fi
+
+    # Копирование
+    if cp "$src" "$dest"; then
+        chmod +x "$dest"
+        echo -e "${PREFIX_OK} Установлено: $dest"
+    else
+        echo -e "${PREFIX_ERROR} Ошибка копирования"
+        return 1
+    fi
+
+    # --- Работа с конфигом ---
+    if [[ -e "$CONFIG_FILE" ]]; then
+        echo -e "${PREFIX_INFO} Обнаружен конфиг-файл предыдущей версии: ${COLOR_FILENAME}${CONFIG_FILE}${COLOR_OFF}."
+        echo -e "${PREFIX_INFO} Его можно оставить или перезаписать командой ${COLOR_USAGE}${APP_NAME} -wc|--write-conf${COLOR_OFF}."
+        echo -e "${PREFIX_INFO} Его можно можно удалить и он автоматически будет создан при первом запуске скрипта."
+        read -rp "Удалить старый конфиг $CONFIG_FILE ? [y/N]: " ans
+        if [[ "$ans" =~ ^[Yy]$ ]]; then
+            mv -i "$CONFIG_FILE" "${CONFIG_FILE}.old"
+            echo -e "${PREFIX_INFO} Старый Конфиг перемещен в ${CONFIG_FILE}.old"
+            return 0
+        else 
+            echo -e "${PREFIX_INFO} Оставлен старый конфиг ${COLOR_FILENAME}${CONFIG_FILE}${COLOR_OFF}"
+            return 0
+        fi
+    fi
+}
+
+
 
 # -------------------------
 # Показать краткое использование скрипта
@@ -238,17 +339,21 @@ ${COLOR_INFO}${APP_TITLE}${COLOR_OFF}
 
 ${COLOR_INFO}Использование:${COLOR_OFF} ${COLOR_USAGE}$APP_NAME${COLOR_OFF} <${COLOR_USAGE}PHONE${COLOR_OFF}> <${COLOR_USAGE}MESSAGE${COLOR_OFF}> [${COLOR_USAGE}ABON_ID${COLOR_OFF}]
      
-Обязательные параметры:
-     ${COLOR_USAGE}PHONE${COLOR_OFF}     Номер телефона +380XXXXXXXXX, на который отправляется SMS
-     ${COLOR_USAGE}MESSAGE${COLOR_OFF}   Текст сообщения для отправки
+${COLOR_INFO}Обязательные параметры:${COLOR_OFF}
+    ${COLOR_USAGE}PHONE${COLOR_OFF}     Номер телефона +380XXXXXXXXX, на который отправляется SMS
+    ${COLOR_USAGE}MESSAGE${COLOR_OFF}   Текст сообщения для отправки
 
-Необязательный параметр:
-     ${COLOR_USAGE}ABON_ID${COLOR_OFF}   ID абонента для регистрации сообщения в базе
+${COLOR_INFO}Необязательный параметр:${COLOR_OFF}
+    ${COLOR_USAGE}ABON_ID${COLOR_OFF}   ID абонента для регистрации сообщения через API https://my.ri.net.ua/api
 
-Флаги:
-     ${COLOR_USAGE}-h, --help${COLOR_OFF}      Показать полную справку
-     ${COLOR_USAGE}-u, --usage${COLOR_OFF}     Показать краткую подсказку
-     ${COLOR_USAGE}-v, --version${COLOR_OFF}   Показать версию скрипта
+${COLOR_INFO}Флаги:${COLOR_OFF}
+    ${COLOR_USAGE}-h,  --help${COLOR_OFF}         Показать полную справку
+    ${COLOR_USAGE}-u,  --usage${COLOR_OFF}        Показать краткую подсказку
+    ${COLOR_USAGE}-v,  --version${COLOR_OFF}      Показать версию скрипта
+    ${COLOR_USAGE}-ec, --edit-conf${COLOR_OFF}    Открыть конфиг в редакторе
+    ${COLOR_USAGE}-wc, --write-conf${COLOR_OFF}   Принудительно перезаписать конфиг по умолчанию
+    ${COLOR_USAGE}--install [<path>]${COLOR_OFF}  Установить скрипт в указанное место (например, ${COLOR_FILENAME}${APP_NAME} --install ~/bin${COLOR_OFF})
+                        Путь установки по умолчанию ${COLOR_USAGE}${INSTALL_PATH}${COLOR_OFF}.
 
 EOF
 )"
@@ -262,15 +367,17 @@ EOF
 print_help() 
 {
 echo -e "$(cat << EOF     
-$(print_usage)
-
 ${COLOR_INFO}Описание:${COLOR_OFF}
 Скрипт отправляет SMS через KDE Connect 
 и регистрирует сообщение для указанного абонента в базе https://my.ri.net.ua/ через API.
 
+$(print_usage)
+
 Примеры использования:
-     ${APP_NAME} +380931234567 'Текстовое сообщение'
-     ${APP_NAME} +380931234567 'Текстовое сообщение' 123
+    Без регистрации в базе:
+        ${COLOR_USAGE}${APP_NAME} +380931234567 'Текстовое сообщение'${COLOR_OFF}
+    С регистрацией в базе для абонента с ID 123:
+        ${COLOR_USAGE}${APP_NAME} +380931234567 'Текстовое сообщение' 123${COLOR_OFF}
 
 Если не переданы обязательные параметры PHONE и MESSAGE, скрипт завершится с ошибкой.
 EOF
@@ -357,6 +464,16 @@ case "$1" in
     -ec|--edit-conf)
         echo "Редактирование конфига: ${CONFIG_FILE}"
         exec "${EDITOR}" "${CONFIG_FILE}"
+        exit 0
+        ;;
+    -wc|--write-conf)
+        echo "перезапись конфига по умолчанию: ${CONFIG_FILE}"
+        save_config_file
+        exit 0
+        ;;
+    --install)
+        echo "Установка скрипта в указанное место: $2"
+        install "$2"
         exit 0
         ;;
 esac
