@@ -735,6 +735,7 @@ class AbonModel extends UserModel {
     {
         $sql = "SELECT "
                 . "`".Price::TABLE."`.`".Price::F_TITLE."` AS ".PA::F_PRICE_TITLE.", "
+                . "`".Price::TABLE."`.`".Price::F_DESCRIPTION."` AS ".PA::F_PRICE_DESCR.", "
                 . "`".PA::TABLE."`.* "
                 . "FROM `".PA::TABLE."` "
                 . "LEFT JOIN ".Price::TABLE." ON ".Price::TABLE.".".Price::F_ID." = ".PA::TABLE.".".PA::F_PRICE_ID." "
@@ -1295,7 +1296,10 @@ class AbonModel extends UserModel {
     function get_abon_rest(int $abon_id): array|null {
         $rest = $this->get_row_by_id(AbonRest::TABLE, $abon_id, AbonRest::F_ABON_ID);
         if ($rest) { 
-            update_rest_fields($rest); 
+            update_rest_fields($rest);
+            if ($rest[AbonRest::F_SUM_PP30A] == 0) {
+                $rest[AbonRest::F_DATE_PAUSED] = $this->get_pa_pause_last($abon_id);
+            }
             return $rest;
         } else {
             return null;
@@ -1470,7 +1474,7 @@ class AbonModel extends UserModel {
      * @return string -- Строка с html-кодом
      */
     function url_abon_form(int $abon_id): string {
-        if (is_null($abon_id) || $abon_id == 0 || !$this->validate_id("abons", $abon_id)) { return $abon_id; }
+        if (is_null($abon_id) || $abon_id == 0 || !$this->validate_id(Abon::TABLE, $abon_id)) { return $abon_id; }
         $c = $this->get_html_chek_payer(aid: $abon_id);
         return "<nobr>" . a(href: Abon::URI_VIEW . "/{$abon_id}", text: "{$abon_id}", title: $this->get_abon_address($abon_id), target: "_blank") . "&nbsp;{$c}</nobr>";
     }
@@ -1527,6 +1531,7 @@ class AbonModel extends UserModel {
                 MsgQueue::msg(MsgType::ERROR, $this->errorInfo());
                 $result = false;
             }
+            
         } else {
             MsgQueue::msg(MsgType::ERROR, 'RECALC: ' . __("Нет такого абонента") . " [".$abon_id."]");
             $result = false;
@@ -1637,6 +1642,22 @@ class AbonModel extends UserModel {
 
 
 
+    function get_abon_id_list_by_payer_name(string $payer): array {
+        $aid_list = [];
+        if(!empty($payer)) {
+            $sql = 'SELECT
+                    abon_id
+                    FROM payments
+                    WHERE description LIKE "%'.$payer.'%"
+                    GROUP BY abon_id
+                    ORDER BY pay_date DESC';
+            return array_column($this->get_rows_by_sql($sql), 'abon_id');
+        }
+        return $aid_list;
+    }
+
+
+
     /**
      * Ищет похожий платёж по pay_bank_no, timestamp, pay_fakt, ppp_id,
      * $timestamp_strong -- указывает икать по дате_времени или только по дате
@@ -1671,13 +1692,13 @@ class AbonModel extends UserModel {
 
 
 
-    function get_abon_id_from_text(string $text) {
+    function get_abon_id_from_text(string $text): int|null {
         $subject  = $text;
         $pattern1 = '/.*?([\s\.\-№#^]([1-9][0-9]{'.(LEN_DOG_NUM_MIN-1).','.(LEN_DOG_NUM_MAX-1).'}).*?)+/';
         $matches  = array();
         $p = preg_match_all($pattern1, $subject, $matches);
         if($p === false) {
-            die("Этого не должно быть: get_abon_id_from_text(string $text)");
+            throw new \Exception("Этого не должно быть: get_abon_id_from_text(string $text)", 1);
         } else {
             //return $matches;
             if((count($matches)>0)) {
@@ -1686,14 +1707,14 @@ class AbonModel extends UserModel {
                         foreach ($v1 as $v2) {
                             $v2 = intval(trim($v2));
                             if ($v2 == 0) { continue; }
-                            if($this->validate_id("abons", $v2)) {
+                            if($this->validate_id(Abon::TABLE, $v2, Abon::F_ID)) {
                                 return $v2;
                             }
                         }
                     } else {
                         $v1 = intval(trim($v1));
                         if ($v1 == 0) { continue; }
-                        if($this->validate_id("abons", trim($v1))) {
+                        if($this->validate_id(Abon::TABLE, $v1, Abon::F_ID)) {
                             return $v1;
                         }
                     }
@@ -1703,6 +1724,39 @@ class AbonModel extends UserModel {
         }
     }
 
+
+    function get_abon_id_list_from_text(string $text) {
+        $subject  = $text;
+        $pattern1 = '/.*?([\s\.\-№#^]([1-9][0-9]{'.(LEN_DOG_NUM_MIN-1).','.(LEN_DOG_NUM_MAX-1).'}).*?)+/';
+        $matches  = array();
+        $aid_list = array();
+        $p = preg_match_all($pattern1, $subject, $matches);
+        if($p === false) {
+            die("Этого не должно быть: get_abon_id_list_from_text(string $text)");
+        } else {
+            //return $matches;
+            if((count($matches)>0)) {
+                foreach ($matches as $v1) {
+                    if(is_array($v1)) {
+                        foreach ($v1 as $v2) {
+                            $v2 = intval(trim($v2));
+                            if ($v2 == 0) { continue; }
+                            if($this->validate_id(Abon::TABLE, $v2, Abon::F_ID)) {
+                                $aid_list[] = intval($v2);
+                            }
+                        }
+                    } else {
+                        $v1 = intval(trim($v1));
+                        if ($v1 == 0) { continue; }
+                        if($this->validate_id(Abon::TABLE, $v1, Abon::F_ID)) {
+                            $aid_list[] = intval($v1);
+                        }
+                    }
+                }
+            }
+            return $aid_list;
+        }
+    }
 
 
     function get_abon_id_one_by_payer_name(string $payer): int {
@@ -1977,6 +2031,41 @@ class AbonModel extends UserModel {
 
 
 
+    /**
+     * Возвращает последнее уведомление для указанного абонента
+     * @param int $abon_id -- ID абонента
+     * @return array -- запись уведомления (СМС) или пустой массив если нет уведомлений
+     */
+    function get_notify_last(int $abon_id): array {
+        $sql= "SELECT * FROM ".Notify::TABLE." WHERE ".Notify::F_ABON_ID." = $abon_id ORDER BY ".Notify::F_DATE." DESC LIMIT 1";
+        $rows = $this->get_rows_by_sql($sql);
+        return $rows[array_key_first($rows)] ?? [];
+    }    
 
+
+
+    /**
+     * Возвращает последний платёж для указанного абонента
+     * @param int $abon_id -- ID абонента
+     * @return array -- запись платежа или пустой массив если нет платежей
+     */
+    function get_payment_last(int $abon_id): array {
+        $sql= "SELECT * FROM ".Pay::TABLE." WHERE ".Pay::F_ABON_ID." = $abon_id ORDER BY ".Pay::F_DATE." DESC LIMIT 1";
+        $rows = $this->get_rows_by_sql($sql);
+        return $rows[array_key_first($rows)] ?? [];
+    }    
+
+
+
+    /**
+     * Для указанного абонента возвращает дату окончания последнего ПФ поставленного на паузу 
+     * @param int $abon_id
+     * @return int
+     */
+    function get_pa_pause_last(int $abon_id): int {
+        $sql = "SELECT MAX(" . PA::F_DATE_END . ") AS last_date_end FROM " . PA::TABLE . " WHERE " . PA::F_ABON_ID . " = $abon_id;";
+        $rows = $this->get_rows_by_sql($sql);
+        return $rows[array_key_first($rows)]['last_date_end'] ?? 0;
+    }
 
 }

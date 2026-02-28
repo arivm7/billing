@@ -25,6 +25,7 @@ use billing\core\base\Lang;
 class Notify {
 
     const URI_INFO = '/notice/info';    /*  /id -- Страница с информацией для отправки абоненту */
+    const URI_SMS_LIST = '/notice/sms';    /*  Страница генерации списка СМС-уведомлений */
 
     /**
      * Имя поля с ID, передаваемого в _GET запросе
@@ -60,6 +61,22 @@ class Notify {
 
     const F_USER_ID             = 'user_id';        // Пользоватеь, к которому относится Абонент, которому относится уведомление
     const F_COUNT               = 'notify_count';   // Общее количество уведомлений
+
+
+    /**
+     * Фильтры для формирования списка уведомлений
+     */
+
+    const FLTR_PREFIX           = 'filer';
+    const FLTR_TP_ID            = 'tp_id';
+    const FLTR_ABON_ID          = 'abon_id';
+    const FLTR_SHOW_PAUSED      = 'show_paused';
+    const FLTR_NOT_SEND_DAYS    = 'not_send_days';
+    const FLTR_NOT_PAY_DAYS     = 'not_pay_days';
+    const FLTR_MAX_COUNT        = 'max_count_sms';
+    const FLTR_DO_SCRIPT_SHOW   = 'do_script_show';
+    const FLTR_ABON_ID_LIST     = 'abon_id_list';   // Список ID абонентов для которых нужно отправлять СМС. Передаётся из формы списка.
+
 
     /**
      * Раздел типов уведомлений
@@ -118,5 +135,65 @@ class Notify {
     }
 
 
+
+    /**
+     * Статусы уведомления абонента
+     */
+    
+    const WARN_IS_OFF = 1;      // УЖЕ ОТКЛЮЧЁН (ПРОВЕРИТЬ)
+    const WARN_NEED_OFF = 2;    // ОТКЛЮЧАТЬ
+    const WARN_MSG_PAY = 4;     // СООБЩИТЬ О НЕОБХОДИМОСТИ ПЛАТЕЖА
+    const WARN_OK = 5;          // НОРМ. Уведомление не требуется
+
+    const WARN_TEXT = [
+        self::WARN_IS_OFF => [
+            Lang::C_RU => '<span class="badge text-bg-danger">УЖЕ ОТКЛЮЧЁН</span>',
+            Lang::C_UK => '<span class="badge text-bg-danger">УЖЕ ВИМКНЕНО</span>',
+            Lang::C_EN => '<span class="badge text-bg-danger">ALREADY OFF</span>',
+        ],
+        self::WARN_NEED_OFF => [
+            Lang::C_RU => '<span class="badge text-bg-warning">ОТКЛЮЧАТЬ</span>',
+            Lang::C_UK => '<span class="badge text-bg-warning">ВІДКЛЮЧАТИ</span>',
+            Lang::C_EN => '<span class="badge text-bg-warning">TURN OFF</span>',
+        ],
+        self::WARN_MSG_PAY => [
+            Lang::C_RU => '<span class="badge text-bg-info">СООБЩИТЬ О НЕОБХОДИМОСТИ ПЛАТЕЖА</span>',
+            Lang::C_UK => '<span class="badge text-bg-info">ПОВІДОМИТИ ПРО НЕОБХІДНІСТЬ ПЛАТЕЖУ</span>',
+            Lang::C_EN => '<span class="badge text-bg-info">INFORM ABOUT PAYMENT NECESSITY</span>',
+        ],
+        self::WARN_OK => [
+            Lang::C_RU => '<span class="badge text-bg-success">НОРМ. Уведомление не требуется.</span>',
+            Lang::C_UK => '<span class="badge text-bg-success">НОРМ. Повідомлення не потрібне.</span>',
+            Lang::C_EN => '<span class="badge text-bg-success">NORMAL. No notification required.</span>',
+        ],
+    ];
+
+
+    /**
+     * Возвращает статус уведомления абонента
+     * @param array $rest           -- массив данных абонента из таблицы AbonRest
+     * @param int $duty_days_warn   -- количество предоплаченных дней, при пересечении которых, отправлять абоненту предупреждение о необходимости оплаты
+     * @param int $duty_days_off    -- количество предоплаченных дней, при пересечении которых, отключать услуги
+     * @return int
+     */
+    public static function get_warn_status(array $rest, int $duty_days_warn, int $duty_days_off) {
+        if($rest[AbonRest::F_SUM_PP30A] == 0) {
+            return self::WARN_IS_OFF; // УЖЕ ОТКЛЮЧЁН
+        } else {
+            if($rest[AbonRest::F_PREPAYED] < $duty_days_warn) {
+                if($rest[AbonRest::F_PREPAYED] < $duty_days_off) {
+                    return self::WARN_NEED_OFF; // ОТКЛЮЧАТЬ
+                } else {
+                    return self::WARN_MSG_PAY; // СООБЩИТЬ О НЕОБХОДИМОСТИ ПЛАТЕЖА
+                }
+            } else {
+                return self::WARN_OK; // НОРМ. Уведомление не требуется.
+            }
+        }
+    }
+
+    public static function get_warn_message(int $warn_status): string {
+        return self::WARN_TEXT[$warn_status][Lang::code()] ?? '';
+    }
 
 }

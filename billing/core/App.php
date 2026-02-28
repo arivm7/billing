@@ -13,6 +13,7 @@
 
 namespace billing\core;
 
+use billing\core\base\Lang;
 use app\models\AuthModel;
 use app\widgets\LangSelector\LangSelector;
 use app\widgets\Theme\ThemeSelector;
@@ -97,5 +98,8 @@ class App {
     }
 
 
+    static function lang(): string {
+        return App::$app->get_config('lang_curr')[Lang::F_CODE];
+    }
 
 }
