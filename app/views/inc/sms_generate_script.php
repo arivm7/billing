@@ -17,8 +17,7 @@
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
 
-
-
+use billing\core\App;
 use billing\core\base\Lang;
 use config\Icons;
 use config\tables\AbonRest;
@@ -49,8 +48,22 @@ Lang::load_inc(__FILE__);
 
 $count_selected = count(array_filter($lines, function($line) { return $line['do_send']; }));
 
-$script = "#!/bin/sh\n\n\n"
-."#".date("Y-m-d")." (". $count_selected . "/" . count($lines).")"."\n\n\n";
+/**
+ * -----------------------------------------------------------------------------
+ * Начало генерации скрипта для отправки СМС-рассылки
+ */
+
+$script  = "#!/usr/bin/env bash\n\n\n";
+$script .= "#".date("Y-m-d")." (". $count_selected . "/" . count($lines).")"."\n\n\n";
+
+$script .= "#\n";
+$script .= "# Проверяем подключение к устройству KDE Connect\n";
+$script .= "#\n";
+$script .= App::get_config('sms_sender') . " --test\n";
+$script .= "if [[ $? -ne 0 ]]; then" . "\n";
+$script .= "    echo \"Ошибка: устройство недоступно. Отправка отменена.\"" . "\n";
+$script .= "    exit 1;" . "\n";
+$script .= "fi" . "\n\n";
 
 $n = 0; 
 for ($index = 0; $index < count($lines); $index++) {
@@ -62,11 +75,16 @@ for ($index = 0; $index < count($lines); $index++) {
                     $lines[$index][AbonRest::TABLE][AbonRest::F_BALANCE]   // $balance
                     );
 
-    $script .= "<span class='text-secondary'>echo \"" . (++$n) . "/" . $count_selected . ". " . $lines[$index]['address'] . "\"</span>\n";
-    $script .= $sms['cmd'] . " " . $sms['phone'] . " \"".$sms['text'] . "\"" . ' ' . $sms['abon_id'] . "\n\n";
+    $script .= "<span class='text-secondary'>echo '" . (++$n) . "/" . $count_selected . ". " . $lines[$index]['address'] . "'</span>\n";
+    $script .= $sms['cmd'] . " " . $sms['phone'] . " \"".$sms['text'] . "\"" . ' ' . $sms['abon_id'] . "\n";
 }
 
 $script .= "";
+
+/*
+ * Завершение генерации скрипта для отправки СМС-рассылки
+ * -----------------------------------------------------------------------------
+ */
 
 ?>
 
@@ -83,7 +101,7 @@ $script .= "";
 
             <pre>
 
-----cut----
+----cut-start----
 
 <?= $script; ?>
 
@@ -95,8 +113,8 @@ $script .= "";
 
         <div class="card-footer text-end">
             
-            <button class="btn btn-outline-primary btn-sm p-1 copy-btn" data-text='<?= strip_tags($script); ?>'>
-                <img src="<?= Icons::SRC_ICON_CLIPBOARD; ?>" title="<?= __('Скопировать в clipboard') ?>" alt="[copy]" height="30rem">
+            <button class="btn btn-outline-primary btn-sm p-1 copy-btn" data-text='<?= h(strip_tags($script)); ?>'>
+                <img src="<?= Icons::SRC_ICON_CLIPBOARD; ?>" title="<?= __('Скопировать текст скрипта в clipboard') ?>" alt="[copy]" height="30rem">
             </button><br>
 
         </div>

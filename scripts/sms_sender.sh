@@ -18,8 +18,10 @@
 
 APP_TITLE="Скрипт отправки SMS через KDE Connect и регистрацию в базе https://my.ri.net.ua/api"
 COPYRIGHT="Copyright (C) 2006-2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK"
-VERSION="1.2.0 (2026-02-26)"
+VERSION="1.3.0 (2026-03-01)"
 LAST_CHANGES="\
+v1.3.0 (2026-03-01): Добавлена функция проверки доступности устройства KDE Connect 
+                     и параметр --test для предварительной провеки доступности.
 v1.2.0 (2026-02-26): Добавление команды установки скрипта в указанное место, а также для перезаписи конфига.
 v1.1.0 (2026-01-19): Добавление конфиг-файла для хранения параметров
 v1.0.0 (2026-01-18): Базовая проверка, отправка СМС и регистрация в базе
@@ -352,6 +354,11 @@ ${COLOR_INFO}Флаги:${COLOR_OFF}
     ${COLOR_USAGE}-v,  --version${COLOR_OFF}      Показать версию скрипта
     ${COLOR_USAGE}-ec, --edit-conf${COLOR_OFF}    Открыть конфиг в редакторе
     ${COLOR_USAGE}-wc, --write-conf${COLOR_OFF}   Принудительно перезаписать конфиг по умолчанию
+                        Использовать с осторожностью, поскольку в конфиге есть важные параметры, 
+                        такие как токен для API и ID устройства. 
+                        Рекомендуется сначала сделать резервную копию текущего конфига.
+    ${COLOR_USAGE}--test${COLOR_OFF}              Только проверка подключения к устройству
+
     ${COLOR_USAGE}--install [<path>]${COLOR_OFF}  Установить скрипт в указанное место (например, ${COLOR_FILENAME}${APP_NAME} --install ~/bin${COLOR_OFF})
                         Путь установки по умолчанию ${COLOR_USAGE}${INSTALL_PATH}${COLOR_OFF}.
 
@@ -407,6 +414,34 @@ EOF
 
 
 # -------------------------
+# Проверка подключения устройства к KDE Connect
+# -------------------------
+is_connect_device() {
+
+    # Первая попытка пинга
+    if kdeconnect-cli -d "$device" --ping >/dev/null 2>&1; then
+        return 0  # устройство доступно
+    fi
+
+    # Не удалось — пробуем обновить список устройств
+    echo -e "${PREFIX_INFO} Попытка обновления подключения к устройству..."
+    kdeconnect-cli --refresh >/dev/null 2>&1
+    sleep 1  # небольшой таймаут для обновления сети
+
+    # Вторая попытка пинга
+    if kdeconnect-cli -d "$device" --ping >/dev/null 2>&1; then
+        return 0
+    fi
+
+    # Всё ещё недоступно
+    echo -e "${PREFIX_ERROR} Устройство $device ($device_name) недоступно."
+    echo -e "${PREFIX_ERROR} Проверьте подключение телефона к сети и запустите KDE Connect на телефоне."
+    return 1
+}
+
+
+
+# -------------------------
 # Функция проверки номера телефона
 # -------------------------
 is_valid_phone() {
@@ -453,24 +488,40 @@ case "$1" in
         print_help
         exit 0
         ;;
+        
     -u|--usage)
         print_usage
         exit 0
         ;;
+
     -v|--version)
         print_version
         exit 0
         ;;
+
     -ec|--edit-conf)
         echo "Редактирование конфига: ${CONFIG_FILE}"
         exec "${EDITOR}" "${CONFIG_FILE}"
         exit 0
         ;;
+
     -wc|--write-conf)
         echo "перезапись конфига по умолчанию: ${CONFIG_FILE}"
         save_config_file
         exit 0
         ;;
+
+     --test)
+          echo -e "${PREFIX_INFO} Проверка подключения к устройству ${device} (${device_name})..."
+          if is_connect_device; then
+              echo -e "${PREFIX_OK} Устройство доступно"
+              exit 0
+          else
+              echo -e "${PREFIX_ERROR} Устройство недоступно"
+              exit 1
+          fi
+          ;;
+
     --install)
         echo "Установка скрипта в указанное место: $2"
         install "$2"
@@ -514,11 +565,18 @@ fi
 # -------------------------
 # Проверка перед отправкой
 # -------------------------
+
+# Проверка формата номера телефона и принадлежности разрешённому оператору
 if ! is_valid_phone "$phone"; then
     echo -e "${PREFIX_ERROR} Номер телефона '$phone' невалидный или не принадлежит разрешённому оператору."
     exit 1
 fi
 
+
+# Проверка подключённости устройства
+if ! is_connect_device "$device"; then
+    exit 1
+fi
 
 echo -e "${PREFIX_INFO} Адресат   : ${COLOR_INFO1}${phone} (через ${device_name} : ${device})${COLOR_OFF}"
 echo -e "${PREFIX_INFO} Сообщение : ${COLOR_TEXT}${msg}${COLOR_OFF}"

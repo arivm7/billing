@@ -12,8 +12,7 @@
  */
 
 /**
- * Отрисовка формы редактирования списка.
- * Вывод списка абонентов для СМС-рассылки и чекбоксов для отправки СМС
+ * Вывод списка абонентов для СМС-рассылки и чекбоксов для выбора тех, кому отправлять СМС
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
@@ -94,7 +93,7 @@ require_once DIR_LIBS . '/sms_functions.php';
                     <div class="row">
 
                         <!-- No -->
-                        <div class="col-1 fs-3 text-nowrap">
+                        <div class="col-1 fs-3 text-nowrap text-end">
                             <?= $index+1 ?>.
                         </div>
 
