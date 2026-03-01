@@ -26,6 +26,7 @@ use billing\core\Api;
 use config\Icons;
 use config\Mik;
 use config\tables\Abon;
+use config\tables\Invoice;
 use config\tables\Module;
 use config\tables\Notify;
 use config\tables\PA;
@@ -593,6 +594,32 @@ class ApiController extends AppBaseController {
                         $model = new AbonModel();
                         $user = $model->get_user($uid);
                         UserController::update_pass($user, 1);
+                    } else {
+                        MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+                    }
+                    redirect();
+                    break;
+
+
+
+                case Api::CMD_INVOICE_PAY_CONFIRM:
+                    /**
+                     * Установка флага подтверждения оплаты по счету
+                     */
+                    if (can_edit(Module::MOD_INVOICES)) {
+                        $invoice_id = intval($_GET[Api::F_INVOICE_ID] ?? 0);
+                        $model = new AbonModel();
+                        if ($model->validate_id(Invoice::TABLE, $invoice_id, Invoice::F_ID)) {
+                            $model->set_field_value(
+                                table_name: Invoice::TABLE, 
+                                field_id: Invoice::F_ID, 
+                                value_id: $invoice_id, 
+                                field: Invoice::F_IS_PAID, 
+                                value: 1,
+                                update_access_time: true);
+                        } else {
+                            MsgQueue::msg(MsgType::ERROR_AUTO, __('ID счета не верен'));
+                        }
                     } else {
                         MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
                     }
