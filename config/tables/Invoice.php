@@ -28,7 +28,8 @@ class Invoice {
 
     const URI_INDEX  = "/invoice";          // список абонентов, из которых нужно выбрать чей список счетов смотреть
     const URI_LIST   = "/invoice/list";     // список счетов указанного абонента
-    const URI_PRINT  = "/invoice/print";    // просмотра для печати счета/акта.
+    const URI_PRINT  = "/invoice/print";    // просмотра для печати счёта/акта.
+    const URI_PDF    = "/invoice/pdf";      // Генерация и вывод PDF для печати счёта/акта.
     const URI_CREATE = "/invoice/new";
     const URI_EDIT   = "/invoice/edit";
     const URI_DELETE = "/invoice/delete";
@@ -76,6 +77,9 @@ class Invoice {
     const F_URI_SHTAMP  = 'sht';    // Отображать штамп и подпись
     const F_URI_INV     = 'inv';    // Отображать Счёт
     const F_URI_ACT     = 'act';    // Отображать Акт
+    const F_URI_BUTTONS = 'btns';   // Отображать кнопки
+                                        
+                                        
 
 
 

@@ -941,7 +941,7 @@ class Api {
                             "disabled"=>($enabled ? "no" : "yes")
                         ]
                     );
-                debug($rez, '$rez_2', die:0);
+                // debug($rez, '$rez_2', die:0);
 
                 /**
                  * Проверка выполнения операции

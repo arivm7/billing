@@ -106,6 +106,8 @@ class Icons {
     const SRC_ICON_INV              = '/img/inv.svg';
     const SRC_ICON_ACT_SHTAMP       = '/img/icon_akt_shtamp.svg';
     const SRC_ICON_ACT              = '/img/icon_akt.svg';
+    const SRC_ICON_PRINT            = '/img/icon_print.png';
+    const SRC_ICON_PDF              = '/img/icon_pdf.svg';
 
     const SRC_ICON_FILER      = '/img/icon_filter.svg';
     const SRC_ICON_MAPS       = '/img/google-maps_064.png';

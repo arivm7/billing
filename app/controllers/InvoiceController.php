@@ -18,6 +18,7 @@
  */
 
 
+
 namespace app\controllers;
 
 use app\models\AbonModel;
@@ -26,7 +27,7 @@ use billing\core\base\View;
 use billing\core\MsgQueue;
 use billing\core\MsgType;
 use billing\core\Pagination;
-use Config\Auth;
+use config\Auth;
 use config\AutoCorrect;
 use config\tables\Abon;
 use config\tables\Firm;
@@ -36,6 +37,10 @@ use config\tables\PA;
 use config\tables\TP;
 use config\tables\User;
 use Valitron\Validator;
+
+require_once DIR_LIBS . '/functions.php';
+
+
 
 class InvoiceController extends AppBaseController
 {
@@ -184,6 +189,123 @@ class InvoiceController extends AppBaseController
     }
     
 
+    public static function get_filename(array $invoice, bool|int|null $show_inv = null): string {
+
+        $show_inv = (($show_inv ?? 1) ? 1 : 0);
+
+        $inv_date = (validate_date_str($invoice[Invoice::F_INV_DATE_STR])
+            ?   mb_substr($invoice[Invoice::F_INV_DATE_STR], 6, 4)."-".mb_substr($invoice[Invoice::F_INV_DATE_STR], 3, 2)
+            :   '____-__') 
+            .   '-' . sanitize_filename('No_' . $invoice[Invoice::F_INV_NO] . '_ID' . $invoice[Invoice::F_ID]);
+
+        $act_date = (validate_date_str($invoice[Invoice::F_AKT_DATE_STR])
+            ?   mb_substr($invoice[Invoice::F_AKT_DATE_STR], 6, 4)."-".mb_substr($invoice[Invoice::F_AKT_DATE_STR], 3, 2)
+            :   '____-__')
+            .   '-' . sanitize_filename('No_' . $invoice[Invoice::F_INV_NO] . '_ID' . $invoice[Invoice::F_ID]);
+
+        return  ($show_inv 
+                    ? "RILAN-INVOICE-".$invoice[Invoice::F_ABON_ID]."-".$inv_date
+                    : "RILAN-AKT-"    .$invoice[Invoice::F_ABON_ID]."-".$act_date
+                );
+
+    }
+
+
+
+    public static function generate_pdf(array $invoice, bool|int|null $show_inv = null, bool|int|null $show_act = null, bool|int|null $show_sht = null, ?string $filename = null): string {
+
+        $show_inv = (($show_inv ?? 1) ? 1 : 0);
+        $show_act = (($show_act ?? 1) ? 1 : 0);
+        $show_sht = (($show_sht ?? 1) ? 1 : 0);
+
+        $filename = ($filename ?? InvoiceController::get_filename($invoice, $show_inv) . '.pdf');
+
+        $url = build_url(URL_HOST . Invoice::URI_PRINT . '/' . $invoice[Invoice::F_ID], [
+            Invoice::F_URI_INV      => $show_inv,
+            Invoice::F_URI_ACT      => $show_act,
+            Invoice::F_URI_SHTAMP   => $show_sht,
+            Invoice::F_URI_BUTTONS  => 0
+        ]);
+
+        $output = DIR_TEMP . "/pdf_gen/{$filename}";
+        $cmd = "sudo -u ar /usr/bin/node /var/www/pdfgen/render.js " . escapeshellarg($url) . " " . escapeshellarg($output) . " 2>&1";
+        exec($cmd, $lines, $return_var);
+        // var_dump($lines, $return_var);
+
+        return $output;
+
+    }
+
+
+
+    /**
+     * Получить PDF-файл счёта
+     * использовать примерно так:
+     * https://my.ri.net.ua/invoice/pdf/2429?inv=1&act=1&sht=1
+     * @return never
+     */
+    public function pdfAction() {
+
+        if (!App::isAuth()) {
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Авторизуйтесь, пожалуйста'));
+            redirect(Auth::URI_LOGIN);
+        }
+
+        if (!can_view(Module::MOD_INVOICES)) {
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав')); // !!! регистрировать
+            redirect();
+        }
+
+        $model = new AbonModel();
+
+        if  (
+                empty($this->route[F_ALIAS]) ||
+                !is_numeric($this->route[F_ALIAS]) ||
+                !$model->validate_id(Invoice::TABLE, intval($this->route[F_ALIAS]), Invoice::F_ID)
+            ) 
+        {
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('ID счёта не указан или не верен'));
+            redirect();
+        }
+
+        /**
+         * Запись Счёта/Акта полученная из бызы
+         */
+        $invoice = $model->get_invoice(intval($this->route[F_ALIAS]));
+
+        $show_inv = (($_GET[Invoice::F_URI_INV] ?? 1) ? 1 : 0);
+        $show_act = (($_GET[Invoice::F_URI_ACT] ?? 1) ? 1 : 0);
+        $show_sht = (($_GET[Invoice::F_URI_SHTAMP] ?? 0) ? 1 : 0);
+
+        $pdf_file = InvoiceController::generate_pdf(invoice: $invoice, show_inv: $show_inv, show_act: $show_act, show_sht: $show_sht);
+
+        /**
+         * Тип передаваемого контента
+         */
+        header('Content-Type: application/pdf');
+        /**
+         * Параметры Content-Disposition
+         * 
+         * inline:      Задаёт, что содержимое должно отображаться в браузере, а не загружаться как файл. 
+         *              Это может применяться, например, для изображений или PDF-документов.
+         *              header('Content-Disposition: inline; filename="document.pdf"');
+         * 
+         * attachment:  Указывает, что содержимое должно быть загружено как файл. 
+         *              Браузер предложит сохранить файл.
+         *              header('Content-Disposition: attachment; filename="document.pdf"');
+         * 
+         * filename:    Этот параметр позволяет задать имя файла, 
+         *              которое будет предложено пользователю при сохранении. 
+         */
+        header('Content-Disposition: inline; filename="'.basename($pdf_file).'"');
+        readfile($pdf_file);
+        unlink($pdf_file);
+
+        exit(0);
+
+    }
+
+
 
     public function printAction() {
 
@@ -213,23 +335,46 @@ class InvoiceController extends AppBaseController
             redirect();
         }
 
+        /**
+         * Запись Счёта/Акта полученная из бызы
+         */
         $invoice = $model->get_invoice(intval($this->route[F_ALIAS]));
 
-        // invoice/print/1234?shtamp=1&inv=1&akt=1
         $show_inv = (($_GET[Invoice::F_URI_INV] ?? 1) ? 1 : 0);
-
         $show_act = (($_GET[Invoice::F_URI_ACT] ?? 1) ? 1 : 0);
-
         $show_sht = (($_GET[Invoice::F_URI_SHTAMP] ?? 0) ? 1 : 0);
 
+        /**
+         * Показывать кнопки. По умолчанию 1 -- показывать  
+         */
+        $show_buttons = (($_GET[Invoice::F_URI_BUTTONS] ?? 1) ? 1 : 0);
+
+        /**
+         * Абонент, для которого віписан Счёт/Акт
+         */
         $abon = $model->get_abon($invoice[Invoice::F_ABON_ID]);
+
+        /**
+         * Пользователь, для которого віписан Счёт/Акт
+         */
         $user = $model->get_user($abon[Abon::F_USER_ID]);
 
+        /**
+         * Препдриятие-провайдер. 
+         * Если в счёте указан, то оно и будет, 
+         * если не указано, то для Исполнителя будет выбрано первое предприятие из списка обслуживающих абонента
+         */
+        $agent_list = $model->get_agent_list($abon[Abon::F_ID]);
         $agent = (!empty($invoice[Invoice::F_FIRM_AGENT_ID])
                 ? $model->get_firm($invoice[Invoice::F_FIRM_AGENT_ID])
-                : $model->get_agent_list($abon[Abon::F_ID])
+                : $agent_list[array_key_first($agent_list)] ?? []
             );
 
+        /**
+         * Предприятие-абонент. 
+         * Если в счёте указано, то оно и будет,
+         * если не указано, то будет выбрано предприятие, связанное с пользователем, для которого віписан Счёт/Акт
+         */
         $contragent = (!empty($invoice[Invoice::F_FIRM_CONTRAGENT_ID])
                 ? $model->get_firm($invoice[Invoice::F_FIRM_CONTRAGENT_ID])
                 : get_rec_firm_from_user($user)
@@ -238,25 +383,29 @@ class InvoiceController extends AppBaseController
         // debug($agent, '$agent');
         // debug($contragent, '$contragent');
 
-        $title = ($show_inv 
-                ? "RILAN-INVOICE-".$invoice[Invoice::F_ABON_ID]."-".mb_substr($invoice[Invoice::F_INV_DATE_STR], 6, 4)."-".mb_substr($invoice[Invoice::F_INV_DATE_STR], 3, 2)
-                : "RILAN-AKT-"    .$invoice[Invoice::F_ABON_ID]."-".mb_substr($invoice[Invoice::F_AKT_DATE_STR], 6, 4)."-".mb_substr($invoice[Invoice::F_AKT_DATE_STR], 3, 2)
-            );
+        /**
+         * Заголовок страницы, из которого формируется имя файла для сохранения
+         */
+        $title = InvoiceController::get_filename($invoice, $show_inv);
 
         View::setMeta($title);
         $this->setVariables([
-            'title'           => $title,
-            'invoice'         => $invoice,
-            'show_sht'        => $show_sht,
-            'show_inv'        => $show_inv,
-            'show_act'        => $show_act,
-            'abon'            => $abon,
-            'user'            => $user,
-            'agent'           => $agent,
-            'contragent'      => $contragent,
+            'title'           => $title,        // Заголовок страницы, из которого формируется имя файла для сохранения
+            'invoice'         => $invoice,      // Запись Счёта/Акта полученная из бызы
+            'show_sht'        => $show_sht,     // Флаг: 1|0 -- Показывать штамп и подпись
+            'show_inv'        => $show_inv,     // Флаг: 1|0 -- Показывать Счёт
+            'show_act'        => $show_act,     // Флаг: 1|0 -- Показывать Акт
+            'abon'            => $abon,         // Абонент, для которого віписан Счёт/Акт
+            'user'            => $user,         // Пользователь, для которого віписан Счёт/Акт
+            'agent'           => $agent,        // Предприятие-провайдер.
+            'contragent'      => $contragent,   // Предприятие-абонент.
         ]);
 
-        $this->layout  = 'print';
+        if ($show_buttons) {
+            $this->layout  = 'printButtons';
+        } else {
+            $this->layout  = 'print';
+        }
         // debug($this->view, '$this->view', die:0);
     }
 
@@ -408,7 +557,6 @@ class InvoiceController extends AppBaseController
             'contragent_list' => $contragent_list,
         ]);
     }
-
 
 
 

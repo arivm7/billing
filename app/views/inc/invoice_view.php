@@ -61,36 +61,42 @@ $item_contragent = (isset($contragent_list[$item[Invoice::F_FIRM_CONTRAGENT_ID]]
             <div class='d-flex justify-content-between align-items-center'>
                 <div>
                     <!-- ID -->
-                    <span class="text-secondary">[<span class="text-info"><?=num_len($item[Invoice::F_ID], 7);?></span>] <?= __('Счёт-фактра / Акт') ?></span><br>
+                    <span class="text-secondary">[<span class="text-secondary"><?=num_len($item[Invoice::F_ID], 7);?></span>] <?= __('Счёт-фактра / Акт') ?></span><br>
                     <!-- Контрагент (Абонент) -->
                     <span class="text-secondary">[<span class="text-info"><?=num_len($item[Invoice::F_ABON_ID], 7);?></span>] <?= $abon[Abon::F_ID] ?>. <?= $abon[Abon::F_ADDRESS] ?></span>
                 </div>
                 <div>
                     <nobr>
-                    <!-- Печатать Счёт=1 Акт=1 Штамп=1 -->
-                    <?php if (can_view(Module::MOD_INVOICES)): ?>
-                    <a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=1&<?= Invoice::F_URI_ACT ?>=1&<?= Invoice::F_URI_SHTAMP ?>=1" class="btn btn-sm btn-outline-success me-1 px-0 py-1" title="<?= __('Показать для вывода на печать: '.CR.'Счёт, Акт и факсимиле'); ?>" target="_blank">
-                        <img src="<?= Icons::SRC_ICON_INV_ACT_SHTAMP ?>" alt="Счёт-Акт с подписью" height="28px"></a> <!-- <i class="bi bi-printer"></i> -->
-                    <?php endif; ?>
-                    <!-- Печатать Счёт=1 Акт=1 Штамп=0 -->
-                    <a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=1&<?= Invoice::F_URI_ACT ?>=1&<?= Invoice::F_URI_SHTAMP ?>=0" class="btn btn-sm btn-outline-success me-1 px-0 py-1" title="<?= __('Показать для вывода на печать: '.CR.'Счёт, Акт'); ?>" target="_blank">
-                        <img src="<?= Icons::SRC_ICON_INV_ACT ?>" alt="Счёт-Акт" height="28px"></a> <!-- <i class="bi bi-printer"></i> -->
-                    <!-- Печатать Счёт=1 Акт=0 Штамп=1 -->
-                    <?php if (can_view(Module::MOD_INVOICES)): ?>
-                    <a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=1&<?= Invoice::F_URI_ACT ?>=0&<?= Invoice::F_URI_SHTAMP ?>=1" class="btn btn-sm btn-outline-success me-1 px-0 py-1" title="<?= __('Показать для вывода на печать: '.CR.'Счёт с факсимиле'); ?>" target="_blank">
-                        <img src="<?= Icons::SRC_ICON_INV_SHTAMP ?>" alt="Счёт с подписью" height="28px"></a> <!-- <i class="bi bi-printer"></i> -->
-                    <?php endif; ?>
-                    <!-- Печатать Счёт=1 Акт=0 Штамп=0 -->
-                    <a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=1&<?= Invoice::F_URI_ACT ?>=0&<?= Invoice::F_URI_SHTAMP ?>=0" class="btn btn-sm btn-outline-success me-1 px-0 py-1" title="<?= __('Показать для вывода на печать: '.CR.'Счёт'); ?>" target="_blank">
-                        <img src="<?= Icons::SRC_ICON_INV ?>" alt="Счёт" height="28px"></a> <!-- <i class="bi bi-printer"></i> -->
-                    <!-- Печатать Счёт=0 Акт=1 Штамп=1 -->
-                    <?php if (can_view(Module::MOD_INVOICES)): ?>
-                    <a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=0&<?= Invoice::F_URI_ACT ?>=1&<?= Invoice::F_URI_SHTAMP ?>=1" class="btn btn-sm btn-outline-success me-1 px-0 py-1" title="<?= __('Показать для вывода на печать: '.CR.'Акт с факсимиле'); ?>" target="_blank">
-                        <img src="<?= Icons::SRC_ICON_ACT_SHTAMP ?>" alt="Акт с подписью" height="28px"></a> <!-- <i class="bi bi-printer"></i> -->
-                    <?php endif; ?>
-                    <!-- Печатать Счёт=0 Акт=1 Штамп=0 -->
-                    <a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=0&<?= Invoice::F_URI_ACT ?>=1&<?= Invoice::F_URI_SHTAMP ?>=0" class="btn btn-sm btn-outline-success me-1 px-0 py-1" title="<?= __('Показать для вывода на печать: '.CR.'Акт'); ?>" target="_blank">
-                        <img src="<?= Icons::SRC_ICON_ACT ?>" alt="Акт" height="28px"></a> <!-- <i class="bi bi-printer"></i> -->
+
+                    <!--  Кнопка печати Счёта/Акта -->
+                    <button type="button" class="btn btn-sm btn-outline-success me-1 px-1 py-1" 
+                        data-bs-toggle="modal" data-bs-target="#printModalForm"
+                        title="<?= __('Печать Счёта/Акта разными способами') ?>">
+                        <img src="<?= Icons::SRC_ICON_PRINT ?>" alt="Печать" height="28px">
+                    </button>
+
+                    <!-- Модальная форма выбора способа печати Счёта/Акта -->
+                    <div class="modal fade" id="printModalForm" tabindex="-1" aria-labelledby="printModalFormLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="printModalFormLabel">Выберите форму печати Счёта/Акта</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    
+                                    <?php include DIR_INC . '/invoice_print_form.php'; ?>
+
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary">Print</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
                     <!-- Статус оплачен ли счёт -->
                     <?php if (can_edit(Module::MOD_INVOICES)): ?>
                         <div class="btn btn-sm btn-outline-success me-1 px-1 py-1">
@@ -120,12 +126,12 @@ $item_contragent = (isset($contragent_list[$item[Invoice::F_FIRM_CONTRAGENT_ID]]
                 <!-- Исполнитель. Провайдер. Агент -->
                 <tr title="<?= __('Предприятие-Провайдер') ?>, <?=CR;?><?= __('Предприятие, привязанное к ТП, на котоорой производится обслуживание') ?>.">
                     <td><?= __('Агент') ?></td>
-                    <td><?=$item[Invoice::F_FIRM_AGENT_ID]." ".$item_agent[Firm::F_NAME_SHORT] ?></td>
+                    <td><span class="text-secondary fs-6 font-monospace"><?= num_len($item[Invoice::F_FIRM_AGENT_ID], 3) ?></span> <?= $item_agent[Firm::F_NAME_SHORT] ?></td>
                 </tr>
                 <!-- Заказчик. Абонент. Контрагент -->
                 <tr title="<?= __('Предприятие-Абонент') ?>,<?=CR;?><?= __('Предприятие, привязанное к пользователю') ?>.">
                     <td><?= __('Контрагент') ?></td>
-                    <td><?=$item[Invoice::F_FIRM_CONTRAGENT_ID]." ".$item_contragent[Firm::F_NAME_SHORT] ?></td>
+                    <td><span class="text-secondary fs-6 font-monospace"><?= num_len($item[Invoice::F_FIRM_CONTRAGENT_ID], 3) ?></span> <?= $item_contragent[Firm::F_NAME_SHORT] ?></td>
                 </tr>
                 <!-- -->
                 <tr>
@@ -138,7 +144,7 @@ $item_contragent = (isset($contragent_list[$item[Invoice::F_FIRM_CONTRAGENT_ID]]
                                 <td width="34%">
                                     <div class='d-flex justify-content-between align-items-center px-3'>
                                         <span class="text-secondary"><?= __('СФ №') ?></span>
-                                        <span class="text-success"><?=$item[Invoice::F_INV_NO]?></span>
+                                        <span class="text-success fs-6 fw-bold"><?=$item[Invoice::F_INV_NO]?></span>
                                     </div>
                                 </td>
                                 <!-- Дата счёта (строка) -->

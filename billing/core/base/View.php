@@ -189,8 +189,11 @@ class View {
 
 
 
-    public static function getMeta(): string {
-        return    "<title>" . __('Rilan') . " :: " . self::$meta[self::META_TITLE] . "</title>"
+    public static function getMeta(string|null $title_prefix = null, string $separator = " :: "): string {
+        if ($title_prefix === null) {
+            $title_prefix = __('Rilan') . $separator;
+        }
+        return    "<title>" . $title_prefix . self::$meta[self::META_TITLE] . "</title>"
                 . "<meta name=description content='" . self::$meta[self::META_DESCR] . "'>"
                 . "<meta name=keywords content='" . self::$meta[self::META_KEYWORDS] . "'>";
     }

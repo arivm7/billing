@@ -19,19 +19,19 @@
 
 /**
  * Данные переданные из контроллера
- * @var string $title
- * @var array $invoice
- * @var int $show_sht       = 1|0
- * @var int $show_inv       = 1|0
- * @var int $show_act       = 1|0
- * @var array $abon
- * @var array $user
- * @var array $agent
- * @var array $contragent
+ * 
+ * @var string $title           // Заголовок страницы, из которого формируется имя файла для сохранения
+ * @var array  $invoice         // Запись Счёта/Акта полученная из бызы
+ * @var int    $show_sht        // Флаг: 1|0 -- Показывать штамп и подпись
+ * @var int    $show_inv        // Флаг: 1|0 -- Показывать Счёт
+ * @var int    $show_act        // Флаг: 1|0 -- Показывать Акт
+ * @var array  $abon,           // Абонент, для которого віписан Счёт/Акт
+ * @var array  $user,           // Пользователь, для которого віписан Счёт/Акт
+ * @var array  $agent,          // Предприятие-провайдер.
+ * @var array  $contragent,     // Предприятие-абонент.
  * 
  */
 
-use config\Icons;
 
 if ($show_inv) {
     require DIR_INC . '/print_invoice.php';

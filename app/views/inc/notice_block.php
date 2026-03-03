@@ -20,10 +20,10 @@
 
 
 /**
- * @var string $notice_title
- * @var string $notice_text
- * @var int $sms_print_num
- * @var int $first_line_attr
+ * @var string $notice_title    -- Заголовок блока информера
+ * @var string $notice_text     -- Текст информера
+ * @var int $sms_print_num      -- Номер информера в массиве информеров на странице (для сохранения в базе при необходимости)
+ * @var int $first_line_attr    -- Опциональный параметр для первой строки информера для визуального оформления на странице
  */
 
 use config\Icons;

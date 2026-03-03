@@ -37,8 +37,8 @@ require_once DIR_LIBS . '/billing_functions.php';
 const PAStatusDescription = [
     PAStatus::FUTURE->value => [
         'en' => 'Future',
-        'ru' => 'Будет',
-        'uk' => 'Буде',
+        'ru' => 'Будущий',
+        'uk' => 'Майбутній',
     ],
     PAStatus::CURRENT->value => [
         'en' => 'Working',

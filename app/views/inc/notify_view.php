@@ -21,6 +21,7 @@ use billing\core\Pagination;
 use config\tables\Notify;
 use billing\core\base\Lang;
 Lang::load_inc(__FILE__);
+
 /**
  * @var array $sms  данные одной записи из таблицы sms_list
  *                  ключи: id, abon_id, type_id, date, text, phonenumber, method
@@ -29,7 +30,7 @@ Lang::load_inc(__FILE__);
 /** @var Pagination $pager */
 
 ?>
-<!-- Перебор подключенных прайсовых фрагментов -->
+
 <?php if ($abon[Notify::TABLE]) : ?>
 
     <?=$pager ?? "";?>

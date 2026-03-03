@@ -51,8 +51,8 @@ define('CH_TRIANGLE_DOWN',     "▼");
 
 
 const ACCURACY     = 10000; // точность сравнения float значений
-const LEN_DOG_NUM_MIN =  3; // Минимальное количество знаков в номере договора
-const LEN_DOG_NUM_MAX = 12; // Максимальное количество знаков в номере договора
+const LEN_DOG_NUM_MIN = 3; // Минимальное количество знаков в номере договора
+const LEN_DOG_NUM_MAX = 9; // Максимальное количество знаков в номере договора
 
 
 
@@ -123,7 +123,7 @@ function debug(mixed $value, string $comment = '', DebugView $debug_view = Debug
         }
     }
     echo "</pre>";
-    echo "<hr>";
+    echo "<hr>\n";
     if ($die) die();
 }
 
@@ -816,7 +816,7 @@ function redirect_to(string $host = URL_HOST, string $path = "/") {
 
 
 
-function redirect_(string | false $url = false) {
+function redirect_(string|false $url = false) {
     if ($url) {
         $redirect = $url;
     } else {
@@ -828,7 +828,7 @@ function redirect_(string | false $url = false) {
 
 
 
-function redirect(string | false $url = false) {
+function redirect(string|false $url = false) {
     if ($url) {
         $redirect = $url;
     } else {
@@ -839,7 +839,11 @@ function redirect(string | false $url = false) {
         // Если реферер совпадает с текущим URL или реферер отсутствует,
         // перенаправляем на главную
         if (parse_url($referer, PHP_URL_PATH) === parse_url($current_url, PHP_URL_PATH)) {
-            $redirect = '/';
+            // debug("Redirect loop detected.");
+            // debug( $current_url, "Current URL: ");
+            // debug($referer, "Referer: ", die: 1);
+            // $redirect = '/';
+            $redirect = $referer;
         } else {
             $redirect = $referer;
         }
@@ -1925,7 +1929,7 @@ function isJabberFull(string $value): bool {
 /**
  * В каждом ППП есть строка в которой через ',' перечисляются поддерживаемые АПИ.
  * Эта функция проверяет наличие указанно АПИ в этой строке
- * и возвражает true / false
+ * и возвращает true / false
  * @param array $ppp   -- запись ППП
  * @param string $api  -- искомый АПИ
  * @return boolean
@@ -2456,6 +2460,13 @@ function sort_array_by_field_(array &$array, string $compare_field, int $field_t
 }
 
 
+
+/**
+ * Извлекает числовую часть строки, включая дробную часть.
+ * @param string $str -- строка для извлечения числа
+ * @param int $max_float_part -- максимальное количество знаков после запятой
+ * @return float|null -- извлечённое число или null, если не удалось извлечь
+ */
 function get_numeric_part(string $str, int $max_float_part = LEN_DOG_NUM_MAX): float|null {
     $subject = $str;
     $pattern = "/^\s*\-?\d+(\s\d{".LEN_DOG_NUM_MIN."})*([.,]\d{1,$max_float_part})?/";
@@ -2517,4 +2528,61 @@ function str_contains_array(string $haystack, array|string $needle, bool $case_s
 }
 
 
+
+/**
+ * Поиск записи в массиве по значению указанного поля
+ * @param array $rows -- массив строк (каждая строка — ассоциативный массив)
+ * @param string $field -- имя поля для поиска
+ * @param mixed $value -- искомое значение
+ * @param callable|null $cmp -- функция сравнения (по умолчанию ===)
+ * @return array|null -- найденная строка или null, если не найдена
+ */
+function find_row_by_field_value(
+    array $rows,
+    string $field,
+    mixed $value,
+    callable|null $cmp = null
+): array|null {
+    $cmp ??= fn($a, $b) => $a === $b;
+
+    foreach ($rows as $row) {
+        if (isset($row[$field]) && $cmp($row[$field], $value)) {
+            return $row;
+        }
+    }
+    return null;
+}
+
+
+
+/**
+ * Заменяет любые запрещённые для имён файлов символы. 
+ * Сохраняет расширение, если оно есть.
+ * @param string $filename
+ * @param string $replace -- строка для замены запрещённых символов (по умолчанию '_')
+ * @param bool $cyrillic -- разрешать ли кириллицу (по умолчанию нет, т.е. разрешены только латинские буквы, цифры, дефис, точка и подчёркивание)
+ * @return array|string|null
+ */
+function sanitize_filename(string $filename, string $replace = '_', bool $cyrillic = false): string {
+    // Убираем всё, что не буквы, цифры, точка, дефис или подчёркивание
+    if ($cyrillic) {
+        return preg_replace('/[^a-zA-Z0-9\-\._а-яА-ЯёЁ]/u', $replace, $filename);
+    } else {
+        return preg_replace('/[^a-zA-Z0-9\-\._]/', $replace, $filename);
+    }
+}
+
+/**
+ * Формирует URL с GET-параметрами
+ *
+ * @param string $baseUrl Базовый URL (например, https://my.ri.net.ua/api/cmd)
+ * @param array $params Ассоциативный массив параметров GET
+ * @return string Полный URL с корректной кодировкой параметров
+ */
+function build_url(string $baseUrl, array $params = []): string {
+    if (empty($params)) { return $baseUrl; }
+    // Разделитель ? или & если уже есть параметры в $baseUrl
+    $separator = strpos($baseUrl, '?') === false ? '?' : '&';
+    return $baseUrl . $separator . http_build_query($params, '', '&', PHP_QUERY_RFC3986);
+}
 

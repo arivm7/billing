@@ -33,6 +33,7 @@ use config\tables\PA;
 use config\tables\TP;
 use config\tables\User;
 use DebugView;
+use Knp\Snappy\Pdf;
 use MikrotikApi\MikroLink;
 use PAStatus;
 
@@ -425,8 +426,8 @@ class ApiController extends AppBaseController {
         //     [ip] => 10.1.4.161
         //     [ena] => 1
         // )
-        // debug($_GET, '$_GET');
-        // debug($this->route, '$this->route', die:0);
+        // debug($_GET, '$_GET', die: 1);
+        // debug($this->route, '$this->route', die:1);
 
         if (!App::isAuth()) {
             redirect('/');
@@ -626,7 +627,7 @@ class ApiController extends AppBaseController {
                     redirect();
                     break;
 
-
+                    
 
                 default:
                     # code...

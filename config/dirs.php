@@ -35,3 +35,4 @@ define('DIR_INC',               DIR_VIEWS . '/inc');
 define('DIR_TEMP',              DIR_ROOT  . '/tmp');
 define('DIR_LOG',               DIR_TEMP  . '/log');
 define('DIR_CACHE',             DIR_TEMP  . '/cache');
+define('DIR_FONTS',             DIR_ROOT  . '/app/fonts');

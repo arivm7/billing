@@ -18,17 +18,19 @@
  */
 
 
+
 /**
  * Данные переданные из контроллера
- * @var string $title
- * @var array $invoice
- * @var int $show_sht       = 1|0
- * @var int $show_inv       = 1|0
- * @var int $show_act       = 1|0
- * @var array $abon
- * @var array $user
- * @var array $agent
- * @var array $contragent
+ * 
+ * @var string $title           // Заголовок страницы, из которого формируется имя файла для сохранения
+ * @var array  $invoice         // Запись Счёта/Акта полученная из бызы
+ * @var int    $show_sht        // Флаг: 1|0 -- Показывать штамп и подпись
+ * @var int    $show_inv        // Флаг: 1|0 -- Показывать Счёт
+ * @var int    $show_act        // Флаг: 1|0 -- Показывать Акт
+ * @var array  $abon,           // Абонент, для которого віписан Счёт/Акт
+ * @var array  $user,           // Пользователь, для которого віписан Счёт/Акт
+ * @var array  $agent,          // Предприятие-провайдер.
+ * @var array  $contragent,     // Предприятие-абонент.
  * 
  */
 
@@ -36,21 +38,26 @@ use config\Icons;
 use billing\core\base\Lang;
 use config\tables\Invoice;
 use config\tables\Firm;
+use FontLib\Font;
 
 Lang::load_inc(__FILE__);
 
 ?>
 <style type="text/css">
+
+    @page {
+        size: A4;
+        margin: 0;
+    }
+
     body {
-        width: 17cm;
+
+        width: 170mm;
+        font-family: Arial, sans-serif;
+        font-size: 9pt;     /* вместо 12px */
+        margin-left: 25mm;
+        margin-top: 15mm;
         /* height:26cm; */
-        font-family: Arial, Helvetica, sans-serif;
-        font-size: 12px;
-        /* line-height: 14px; */
-        left: 1cm;
-        /* <body leftmargin="число"> */
-        margin-left: 1.5cm; /* 28.346px; 1 см */
-        margin-top: 0cm;
     }
 
     h1 {
@@ -59,7 +66,7 @@ Lang::load_inc(__FILE__);
     }
 
     table.think {
-        border: 1px solid;
+        border-style: solid;
         border-width:1px;
         border-color:#000000;
         border-collapse:collapse;
@@ -69,7 +76,9 @@ Lang::load_inc(__FILE__);
         background:#CCCCCC;
     }
     td.b {
-        border: 1px solid #000000;
+        border-width:1px;
+        border-style: solid;
+        border-color:#000000;
         border-top-width:0px;
         border-left-width:0px;
         border-right-width:0px;
@@ -102,11 +111,11 @@ Lang::load_inc(__FILE__);
 <h1 align="center"><font size="3">РАХУНОК-ФАКТУРА № <?= $invoice[Invoice::F_INV_NO]; ?><br />від <?= $invoice[Invoice::F_INV_DATE_STR]; ?>&nbsp;р.</font></h1>
 <?php if ($show_sht): ?>
     <?php if ($show_inv): ?>
-        <div style='position: absolute; left: 40mm; top: 90mm; width:44mm; height: 44.185mm; z-index: 3; overflow: visible;'>
+        <div style='position: absolute; left: 50mm; top: 105mm; width:44mm; height: 44.185mm; z-index: 3; overflow: visible;'>
             <img src='<?= Icons::SRC_FAXIMILE ?>' width='100%' height='100%' /></div>
     <?php endif; ?>
     <?php if ($show_act): ?>
-        <div style='position: absolute; left: 25mm; top: 210mm; width:44mm; height: 44mm; z-index: 3; overflow: visible;'>
+        <div style='position: absolute; left: 45mm; top: 220mm; width:44mm; height: 44mm; z-index: 3; overflow: visible;'>
             <img src='<?= Icons::SRC_FAXIMILE ?>' width='100%' height='100%' /></div>
     <?php endif; ?>
 <?php endif; ?>
@@ -186,7 +195,7 @@ Lang::load_inc(__FILE__);
 &nbsp;<br />
 &nbsp;<br />
 &nbsp;<br />
-<table width="60%">
+<table width="90%">
     <tr>
         <td align="left">Керівник</td>
         <td width="50%" class="b">&nbsp;</td>
@@ -197,7 +206,7 @@ Lang::load_inc(__FILE__);
 
 <!-- АКТ -->
 <?php if($show_act == 1): ?>
-<hr noshade="noshade" size="1px">
+<hr noshade="noshade" size=1 width="100%" color="#000000" >
 <p>&nbsp;</p>
   <h1 align="center"><font size="3">АКТ</font><font size="3"> № <?= $invoice[Invoice::F_INV_NO]; ?><br />
 від <?= $invoice[Invoice::F_AKT_DATE_STR]; ?>&nbsp;р.</font></h1>

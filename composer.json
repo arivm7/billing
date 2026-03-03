@@ -26,7 +26,8 @@
 		"vlucas/valitron": "^1.4",
 		"ezyang/htmlpurifier": "^4.18",
 		"imafaz/mikrolink": "^1.0",
-		"liqpay/liqpay": "^1.4"
+		"liqpay/liqpay": "^1.4",
+		"knplabs/knp-snappy": "^1.6"
 	},
     "config": {
         "platform": {

@@ -1553,6 +1553,12 @@ class AbonModel extends UserModel {
 
 
 
+    /**
+     * Возвращает список предприятий, обслуживающих абонента.
+     * Выбирается терез ПФ --> ТП --> Обслуживаемое Предприятие
+     * @param int $abon_id
+     * @return array
+     */
     function get_agent_id_list(int $abon_id): array {
         $pa_list = $this->get_pa_by_abon_id($abon_id, active: 1);
         $tp_id_list = array_unique(array_column($pa_list, PA::F_TP_ID));

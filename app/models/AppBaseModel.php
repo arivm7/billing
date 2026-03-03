@@ -13,6 +13,7 @@
 
 namespace app\models;
 
+use billing\core\App;
 use billing\core\base\Lang;
 use billing\core\base\Model;
 use config\Icons;
@@ -285,7 +286,7 @@ class AppBaseModel extends Model
      * @return string
      */
     function get_sql_tp_list(
-            int|null    $user_id = null,    // Вернуть список для указанного пользователя
+            int|null    $user_id = null,    // Вернуть список для указанного пользователя из TSUserTp::TABLE
             array|null  $id_list = null,    // Массив со списком нужных ТП
             int|null    $status  = null,    // 1 — Работает, 0 — Отключен
             int|null    $deleted = null,    // 1 — ТП демонтирована, 0 — Можно вернуть в работу
@@ -294,7 +295,7 @@ class AppBaseModel extends Model
             ): string
     {
         if (empty($user_id) && empty($id_list)) {
-            $user_id = $_SESSION[User::SESSION_USER_REC][User::F_ID];
+            $user_id = App::get_user_id();
         }
 
         if (!is_null($id_list)) {
@@ -362,21 +363,21 @@ class AppBaseModel extends Model
     /**
      * Возвращает спискок ТП.
      * Все параметры передаются для формированя SQL с помощью get_sql_tp_list().
-     * @param int|null $user_id
-     * @param array|null $id_list
-     * @param int|null $status
-     * @param int|null $deleted
-     * @param int|null $managed
-     * @param int|null $rang
+     * @param int|null $user_id     -- Вернуть список для указанного пользователя из TSUserTp::TABLE, если не указан, то для текущего авторизованного пользователя
+     * @param array|null $id_list   -- Массив со списком нужных ТП
+     * @param int|null $status      -- NULL - все | 1 — Работает, 0 — Отключен
+     * @param int|null $deleted     -- NULL - все | 1 — ТП демонтирована, 0 — Можно вернуть в работу
+     * @param int|null $managed     -- NULL - все | 1 — Управляемая (Mik)
+     * @param int|null $rang        -- NULL - все | 1 — Абонентский узел. 2 — AP...
      * @return array
      */
     function get_tp_list(
-            int|null    $user_id = null,    // Вернуть список для указанного пользователя
-            array|null  $id_list = null,    // Массив со списком нужных ТП
-            int|null    $status  = null,    // 1 — Работает, 0 — Отключен
-            int|null    $deleted = null,    // 1 — ТП демонтирована, 0 — Можно вернуть в работу
-            int|null    $managed = null,    // 1 — Управляемая (Mik)
-            int|null    $rang    = null     // 1 — Абонентский узел. 2 — AP...
+            int|null    $user_id = null,
+            array|null  $id_list = null,
+            int|null    $status  = null,
+            int|null    $deleted = null,
+            int|null    $managed = null,
+            int|null    $rang    = null
             ): array
     {
         $list = $this->get_rows_by_sql(
@@ -431,6 +432,7 @@ class AppBaseModel extends Model
                     $add = ($tp_one['deleted'] == $deleted);
                 }
                 if ($add) {
+                    $this->normalize_tp($tp_one);
                     $tp_list[] = $tp_one;
                 }
             }
