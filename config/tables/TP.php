@@ -60,7 +60,7 @@ class TP {
     const F_RANG_ID                = 'rang_id';                 // 'Ранг узла: 1 — Абонентский узел | 2 — AP | 3 — Агрегатор AP | 4 — Bridge AP | 5 — Bridge Client | 10 — Хостинговая тех. площадка | 100 — Биллинг',
     const F_UPLINK_ID              = 'uplink_id';               // 'ID Узела "верхнего" уровня, от которого идёт сигнал к этому узлу (не обязательно маршрутизатор)',
     const F_UPLINK                 = 'uplink';        // Массив // Узел "верхнего" уровня, от которого идёт сигнал к этому узлу (не обязательно маршрутизатор)
-    const F_DEFAULT_PRICE_ID       = 'default_price_id';        // 'Прайс По_умолчанию для этой ТП',
+    const F_DEFAULT_PRICE_ID       = 'default_price_id';        // 'Прайс По_умолчанию для ТП',
     const F_DESCRIPTION            = 'description';             // 'Описание ТП',
     const F_COST_PER_M             = 'cost_per_M';              // 'Стоимость Эксплуатации/аренды/абонплаты техплощадки',
     const F_COST_PER_M_DESCRIPTION = 'cost_per_M_description';  // 'Описание стоимости эксплуатации ТП',

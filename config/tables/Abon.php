@@ -13,6 +13,9 @@
 
 namespace config\tables;
 
+use billing\core\App;
+use billing\core\base\Lang;
+
 /**
  * Description of Abon.php
  *
@@ -91,25 +94,37 @@ class Abon {
         ];
 
     public const DESCRIPTIONS = [
+        self::F_IS_PAYER => [
+            Lang::C_EN => 'Subscriber "payer", i.e. uses the service and pays for it (should pay)',
+            Lang::C_RU => 'Абонент "плательщик", т.е. пользуется услугой и оплачивает её (должен оплачивать)',
+            Lang::C_UK => 'Абонент "платник", т.е. користується послугою і оплачує її (повинен оплачивать)',
+        ],
         self::F_DUTY_MAX_WARN => [
-            'en' => 'The number of prepaid days, at the intersection of which, to send a warning to the subscriber about the need for payment',
-            'ru' => 'Количество предоплаченных дней, при пересечении которых, отправлять абоненту предупреждение о необходимости оплаты',
-            'uk' => 'Кількість передплачених днів, при перетині яких, відправляти абоненту попередження про необхідність оплати',
+            Lang::C_EN => 'The number of prepaid days, at the intersection of which, to send a warning to the subscriber about the need for payment',
+            Lang::C_RU => 'Количество предоплаченных дней, при пересечении которых, отправлять абоненту предупреждение о необходимости оплаты',
+            Lang::C_UK => 'Кількість передплачених днів, при перетині яких, відправляти абоненту попередження про необхідність оплати',
         ],
         self::F_DUTY_MAX_OFF => [
-            'en' => 'The number of prepaid days when crossing which to disable services',
-            'ru' => 'Количество предоплаченных дней, при пересечении которых, отключать услуги',
-            'uk' => 'Кількість передплачених днів, при перетині яких, відключати послуги',
+            Lang::C_EN => 'The number of prepaid days when crossing which to disable services',
+            Lang::C_RU => 'Количество предоплаченных дней, при пересечении которых, отключать услуги',
+            Lang::C_UK => 'Кількість передплачених днів, при перетині яких, відключати послуги',
         ],
         self::F_DUTY_AUTO_OFF => [
-            'en' => 'Automatically disable services, pause the subscriber, when crossing the value of F_DUTY_MAX_OFF',
-            'ru' => 'Автоматически отключать услуги, ставить на паузу абонента, при пересечении значения F_DUTY_MAX_OFF',
-            'uk' => 'Автоматично відключати послуги, ставити на паузу абонента, при перетині значення F_DUTY_MAX_OFF',
+            Lang::C_EN => 'Automatically disable services, pause the subscriber, when crossing the value of F_DUTY_MAX_OFF',
+            Lang::C_RU => 'Автоматически отключать услуги, ставить на паузу абонента, при пересечении значения F_DUTY_MAX_OFF',
+            Lang::C_UK => 'Автоматично відключати послуги, ставити на паузу абонента, при перетині значення F_DUTY_MAX_OFF',
         ],
         self::F_DUTY_WAIT_DAYS => [
-            'en' => 'The number of waiting days before the service is turned off (to wait for payment when manually turned on after auto-off)',
-            'ru' => 'Количество дней ожидания перед выключением услуги (для ожидания оплаты при ручном включении после автоотключения)',
-            'uk' => 'Кількість днів очікування перед вимиканням послуги (для очікування оплати при ручному включенні після автовідключення)',
+            Lang::C_EN => 'The number of waiting days before the service is turned off (to wait for payment when manually turned on after auto-off)',
+            Lang::C_RU => 'Количество дней ожидания перед выключением услуги (для ожидания оплаты при ручном включении после автоотключения)',
+            Lang::C_UK => 'Кількість днів очікування перед вимиканням послуги (для очікування оплати при ручному включенні після автовідключення)',
         ],
     ]; 
+
+
+    public static function description(string $field_name, string|null $lang = null) {
+        if (is_null($lang)) { $lang = App::lang(); }
+        return self::DESCRIPTIONS[$field_name][$lang] ?? '';
+    }
+
 }

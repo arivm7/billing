@@ -118,7 +118,7 @@ class ErrorHandler {
 
 
             if (self::ERROR_TO_LOG_FILE) {
-                $CR = chr(13) . chr(10) . PHP_EOL; // ;
+                $CR = PHP_EOL; // chr(13) . chr(10) ;
                 $msg =  ($prefix ? $prefix . ": " : "")
                         . "Ошибка: {$message} | Файл: {$file} | Стр.: {$line}{$CR}===={$CR}";
                 $log->error($msg);
@@ -145,7 +145,7 @@ class ErrorHandler {
 
         /* errno  https://www.php.net/manual/ru/errorfunc.constants.php */
 
-//        debug($response_code, comment: 'RESPONSE CODE');
+        // debug($response_code, comment: 'RESPONSE CODE');
 
         http_response_code($response_code);
         if ($response_code == 404 && !self::DEBUG ) {

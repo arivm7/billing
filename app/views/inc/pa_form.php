@@ -34,8 +34,8 @@ require_once DIR_LIBS . '/form_functions.php';
 require_once DIR_LIBS . '/inc_functions.php';
 
 /** 
- * @var array $user
- * @var array $abon
+ * @var array $user -- Владелец абонента
+ * @var array $abon -- Абонент, которому принадлежит ПФ
  * @var array $item -- ПФ. элемент из функции Аккордеона
  * @var array $pa -- ПФ. элемент из контроллера
  * @var array $price -- Прайс, установленны сейчас в ПФ
@@ -276,7 +276,7 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
 -->
 
 <?php if (can_add(Module::MOD_PA)) : ?> 
-<?php if (isset($item[PA::F_ID])) : ?> 
+<?php if (isset($item[PA::F_ID])) : ?> <!-- Редактирование имеющегося ПФ, а не нового -->
 <div class="col-12 col-md-10 col-lg-8">
     <div class="card mb-4 w-100 min-w-700">
         <div class="card-header">

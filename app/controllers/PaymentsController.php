@@ -125,7 +125,7 @@ class PaymentsController extends AppBaseController {
         }
         
         // const F_DATE            = "pay_date";       // Дата платежа
-        if (empty($pay[Pay::F_DATE]) || !validate_timestamp($pay[Pay::F_DATE])) {
+        if (empty($pay[Pay::F_DATE]) || !validate_timestamp($pay[Pay::F_DATE]) || $pay[Pay::F_DATE] > time()) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('Дата платежа не верна'));
             $valid = false;
         }
@@ -152,6 +152,44 @@ class PaymentsController extends AppBaseController {
         }
 
         return $valid;
+    }
+
+
+
+    /**
+     * Проверяет нуждается ли абонент в пересчете остатков при изменении платежа.
+     * На вход передаётся массив тех полей, которые будут изменены.
+     * Если они входят в список полей RECALC_FIELDS, то возвращается true.
+     * @param array $diff_rec -- изменённые поля для записи в базу
+     * @return bool
+     */
+    function need_recalc(array $diff_rec): bool {
+        foreach (Pay::RECALC_FIELDS as $field) {
+            if (array_key_exists($field, $diff_rec)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    /**
+     * Сравнивает новую запись платежа с имеющейся в базе
+     * и возвращает массив только изменённых полей из списка SAVE_FIELDS
+     * SAVE_FIELDS -- список полей записи платежа без служебных данных, на подобие даты создания самой записи в базе и датя изменения в базе.
+     * @param array $new_rec -- новая запись платежа
+     * @return array -- массив изменённых полей
+     */
+    function get_diff_fields(array $new_rec): array {
+        $model = new AbonModel();
+        $old_rec = $model->get_row_by_id(table_name: Pay::TABLE, id_value: $new_rec[Pay::F_ID], field_id: Pay::F_ID);
+        $diff = [];
+        foreach (Pay::SAVE_FIELDS as $key) {
+            if (!isset($old_rec[$key]) || $old_rec[$key] != $new_rec[$key]) {
+                $diff[$key] = $new_rec[$key];
+            }
+        }
+        return $diff;
     }
 
 
@@ -199,11 +237,20 @@ class PaymentsController extends AppBaseController {
                 MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
                 redirect();
             }
-            $pay[Pay::F_MODIFIED_DATE] = time();
-            $pay[Pay::F_MODIFIED_UID] = App::get_user_id();
-            if ($model->update_row_by_id(table: Pay::TABLE,  row: $pay,  field_id: Pay::F_ID)) {
+
+            $pay_diff = $this->get_diff_fields($pay);
+            if (empty($pay_diff)) {
+                MsgQueue::msg(MsgType::INFO_AUTO, __('Нет изменений для сохранения'));
+                redirect();
+            }
+            $pay_diff[Pay::F_ID] = $pay[Pay::F_ID];
+            $pay_diff[Pay::F_MODIFIED_DATE] = time();
+            $pay_diff[Pay::F_MODIFIED_UID] = App::get_user_id();
+            if ($model->update_row_by_id(table: Pay::TABLE,  row: $pay_diff,  field_id: Pay::F_ID)) {
                 MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Платёж обновлен'));
-                $model->recalc_abon($pay[Pay::F_ABON_ID]);
+                if ($this->need_recalc($pay_diff)) {
+                    $model->recalc_abon($pay[Pay::F_ABON_ID]);
+                }
                 redirect(url: Pay::URI_LIST.'/'.$pay[Pay::F_ABON_ID]);
             } else {
                 $_SESSION[SessionFields::FORM_DATA] = $pay;
@@ -356,7 +403,7 @@ class PaymentsController extends AppBaseController {
 
         $pager = new Pagination(
                 per_page: App::get_config('payments_per_page'),
-                sql: $model->get_sql_payments(abon_id: $abon_id, pay_type: Pay::TYPE_MONEY));
+                sql: $model->get_sql_payments(abon_id: $abon_id, pay_type: (can_use(Module::MOD_PAYMENTS) ? null : Pay::TYPE_MONEY)));
         $payments = $pager->get_rows();
 
         /**

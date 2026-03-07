@@ -68,7 +68,7 @@ $col3_attr = 'class="text-center align-middle font-monospace text-sm-start ps-3 
                     <?=__('Contacts');?>
                     <table class="table table-hover table-bordered table-striped mt-3">
                         <tr>
-                            <th <?=$col1_attr;?>><?=__('Phone');?>&nbsp;<span class="badge text-bg-secondary"><img src="/public/bootstrap/icons/icons/telephone.svg"></span></th>
+                            <th <?=$col1_attr;?>><?=__('Phone');?>&nbsp;<span class="badge text-bg-secondary"><img src="<?= Icons::BOOTSTRAP_PHONE ?>"></span></th>
                             <td <?=$col2_attr;?>>
                                 <?= get_html_content_left_right(
                                         left: h($user[User::F_PHONE_MAIN]),
@@ -80,14 +80,17 @@ $col3_attr = 'class="text-center align-middle font-monospace text-sm-start ps-3 
                                        type="checkbox" disabled <?= $user[User::F_SMS_DO_SEND] ? 'checked' : '' ?>></td>
                         </tr>
                         <tr>
-                            <th <?=$col1_attr;?>><?=__('Email');?>&nbsp;<span class="badge text-bg-secondary"><img src="/public/bootstrap/icons/icons/envelope-at.svg"></span></th>
+                            <th <?=$col1_attr;?>><?=__('Email');?>&nbsp;<span class="badge text-bg-secondary"><img src="<?= Icons::BOOTSTRAP_EMAIL ?>"></span></th>
                             <td <?=$col2_attr;?>>
                                 <?php
                                     if ($user[User::F_EMAIL_MAIN]) {
                                         echo get_html_content_left_right
                                         (
                                                 left:  h($user[User::F_EMAIL_MAIN]),
-                                                right: url_email(email: $user[User::F_EMAIL_MAIN], src: Icons::SRC_ICON_EMAIL)
+                                                right: can_use(Module::MOD_USER_CARD)
+                                                        ? url_email_form(to: $user[User::F_EMAIL_MAIN], src: Icons::BOOTSTRAP_EMAIL, height:"13pt", attributes: 'class="badge text-bg-info"') 
+                                                            . ' ' . url_email(email: $user[User::F_EMAIL_MAIN], src: Icons::SRC_ICON_EMAIL)
+                                                        : ""
                                         );
                                     }
                                 ?>
@@ -97,14 +100,14 @@ $col3_attr = 'class="text-center align-middle font-monospace text-sm-start ps-3 
                                        type="checkbox" disabled <?= $user[User::F_EMAIL_DO_SEND] ? 'checked' : '' ?>></td>
                         </tr>
                         <tr>
-                            <th <?=$col1_attr;?>><?=__('Address for invoices');?>&nbsp;<span class="badge text-bg-secondary"><img src="/public/bootstrap/icons/icons/mailbox.svg"></span></th>
+                            <th <?=$col1_attr;?>><?=__('Address for invoices');?>&nbsp;<span class="badge text-bg-secondary"><img src="<?= Icons::BOOTSTRAP_ADDRESS ?>"></span></th>
                             <td <?=$col2_attr;?>><?= cleaner_html($user[User::F_ADDRESS_INVOICE]) ?></td>
                             <td <?=$col3_attr;?>><input title="<?=__('Send paper documents');?>"
                                                         type="checkbox" disabled <?= $user[User::F_INVOICE_DO_SEND] ? 'checked' : '' ?>></td>
                         </tr>
                         <?php if ($user[User::F_TELEGRAM]) : ?>
                         <tr>
-                            <th <?=$col1_attr;?>>Telegram&nbsp;<span class="badge text-bg-secondary"><img src="/public/bootstrap/icons/icons/telegram.svg"></span></th>
+                            <th <?=$col1_attr;?>>Telegram&nbsp;<span class="badge text-bg-secondary"><img src="<?= Icons::BOOTSTRAP_TELEGRAM ?>"></span></th>
                             <td <?=$col2_attr;?>><?= h($user[User::F_TELEGRAM]) ?></td>
                             <td <?=$col3_attr;?>>
                                 <input title="<?=__('Use for correspondence and notifications');?>"
@@ -113,7 +116,7 @@ $col3_attr = 'class="text-center align-middle font-monospace text-sm-start ps-3 
                         <?php endif; ?>
                         <?php if ($user[User::F_VIBER]) : ?>
                         <tr>
-                            <th <?=$col1_attr;?>>Viber&nbsp;<span class="badge text-bg-secondary"><img src="/public/bootstrap/icons/icons/whatsapp.svg"></span></th>
+                            <th <?=$col1_attr;?>>Viber&nbsp;<span class="badge text-bg-secondary"><img src="<?= Icons::BOOTSTRAP_VIBER ?>"></span></th>
                             <td <?=$col2_attr;?>><?= h($user[User::F_VIBER]) ?></td>
                             <td <?=$col3_attr;?>>
                                 <input title="<?=__('Use for correspondence and notifications');?>"
@@ -123,7 +126,7 @@ $col3_attr = 'class="text-center align-middle font-monospace text-sm-start ps-3 
 
                         <?php if ($user[User::F_SIGNAL]) : ?>
                         <tr>
-                            <th <?=$col1_attr;?>>Signal&nbsp;<span class="badge text-bg-secondary"><img src="/public/bootstrap/icons/icons/signal.svg"></span></th>
+                            <th <?=$col1_attr;?>>Signal&nbsp;<span class="badge text-bg-secondary"><img src="<?= Icons::BOOTSTRAP_SIGNAL ?>"></span></th>
                             <td <?=$col2_attr;?>><?= h($user[User::F_SIGNAL]) ?></td>
                             <td <?=$col3_attr;?>>
                                 <input title="<?=__('Use for correspondence and notifications');?>"
@@ -134,7 +137,7 @@ $col3_attr = 'class="text-center align-middle font-monospace text-sm-start ps-3 
 
                         <?php if ($user[User::F_WHATSAPP]) : ?>
                         <tr>
-                            <th <?=$col1_attr;?>>WhatsApp&nbsp;<span class="badge text-bg-secondary"><img src="/public/bootstrap/icons/icons/whatsapp.svg"></span></th>
+                            <th <?=$col1_attr;?>>WhatsApp&nbsp;<span class="badge text-bg-secondary"><img src="<?= Icons::BOOTSTRAP_WHATSAPP ?>"></span></th>
                             <td <?=$col2_attr;?>><?= h($user[User::F_WHATSAPP]) ?></td>
                             <td <?=$col3_attr;?>>
                                 <input title="<?=__('Use for correspondence and notifications');?>"
@@ -145,7 +148,7 @@ $col3_attr = 'class="text-center align-middle font-monospace text-sm-start ps-3 
 
                         <?php if ($user[User::F_JABBER]) : ?>
                         <tr>
-                            <th <?=$col1_attr;?>>XMPP/Jabber&nbsp;<span class="badge text-bg-secondary"><img src="/public/bootstrap/icons/icons/chat-left.svg"></span></th>
+                            <th <?=$col1_attr;?>>XMPP/Jabber&nbsp;<span class="badge text-bg-secondary"><img src="<?= Icons::BOOTSTRAP_JABBER ?>"></span></th>
                             <td <?=$col2_attr;?>><?= h($user[User::F_JABBER]) ?></td>
                             <td <?=$col3_attr;?>><input title="<?=__('Use for correspondence and notifications');?>" type="checkbox" disabled <?= $user[User::F_JABBER_DO_SEND] ? 'checked' : '' ?>></td>
                         </tr>

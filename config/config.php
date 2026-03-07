@@ -232,6 +232,28 @@ $config = [
 
 
 
+    /**
+     * параметры для почтовой подсистемы
+     */
+    'email_max_body_text' => 10*1024, // 10k
+    'email_max_body_html' => 50*1024, // 50k
+    'email_max_file_size' => ini_get('upload_max_filesize'), // 500*1024*1024, // 500M
+    'email_max_filename_length' => 200,
+    'email_subject_template' => 'Рілан-мережа',
+    'email_body_html_template' =>
+        "<html>\n"
+        ."<body>\n"
+        ."<p>Добридень.</p>\n"
+        ."<p></p>\n"
+        ."<p></p>\n"
+        ."<p></p>\n"
+        ."<font size='-1' color=gray>----<br>\n"
+        ."З повагою,<br>\n"
+        ."Рілан-мережа,<br>\n"
+        ."<a href='https://my.ri.net.ua' target='_blank'>https://my.ri.net.ua</a><br>\n"
+        ."</font>\n"
+        ."</body>\n"
+        ."</html>",
 
 ];
 

@@ -36,9 +36,9 @@ const F_CONTROLLER  = 'controller';
 const CONTROLLER_SUFFIX = 'Controller';
 
 // # Контроллеры
-const CTR_POST = 'Posts';
+// const CTR_POST = 'Posts';
 const CTR_MAIN = 'Main';
-const CTR_PAGE = 'Page';
+// const CTR_PAGE = 'Page';
 
 define('CONTROLLERS_NAMESPACE', 'app\controllers\\');
 

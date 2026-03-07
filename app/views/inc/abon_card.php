@@ -25,6 +25,8 @@ use billing\core\App;
 use config\tables\Abon;
 use config\tables\PA;
 use billing\core\base\Lang;
+use config\tables\Price;
+
 Lang::load_inc(__FILE__);
 
 /** @var array $item -- Поддержка функции Аккордеона в ней передаваемый элемент */
@@ -50,11 +52,19 @@ if (isset($item) && !isset($abon)) { $abon = $item; }
     </ul>
 
     <div class="tab-content" id="myTabContent">
-        <!-- [ Контент вкладки абонентского подключения ] -->
+        <!-- 
+
+            [ Контент вкладки абонентского подключения ] 
+
+        -->
         <div class="tab-pane fade show active" id="tab_abon_<?=$abon[Abon::F_ID]?>" role="tabpanel">
             <?php require DIR_INC . '/abon_view.php'; ?>
         </div>
-        <!-- [ Контент вкладки прайсовых фрагментов ] -->
+        <!-- 
+
+            [ Контент вкладки прайсовых фрагментов ] 
+
+        -->
         <div class="tab-pane fade" id="tab_pa_<?=$abon[Abon::F_ID]?>" role="tabpanel">
             <!-- Перебор подключенных прайсовых фрагментов -->
             <div class="container-fluid mt-4">
@@ -68,6 +78,8 @@ if (isset($item) && !isset($abon)) { $abon = $item; }
                                                     . ($pa[PA::F_DATE_START] ? date(DATE_FORMAT, $pa[PA::F_DATE_START]) : '____-__-__') . ' | '
                                                     . ($pa[PA::F_DATE_END] ? date(DATE_FORMAT, $pa[PA::F_DATE_END]) : '____-__-__') . ' | '
                                                 . "</span>"
+                                                . "<span class='text-info' title='".$pa[PA::F_PRICE_DESCR]."'>".$pa[PA::F_PRICE_TITLE]."</span>"
+                                                . "<span class='text font-monospace text-secondary small'> | </span>"
                                                 . $pa[PA::F_NET_NAME];
                                         $right = get_html_pa_status(__pa_age($pa)) . "&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;";
                                         $title = get_html_content_left_right(
@@ -83,7 +95,11 @@ if (isset($item) && !isset($abon)) { $abon = $item; }
                 ?>
             </div>
         </div>
-        <!-- [ Контент вкладки уведомлений ] -->
+        <!-- 
+
+            [ Контент вкладки уведомлений ] 
+
+        -->
         <div class="tab-pane fade" id="tab_notify_<?=$abon[Abon::F_ID]?>" role="tabpanel">
             <div class="container-fluid mt-4">
             <?php require DIR_INC . '/notify_view.php'; ?>

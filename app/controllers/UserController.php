@@ -270,7 +270,7 @@ class UserController extends AppBaseController {
     /**
      * Генерация и запись в базу нового или дефолтного пароля.
      * Для генерации нужно поле User::F_PHONE_MAIN
-     * Для изменения нужні поля User::F_FORM_PASS, User::F_FORM_PASS2
+     * Для изменения нужны поля User::F_FORM_PASS, User::F_FORM_PASS2
      * Для записи нужно поле User::F_ID
      * @param array $data -- запись типа User с данными из формы, при необходимости
      * @param int|bool $defaul -- нужно ли генерировать новый пароль
@@ -279,7 +279,8 @@ class UserController extends AppBaseController {
     public static function update_pass(array &$data, int|bool $defaul = false): bool {
         $new_rec = [];
         if ($defaul) {
-            $phone = simpleCleaningPhoneNumber($data[User::F_PHONE_MAIN] ?? "103"); // Если телефон не указан, то звонить в "скорую" :-)
+            // $phone = simpleCleaningPhoneNumber($data[User::F_PHONE_MAIN] ?? "103"); // Если телефон не указан, то звонить в "скорую" :-)
+            $phone = $data[User::F_PHONE_MAIN] ?? $data[User::F_ID] ?? "103";
             $new_pass =  mb_substr($phone, -10);
             $new_rec = [
                 User::F_ID => $data[User::F_ID],

@@ -146,7 +146,7 @@ $index_unknown = count($transactions) + 1;
                     ABON:    <?= url_abon_form($found_pays['abon'][Abon::F_ID]) ?> | 
                     <font color=teal title='PAY: <?= print_r($found_pay, true) ?>'>(<?= $found_pays['searched_on'] ?>)</font> <?= url_pay_form($found_pay[Pay::F_ID]) ?> | 
                     <!-- // 'pay_type'      => -->
-                    <font title='pay_type: <?= CR . Pay::title($found_pay[Pay::F_TYPE_ID]) . CR . Pay::description($found_pay[Pay::F_TYPE_ID]) ?>'><?= $found_pay[Pay::F_TYPE_ID] ?></font> | 
+                    <font title='pay_type: <?= CR . Pay::type_title($found_pay[Pay::F_TYPE_ID]) . CR . Pay::type_descr($found_pay[Pay::F_TYPE_ID]) ?>'><?= $found_pay[Pay::F_TYPE_ID] ?></font> | 
                     <?= $model->url_ppp_form_22($found_pay[Pay::F_PPP_ID]) ?>
                     <hr>
                     <?= $found_pay[Pay::F_DESCRIPTION] ?>
@@ -236,7 +236,7 @@ $index_unknown = count($transactions) + 1;
         <td align=center><?= date('Y-m-d H:i:s', $upay[Pay::F_DATE]) ?></td>
         <td align=center><?= $upay[Pay::F_BANK_NO] ?></td>
         <td align=left>
-            <?= $upay[Pay::F_TYPE_ID] ?> <font color=gray size=-1>(<?= Pay::title($upay[Pay::F_TYPE_ID]) ?>)</font><br>
+            <?= $upay[Pay::F_TYPE_ID] ?> <font color=gray size=-1>(<?= Pay::type_title($upay[Pay::F_TYPE_ID]) ?>)</font><br>
             <?= $upay[Pay::F_PPP_ID] ?> <font color=gray size=-1>(<?= $ppp[Ppp::F_TITLE] ?>)</font></td>
         <td align=center>
             <textarea name=<?= Bank::POST_REC ?>[<?= $index_unknown ?>][<?= Pay::F_DESCRIPTION ?>] cols=40 rows=3 style='width:100%;'><?= $upay[Pay::F_DESCRIPTION] ?></textarea>

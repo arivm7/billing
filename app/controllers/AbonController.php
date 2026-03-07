@@ -1441,7 +1441,10 @@ class AbonController extends AppBaseController {
              * Подгружаем названия прайсов, для простоты отображения
              */
             foreach ($abon[PA::TABLE] as &$pa_item) {
-                $pa_item[PA::F_PRICE_TITLE] = $model->get_row_by_id(table_name: Price::TABLE, field_id: Price::F_ID, id_value: $pa_item[PA::F_PRICE_ID])[Price::F_TITLE];
+                $p = $model->get_row_by_id(table_name: Price::TABLE, field_id: Price::F_ID, id_value: $pa_item[PA::F_PRICE_ID]);
+                $pa_item[PA::F_PRICE_TITLE] = $p[Price::F_TITLE];
+                $pa_item[PA::F_PRICE_DESCR] = $p[Price::F_DESCRIPTION];
+                unset($p);
             }
 
             /**

@@ -11,7 +11,7 @@
  *  @copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
  */
 
-namespace Config;
+namespace config;
 
 /**
  * Класс-обёртка для констант авторизации

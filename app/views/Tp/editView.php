@@ -39,6 +39,7 @@ $tp[TP::F_ADMIN_OWNER_NAME] = ($admin_owner ? $admin_owner[User::F_NAME_FULL] : 
 $tp[TP::F_UPLINK_NAME] = ($uplink ? $uplink[TP::F_TITLE] : "-");
 
 $prices_list = array_column($prices, Price::F_TITLE, Price::F_ID);
+asort($prices_list, SORT_NATURAL | SORT_FLAG_CASE);
 
 $title_label = 
 "<div class='d-flex justify-content-between align-items-center'>

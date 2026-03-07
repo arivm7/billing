@@ -90,6 +90,11 @@ class PA {
     ];
 
 
+    const AUTOREPLACES = [
+        self::F_NET_NAME,
+    ];
+
+
     const NUM_TYPES = [
         self::F_ID,
         self::F_ABON_ID,

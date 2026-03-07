@@ -1,0 +1,31 @@
+<?php
+/**
+ *  Project : my.ri.net.ua
+ *  File    : config_email.php
+ *  Path    : config/config_email.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 03 Mar 2026 22:19:23
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2026 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
+
+/**
+ * Параметры подключения к почтовому серверу
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
+
+use config\Email;
+
+return [
+    Email::CONF_SMTP_HOST        => 'smtp.mymail.server',
+    Email::CONF_USER             => 'user@mymail.server',
+    Email::CONF_PASS             => 'password',
+    Email::CONF_SMTP_SECURE      => 'ssl', // 'tls', 'ssl',
+    Email::CONF_SMTP_PORT        => 465,
+    Email::CONF_MAIL_FROM        => 'user@mymail.server',
+    Email::CONF_MAIL_RETURN_PATH => 'controluser@mymail.server',
+    Email::CONF_MAIL_SENDER_NAME => 'My Name',
+];

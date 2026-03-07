@@ -27,53 +27,76 @@ class Pay {
      * URI для пользовательских платежей
      */
 
-    const URI_PAY = '/pay';
+    public const URI_PAY = '/pay';
 
     /*
      * URI для управления платежами
      */
 
-    const URI_FORM      = '/payments/form';
-    const URI_DEL       = '/payments/delete';
+    public const URI_FORM      = '/payments/form';
+    public const URI_DEL       = '/payments/delete';
 
 
     /*
      * URI для личного кабинета абонента
      */
-    const URI_MY            = '/payments';
-    const URI_LIST          = '/payments/list';
+    public const URI_MY            = '/payments';
+    public const URI_LIST          = '/payments/list';
 
 
+    public const POST_REC = 'payment';
 
-    const POST_REC = 'payment';
+    public const TABLE = 'payments';
 
-    const TABLE = 'payments';
+    public const F_ID = "id"; // ID платежа
 
-    const F_ID = "id"; // ID платежа
-
-    const F_AGENT_ID        = "agent_id";       // ID того, кто внёс запись
-    const F_ABON_ID         = "abon_id";        // Абонент, на которого зачисляется платеж
-    const F_PAY_FAKT        = "pay_fakt";       // Фактическая сумма, пришедшая на счёт
-    const F_PAY_ACNT        = "pay";            // Сумма платежа, вносимая на ЛС
-    const F_DATE            = "pay_date";       // Дата платежа
-    const F_DATE_STR        = "pay_date_str";   // Дата платежа в строковом формате
-    const F_BANK_NO         = "pay_bank_no";    // Банковский номер операции
-    const F_TYPE_ID         = "pay_type_id";    // ИД Типа платежа
-    const F_PPP_ID          = "pay_ppp_id";     // ППП
-    const F_DESCRIPTION     = "description";    // Описание платежа
-    const F_CREATION_DATE   = "created_date";   // Дата создания записи
-    const F_CREATION_UID    = "created_uid";    // Юзер, создавший запись
-    const F_MODIFIED_DATE   = "modified_date";  // Дата изменения записи
-    const F_MODIFIED_UID    = "modified_uid";   // Кто изменил запись
+    public const F_AGENT_ID        = "agent_id";       // ID того, кто внёс запись
+    public const F_ABON_ID         = "abon_id";        // Абонент, на которого зачисляется платеж
+    public const F_PAY_FAKT        = "pay_fakt";       // Фактическая сумма, пришедшая на счёт
+    public const F_PAY_ACNT        = "pay";            // Сумма платежа, вносимая на ЛС
+    public const F_DATE            = "pay_date";       // Дата платежа
+    public const F_DATE_STR        = "pay_date_str";   // Дата платежа в строковом формате
+    public const F_BANK_NO         = "pay_bank_no";    // Банковский номер операции
+    public const F_TYPE_ID         = "pay_type_id";    // ИД Типа платежа
+    public const F_PPP_ID          = "pay_ppp_id";     // ППП
+    public const F_DESCRIPTION     = "description";    // Описание платежа
+    public const F_CREATION_DATE   = "created_date";   // Дата создания записи
+    public const F_CREATION_UID    = "created_uid";    // Юзер, создавший запись
+    public const F_MODIFIED_DATE   = "modified_date";  // Дата изменения записи
+    public const F_MODIFIED_UID    = "modified_uid";   // Кто изменил запись
 
 
 
     /*
+     * Поля таблицы, используемые для сравнения имеющейся и исправленной записей
+     * для записи в базу только изменённых полей
+     * Поля таблицы, используемые для сохранения записи
+     */
+    public const SAVE_FIELDS = [
+        self::F_AGENT_ID,
+        self::F_ABON_ID,
+        self::F_PAY_FAKT,
+        self::F_PAY_ACNT,
+        self::F_DATE,
+        self::F_BANK_NO,
+        self::F_TYPE_ID,
+        self::F_PPP_ID,
+        self::F_DESCRIPTION,
+    ];
+
+
+    public const RECALC_FIELDS = [
+        self::F_ABON_ID,
+        self::F_PAY_FAKT,
+        self::F_PAY_ACNT,
+    ];
+
+    /*
      * Вычисляемые поля
      */
-    const F_AGENT_TITLE     = "agent_title";    // Имя того, кто внёс запись (вычисляемое)
-    const F_TYPE_TITLE      = "pay_type_title"; // Имя Типа платежа (вычисляемое)
-    const F_PPP_TITLE       = "pay_ppp_title";  // Имя ППП (вычисляемое)
+    public const F_AGENT_TITLE     = "agent_title";    // Имя того, кто внёс запись (вычисляемое)
+    public const F_TYPE_TITLE      = "pay_type_title"; // Имя Типа платежа (вычисляемое)
+    public const F_PPP_TITLE       = "pay_ppp_title";  // Имя ППП (вычисляемое)
 
 
 
@@ -85,11 +108,11 @@ class Pay {
      * Фактически аблица типов не нужна,
      * поскольку типов всего три и удобнее их использовать как константы
      */
-    const TYPE_MONEY    = 1;    // Денежное пополнение ЛС | Внесение средств на ЛС для оплаты услуг
-    const TYPE_CORRECT  = 2;    // Корректировка ЛС       | Начисление для корректировки остатка ЛС, компенсац...
-    const TYPE_REQUEST  = 3;    // Начисление за услугу   | Начисление за дополнительную услугу (ремонт, настройка, задолженность за подключение и пр.) как правило, единоразовое начисление.
+    public const TYPE_MONEY    = 1;    // Денежное пополнение ЛС | Внесение средств на ЛС для оплаты услуг
+    public const TYPE_CORRECT  = 2;    // Корректировка ЛС       | Начисление для корректировки остатка ЛС, компенсац...
+    public const TYPE_REQUEST  = 3;    // Начисление за услугу   | Начисление за дополнительную услугу (ремонт, настройка, задолженность за подключение и пр.) как правило, единоразовое начисление.
 
-    const TYPES_TITLE = [
+    public const TYPES_TITLE = [
         self::TYPE_MONEY => [
             'uk' => 'Грошове поповнення ОР',
             'ru' => 'Денежное пополнение ЛС',
@@ -107,7 +130,7 @@ class Pay {
         ],
     ];
 
-    const TYPES_DESCR = [
+    public const TYPES_DESCR = [
         self::TYPE_MONEY => [
             'uk' => 'Внесення коштів на ОР для оплати послуг',
             'ru' => 'Внесение средств на ЛС для оплаты услуг',
@@ -125,11 +148,11 @@ class Pay {
         ],
     ];
 
-    public static function title(int $type_id): string {
+    public static function type_title(int $type_id): string {
         return self::TYPES_TITLE[$type_id][Lang::code()] ?? 'ERROR';
     }
 
-    public static function description(int $type_id): string {
+    public static function type_descr(int $type_id): string {
         return self::TYPES_DESCR[$type_id][Lang::code()] ?? 'ERROR';
     }
 

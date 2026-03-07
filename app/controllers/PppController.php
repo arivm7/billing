@@ -122,7 +122,7 @@ class PppController extends AppBaseController{
         isset($_GET['abon_payments']) ? $abon_payments = (int)$_GET['abon_payments'] : $abon_payments = null;
 
         $model = new AbonModel();
-        $ppp_list = $model->get_ppp_my($active, $type_id, $abon_payments);
+        $ppp_list = $model->get_ppp_my(active: $active, type_id: $type_id, abon_payments: $abon_payments);
 
         View::setMeta(__('Пункты приёма платежей | Payment acceptance points | Пункти прийому платежів'));
         $this->setVariables([

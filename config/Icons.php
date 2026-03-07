@@ -144,4 +144,15 @@ class Icons {
     const SRC_ICON_ZABBIX               = '/img/icon_zabbix.svg';
 
 
+    const BOOTSTRAP_PHONE = '/public/bootstrap/icons/icons/telephone.svg';
+    const BOOTSTRAP_EMAIL = '/public/bootstrap/icons/icons/envelope-at.svg';
+    const BOOTSTRAP_ADDRESS = '/public/bootstrap/icons/icons/mailbox.svg';
+    const BOOTSTRAP_TELEGRAM = '/public/bootstrap/icons/icons/telegram.svg';
+    const BOOTSTRAP_VIBER = '/public/bootstrap/icons/icons/whatsapp.svg';
+    const BOOTSTRAP_SIGNAL = '/public/bootstrap/icons/icons/signal.svg';
+    const BOOTSTRAP_WHATSAPP = '/public/bootstrap/icons/icons/whatsapp.svg';
+    const BOOTSTRAP_JABBER = '/public/bootstrap/icons/icons/chat-left.svg';
+
+
+
 }

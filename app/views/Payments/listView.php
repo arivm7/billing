@@ -62,7 +62,7 @@ $view_my = can_view(Module::MOD_MY_PAYMENTS) && $user[User::F_ID] == $user[Abon:
                 <?php if (can_use([Module::MOD_ABON])) : ?>
                     <a href="<?=Abon::URI_VIEW;?>/<?=$user[Abon::REC][Abon::F_ID];?>" class="btn btn-outline-info btn-sm" target="_self"><span class="fw-bold">🅐</span> <?= __('Картка'); ?></a> <!-- ⒶⒶⒶ -->
                 <?php else: ?>
-                    <a href="/my" class="btn btn-outline-info btn-sm" target="_self"><span class="fw-bold">ⒶⒶ🅐Ⓐ(A)</span> <?= __('Картка'); ?></a>
+                    <a href="/my" class="btn btn-outline-info btn-sm" target="_self"><span class="fw-bold">🅐</span> <?= __('Картка'); ?></a> <!-- ⒶⒶ🅐Ⓐ(A) -->
                 <?php endif; ?>
             </div>
         </div>

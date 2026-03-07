@@ -27,6 +27,7 @@ use billing\core\base\Model;
 use billing\core\base\View;
 use billing\core\MsgQueue;
 use billing\core\MsgType;
+use config\AutoCorrect;
 use config\tables\Module;
 use config\tables\PA;
 use config\tables\Price;
@@ -96,6 +97,15 @@ class PaController extends AppBaseController {
             }
         }
 
+        /**
+         * Автозамены
+         */
+        foreach (PA::AUTOREPLACES as $field) {
+            if (isset($data[$field]) && is_string($data[$field])) {
+                $data[$field] = AutoCorrect::correct($data[$field]);
+            }
+        }
+
         // Инициализация результата
         $norm = [];
 
@@ -137,6 +147,8 @@ class PaController extends AppBaseController {
 
         return $norm;
     }
+
+
 
     /**
      * Проверка входных данных от формы
@@ -194,6 +206,7 @@ class PaController extends AppBaseController {
     }
 
 
+
     public static function clone(int|null $pa_id = null, array|null $pa = null): int|false {
         $model = new AbonModel();
         if (empty($pa)) { 
@@ -215,7 +228,6 @@ class PaController extends AppBaseController {
             return false;
         }
     }
-
 
 
 

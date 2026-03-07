@@ -25,6 +25,7 @@ use config\tables\User;
 use config\tables\Abon;
 use config\tables\AbonRest;
 use billing\core\App;
+use config\Email;
 
 require_once DIR_LIBS . '/compare_functions.php';
 require_once DIR_LIBS . '/billing_functions.php';
@@ -630,7 +631,7 @@ function url_email(string $email, ?string $text = null, ?string $src = null, ?st
     $subj  = rawurlencode(__('Rilan'));
     $body  = rawurlencode(
                   __('Здравствуйте')
-                . '\n\n\n\n----\n'
+                . "\n\n\n\n----\n"
                 . __('С уважением,')
                 . __('Rilan')
              );
@@ -639,6 +640,50 @@ function url_email(string $email, ?string $text = null, ?string $src = null, ?st
     $title = __('Написать письмо');
     return "<a href=\"mailto:{$email}?subject={$subj}&body={$body}&cc={$cc}&bcc={$bcc}\" title='{$title}' {$attributes}>"
             . ($src ? get_html_img(src: Icons::SRC_ICON_EMAIL) : "")
+            . ($text ? h($text) : "")
+            . "</a>";
+}
+
+
+
+function url_email_form(
+                ?string $to = '', 
+                ?string $cc = '', 
+                ?string $bcc = '', 
+                ?string $subject = '', 
+                ?string $body_text = '', 
+                ?string $body_html = '', 
+                ?string $src = null, 
+                ?string $text = null,
+                int|string|null $width = null,
+                int|string|null $height = null,
+                string $target = '_blank', ?string $attributes = null): string 
+{
+    if (empty($src)) { 
+        $src = Icons::SRC_ICON_EMAIL; 
+    }
+    $subject = trim($subject);
+    if (empty($subject)) { 
+        $subject  = rawurlencode(App::get_config('email_subject_template')); 
+    }
+    $body_text = trim($body_text);
+    $body_html = trim($body_html);
+    if (empty($body_text) && empty($body_html) ) {
+        $body_html  = rawurlencode(App::get_config('email_body_html_template'));
+    }
+    $title = __('Написать уведомление через встроенную форму');
+    return "<a "
+            . "href=\"" 
+                . Email::URI_FORM 
+                . "?" . Email::REC . "[" . Email::F_SUBJECT . "]={$subject}"
+                . (!empty($to) ? "&" . Email::REC . "[" . Email::F_TO . "]={$to}" : "")
+                . (!empty($body_text) ? "&" . Email::REC . "[" . Email::F_BODY_TEXT . "]={$body_text}" : "")
+                . (!empty($body_html) ? "&" . Email::REC . "[" . Email::F_BODY_HTML . "]={$body_html}" : "")
+                . (!empty($cc) ? "&" . Email::REC . "[" . Email::F_CC . "]={$cc}" : "")
+                . (!empty($bcc) ? "&" . Email::REC . "[" . Email::F_BCC . "]={$bcc}" : "")
+            . "\" "
+            . "title='{$title}' target='$target' {$attributes}>"
+            . ($src ? get_html_img(src: $src, width: $width, height: $height) : "")
             . ($text ? h($text) : "")
             . "</a>";
 }
@@ -675,8 +720,8 @@ function get_html_img(
         string|null $alt=null,
         string|null $target="_self",
         string|null $title=null,
-        int   |null $width=ICON_WIDTH_DEF,
-        int   |null $height=ICON_HEIGHT_DEF,
+        int|string|null $width=ICON_WIDTH_DEF,
+        int|string|null $height=ICON_HEIGHT_DEF,
         string|null $color=null,
         string|null $style=null,
         string|null $id=null
@@ -693,8 +738,8 @@ function get_html_img(
           . "<img src='{$src}' "
                 . (is_null($alt) ? "" : "alt='{$alt}'")." "
                 . (is_null($title) ? "" : "title='{$title}'") . " "
-                . (is_empty($width) ? "" : "width={$width}") . " "
-                . (is_empty($height) ? "" : "height={$height}") . " "
+                . (is_empty($width) ? "" : "width=".h($width)."") . " "
+                . (is_empty($height) ? "" : "height=".h($height)."") . " "
                 . (is_empty($style) ? "" : "style=\"{$style}\"") . " "
                 . (is_empty($id) ? "" : "id=\"{$id}\"") . " "
                 . ">"
@@ -2070,7 +2115,7 @@ function detect_invoker(): string {
  * @param int $count_rows_max
  * @return int
  */
-function get_count_rows_for_textarea(string $text, int $count_rows_min=0, int $count_rows_max=0, ): int {
+function get_count_rows_for_textarea(string $text, int $count_rows_min=0, int $count_rows_max=0): int {
     if ($count_rows_min < 1) { $count_rows_min = App::get_config('textarea_rows_min'); }
     if ($count_rows_max < 1) { $count_rows_max = App::get_config('textarea_rows_max'); }
     $count_lines_cr = (empty($text) ? 0 : substr_count($text, "\n") + 1);
@@ -2586,3 +2631,64 @@ function build_url(string $baseUrl, array $params = []): string {
     return $baseUrl . $separator . http_build_query($params, '', '&', PHP_QUERY_RFC3986);
 }
 
+
+function html_to_text(string $html): string
+{
+    // Переносы строк для основных блочных элементов
+    $breaks = [
+        '</p>' => "\n\n",
+        '</div>' => "\n",
+        '</li>' => "\n",
+        '<br>' => "\n",
+        '<br/>' => "\n",
+        '<br />' => "\n",
+    ];
+
+    $text = str_ireplace(array_keys($breaks), array_values($breaks), $html);
+
+    // Удаляем остальные HTML-теги
+    $text = strip_tags($text);
+
+    // Декодируем HTML-сущности
+    $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+    // Нормализуем переносы
+    $text = preg_replace("/\n{3,}/", "\n\n", $text);
+
+    return trim($text);
+}
+
+
+
+function text_to_html(string $text): string
+{
+    $text = htmlspecialchars($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+    $text = str_replace(["\r\n", "\r"], "\n", $text);
+
+    $paragraphs = preg_split("/\n{2,}/", trim($text));
+
+    foreach ($paragraphs as &$p) {
+        $p = '<p>' . nl2br($p, false) . '</p>';
+    }
+
+    return implode("\n", $paragraphs);
+}
+
+
+
+/**
+ * Что ищется
+ *  <tag>
+ *  <div>
+ *  <p class="x">
+ *  <img src="">
+ * Пример
+ *  is_html('<p>Hello</p>');   // true
+ *  is_html('2 < 5');          // false
+ *  is_html('Hello <world>');  // true (похоже на тег)
+ */
+function is_html(string $text): bool
+{
+    return preg_match('/<\s*[a-z][^>]*>/i', $text) === 1;
+}

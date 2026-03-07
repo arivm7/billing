@@ -97,6 +97,7 @@ class Router {
              * не к файлу, а именно к классу: "пространство_имён\ИмяКласса"
              */
             $controllerPathClass = CONTROLLERS_NAMESPACE . (self::$route[F_PREFIX] ? self::$route[F_PREFIX]."\\" : "") . self::$route[F_CONTROLLER] . CONTROLLER_SUFFIX;
+
             if (class_exists($controllerPathClass)) {
                 $controllerObj = new $controllerPathClass(self::$route);
                 $action = self::lowerCamelCase(self::$route[F_ACTION]) . ACTION_SUFFIX;

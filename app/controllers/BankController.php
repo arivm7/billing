@@ -27,6 +27,7 @@ use billing\core\MsgQueue;
 use billing\core\MsgType;
 use config\tables\Module;
 use config\Bank;
+use config\MonoCard;
 use config\P24acc;
 use config\tables\Pay;
 use config\tables\Ppp;
@@ -78,160 +79,118 @@ class BankController extends AppBaseController
         $ppp = $model->get_ppp((int)$this->route[F_ALIAS]);
 
         if (!is_supported_api($ppp, Bank::API_TYPE_MONO_CARD)) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('ППП не поддерживает этот API'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('The payment acceptance point does not support this API | Пункт приема платежей не поддерживает этот API | Пункт прийому платежів не підтримує цей API'));
             redirect();
         }
 
-        MsgQueue::msg(MsgType::INFO_AUTO, "====Получение данных====");
+        MsgQueue::msg(MsgType::INFO_AUTO, "==== Получение данных ====");
 
-
-        if($ppp['owner_id'] != $_SESSION['id']) { die("ППП чужой"); }
-        if(!is_supported_api($ppp,  Bank::API_TYPE_MONO_CARD)) { die("ППП не поддерживает нужный АПИ"); }
+        if (!$model->is_ppp_my($ppp[Ppp::F_ID])) {
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('The payment acceptance point is not mine | Пункт приема платежей не мой | Пункт прийому платежів не мій'));
+            redirect();
+        }
 
         // $ppp_type_id        = PPP_TYPE_CARD; // 2 Карта
         // $pay_type_id        = PAY_TYPE_CASH; // 1 - Денежное пополнение ЛС | 2 - Корректировка ЛС | 3 - Начисление за услугу
 
-        // $templates          = get_abons_templates($ppp_id, $templates_size);
-        // echo "Размер templates ". sprintf("%.2f", $templates_size/1024/1024)."(".sprintf("%.2f", $templates_size_max/1024/1024).") Mbytes<br>\n";
-
-        // //$last_pay           = get_last_pay_on_ppp($ppp_id);
-        // $followId           = (isset($_GET['followId'])  ? $_GET['followId'] : null);
-        // $limit              = (isset($_GET['limit'])     ? $_GET['limit']    : 25);
-        // $date2              = (isset($_GET['endDate'])
-        //                         ? $_GET['endDate']
-        //                         : date('Y-m-d'));
-        // $date1              = (isset($_GET['startDate'])
-        //                         ? $_GET['startDate']
-        //                         : date('Y-m-d', time()-DATE_INTERVAL));
-        // echo "Даты выборки: <font color=GREEN>".$date1." -- ".$date2."</font><br>\n";
-
-        // $card_token         = $ppp['api_id'];   // 'uBTaoYCANLjLXz44583xHOHfaQrAWgm';
-        // $api_url            = $ppp['api_url'];  // 'https://api.monobank.ua/personal/statement/';
+        /**
+         * Чтение шаблонов распознавания абонентов
+         */
+        $templates   = $model->get_abons_templates($ppp[Ppp::F_ID]);
+        MsgQueue::msg(MsgType::INFO_AUTO, "Размер templates: ".count($templates)." записей");
 
 
-        // if (($date1_int = strtotime($date1)) === false) {
-        //     die("Не верный формат даты1 [$date1]");
-        // }
-        // if (($date2_int = strtotime($date2)) === false) {
-        //     die("Не верный формат даты2 [$date2]");
-        // }
-        // $request_url = $api_url.""."0"."/".$date1_int."/".($date2_int+(1*24*60*60));
-        // //echo "<pre>d: "; var_dump(htmlentities(str_replace("><", ">\n<", $data))); echo "</pre><hr>";
+        $last_pay           = $model->get_last_pay_on_ppp($ppp[Ppp::F_ID]);
+        $followId           = ($_GET['followId']  ?? null);
+        $limit              = ($_GET['limit']     ?? App::get_config('bank_limit_per_page'));
+        $date1_str          = ($_GET['startDate'] ?? date('Y-m-d', time()-App::get_config('bank_date_interval')));
+        $date2_str          = ($_GET['endDate']   ?? date('Y-m-d'));
+        MsgQueue::msg(MsgType::INFO_AUTO, "Даты выборки: [".$date1_str."] -- [".$date2_str."]");
+
+        $card_token         = $ppp['api_id'];   // 'uBwerwerwTaasdfLXz44583xHOHfWgm';
+        $api_url            = $ppp['api_url'];  // 'https://api.monobank.ua/personal/statement/';
 
 
+        if (($date1_ts = strtotime($date1_str)) === false) {
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Не верный формат даты 1'));
+            redirect(Bank::URI_INDEX);
+        }
+        if (($date2_ts = strtotime($date2_str)) === false) {
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Не верный формат даты 2'));
+            redirect(Bank::URI_INDEX);
+        }
 
-        // $headers = array
-        // (
-        //     'Content-type: application/json;charset=UTF-8',
-        //     'X-Token: '.$card_token
-        // );
-        // //echo "<pre>headers: "; var_dump($headers); echo "</pre><hr>";
+        MsgQueue::msg(MsgType::INFO_AUTO, "==== Получение информации о карте ====");
+        $cards_info = MonoCard::get_card_info($card_token);
+        if (isset($cards_info['client']['errorDescription'])) {
+            /*
+            * ERRORS:
+            * [errorDescription] => Too many requests
+            */
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Ошибка получения информации о карте: ').$cards_info['client']['errorDescription']);
+            redirect(Bank::URI_INDEX);
+        }
+        // echo "cards_info[client]:<pre>"; print_r($cards_info['client']); echo "</pre><hr>";
+        // echo "cards_info[connect]:<pre>"; print_r( $cards_info['connect']); echo "</pre><hr>";
 
-        // $ch = curl_init("https://api.monobank.ua/personal/client-info");
-        // //echo "<pre>ch: "; var_dump($ch); echo "</pre><hr>";
-        // curl_setopt($ch, CURLOPT_POST,              0); //Использовать метод POST
-        // curl_setopt($ch, CURLOPT_HTTPHEADER,        $headers);
-        // curl_setopt($ch, CURLOPT_RETURNTRANSFER,    1);
-        // curl_setopt($ch, CURLOPT_HEADER,            0);
-        // curl_setopt($ch, CURLOPT_SSL_VERIFYPEER,    1);
+        MsgQueue::msg(MsgType::INFO_AUTO, "==== Получение выписки по карте ====");
+        $data = MonoCard::get_statements(
+            $card_token,
+            $date1_ts,
+            $date2_ts,
+            $api_url
+        );
+        // echo "info:<pre>"; print_r($data['connect']); echo "</pre><hr>";
+        // echo "res(decode):<pre>"; print_r($data['statements']); echo "</pre><hr>";
+        MsgQueue::msg(MsgType::INFO_AUTO, "==== Конец получения данных ====");
 
-        // $res = curl_exec($ch);
-        // $res_decode =  json_decode($res, true);
-        // //echo "res(decode):<pre>"; print_r($res_decode); echo "</pre><hr>";
-        // /*
-        // * ERRORS:
-        // * [errorDescription] => Too many requests
-        // *
-        // */
-        // $info=curl_getinfo($ch);
-        // //echo "INFO:<pre>"; print_r($info); echo "</pre><hr>";
-        // curl_close($ch);
-        // echo "<table width=80% border=0 align=center cellpadding=3 cellspacing=2>";
-        //     echo "<tr bgcolor='".(is_odd($I_COLOR_STEP++)?$COLOR1_VALUE:$COLOR2_VALUE)."'>";
-        //         echo "<td>[clientId]</td><td>$res_decode[clientId]</td>";
-        //     echo "</tr>";
-        //     echo "<tr bgcolor='".(is_odd($I_COLOR_STEP++)?$COLOR1_VALUE:$COLOR2_VALUE)."'>";
-        //         echo "<td>[name]</td><td>$res_decode[name]</td>";
-        //     echo "</tr>";
-        //     echo "<tr bgcolor='".(is_odd($I_COLOR_STEP++)?$COLOR1_VALUE:$COLOR2_VALUE)."'>";
-        //         echo "<td valign=top>[accounts]</td><td>";
-        //             echo "<table width=80% border=0 align=center cellpadding=3 cellspacing=2>";
-        //             foreach ($res_decode["accounts"] as $account) {
-        //                 echo
-        //                     "<tr bgcolor='".(is_odd($I_COLOR_STEP++)?$COLOR1_VALUE:$COLOR2_VALUE)."'><td>[sendId]</td>"
-        //                         . "<td>$account[sendId]".($res_decode["clientId"] == $account["sendId"]?" <font color=green size=-1>[clientId]</font>":"")."</td>"
-        //                     ."<tr bgcolor='".(is_odd($I_COLOR_STEP++)?$COLOR1_VALUE:$COLOR2_VALUE)."'><td>[id]</td><td>$account[id]</td>"
-        //                     ."<tr bgcolor='".(is_odd($I_COLOR_STEP++)?$COLOR1_VALUE:$COLOR2_VALUE)."'><td>[iban]</td><td>$account[iban] "
-        //                         . "<font color=gray size=-1>[type: $account[type]]</font></td>"
-        //                     ."<tr bgcolor='".(is_odd($I_COLOR_STEP++)?$COLOR1_VALUE:$COLOR2_VALUE)."'><td>[balance]</td>"
-        //                         . "<td>".((floatval($account["balance"]) - floatval($account["creditLimit"]))/100)." "
-        //                         . "<font color=gray size=-1>("
-        //                         . "<font title='[currencyCode]'>$account[currencyCode]</font> | "
-        //                         . "<font title='[cashbackType]'>$account[cashbackType]</font> | "
-        //                         . "<font title='[creditLimit] -- Кредитный лимит'>".(floatval($account["creditLimit"])/100)."</font>)"
-        //                         . "</font></td>"
-        //                     ."";
-        //                     foreach ($account["maskedPan"] as $pan) {
-        //                         echo "<tr bgcolor='".(is_odd($I_COLOR_STEP++)?$COLOR4_VALUE:$COLOR5_VALUE)."'><td>[maskedPan]</td><td>$pan</td>";
-        //                     }
-        //             }
-        //             echo "</table>";
-        //         echo "</td>";
-        //     echo "</tr>";
-        // echo "</table>";
+        MsgQueue::msg(MsgType::INFO_AUTO, "==== Получение данных из базы ====");
 
+        foreach ($data['statements'] as &$statement) {
+            /**
+             * платежи, внесённые в биллинг с указанным кодом транзакции
+             */
+            $statement['found_pay'] = Bank::search_payments_on_billing($statement[MonoCard::F_ID], MonoCard::TEXT_FIELDS, $ppp[Ppp::F_ID], $templates); 
+            /**
+             * Запись для внесения в базу и сравнения с уже внесёнными данными
+             */
+            $comission = $statement[MonoCard::F_COMMISSION_RATE];
+            $pay_rec[Pay::F_PAY_FAKT]    = floatval(get_numeric_part($statement[Bank::F_MAP_MONOCARD[Pay::F_PAY_FAKT]]));
+            $pay_rec[Pay::F_PAY_ACNT]    = floatval(get_numeric_part($statement[Bank::F_MAP_MONOCARD[Pay::F_PAY_ACNT]]) + $comission);
+            $pay_rec[Pay::F_DATE]        = $statement[Bank::F_MAP_MONOCARD[Pay::F_DATE]];
+            $pay_rec[Pay::F_BANK_NO]     = $statement[Bank::F_MAP_MONOCARD[Pay::F_BANK_NO]];
+            $pay_rec[Pay::F_TYPE_ID]     = Pay::TYPE_MONEY;
+            $pay_rec[Pay::F_AGENT_ID]    = App::get_user_id();
+            $pay_rec[Pay::F_PPP_ID]      = $ppp[Ppp::F_ID];
+            $pay_rec[Pay::F_DESCRIPTION] = implode(
+                ' | ',
+                array_filter(
+                    array_map(
+                        function ($key) use ($statement) {
+                            return trim((string)($statement[$key] ?? ''));
+                        },
+                        Bank::F_MAP_MONOCARD[Pay::F_DESCRIPTION]
+                    ),
+                    function ($value) {
+                        return $value !== '';
+                    }
+                )
+            );
 
-
-
-        // $headers = array
-        // (
-        //     //'Accept: text/xml,application/xhtml+xml,application/xml;q=0.9,*;q=0.8',
-        //     //'Accept-Language: ru,en-us;q=0.7,en;q=0.3',
-        //     //'Accept-Encoding: deflate',
-        //     //'Accept-Charset: utf-8;q=0.7,*;q=0.7',
-        //     //'Content-type: text/xml;charset=UTF-8',
-        //     'Content-type: application/json;charset=UTF-8',
-        //     'X-Token: '.$card_token
-        // );
-        // //echo "<pre>headers: "; var_dump($headers); echo "</pre><hr>";
-
-        // $ch = curl_init($request_url);
-        // //echo "<pre>ch: "; var_dump($ch); echo "</pre><hr>";
-        // curl_setopt($ch, CURLOPT_POST,              0); //Использовать метод POST
-        // curl_setopt($ch, CURLOPT_HTTPHEADER,        $headers);
-        // //curl_setopt($ch, CURLOPT_POSTFIELDS,      $request);
-        // curl_setopt($ch, CURLOPT_RETURNTRANSFER,    1); //
-        // curl_setopt($ch, CURLOPT_HEADER,            0);
-        // curl_setopt($ch, CURLOPT_SSL_VERIFYPEER,    1);
-
-        // $res = curl_exec($ch);
-        // //echo "res:<pre>"; print_r($res); echo "</pre><hr>";
-        // $res_decode =  json_decode($res, true);
-        // //echo "res(decode):<pre>"; print_r($res_decode); echo "</pre><hr>";
-        // //echo "res:<pre>".print_r(htmlentities(str_replace("><", ">\n<", $res)), true)."</pre><hr>";
-        // $info=curl_getinfo($ch);
-        // //echo "info:<pre>"; print_r($info); echo "</pre><hr>";
-        // //echo "error: ".(curl_errno($ch)==0?"<font color=green>Ok</font>":"<font color=red>ERROR</font>")."<br>\n";
-        // //echo "error:<pre>".print_r(curl_error($ch), true)."</pre><hr>";
-        // curl_close($ch);
-        // //echo "error:<pre>".print_r(htmlentities(str_replace("><", ">\n<", $info)), true)."</pre><hr>";
-        // //echo "error:<pre>".print_r($info, true)."</pre><hr>";
-
-
-
-        // $statements = json_decode($res, true);
-        // //echo "<pre>statements:". print_r($statements, true)."<hr>";
-        // echo "========================end========================<br><br>\n";
-        
+            $statement['pay_rec'] = $pay_rec;
+        }
+        MsgQueue::msg(MsgType::INFO_AUTO, "==== Все данные собраны ====");
 
         View::setMeta(__('Получение данных карты Монобанка'));
 
         $this->setVariables([
-            'ppp' => $ppp,
-            'data' => [],
+            'cards_info'    => $cards_info, // {client: array, connect: array}
+            'data'          => $data,       // {connect: array, statements: array}
+            'ppp'           => $ppp,        // array
+            'date1'         => $date1_ts,   // int, timestamp, начало периода выборки
+            'date2'         => $date2_ts,   // int, timestamp, конец периода выборки
+            'date_last_pay' => $last_pay[Pay::F_DATE], // Дата последнего зарегистрированного платежа на ППП
         ]);
-
-
 
     }
 

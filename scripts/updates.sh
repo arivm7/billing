@@ -35,6 +35,7 @@ APP_PATH=$(cd "$(dirname "$0")" && pwd)                     # Путь разм�
 FILE_NAME="${APP_NAME%.*}"                                  # Убираем расширение (если есть)
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_UPDATE_REST="update_rest.php"
 PHP_BIN="$(command -v php || echo '/usr/bin/php')"
 
 LOG_TITLE="RI-BILLING"
@@ -77,7 +78,7 @@ fi
 case "$ACTION" in
     update)
         echo "[INFO] Запуск update_rest.php из ${SCRIPT_DIR} ..."
-        "${PHP_BIN}" "${SCRIPT_DIR}/update_rest.php"
+        "${PHP_BIN}" "${SCRIPT_DIR}/${SCRIPT_UPDATE_REST}"
         EXIT_CODE=$?
         echo "[INFO] Завершено с кодом ${EXIT_CODE}"
         exit ${EXIT_CODE}
