@@ -12,7 +12,7 @@
  */
 
 /**
- * Description of notify_view.php
+ * Контент таба уведомлений в карточке абонента
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
@@ -38,7 +38,11 @@ Lang::load_inc(__FILE__);
                 table: $abon[Notify::TABLE],
                 file_view: DIR_INC . '/notify_card.php',
                 func_get_title: function(array $item) {
-                                    return '<span class="text-secondary">' . date('Y-m-d H:i:s', $item[Notify::F_DATE]) . ' :</span>&nbsp;' . h($item[Notify::F_TEXT]);
+                                    return '<span class="text-secondary text-nowrap">' . date('Y-m-d H:i:s', $item[Notify::F_DATE]) . ' :</span>&nbsp;' 
+                                    . Notify::type_title($item[Notify::F_TYPE_ID]) . ' : '
+                                    . ($item[Notify::F_TYPE_ID] == Notify::TYPE_EMAIL 
+                                        ? h($item[Notify::F_SUBJECT]) 
+                                        : h($item[Notify::F_TEXT]));
                 },
                 variables:  ['user' => $user]
         );?>

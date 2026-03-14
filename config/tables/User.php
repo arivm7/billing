@@ -51,36 +51,38 @@ class User {
     const TABLE = 'users';
 
     const F_ID                  = 'id';
-    const F_LOGIN               = 'login';
-    const F_PASS_HASH           = 'password2';
-    const F_PASS_MD5            = 'password';
-    const F_SALT                = 'salt';
+    const F_LOGIN               = 'login';              // собственно, сам логин пользователя, varchar(25) 
+    const F_PASS_HASH           = 'password2';          // Пароль, шифрованный в 60-байтовый хэш
+    const F_PASS_MD5            = 'password';           // пароль хэшированный md5 (устаревший)
+    const F_SALT                = 'salt';               // «соль», случайное число используемое для «примеси» к паролю, varchar(3)
     const F_NAME_SHORT          = 'name_short';         // Краткое имя пользователя (отображаемое)
     const F_NAME_FULL           = 'name';               // Полное имя пользователя (отображаемое)
-    const F_SURNAME             = 'surname';
-    const F_FAMILY              = 'family';
+    const F_SURNAME             = 'surname';            // Отчество
+    const F_FAMILY              = 'family';             // Фамилия 
     const F_DESCRIPTION         = 'description';        // Дополнительная информация. Служебное поле 
-    const F_PHONE_MAIN          = 'phone_main';
-    const F_SMS_DO_SEND         = 'do_send_sms';
-    const F_EMAIL_MAIN          = 'mail_main';
-    const F_EMAIL_DO_SEND       = 'do_send_mail';
-    const F_ADDRESS_INVOICE     = 'address_invoice';
-    const F_INVOICE_DO_SEND     = 'do_send_invoice';
-    const F_JABBER              = 'jabber_main';
-    const F_JABBER_DO_SEND      = 'jabber_do_send';
-    const F_VIBER               = 'viber';
-    const F_VIBER_DO_SEND       = 'viber_do_send';
-    const F_TELEGRAM            = 'telegram';
-    const F_TELEGRAM_DO_SEND    = 'telegram_do_send';
-    const F_SIGNAL              = 'signal_messenger';
-    const F_SIGNAL_DO_SEND      = 'signal_do_send';
-    const F_WHATSAPP            = 'whatsapp';
-    const F_WHATSAPP_DO_SEND    = 'whatsapp_do_send';
-    const F_PRAVA               = 'prava';
-    const F_CREATION_UID        = 'creation_uid';
-    const F_CREATION_DATE       = 'creation_date';
-    const F_MODIFIED_UID        = 'modified_uid';
-    const F_MODIFIED_DATE       = 'modified_date';
+    const F_PHONE_MAIN          = 'phone_main';         // Основной номер телефона
+    const F_SMS_DO_SEND         = 'do_send_sms';        // Отправлять автоматические СМС-уведомления в общем списке
+    const F_EMAIL_MAIN          = 'mail_main';          // email, для уведомлений
+    const F_EMAIL_DO_SEND       = 'do_send_mail';       // Отправлять уведомления и счета электронной почтой
+    const F_EMAIL_SEND_HTML     = 'mail_send_html';     // Отправлять письма в формате html
+    const F_EMAIL_SEND_PDF      = 'mail_send_pdf';      // Отправлять вложения в формате pdf 
+    const F_ADDRESS_INVOICE     = 'address_invoice';    // Адрес доставки бумажных документов, уведомлений, счетов
+    const F_INVOICE_DO_SEND     = 'do_send_invoice';    // Доставлять документы и счета в бумажном виде
+    const F_JABBER              = 'jabber_main';        // xmpp jabber клиент для отправки сообщений
+    const F_JABBER_DO_SEND      = 'jabber_do_send';     // Отправлять сообщения на xmpp jabber
+    const F_VIBER               = 'viber';              // Имя учётной записи месенджера Viber
+    const F_VIBER_DO_SEND       = 'viber_do_send';      // Отправлять сообщения на Viber
+    const F_TELEGRAM            = 'telegram';           // Имя учётной записи месенджера Telegram
+    const F_TELEGRAM_DO_SEND    = 'telegram_do_send';   // Отправлять сообщения на Telegram
+    const F_SIGNAL              = 'signal_messenger';   // Имя учётной записи месенджера Signal
+    const F_SIGNAL_DO_SEND      = 'signal_do_send';     // Отправлять сообщения на Signal
+    const F_WHATSAPP            = 'whatsapp';           // Имя учётной записи месенджера WhatsApp
+    const F_WHATSAPP_DO_SEND    = 'whatsapp_do_send';   // Отправлять сообщения на WhatsApp
+    const F_PRAVA               = 'prava';              // 0 == клиент / пользователь, 1 и более == Административные привилегии
+    const F_CREATION_UID        = 'creation_uid';       // Кто создал запись
+    const F_CREATION_DATE       = 'creation_date';      // Дата создания записи
+    const F_MODIFIED_UID        = 'modified_uid';       // Кто изменил запись
+    const F_MODIFIED_DATE       = 'modified_date';      // Дата изменения записи в базе
 
     /**
      * Поля, которые есть в форме но нет в базе
@@ -105,6 +107,8 @@ class User {
         self::F_SMS_DO_SEND      => 1,
         self::F_EMAIL_MAIN       => '',
         self::F_EMAIL_DO_SEND    => 0,
+        self::F_EMAIL_SEND_HTML  => 0,
+        self::F_EMAIL_SEND_PDF   => 0,
         self::F_ADDRESS_INVOICE  => '',
         self::F_INVOICE_DO_SEND  => 0,
         self::F_JABBER           => '',
@@ -136,6 +140,8 @@ class User {
         self::F_SMS_DO_SEND      => 1,
         self::F_EMAIL_MAIN       => '',
         self::F_EMAIL_DO_SEND    => 0,
+        self::F_EMAIL_SEND_HTML  => 0,
+        self::F_EMAIL_SEND_PDF   => 0,
         self::F_ADDRESS_INVOICE  => '',
         self::F_INVOICE_DO_SEND  => 0,
         self::F_JABBER           => '',
@@ -157,6 +163,8 @@ class User {
     const T_FLAGS = [
         self::F_SMS_DO_SEND      => 1,
         self::F_EMAIL_DO_SEND    => 0,
+        self::F_EMAIL_SEND_HTML  => 0,
+        self::F_EMAIL_SEND_PDF   => 0,
         self::F_INVOICE_DO_SEND  => 0,
         self::F_JABBER_DO_SEND   => 0,
         self::F_VIBER_DO_SEND    => 0,

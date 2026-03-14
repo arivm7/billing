@@ -39,6 +39,7 @@ class Abon {
      * Имя поля с ID, передаваемого в _GET запросе
      */
     const F_GET_ID                  = 'abon_id';
+    const F_ABON_ID                 = 'abon_id';
 
     /**
      * имя массива в котором в пост-запрове хранятся данные формы
@@ -88,11 +89,20 @@ class Abon {
 
 
 
+    const TEXT_FIELDS = [
+        self::F_ADDRESS          => '',
+        self::F_COMMENTS         => '',
+    ];
+
+
+
     const T_FLAGS = [
         self::F_IS_PAYER            => 1,
         self::F_DUTY_AUTO_OFF       => 1,
         ];
 
+
+        
     public const DESCRIPTIONS = [
         self::F_IS_PAYER => [
             Lang::C_EN => 'Subscriber "payer", i.e. uses the service and pays for it (should pay)',

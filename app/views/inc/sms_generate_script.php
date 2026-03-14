@@ -76,7 +76,7 @@ for ($index = 0; $index < count($lines); $index++) {
                     );
 
     $script .= "<span class='text-secondary'>echo '" . (++$n) . "/" . $count_selected . ". " . $lines[$index]['address'] . "'</span>\n";
-    $script .= $sms['cmd'] . " " . $sms['phone'] . " \"".$sms['text'] . "\"" . ' ' . $sms['abon_id'] . "\n";
+    $script .= $sms['cmd'] . " " . $sms['phone'] . " \"".$sms['text'] . "\"" . ' ' . $sms['abon_id'] . "\n\n";
 }
 
 $script .= "";

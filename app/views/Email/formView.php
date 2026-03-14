@@ -31,30 +31,73 @@ use config\Email;
  * @var string $body_html
  * @var string $attach_path
  * @var string $attach_name
+ * @var string $register        -- Регистрация отправленного письма в базе
+ * @var int    $abon_id         -- id абонента для которого регистрировать письмо
  * 
  */
 
+if (empty($abon_id)) { $register = 0; }
+
 // debug($_GET, '_GET');
 // debug($_POST, '_POST');
-// debug(['to' => $to, 'subject'=>$subject, 'body_text'=>$body_text, 'body_html'=>$body_html, 'attach_path'=>$attach_path, 'attach_name'=>$attach_name], '$to, $subject, $body_text, $body_html, $attach_path, $attach_name');
-
+// debug([
+//     'to' => $to, 
+//     'subject'=>$subject, 
+//     'body_text'=>$body_text, 
+//     'body_html'=>$body_html, 
+//     'register'=>$register, 
+//     'abon_id'=>$abon_id,
+//     'attach_path'=>$attach_path, 
+//     'attach_name'=>$attach_name,
+//     ], '$to, $subject, $body_text, $body_html, $attach_path, $attach_name');
 
 ?>
 
 <div class="container mt-1">
-    <h2 class="mb-4">Отправка письма</h2>
+    <h2 class="mb-4"><?= $title ?></h2>
     <form method="post" action="">
+        <!-- abon_id -->
+        <input type="hidden" name="<?= Email::REC ?>[<?= Email::F_REGISTER_ABON_ID ?>]" value="<?= h($abon_id) ?>">
+
+        <!-- TO -->
         <div class="mb-3">
-            <label for="to" class="form-label"><?= __('Кому') ?></label>
-            <input type="text" class="form-control" id="to" 
-                    name="<?= Email::REC ?>[<?= Email::F_TO ?>]" 
-                    value="<?= $to ?>"
-                    placeholder="Можно указать несколько адресов через запятую" required>
+            <label for="to" class="form-label hover-pointer"><?= __('Кому') ?></label>
+            <div class="row align-items-center g-2">
+                <div class="col-12 col-md-10 col-lg-9">
+                    <input type="email" 
+                        class="form-control" 
+                        id="to" 
+                        name="<?= Email::REC ?>[<?= Email::F_TO ?>]" 
+                        value="<?= h($to) ?>"
+                        placeholder="<?= __('Можно указать несколько адресов через запятую') ?>" 
+                        required>
+                </div>
+                <!-- Флаг Регистрировать -->
+                <div class="col-12 col-md-2 col-lg-3">
+                    <div class="form-check ms-2">
+                        <input class="form-check-input" 
+                            type="checkbox" 
+                            name="<?= Email::REC ?>[<?= Email::F_REGISTER ?>]" 
+                            id="register_notify"
+                            value="1"
+                            <?= (empty($abon_id) ? "disabled" : "") ?>
+                            <?= $register ? 'checked' : '' ?>>
+                        <label class="form-check-label hover-pointer" 
+                            for="register_notify" 
+                            data-bs-toggle="tooltip" 
+                            data-bs-placement="top"
+                            title="<?= __('Регистрировать письмо в базе уведомлений') ?>">
+                            <?= __('Регистрировать') ?>
+                        </label>
+                    </div>
+                </div>
+            </div>
             <div class="form-text">.</div>
         </div>
 
+        <!-- SUBJECT -->
         <div class="mb-3">
-            <label for="subject" class="form-label"><?= __('Тема') ?></label>
+            <label for="subject" class="form-label hover-pointer"><?= __('Тема') ?></label>
             <input type="text" class="form-control" id="subject" name="<?= Email::REC ?>[<?= Email::F_SUBJECT ?>]" value="<?= $subject ?>" required>
         </div>
 
@@ -71,7 +114,7 @@ use config\Email;
                             data-bs-target="#html-body"
                             type="button"
                             role="tab">
-                        <?= __('HTML-версия') ?>
+                        <?= __('HTML-версия') ?> <?= (empty($body_html) ? "" : "&nbsp;<i class='bi bi-circle-fill text-info small' title='Есть текст'></i>") ?>
                     </button>
                 </li>
 
@@ -82,7 +125,7 @@ use config\Email;
                             data-bs-target="#text-body"
                             type="button"
                             role="tab">
-                        <?= __('Текстовая версия') ?>
+                        <?= __('Текстовая версия') ?> <?= (empty($body_text) ? "" : "&nbsp;<i class='bi bi-circle-fill text-info small' title='Есть текст'></i>") ?>
                     </button>
                 </li>
 

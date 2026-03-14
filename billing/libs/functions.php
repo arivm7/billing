@@ -662,12 +662,17 @@ function url_email_form(
     if (empty($src)) { 
         $src = Icons::SRC_ICON_EMAIL; 
     }
-    $subject = trim($subject);
+
+    $to  = rawurlencode(trim($to));
+    $cc  = rawurlencode(trim($cc));
+    $bcc = rawurlencode(trim($bcc));
+
+    $subject = rawurlencode(trim($subject));
     if (empty($subject)) { 
         $subject  = rawurlencode(App::get_config('email_subject_template')); 
     }
-    $body_text = trim($body_text);
-    $body_html = trim($body_html);
+    $body_text = rawurlencode(trim($body_text));
+    $body_html = rawurlencode(trim($body_html));
     if (empty($body_text) && empty($body_html) ) {
         $body_html  = rawurlencode(App::get_config('email_body_html_template'));
     }
@@ -684,8 +689,120 @@ function url_email_form(
             . "\" "
             . "title='{$title}' target='$target' {$attributes}>"
             . ($src ? get_html_img(src: $src, width: $width, height: $height) : "")
+            . ($src && $text ? "&nbsp;" : "")
             . ($text ? h($text) : "")
             . "</a>";
+}
+
+
+
+/**
+ * Создание кнопки с формой или субформой для отправки email
+ * @param string $to                -- Адрес получателя
+ * @param string $cc                -- Адрес открытая копия (carbon copy)
+ * @param string $bcc               -- Адрес скрытой копии (blind carbon copy)
+ * @param string $subject           -- Тема письма
+ * @param string $body_text         -- Текст письма в формате текста
+ * @param string $body_html         -- Текст письма в формате HTML
+ * @param string|null $form_id      -- ID формы, Стока для ссылки на форму, к которой привязывать элементы управления и данные.
+ *                                     Если указан, то тэг <form> не будет создан, а будут только ссылки на форму в элементах управления
+ * @param string|null $src          -- URL src иконки на кнопке
+ * @param string|null $text         -- Текст на кнопке
+ * @param int|string|null $width    -- Ширина кнопки
+ * @param int|string|null $height   -- Высота кнопки
+ * @param string $target            -- В каком окне открывать ссылку. Только при полной форме. 
+ *                                     Если указать ссылку на внешнюю форму, то параметр target игнорируется
+ * @param string $attributes        -- Атрибуты кнопки: Передавать только доверенное содержимое и через ''. 
+ *                                     Это молут быть классы, стили или параметры. 
+ *                                     Переменная добавляется, без проверки содержимого
+ * @param string $title             -- Тэг title кнопки  "Отправить"
+ * @param int|bool $register        -- Флаг состояния чекбокса регистрации отправленного письма в базе после отправки
+ * @param int $abon_id              -- id абонента для котого регистрировать это письмо в базе
+ * @return string
+ */
+function url_email_subform(
+    string $to = '', 
+    string $cc = '', 
+    string $bcc = '', 
+    string $subject = '', 
+    string $body_text = '', 
+    string $body_html = '', 
+    ?string $form_id = null,
+    ?string $src = null,
+    ?string $text = null,
+    int|string|null $width = null,
+    int|string|null $height = null,
+    string $target = '_blank',
+    string $attributes = '',
+    string $title = '',
+    int|bool $register = 1,
+    int $abon_id = 0
+    ): string 
+{
+    if (empty($src)) { 
+        $src = Icons::SRC_ICON_EMAIL; 
+    }
+
+    $fields = [
+        Email::F_SUBJECT    => h(trim($subject ?? '')),
+        Email::F_TO         => h(trim($to ?? '')),
+        Email::F_BODY_TEXT  => h(trim($body_text ?? '')),
+        Email::F_BODY_HTML  => h(trim($body_html ?? '')),
+        Email::F_CC         => h(trim($cc ?? '')),
+        Email::F_BCC        => h(trim($bcc ?? '')),
+        Email::F_REGISTER   => $register ? 1 : 0,
+        Email::F_REGISTER_ABON_ID => $abon_id ?? 0,
+    ];
+    
+    $recKey = h(Email::REC);
+    $action = h(Email::URI_FORM);
+    $formAttr = !empty($form_id) ? " form='".h($form_id)."'" : '';
+    if ($form_id) { $form_id = h($form_id); }
+    $title = h(trim($title));
+    
+    
+    // Генерация скрытых полей
+    $hiddenFields = '';
+    foreach ($fields as $key => $value) {
+        if ($value !== '' && $value !== null) {
+            $hiddenFields .= sprintf(
+                "<input type='hidden' name='%s[%s]' value='%s' %s>\n",
+                $recKey, h($key), $value, $formAttr
+            );
+        }
+    }
+    
+    // Контент кнопки
+    $buttonContent = '';
+    if ($src) {
+        $buttonContent .= get_html_img(src: $src, width: $width, height: $height);
+    }
+    if ($src && $text) {
+        $buttonContent .= '&nbsp;';
+    }
+    if ($text) {
+        $buttonContent .= h($text);
+    }
+    if (empty($buttonContent)) {
+        $buttonContent = __('Написать письмо');
+    }
+    
+    // Если передан form_id — возвращаем только поля и кнопку
+    if (!empty($form_id)) {
+        return "<!-- Email fields for form {$form_id} -->"
+                . $hiddenFields
+                . "<button type='submit' form='{$form_id}' title='{$title}' {$attributes}>"
+                . $buttonContent
+                . "</button>";
+    }
+    
+    // Иначе — полная форма (старое поведение)
+    return "<form method='post' action='{$action}' target='" . h($target) . "' style='display:inline;'>\n"
+            . $hiddenFields
+            . "<button type='submit' title='{$title}' {$attributes}>"
+            . $buttonContent
+            . "</button>"
+            . "</form>";
 }
 
 
@@ -2293,6 +2410,13 @@ function get_diff_fields(array $new, array $prev, string|null $field_id = 'id'):
 
 
 
+/**
+ * Заменяет в тексте шаблоны на их значения.
+ * Шаблоны и значения передаются в ассоциативном масстве ['шаблон'=>'значение',...]
+ * @param string $text
+ * @param array $templates
+ * @return string
+ */
 function untemplate(string $text, array $templates = []): string {
     foreach ($templates as $key => $value) {
         $text = str_replace($key, $value, $text);
@@ -2644,6 +2768,7 @@ function html_to_text(string $html): string
         '<br />' => "\n",
     ];
 
+
     $text = str_ireplace(array_keys($breaks), array_values($breaks), $html);
 
     // Удаляем остальные HTML-теги
@@ -2652,8 +2777,20 @@ function html_to_text(string $html): string
     // Декодируем HTML-сущности
     $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
-    // Нормализуем переносы
+    // Заменяем неразрывный пробел (UTF-8: 0xC2 0xA0) на обычный
+    $text = str_replace("\xC2\xA0", ' ', $text);
+
+    // Символы, которые нужно удалять из пустых строк
+    $whitespaceChars = ' \r\t\xA0'; // \r, табуляция, неразрывный пробел (для regex)
+
+    // Удаляем пробельные смимволы из пустых строк
+    $text = preg_replace('/^[' . $whitespaceChars . ']+$/m', '', $text);
+
+    // Нормализуем переносы: не более 2 подряд (максимум 1 пустая строка между абзацами)
     $text = preg_replace("/\n{3,}/", "\n\n", $text);
+
+    // Гарантируем валидный UTF-8 для json_encode (удаляем невалидные байты)
+    $text = iconv('UTF-8', 'UTF-8//IGNORE', $text);
 
     return trim($text);
 }

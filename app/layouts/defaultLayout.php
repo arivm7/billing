@@ -115,6 +115,10 @@ use billing\core\base\View;
                     font-weight: bold;
             }
 
+            .hover-pointer {
+                cursor: pointer; /* показывает "руку" */
+            }
+
         </style>
     </head>
     <body>

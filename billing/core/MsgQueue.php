@@ -27,7 +27,7 @@ enum MsgType: string {
 }
 
 /**
- * Description of MsgQueue.php
+ * Статический класс очереди сообщений
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */

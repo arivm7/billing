@@ -91,13 +91,6 @@ $config = [
      */
     'files_upload_max_filesize' => return_bytes(ini_get('upload_max_filesize')),
 
-    
-
-    /**
-     * Количество последних уведомлений для отображения в карточке абонента
-     */
-    'notify_list_limit' => 10,
-
     /**
      * Количество отображаемых платежей на странице
      */
@@ -179,12 +172,20 @@ $config = [
      * Максимальная длина номера договора
      */
     'port_max_digits' => 6,
+
     
 
     /**
      * Параметры уведомлений SMS, email и прочие
      */
 
+
+
+    /**
+     * Количество последних уведомлений для отображения в карточке абонента
+     */
+    'notify_list_limit' => 10,
+    
     'sms_cost1'     => 1.50, //Стоимость 1 СМС, грн
     'sms_chars1sms' => 69,  //Количество символов в 1 СМС.
     'sms_sender'    => '$HOME/bin/sms_sender.sh',
@@ -212,6 +213,10 @@ $config = [
     'inv_per_page' => 12,
     // Максимальная длина номера Счёта-фактуры
     'inv_max_length_number' => 24,
+    'inv_body_template' => "Доступ до мережі інтернет за адресою {ADDRESS}, порт № {PORT}, <nobr>за {DATE}</nobr>",
+    'inv_payer_unknown' => "__________________________________________________",
+    'inv_date_unknown' => "____.____.________",
+
 
 
     /**
@@ -253,7 +258,12 @@ $config = [
         ."<a href='https://my.ri.net.ua' target='_blank'>https://my.ri.net.ua</a><br>\n"
         ."</font>\n"
         ."</body>\n"
-        ."</html>",
+        ."</html>\n",
+    'email_to_debug' => 'ariv@meta.ua',
+    
+    'email_inv_subject_template' => "{AGENT_TITLE}. Рахунок за інтернет. ОР: {PORT} | {ADDRESS}",
+    'email_inv_body_html_template' => '',
+    
 
 ];
 

@@ -39,8 +39,11 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
     $form_data = [];
 }
 
-/** @var array $user */
-/** @var array $abon */
+/** 
+ * Данные из контроллера
+ * @var array $user 
+ * @var array $abon 
+*/
 
 if (!isset($abon) || !is_array($abon)) {
     throw new Exception('$abon[] -- не передан');

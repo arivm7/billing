@@ -90,7 +90,8 @@ class Icons {
 
     const SRC_ICON_HTTP       = '/img/icon_http_64.png';
     const SRC_ICON_SMS        = '/img/icon_sms.svg';
-    const SRC_ICON_MAIL       = '/img/icon_mail_32.png';
+    const SRC_ICON_MAIL       = '/img/icon_mail.svg';
+    const SRC_ICON_EMAIL2     = '/img/icon_email_0.svg';
     const SRC_ICON_EMAIL      = '/img/icon_email.svg';
     const SRC_ICON_EMAIL_OFF  = '/img/icon_email_gray.svg';
     const SRC_ICON_PHONE      = '/img/icon_phone.svg';

@@ -26,44 +26,47 @@ use config\tables\Abon;
 use config\tables\AbonRest;
 use billing\core\base\Lang;
 Lang::load_inc(__FILE__);
-/** @var AbonController $this */
-/** @var array $data */
-$warn = AbonController::get_warn_status($data);
+/**
+ * Данные из контроллера
+ * @var array $abon 
+ * @var array $rest 
+ * */
+$warn = AbonController::get_warn_status($abon, $rest);
 $attr = AbonController::attribute_warning[$warn->name];
-$prepayed = (is_null($data[AbonRest::F_PREPAYED])
+$prepayed = (is_null($rest[AbonRest::F_PREPAYED])
                 ?   "-"
-                :   ($data[AbonRest::F_PREPAYED] < -(365*3)
-                        ? "<span class='small' title='{$data[AbonRest::F_PREPAYED]} ".__('дней')."'>&lt;&lt;&lt;</span>"
-                        :   ($data[AbonRest::F_PREPAYED] > (365*3)
-                                ? "<span class='small' title='{$data[AbonRest::F_PREPAYED]} ".__('дней')."'>&gt;&gt;&gt;</span>"
-                                : $data[AbonRest::F_PREPAYED]
+                :   ($rest[AbonRest::F_PREPAYED] < -(365*3)
+                        ? "<span class='small' title='{$rest[AbonRest::F_PREPAYED]} ".__('дней')."'>&lt;&lt;&lt;</span>"
+                        :   ($rest[AbonRest::F_PREPAYED] > (365*3)
+                                ? "<span class='small' title='{$rest[AbonRest::F_PREPAYED]} ".__('дней')."'>&gt;&gt;&gt;</span>"
+                                : $rest[AbonRest::F_PREPAYED]
                             )
                     )
             );
-$attr_warn = (!$data[Abon::F_DUTY_AUTO_OFF] || is_null($data[AbonRest::F_PREPAYED])
+$attr_warn = (!$abon[Abon::F_DUTY_AUTO_OFF] || is_null($rest[AbonRest::F_PREPAYED])
         ? "class='text-secondary'"
-        : ($data[Abon::F_DUTY_MAX_WARN] > $data[AbonRest::F_PREPAYED] ? AbonController::attribute_warning[DutyWarn::INFO->name] : "")) ;
-$attr_off  = (!$data[Abon::F_DUTY_AUTO_OFF] || is_null($data[AbonRest::F_PREPAYED])
+        : ($abon[Abon::F_DUTY_MAX_WARN] > $rest[AbonRest::F_PREPAYED] ? AbonController::attribute_warning[DutyWarn::INFO->name] : "")) ;
+$attr_off  = (!$abon[Abon::F_DUTY_AUTO_OFF] || is_null($rest[AbonRest::F_PREPAYED])
         ? "class='text-secondary'"
-        : ($data[Abon::F_DUTY_MAX_OFF] > $data[AbonRest::F_PREPAYED] ? AbonController::attribute_warning[DutyWarn::NEED_OFF->name] : ""));
+        : ($abon[Abon::F_DUTY_MAX_OFF] > $rest[AbonRest::F_PREPAYED] ? AbonController::attribute_warning[DutyWarn::NEED_OFF->name] : ""));
 ?>
 <table class='table table-sm table-bordered table-hover small' style="table-layout: fixed; width: 100pt; max-width: 100%;">
 <tr>
     <td nowrap style="text-align: center;" colspan="2">
-        <font <?=$attr;?> title='<?=__('Остаток на лицевом счету.') . CR . '----' . CR . get_description_by_warn($warn);?>'><?=number_format($data[AbonRest::F_REST],2,","," ");?></font>
+        <font <?=$attr;?> title='<?=__('Остаток на лицевом счету.') . CR . '----' . CR . get_description_by_warn($warn);?>'><?=number_format($rest[AbonRest::F_REST],2,","," ");?></font>
     </td>
     <td nowrap style="width: 33%; text-align: center;">
         <font color=gray title='<?=__('Количество предоплаченных дней');?>' ><?=$prepayed;?></font>
     </td>
 </tr>
 <tr>
-    <td nowrap style="width: 34%; text-align: center;" <?=($data[AbonRest::F_SUM_PPMA] ? "class='text-success-emphasis'" : "class='text-secondary'");?> title='<?=__('Абонплата за месяц');?>'><?=number_format($data[AbonRest::F_SUM_PPMA],(abs($data[AbonRest::F_SUM_PPMA]) < 10 ? 2 : 0),","," ");?></td>
-    <td nowrap style="width: 33%; text-align: center;" <?=($data[AbonRest::F_SUM_PPDA] ? "class='text-success-emphasis'" : "class='text-secondary'");?> title='<?=__('Абонплата за сутки');?>'><?=number_format($data[AbonRest::F_SUM_PPDA],(abs($data[AbonRest::F_SUM_PPDA]) < 10 ? 2 : 0),","," ");?></td>
-    <td nowrap style="width: 33%; text-align: center;" <?=($data[AbonRest::F_SUM_PP30A] ? "class='text-success-emphasis'" : "class='text-warning'");?> title='<?=__('Сумарная абонплата за месяц');?>'><?=number_format($data[AbonRest::F_SUM_PP30A],(abs($data[AbonRest::F_SUM_PP30A]) < 10 ? 2 : 0),","," ");?></td>
+    <td nowrap style="width: 34%; text-align: center;" <?=($rest[AbonRest::F_SUM_PPMA] ? "class='text-success-emphasis'" : "class='text-secondary'");?> title='<?=__('Абонплата за месяц');?>'><?=number_format($rest[AbonRest::F_SUM_PPMA],(abs($rest[AbonRest::F_SUM_PPMA]) < 10 ? 2 : 0),","," ");?></td>
+    <td nowrap style="width: 33%; text-align: center;" <?=($rest[AbonRest::F_SUM_PPDA] ? "class='text-success-emphasis'" : "class='text-secondary'");?> title='<?=__('Абонплата за сутки');?>'><?=number_format($rest[AbonRest::F_SUM_PPDA],(abs($rest[AbonRest::F_SUM_PPDA]) < 10 ? 2 : 0),","," ");?></td>
+    <td nowrap style="width: 33%; text-align: center;" <?=($rest[AbonRest::F_SUM_PP30A] ? "class='text-success-emphasis'" : "class='text-warning'");?> title='<?=__('Сумарная абонплата за месяц');?>'><?=number_format($rest[AbonRest::F_SUM_PP30A],(abs($rest[AbonRest::F_SUM_PP30A]) < 10 ? 2 : 0),","," ");?></td>
 </tr>
 <tr>
-    <td nowrap style="width: 34%; text-align: center;" title='<?=__('Число оплаченных дней, %s при пересечении котрого нужно уведомлять', CR);?>'><span <?=$attr_warn;?>><?=$data[Abon::F_DUTY_MAX_WARN];?></span></td>
-    <td nowrap style="width: 33%; text-align: center;" title='<?=__('Число оплаченных дней, %s при пересечении котрого нужно отключать', CR);?>'><span <?=$attr_off;?>><?=$data[Abon::F_DUTY_MAX_OFF];?></span></td>
-    <td nowrap style="width: 33%; text-align: center;" title='<?=__('Автоматически отключать');?>'><?=get_html_CHECK($data[Abon::F_DUTY_AUTO_OFF]);?></td>
+    <td nowrap style="width: 34%; text-align: center;" title='<?=__('Число оплаченных дней, %s при пересечении котрого нужно уведомлять', CR);?>'><span <?=$attr_warn;?>><?=$abon[Abon::F_DUTY_MAX_WARN];?></span></td>
+    <td nowrap style="width: 33%; text-align: center;" title='<?=__('Число оплаченных дней, %s при пересечении котрого нужно отключать', CR);?>'><span <?=$attr_off;?>><?=$abon[Abon::F_DUTY_MAX_OFF];?></span></td>
+    <td nowrap style="width: 33%; text-align: center;" title='<?=__('Автоматически отключать');?>'><?=get_html_CHECK($abon[Abon::F_DUTY_AUTO_OFF]);?></td>
 </tr>
 </table>
