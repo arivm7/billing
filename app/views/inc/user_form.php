@@ -73,7 +73,7 @@ $form_data_fn = function(string $field) use ($form_data, $user): int|float|strin
 
             <!-- Логин -->
             <div class="row mb-3">
-                <label for="user_login" class="col-2 col-form-label"><?=__('Login');?></label>
+                <label for="user_login hover-pointer" class="col-2 col-form-label"><?=__('Login');?></label>
                 <div class="col-3">
                     <input type="text" class="form-control" id="user_login" name="<?=User::POST_REC;?>[<?=User::F_LOGIN;?>]" value="<?=h($form_data_fn(User::F_LOGIN));?>" required>
                 </div>
@@ -83,7 +83,7 @@ $form_data_fn = function(string $field) use ($form_data, $user): int|float|strin
 
             <!-- Новый пароль -->
             <div class="row mb-3">
-                <label class="col-2 col-form-label" for="new_pass">
+                <label class="col-2 col-form-label hover-pointer" for="new_pass">
                     <?= __('Password'); ?>
                 </label>
 
@@ -126,7 +126,7 @@ $form_data_fn = function(string $field) use ($form_data, $user): int|float|strin
 
             <!-- Краткое имя -->
             <div class="row mb-3">
-                <label for="user_name_short" class="col-2 col-form-label"><?=__('Short name');?></label>
+                <label for="user_name_short" class="col-2 col-form-label hover-pointer"><?=__('Short name');?></label>
                 <div class="col-3">
                     <input type="text" class="form-control" id="user_name_short" name="<?=User::POST_REC;?>[<?=User::F_NAME_SHORT;?>]" value="<?=h($form_data_fn(User::F_NAME_SHORT));?>">
                 </div>
@@ -136,7 +136,7 @@ $form_data_fn = function(string $field) use ($form_data, $user): int|float|strin
 
             <!-- Полное Имя -->
             <div class="row mb-3">
-                <label for="user_name" class="col-2 col-form-label"><?=__('Full name');?></label>
+                <label for="user_name" class="col-2 col-form-label hover-pointer"><?=__('Full name');?></label>
                 <div class="col-6">
                     <input type="text" class="form-control" id="user_name" name="<?=User::POST_REC;?>[<?=User::F_NAME_FULL;?>]" value="<?=h($form_data_fn(User::F_NAME_FULL));?>">
                 </div>
@@ -146,7 +146,7 @@ $form_data_fn = function(string $field) use ($form_data, $user): int|float|strin
             <?php if (can_edit(Module::MOD_USER_CARD)): ?>
                 <!-- Отчество -->
                 <div class="row mb-3">
-                    <label for="<?=User::F_SURNAME;?>" class="col-2 col-form-label"><?=__('Отчество');?></label>
+                    <label for="<?=User::F_SURNAME;?>" class="col-2 col-form-label hover-pointer"><?=__('Отчество');?></label>
                     <div class="col-6">
                         <input type="text" class="form-control" id="<?=User::F_SURNAME;?>" name="<?=User::POST_REC;?>[<?=User::F_SURNAME;?>]" value="<?=h($form_data_fn(User::F_SURNAME));?>">
                     </div>
@@ -155,7 +155,7 @@ $form_data_fn = function(string $field) use ($form_data, $user): int|float|strin
 
                 <!-- Фамилия -->
                 <div class="row mb-3">
-                    <label for="<?=User::F_FAMILY;?>" class="col-2 col-form-label"><?=__('Фамилия');?></label>
+                    <label for="<?=User::F_FAMILY;?>" class="col-2 col-form-label hover-pointer"><?=__('Фамилия');?></label>
                     <div class="col-6">
                         <input type="text" class="form-control" id="<?=User::F_FAMILY;?>" name="<?=User::POST_REC;?>[<?=User::F_FAMILY;?>]" value="<?=h($form_data_fn(User::F_FAMILY));?>">
                     </div>
@@ -166,7 +166,7 @@ $form_data_fn = function(string $field) use ($form_data, $user): int|float|strin
             <!-- Описание. Служебное поле -->
             <?php if (can_edit(Module::MOD_USER_CARD)): ?>
                 <div class="row mb-3">
-                    <label for="user_description" class="col-2 col-form-label"><?=__('Описание (служебное)');?></label>
+                    <label for="user_description hover-pointer" class="col-2 col-form-label"><?=__('Описание (служебное)');?></label>
                     <div class="col-6">
                         <textarea class="form-control" id="user_description" name="<?= User::POST_REC;?>[<?=User::F_DESCRIPTION;?>]" rows="<?=get_count_rows_for_textarea($form_data_fn(User::F_DESCRIPTION));?>"><?= h($form_data_fn(User::F_DESCRIPTION));?></textarea>
                     </div>
@@ -176,112 +176,149 @@ $form_data_fn = function(string $field) use ($form_data, $user): int|float|strin
 
             <!-- Основной номер телефона -->
             <div class="row mb-3">
-                <label for="user_phone_main" class="col-2 col-form-label"><?=__('Phone number');?></label>
+                <label for="user_phone_main hover-pointer" class="col-2 col-form-label"><?=__('Phone number');?></label>
                 <div class="col-6">
                     <input type="text" class="form-control" id="user_phone_main" name="<?=User::POST_REC;?>[<?=User::F_PHONE_MAIN;?>]" value="<?=h($form_data_fn(User::F_PHONE_MAIN));?>">
                 </div>
                 <div class="col-2">
                     <div class="form-check" title="<?=__('Send notifications via SMS');?>">
-                        <input class="form-check-input" type="checkbox" id="user_do_send_sms" name="<?=User::POST_REC;?>[<?=User::F_SMS_DO_SEND;?>]" value="1" <?=$form_data_fn(User::F_SMS_DO_SEND) ? 'checked' : '';?>>
-                        <label class="form-check-label" for="user_do_send_sms">SMS</label>
+                        <input class="form-check-input hover-pointer" type="checkbox" id="user_do_send_sms" name="<?=User::POST_REC;?>[<?=User::F_SMS_DO_SEND;?>]" value="1" <?=$form_data_fn(User::F_SMS_DO_SEND) ? 'checked' : '';?>>
+                        <label class="form-check-label hover-pointer" for="user_do_send_sms">SMS</label>
                     </div>
                 </div>
             </div>
 
             <!-- Электронная почта -->
             <div class="row mb-3">
-                <label for="user_mail_main" class="col-2 col-form-label"><?=__('Email');?></label>
+                <label for="user_mail_main hover-pointer" class="col-2 col-form-label"><?=__('Email');?></label>
                 <div class="col-6">
                     <input type="text" inputmode="email" class="form-control" id="user_mail_main" name="<?= User::POST_REC;?>[<?=User::F_EMAIL_MAIN;?>]" value="<?= h($form_data_fn(User::F_EMAIL_MAIN));?>">
                 </div>
                 <div class="col-2">
-                    <div class="form-check" title="<?=__('Send notification letters by email');?>">
-                        <input class="form-check-input" type="checkbox" id="user_do_send_mail" name="<?= User::POST_REC;?>[<?=User::F_EMAIL_DO_SEND;?>]" value="1" <?=$form_data_fn(User::F_EMAIL_DO_SEND) ? 'checked' : '';?>>
-                        <label class="form-check-label" for="user_do_send_mail"><?=__('Send');?></label>
+
+                    <div class="d-inline-flex align-items-center gap-2">
+
+                        <div class="form-check m-0" title="<?=__('Send notification letters by email');?>">
+                            <input class="form-check-input hover-pointer"
+                                type="checkbox"
+                                id="user_do_send_mail"
+                                name="<?= User::POST_REC;?>[<?=User::F_EMAIL_DO_SEND;?>]"
+                                value="1"
+                                <?= $form_data_fn(User::F_EMAIL_DO_SEND) ? 'checked' : ''; ?>>
+                            <label class="form-check-label hover-pointer small" for="user_do_send_mail">
+                                <?= __('Send'); ?>
+                            </label>
+                        </div>
+
+                        <div class="form-check m-0" title="<?=__('Отправлять письмо в html формате');?>">
+                            <input class="form-check-input hover-pointer"
+                                type="checkbox"
+                                id="user_do_send_html"
+                                name="<?= User::POST_REC;?>[<?=User::F_EMAIL_SEND_HTML;?>]"
+                                value="1"
+                                <?= $form_data_fn(User::F_EMAIL_SEND_HTML) ? 'checked' : ''; ?>>
+                            <label class="form-check-label hover-pointer small" for="user_do_send_html">
+                                <?= __('HTML'); ?>
+                            </label>
+                        </div>
+
+                        <div class="form-check m-0" title="<?=__('Отправлять документы как вложение в формате pdf-файла');?>">
+                            <input class="form-check-input hover-pointer"
+                                type="checkbox"
+                                id="user_do_send_pdf"
+                                name="<?= User::POST_REC;?>[<?=User::F_EMAIL_SEND_PDF;?>]"
+                                value="1"
+                                <?= $form_data_fn(User::F_EMAIL_SEND_PDF) ? 'checked' : ''; ?>>
+                            <label class="form-check-label hover-pointer small" for="user_do_send_pdf">
+                                <?= __('PDF'); ?>
+                            </label>
+                        </div>
+
                     </div>
+
                 </div>
             </div>
 
             <!-- Почтовый адрес -->
             <div class="row mb-3">
-                <label for="user_address_invoice" class="col-2 col-form-label"><?=__('Document delivery address');?></label>
+                <label for="user_address_invoice" class="col-2 col-form-label hover-pointer"><?=__('Document delivery address');?></label>
                 <div class="col-6">
                     <textarea class="form-control" id="user_address_invoice" name="<?= User::POST_REC;?>[<?=User::F_ADDRESS_INVOICE;?>]" rows="<?=get_count_rows_for_textarea($form_data_fn(User::F_ADDRESS_INVOICE));?>"><?= h($form_data_fn(User::F_ADDRESS_INVOICE));?></textarea>
                 </div>
                 <div class="col-2">
                     <div class="form-check" title="<?=__('Deliver documents and invoices in paper/digital form');?>">
-                        <input class="form-check-input" type="checkbox" id="user_do_send_invoice" name="<?= User::POST_REC;?>[<?=User::F_INVOICE_DO_SEND;?>]" value="1" <?=$form_data_fn(User::F_INVOICE_DO_SEND) ? 'checked' : '';?>>
-                        <label class="form-check-label" for="user_do_send_invoice"><?=__('Deliver');?></label>
+                        <input class="form-check-input hover-pointer" type="checkbox" id="user_do_send_invoice" name="<?= User::POST_REC;?>[<?=User::F_INVOICE_DO_SEND;?>]" value="1" <?=$form_data_fn(User::F_INVOICE_DO_SEND) ? 'checked' : '';?>>
+                        <label class="form-check-label hover-pointer" for="user_do_send_invoice"><?=__('Deliver');?></label>
                     </div>
                 </div>
             </div>
 
             <!-- Viber -->
             <div class="row mb-3">
-                <label for="user_viber" class="col-2 col-form-label">Viber</label>
+                <label for="user_viber" class="col-2 col-form-label hover-pointer">Viber</label>
                 <div class="col-6">
                     <input type="text" class="form-control" id="user_viber" name="<?= User::POST_REC;?>[<?=User::F_VIBER;?>]" value="<?=h($form_data_fn(User::F_VIBER));?>">
                 </div>
                 <div class="col-2">
                     <div class="form-check" title="<?=__('To correspond through this messenger');?>">
-                        <input class="form-check-input" type="checkbox" id="user_viber_do_send" name="<?= User::POST_REC;?>[<?=User::F_VIBER_DO_SEND;?>]" value="1" <?=h($form_data_fn(User::F_VIBER_DO_SEND)) ? 'checked' : '';?>>
-                        <label class="form-check-label" for="user_viber_do_send"><?=__('Use');?></label>
+                        <input class="form-check-input hover-pointer" type="checkbox" id="user_viber_do_send" name="<?= User::POST_REC;?>[<?=User::F_VIBER_DO_SEND;?>]" value="1" <?=h($form_data_fn(User::F_VIBER_DO_SEND)) ? 'checked' : '';?>>
+                        <label class="form-check-label hover-pointer" for="user_viber_do_send"><?=__('Use');?></label>
                     </div>
                 </div>
             </div>
 
             <!-- Telegram -->
             <div class="row mb-3">
-                <label for="user_telegram" class="col-2 col-form-label">Telegram</label>
+                <label for="user_telegram" class="col-2 col-form-label hover-pointer">Telegram</label>
                 <div class="col-6">
                     <input type="text" class="form-control" id="user_telegram" name="<?= User::POST_REC;?>[<?=User::F_TELEGRAM;?>]" value="<?=h($form_data_fn(User::F_TELEGRAM));?>">
                 </div>
                 <div class="col-2">
                     <div class="form-check" title="<?=__('To correspond through this messenger');?>">
-                        <input class="form-check-input" type="checkbox" id="user_telegram_do_send" name="<?= User::POST_REC;?>[<?=User::F_TELEGRAM_DO_SEND;?>]" value="1" <?=$form_data_fn(User::F_TELEGRAM_DO_SEND) ? 'checked' : '';?>>
-                        <label class="form-check-label" for="user_telegram_do_send"><?=__('Use');?></label>
+                        <input class="form-check-input hover-pointer" type="checkbox" id="user_telegram_do_send" name="<?= User::POST_REC;?>[<?=User::F_TELEGRAM_DO_SEND;?>]" value="1" <?=$form_data_fn(User::F_TELEGRAM_DO_SEND) ? 'checked' : '';?>>
+                        <label class="form-check-label hover-pointer" for="user_telegram_do_send"><?=__('Use');?></label>
                     </div>
                 </div>
             </div>
 
             <!-- Signal -->
             <div class="row mb-3">
-                <label for="user_signal" class="col-2 col-form-label">Signal</label>
+                <label for="user_signal" class="col-2 col-form-label hover-pointer">Signal</label>
                 <div class="col-6">
                     <input type="text" class="form-control" id="user_signal" name="<?= User::POST_REC;?>[<?=User::F_SIGNAL;?>]" value="<?=h($form_data_fn(User::F_SIGNAL));?>">
                 </div>
                 <div class="col-2">
                     <div class="form-check" title="<?=__('To correspond through this messenger');?>">
-                        <input class="form-check-input" type="checkbox" id="user_signal_do_send" name="<?= User::POST_REC;?>[<?=User::F_SIGNAL_DO_SEND;?>]" value="1" <?=$form_data_fn(User::F_SIGNAL_DO_SEND) ? 'checked' : '';?>>
-                        <label class="form-check-label" for="user_signal_do_send"><?=__('Use');?></label>
+                        <input class="form-check-input hover-pointer" type="checkbox" id="user_signal_do_send" name="<?= User::POST_REC;?>[<?=User::F_SIGNAL_DO_SEND;?>]" value="1" <?=$form_data_fn(User::F_SIGNAL_DO_SEND) ? 'checked' : '';?>>
+                        <label class="form-check-label hover-pointer" for="user_signal_do_send"><?=__('Use');?></label>
                     </div>
                 </div>
             </div>
 
             <!-- WhatsApp -->
             <div class="row mb-3">
-                <label for="user_whatsapp" class="col-2 col-form-label">WhatsApp</label>
+                <label for="user_whatsapp" class="col-2 col-form-label hover-pointer">WhatsApp</label>
                 <div class="col-6">
                     <input type="text" class="form-control" id="user_whatsapp" name="<?= User::POST_REC;?>[<?=User::F_WHATSAPP;?>]" value="<?=h($form_data_fn(User::F_WHATSAPP));?>">
                 </div>
                 <div class="col-2">
                     <div class="form-check" title="<?=__('To correspond through this messenger');?>">
-                        <input class="form-check-input" type="checkbox" id="user_whatsapp_do_send" name="<?= User::POST_REC;?>[<?=User::F_WHATSAPP_DO_SEND;?>]" value="1" <?=$form_data_fn(User::F_WHATSAPP_DO_SEND) ? 'checked' : '';?>>
-                        <label class="form-check-label" for="user_whatsapp_do_send"><?=__('Use');?></label>
+                        <input class="form-check-input hover-pointer" type="checkbox" id="user_whatsapp_do_send" name="<?= User::POST_REC;?>[<?=User::F_WHATSAPP_DO_SEND;?>]" value="1" <?=$form_data_fn(User::F_WHATSAPP_DO_SEND) ? 'checked' : '';?>>
+                        <label class="form-check-label hover-pointer" for="user_whatsapp_do_send"><?=__('Use');?></label>
                     </div>
                 </div>
             </div>
 
             <!-- Jabber/XMPP -->
             <div class="row mb-3">
-                <label for="user_jabber_main" class="col-2 col-form-label">Jabber/XMPP</label>
+                <label for="user_jabber_main" class="col-2 col-form-label hover-pointer">Jabber/XMPP</label>
                 <div class="col-6">
                     <input type="text" class="form-control" id="user_jabber_main" name="<?= User::POST_REC;?>[<?=User::F_JABBER;?>]" value="<?=h($form_data_fn(User::F_JABBER));?>">
                 </div>
                 <div class="col-2">
                     <div class="form-check" title="<?=__('To correspond through this messenger');?>">
-                        <input class="form-check-input" type="checkbox" id="user_jabber_do_send" name="<?= User::POST_REC;?>[<?=User::F_JABBER_DO_SEND;?>]" value="1" <?=$form_data_fn(User::F_JABBER_DO_SEND) ? 'checked' : '';?>>
-                        <label class="form-check-label" for="user_jabber_do_send"><?=__('Use');?></label>
+                        <input class="form-check-input hover-pointer" type="checkbox" id="user_jabber_do_send" name="<?= User::POST_REC;?>[<?=User::F_JABBER_DO_SEND;?>]" value="1" <?=$form_data_fn(User::F_JABBER_DO_SEND) ? 'checked' : '';?>>
+                        <label class="form-check-label hover-pointer" for="user_jabber_do_send"><?=__('Use');?></label>
                     </div>
                 </div>
             </div>

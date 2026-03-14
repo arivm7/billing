@@ -36,12 +36,17 @@ class AbonRest {
      */
     const F_SUM_PP30A = 'sum_PP30A';  // Активная абонплата за 30 дней
     const F_SUM_PP01A = 'sum_PP01A';  // Активная абонплата за 1 день
+    const F_SUM_PPMA_THIS = 'sun_ppma_this'; // Активная абонплата за текущий месяц
     const F_REST      = 'rest';       // Остаток на лицевом счету (F_REST = F_BALANCE)
     const F_BALANCE   = 'rest';       // Остаток на лицевом счету (F_REST = F_BALANCE)
     const F_PREPAYED  = 'prepayed';   // Количество предоплаченных дней
-    const F_PAY_CUR_MONTH = 'pay_current_month';     // Оплата за текущий месяц
+    /**
+     * Расчёт до конца этого месяца
+     * @var string
+     */
+    const F_PAY_CUR_MONTH = 'pay_current_month';     // Ожидаемая оплата за текущий месяц
     const F_AMOUNT    = 'amount';     // Рекомендуемая к оплате сумма
     const F_DATE_PAUSED = 'date_paused'; // Дата остановки услуг
-
+    
 
 }

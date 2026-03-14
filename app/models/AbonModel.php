@@ -39,6 +39,7 @@ use ServiceType;
 use billing\core\base\Lang;
 use config\Bank;
 use config\P24acc;
+use config\tables\Firm;
 use config\tables\Invoice;
 use config\tables\TSAbonTmpl;
 
@@ -1293,12 +1294,12 @@ class AbonModel extends UserModel {
     }
 
 
-    function get_abon_rest(int $abon_id): array|null {
+    function get_abon_rest(int $abon_id, int $today = NA): array|null {
         $rest = $this->get_row_by_id(AbonRest::TABLE, $abon_id, AbonRest::F_ABON_ID);
         if ($rest) { 
-            update_rest_fields($rest);
+            update_rest_fields($rest, $today);
             if ($rest[AbonRest::F_SUM_PP30A] == 0) {
-                $rest[AbonRest::F_DATE_PAUSED] = $this->get_pa_pause_last($abon_id);
+                $rest[AbonRest::F_DATE_PAUSED] = $this->get_date_pa_pause_last($abon_id);
             }
             return $rest;
         } else {
@@ -1549,6 +1550,45 @@ class AbonModel extends UserModel {
 
     function get_invoices_sql(int $abon_id): string {
         return "SELECT * FROM `".Invoice::TABLE."` WHERE `".Invoice::F_ABON_ID."`={$abon_id} ORDER BY `".Invoice::TABLE."`.`".Invoice::F_ID."` DESC";
+    }
+
+
+
+    /**
+     * Возвращает списко Счетов-Фактур (СФ) по указанной дате.
+     * Выборка идет оператором LIKE.
+     * При указании точной даты вида '01.08.2023' найдет полную дату.
+     * При указании частичной даты вида '%.08.2023' найдет все счета за указанный месяц.
+     * @param int $abon_id -- ИД абонента, которому выписаны СФ
+     * @param string $invoice_date -- дата СФ вида '01.08.2023' или '%.08.2023'
+     * @return array -- список найденных Счетов
+     */
+    function get_invoice_list_by_sf_date(int $abon_id, string $invoice_date): array {
+        $sql = "SELECT
+            sf_list.id,
+            sf_list.firm_contragent_id,
+            contragent.name_short       AS firm_contragent_name,
+            sf_list.firm_agent_id,
+            agent.name_short            AS firm_agent_name,
+            sf_list.user_id,
+            sf_list.abon_id,
+            sf_list.sf_no,
+            sf_list.sf_date,
+            sf_list.sf_firm,
+            sf_list.sf_count,
+            sf_list.sf_cost_1,
+            sf_list.sf_cost_all,
+            sf_list.sf_text,
+            sf_list.sf_is_paid,
+            sf_list.akt_date,
+            sf_list.modified_date,
+            sf_list.modified_uid
+            FROM sf_list
+                LEFT JOIN firm_list AS contragent ON contragent.id = sf_list.firm_contragent_id
+                LEFT JOIN firm_list AS agent      ON agent.id      = sf_list.firm_agent_id
+            WHERE (abon_id = '$abon_id') AND (sf_date LIKE '$invoice_date')";
+
+        return $this->get_rows_by_sql($sql);
     }
 
 
@@ -2068,10 +2108,117 @@ class AbonModel extends UserModel {
      * @param int $abon_id
      * @return int
      */
-    function get_pa_pause_last(int $abon_id): int {
+    function get_date_pa_pause_last(int $abon_id): int {
         $sql = "SELECT MAX(" . PA::F_DATE_END . ") AS last_date_end FROM " . PA::TABLE . " WHERE " . PA::F_ABON_ID . " = $abon_id;";
         $rows = $this->get_rows_by_sql($sql);
         return $rows[array_key_first($rows)]['last_date_end'] ?? 0;
     }
+
+
+
+    /**
+     * Возвращает ассоциативный массив, содержащий записи 
+     *      [Абонента]
+     *      [Пользователя]
+     *      [Агентов]
+     *      [Контрагентов]
+     *      [Список счетов]
+     * для рассылки по электронной почте.
+     * @param int $abon_id
+     * @param int $today
+     * @throws \Exception
+     * @return array<array|null>
+     */
+    function get_rec_for_email_send(int $abon_id, int $today = NA): array {
+        if ($today == NA) { $today = TODAY(); }
+
+        $rec = [];
+        $rec[Abon::TABLE] = $this->get_abon($abon_id);
+        $rec[User::TABLE] = $this->get_user($rec[Abon::TABLE][Abon::F_USER_ID]);
+        $rec[AbonRest::TABLE] = $this->get_abon_rest($abon_id, $today);
+        /**
+         * Препдирятия агента
+         */
+        $rec['agents'] = $this->get_agents_by_abon_id($abon_id);
+        if(empty($rec['agents'])) {
+            throw new \Exception("Для абонента [$abon_id] нет предприятий провайдеров. \nЭто не допустимо, поскольку предприятия прикрепляютс к ТП", 1);
+        }
+
+        /**
+         * Предприятия клиента
+         */
+        $rec['contragents'] = $this->get_firms_by_uid_cli($rec[User::TABLE][User::F_ID]);
+        if(empty($rec['contragents'])) {
+            $payer = App::get_config('inv_payer_unknown');
+            $rec['contragents'][0][Firm::F_ID] = 0;
+            $rec['contragents'][0][Firm::F_NAME_LONG]  = $payer;
+            $rec['contragents'][0][Firm::F_NAME_SHORT] = $payer;
+            $rec['contragents'][0][Firm::F_NAME_TITLE] = $payer;
+        }
+
+        $rec[Invoice::TABLE] = $this->get_invoice_list_by_sf_date(
+                $abon_id, 
+                date("%.m.Y", first_day_month($today))
+            );
+
+        return $rec;
+    }
+
+
+    /**
+     * Возвращает список записей, содержащих записи 
+     *      [Абонента]
+     *      [Пользователя]
+     *      [Агентов]
+     *      [Контрагентов]
+     *      [Список счетов]
+     * для рассылки по электронной почте.
+     * Условие выборки: do_send_mail=1 и is_payer=1.
+     * @param int $today -- дата внитри месяца для которого делать выборку
+     * @throws \Exception -- бросается если нет предприятий провайдера. Это не допустимо, поскольку предприятия прикрепляютс к ТП.
+     * @return array
+     */
+    function get_full_list_for_email_send(int $today = NA): array {
+        if ($today == NA) { $today = TODAY(); }
+
+        $sql = "SELECT
+                `".Abon::TABLE."`.`".Abon::F_ID."`
+                FROM
+                        `".Abon::TABLE."`
+                        LEFT JOIN `".User::TABLE."` ON `".Abon::TABLE."`.`".Abon::F_USER_ID."` = `".User::TABLE."`.`".User::F_ID."`
+                WHERE
+                        (`".User::TABLE."`.`".User::F_EMAIL_DO_SEND."` = 1) AND
+                        (`".Abon::TABLE."`.`".Abon::F_IS_PAYER."` = 1) AND
+                        (`".Abon::TABLE."`.`".Abon::F_ID."` IN 
+                            (
+                                SELECT
+                                    `".PA::F_ABON_ID."`
+                                FROM
+                                    `".PA::TABLE."`
+                                WHERE
+                                (
+                                    (
+                                        (`".PA::TABLE."`.`".PA::F_DATE_START."` < UNIX_TIMESTAMP()) AND
+                                        (isnull(`".PA::TABLE."`.`".PA::F_DATE_END."`))
+                                    )
+                                    OR
+                                    (
+                                        `".PA::TABLE."`.`".PA::F_DATE_END."` > UNIX_TIMESTAMP()
+                                    )
+                                )
+                                GROUP BY `".PA::TABLE."`.`".PA::F_TP_ID."`                        
+                            )
+                        )";
+
+        $list = $this->query($sql, fetchVector: 0);
+
+        $full_list = [];
+        foreach ($list as $abon_id) {
+            $full_list[] = $this->get_rec_for_email_send($abon_id, $today);
+        }
+        return $full_list;
+    }
+
+
 
 }

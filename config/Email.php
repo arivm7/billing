@@ -25,6 +25,7 @@ namespace config;
 class Email {
 
     const URI_FORM = '/email/form';
+    const URI_LIST = '/email/list';
 
     /**
      * Имя массива для передачи данных из/в формы редактирования письма
@@ -40,7 +41,10 @@ class Email {
     const F_BODY_HTML = 'body_html';
     const F_ATTACH_PATH = 'attach_path';
     const F_ATTACH_NAME = 'attach_name';
-    const F_DO_SEND = 'do_send';
+    const F_AUTOCREATE_INV  = 'autocreate_inv'; // Флаг: автоматически создавать СФ при отправке уведомленний єлектронной почтой
+    const F_TO_TEST  = 'test_send_to'; // Адрес тестовой отправки
+    const F_DO_SEND = 'do_send'; // Кнопка "Отправить"
+
 
 
     /**
@@ -53,7 +57,7 @@ class Email {
     const ATTACH_DISPOSITION = 'disposition';
 
 
-
+    
     /**
      * Для конфига чтобы небыло опечаток
      */

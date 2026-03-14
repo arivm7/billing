@@ -64,7 +64,7 @@ class SearchController extends AppBaseController {
                 !can_use(Module::MOD_SEARCH)
             ) 
         {
-            redirect();
+            redirect('/');
         }
 
         /**

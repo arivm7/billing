@@ -24,6 +24,7 @@ use billing\core\Pagination;
 use config\Icons;
 use DutyWarn;
 use config\Auth;
+use config\AutoCorrect;
 use config\Conciliation;
 use config\tables\Abon;
 use config\tables\AbonRest;
@@ -58,21 +59,22 @@ class AbonController extends AppBaseController {
     /**
      * Возвращает статус для предупреждения абонента
      * в завиимости от оставшихся предоплаченных дней
-     * @param array $data -- Ассоциативный масив записи абонента
+     * @param array $abon
+     * @param array $rest
      * @return DutyWarn
      */
-    public static function get_warn_status(array &$data): DutyWarn {
+    public static function get_warn_status(array $abon = [], array $rest = []): DutyWarn {
         switch (true) {
-            case (is_null($data[AbonRest::F_PREPAYED])):
+            case (is_null($rest[AbonRest::F_PREPAYED])):
                 return DutyWarn::ON_PAUSE;
                 // break;
-            case ($data[AbonRest::F_PREPAYED] > $data[Abon::F_DUTY_MAX_WARN]):
+            case ($rest[AbonRest::F_PREPAYED] > $abon[Abon::F_DUTY_MAX_WARN]):
                 return DutyWarn::NORMAL;
                 // break;
-            case (($data[AbonRest::F_PREPAYED] <= $data[Abon::F_DUTY_MAX_WARN]) && ($data[AbonRest::F_PREPAYED] > $data[Abon::F_DUTY_MAX_OFF])):
+            case (($rest[AbonRest::F_PREPAYED] <= $abon[Abon::F_DUTY_MAX_WARN]) && ($rest[AbonRest::F_PREPAYED] > $abon[Abon::F_DUTY_MAX_OFF])):
                 return DutyWarn::WARN;
                 // break;
-            case ($data[AbonRest::F_PREPAYED] <= $data[Abon::F_DUTY_MAX_OFF]):
+            case ($rest[AbonRest::F_PREPAYED] <= $abon[Abon::F_DUTY_MAX_OFF]):
                 return DutyWarn::NEED_OFF;
                 // break;
             default:
@@ -145,7 +147,7 @@ class AbonController extends AppBaseController {
 
 
 
-    public static function get_html_edges(array &$data): string {
+    public static function get_html_edges(array $abon, array $rest): string {
         ob_start();
         require DIR_INC . '/abon_edges.php';
         $str = ob_get_clean();
@@ -320,7 +322,7 @@ class AbonController extends AppBaseController {
                     'act'     => self::get_html_actions($abon),
                     'uid/aid' => self::get_html_url_aid_uid($abon),
                     'info'    => self::get_html_info($abon),
-                    $rest_title   => self::get_html_edges($abon),
+                    $rest_title   => self::get_html_edges($abon, $abon),
                     $tp_col_title => self::get_html_tp_list_with_abon($abon[Abon::F_ID]),
                 ];
             }
@@ -464,7 +466,7 @@ class AbonController extends AppBaseController {
                     'act'     => self::get_html_actions($abon),
                     'uid/aid' => self::get_html_url_aid_uid($abon),
                     'info'    => self::get_html_info($abon),
-                    $rest_title   => self::get_html_edges($abon),
+                    $rest_title   => self::get_html_edges($abon, $abon),
                     $tp_col_title => self::get_html_tp_list_with_abon($abon[Abon::F_ID]),
                 ];
             }
@@ -1206,9 +1208,16 @@ class AbonController extends AppBaseController {
     public function normalize(array &$data) {
 
         // Убираем лишние пробелы
-        foreach (Abon::FORM_FIELDS as $field) {
+        foreach (Abon::FORM_FIELDS as $field=>$def_value) {
             if (isset($data[$field]) && is_string($data[$field])) {
                 $data[$field] = trim($data[$field]);
+            }
+        }
+
+        // Автозамена в текстах
+        foreach (Abon::TEXT_FIELDS as $field=>$def_value) {
+            if (isset($data[$field]) && is_string($data[$field])) {
+                $data[$field] = AutoCorrect::correct(html_entity_decode($data[$field], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
             }
         }
 
@@ -1237,9 +1246,6 @@ class AbonController extends AppBaseController {
     
 
     function updateAction() {
-        // debug($_GET, '$_GET');
-        // debug($_POST, '$_POST');
-        // debug($this->route, '$this->route', die: 0);
 
         $model = new AbonModel();
 

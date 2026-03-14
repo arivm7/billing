@@ -42,17 +42,27 @@ class Notify {
      */
     public const TABLE          = 'sms_list';       // Имя таблицы в базе
 
-    public const F_ID           = 'id';             // ID СМС
-    public const F_ABON_ID      = 'abon_id';        // ID абонента, которому отсылается СМС
-    public const F_TYPE_ID      = 'type_id';        // Тип уведомления: 1 - SMS | 2 - Email | 3 - ...
-    public const F_DATE         = 'date';           // Дата-время отправки СМС
-    public const F_TEXT         = 'text';           // Текст СМС сообщения
+
+    /**
+     * Поля базы
+     */
+
+    public const F_ID           = 'id';             // ID уведомления
+    public const F_ABON_ID      = 'abon_id';        // ID абонента, которому отсылается уведомление
+    public const F_TYPE_ID      = 'type_id';        // Тип уведомления: 1 - SMS 2 - Email 3 - ...
+    public const F_DATE         = 'date';           // Дата-время отправки уведомления
     public const F_PHONENUMBER  = 'phonenumber';    // Номер телефона, на который отправили СМС
-    public const F_METHOD       = 'method';         // Метод отправки СМС: скрипт, вэб-служба или что-то ещё
+	public const F_EMAIL        = 'email';          // Список адресов email на которые отправлено уведомление
+	public const F_SUBJECT      = 'subject';        // Тема уведомления, если предусмотрена, например для email-уведомлений
+    public const F_TEXT         = 'text';           // Текст уведомления
+    public const F_METHOD       = 'method';         // Метод отправки уведомления: KDEConnect, PHPMailer, скрипт, вэб-служба или что-то ещё
+    public const F_SENDER_ID    = 'sender_id';      // ID пользователя от имени которого отправлено уведомление
 
 
 
-    public const METHOD_KDE_CONNECT = 'KDE Connect';   // Метод отправки СМС: скрипт, вэб-служба или что-то ещё
+    public const METHOD_KDE_CONNECT = 'KDE Connect';    // Метод отправки: KDEConnect
+    public const METHOD_EMAIL_LIST = '/email/list';     // Метод отправки: PHPMailer
+
 
 
     /**
@@ -61,6 +71,17 @@ class Notify {
 
     const F_USER_ID             = 'user_id';        // Пользоватеь, к которому относится Абонент, которому относится уведомление
     const F_COUNT               = 'notify_count';   // Общее количество уведомлений
+    const F_TODAY               = 'today';          // Дата для функций привязанных ко времени
+
+
+    /**
+     * Флаг-константа для указания Типа электронного писма: информационное, СФ, СФ для полной оплаты до конца месяца.
+     */
+    const MAIL_TYPE_INFO = 1;           // информационное
+    const MAIL_TYPE_INVOICE = 2;        // СФ за текущий месяц
+    const MAIL_TYPE_INFO_PRICE_UP = 3;  // СФ для полной оплаты до конца месяца
+
+
 
 
     /**
@@ -78,6 +99,7 @@ class Notify {
     const FLTR_ABON_ID_LIST     = 'abon_id_list';   // Список ID абонентов для которых нужно отправлять СМС. Передаётся из формы списка.
 
 
+
     /**
      * Раздел типов уведомлений
      */
@@ -87,7 +109,33 @@ class Notify {
     public const TYPE_EMAIL     = 2;
     public const TYPE_OTHER     = 255;
 
-    public const TYPES = [
+    public const TYPE_TITLES = [
+        self::TYPE_NA    => [
+            Lang::C_RU => 'N/A',
+            Lang::C_UK => 'N/A',
+            Lang::C_EN => 'N/A',
+        ],
+        self::TYPE_SMS   => [
+            Lang::C_RU => 'SMS',
+            Lang::C_UK => 'SMS',
+            Lang::C_EN => 'SMS',
+        ],
+        self::TYPE_EMAIL => [
+            Lang::C_RU => 'Email',
+            Lang::C_UK => 'Email',
+            Lang::C_EN => 'Email',
+        ],
+        self::TYPE_OTHER => [
+            Lang::C_RU => 'Другое',
+            Lang::C_UK => 'Інше',
+            Lang::C_EN => 'Other',
+        ],
+
+    ];
+
+
+
+    public const TYPE_DESCRIPTIONS = [
         self::TYPE_NA    => [
             Lang::C_RU => 'Тип уведомления не указан',
             Lang::C_UK => 'Тип повідомлення не вказано',
@@ -112,8 +160,15 @@ class Notify {
     ];
 
 
-    public static function get_type_title(?int $type_id): string {
-        return self::TYPES[$type_id ?? self::TYPE_NA][Lang::code()];
+
+    public static function type_title(?int $type_id): string {
+        return self::TYPE_TITLES[$type_id ?? self::TYPE_NA][Lang::code()];
+    }
+
+
+
+    public static function type_descr(?int $type_id): string {
+        return self::TYPE_DESCRIPTIONS[$type_id ?? self::TYPE_NA][Lang::code()];
     }
 
 
@@ -169,6 +224,7 @@ class Notify {
     ];
 
 
+
     /**
      * Возвращает статус уведомления абонента
      * @param array $rest           -- массив данных абонента из таблицы AbonRest
@@ -191,6 +247,8 @@ class Notify {
             }
         }
     }
+
+
 
     public static function get_warn_message(int $warn_status): string {
         return self::WARN_TEXT[$warn_status][Lang::code()] ?? '';

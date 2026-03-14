@@ -54,6 +54,37 @@ class NoticeController extends AppBaseController
     }
 
 
+
+    public static function get_notice_list_sql(int $abon_id, int $type, int $month = NA): string {
+        if ($month == NA) { $month = TODAY(); }
+        $date1 = first_day_month($month);
+        $date2 = last_day_month($month);
+        return "SELECT * FROM "
+                . "`sms_list` "
+                . "WHERE "
+                . "`abon_id` = {$abon_id} AND "
+                . "`date` >= {$date1} AND "
+                . "`date` <= {$date2} AND "
+                . "`type_id` = {$type}";
+    }
+
+
+
+    public static function get_notice_list(int $abon_id, int $type,  int $month): array {
+        $sql = self::get_notice_list_sql($abon_id, $type, $month);
+        $model = new AbonModel();
+        return $model->get_rows_by_sql($sql);
+    }
+
+
+
+    public static function get_notice_count(int $abon_id, int $type,  int $month): int {
+        $sql = self::get_notice_list_sql($abon_id, $type, $month);
+        $model = new AbonModel();
+        return $model->get_count_by_sql($sql);
+    }
+
+
     
     public function infoAction()
     {

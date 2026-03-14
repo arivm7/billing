@@ -44,13 +44,13 @@ use config\tables\User;
  * 
  */
 
-$item_agent = (isset($agent_list[$item[Invoice::F_FIRM_AGENT_ID]]) 
-        ? $agent_list[$item[Invoice::F_FIRM_AGENT_ID]]
+$item_agent = (isset($agent_list[$item[Invoice::F_AGENT_ID]]) 
+        ? $agent_list[$item[Invoice::F_AGENT_ID]]
         : [ Firm::F_NAME_SHORT => '-' ]
     );
 
-$item_contragent = (isset($contragent_list[$item[Invoice::F_FIRM_CONTRAGENT_ID]]) 
-        ? $contragent_list[$item[Invoice::F_FIRM_CONTRAGENT_ID]]
+$item_contragent = (isset($contragent_list[$item[Invoice::F_CONTRAGENT_ID]]) 
+        ? $contragent_list[$item[Invoice::F_CONTRAGENT_ID]]
         : [ Firm::F_NAME_SHORT => '-' ]
     );
 
@@ -90,7 +90,7 @@ $item_contragent = (isset($contragent_list[$item[Invoice::F_FIRM_CONTRAGENT_ID]]
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                    <button type="button" class="btn btn-primary">Print</button>
+                                    <!-- <button type="button" class="btn btn-primary">Print</button> -->
                                 </div>
                             </div>
                         </div>
@@ -126,12 +126,12 @@ $item_contragent = (isset($contragent_list[$item[Invoice::F_FIRM_CONTRAGENT_ID]]
                 <!-- Исполнитель. Провайдер. Агент -->
                 <tr title="<?= __('Предприятие-Провайдер') ?>, <?=CR;?><?= __('Предприятие, привязанное к ТП, на котоорой производится обслуживание') ?>.">
                     <td><?= __('Агент') ?></td>
-                    <td><span class="text-secondary fs-6 font-monospace"><?= num_len($item[Invoice::F_FIRM_AGENT_ID], 3) ?></span> <?= $item_agent[Firm::F_NAME_SHORT] ?></td>
+                    <td><span class="text-secondary fs-6 font-monospace"><?= num_len($item[Invoice::F_AGENT_ID], 3) ?></span> <?= $item_agent[Firm::F_NAME_SHORT] ?></td>
                 </tr>
                 <!-- Заказчик. Абонент. Контрагент -->
                 <tr title="<?= __('Предприятие-Абонент') ?>,<?=CR;?><?= __('Предприятие, привязанное к пользователю') ?>.">
                     <td><?= __('Контрагент') ?></td>
-                    <td><span class="text-secondary fs-6 font-monospace"><?= num_len($item[Invoice::F_FIRM_CONTRAGENT_ID], 3) ?></span> <?= $item_contragent[Firm::F_NAME_SHORT] ?></td>
+                    <td><span class="text-secondary fs-6 font-monospace"><?= num_len($item[Invoice::F_CONTRAGENT_ID], 3) ?></span> <?= $item_contragent[Firm::F_NAME_SHORT] ?></td>
                 </tr>
                 <!-- -->
                 <tr>
@@ -201,8 +201,8 @@ $item_contragent = (isset($contragent_list[$item[Invoice::F_FIRM_CONTRAGENT_ID]]
             </table>
 
         </div>
+        <?php if (can_view(Module::MOD_INVOICES)): ?>
         <div class="card-footer m-0">
-
             <div class='d-flex justify-content-between align-items-center'>
                 <div class="text-start">
                     |
@@ -219,5 +219,6 @@ $item_contragent = (isset($contragent_list[$item[Invoice::F_FIRM_CONTRAGENT_ID]]
                 </div>
             </div>
         </div>
+        <?php endif; ?>
     </form>
 </div>

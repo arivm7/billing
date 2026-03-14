@@ -151,7 +151,8 @@ function get_pa_list_age(array $pa_list): PAStatus {
  * @param array $rest -- Ассоциативный массив записи абонента с добавленными базовыми границами (abon_rest)
  * @return void
  */
-function update_rest_fields(array &$rest): void {
+function update_rest_fields(array &$rest, int $today = NA): void {
+    if ($today == NA) { $today = time(); }
 
     /**
      * Активная абонплата за 30 дней
@@ -162,6 +163,11 @@ function update_rest_fields(array &$rest): void {
      * Активная абонплата за 1 день
      */
     $rest[AbonRest::F_SUM_PP01A] = floatval($rest[AbonRest::F_SUM_PPMA] / 30.0 + $rest[AbonRest::F_SUM_PPDA]);
+
+    /**
+     * Активная абонплата за текущий месяц
+     */
+    $rest[AbonRest::F_SUM_PPMA_THIS] = floatval($rest[AbonRest::F_SUM_PP01A] * days_of_month($today));
 
     /**
      * Остаток на лицевом счету

@@ -35,6 +35,8 @@
 
 use billing\core\Pagination;
 use config\tables\Abon;
+use config\tables\Invoice;
+use config\tables\Module;
 use config\tables\User;
 
 ?>
@@ -57,7 +59,13 @@ use config\tables\User;
 
                 </div>
                 <div>
-                    <a href="<?=Abon::URI_VIEW;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm" target="_self" title="<?= __('Перейти к карточке абонента'); ?>"><span class="fw-bold">🅐</span> <?= __('Картка'); ?></a> <!-- ⒶⒶ🅐Ⓐ(A) -->
+                    <?php if (can_use(Module::MOD_USER_CARD)): ?>
+                        <a href="<?=Invoice::URI_EDIT;?>?<?= Invoice::F_ABON_ID ?>=<?=$abon[Abon::F_ID];?>&<?= Invoice::F_INV_DATE_STR ?>=<?= date('d.m.Y'); ?>" class="btn btn-outline-info btn-sm" target="_blank" title="<?= __('Сформировать новый Счёт'); ?>"><i class="bi bi-receipt"></i> <?= __('Новый счёт'); ?></a>
+                        <a href="<?=Abon::URI_VIEW;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm" target="_self" title="<?= __('Перейти к карточке абонента'); ?>"><span class="fw-bold">🅐</span> <?= __('Картка'); ?></a> <!-- ⒶⒶ🅐Ⓐ(A) -->
+                    <?php else: ?>
+                        <a href="/" class="btn btn-outline-info btn-sm" target="_self" title="<?= __('Вернуться в карточку абонента'); ?>"><span class="fw-bold">🅐</span> <?= __('Картка'); ?></a> <!-- ⒶⒶ🅐Ⓐ(A) -->
+                    <?php endif; ?>
+
                 </div>
                 
             </div>

@@ -59,27 +59,21 @@ Lang::load_inc(__FILE__);
 -->
 
 <!-- Печатать Счёт=1 Акт=1 Штамп=1 -->
-<?php if (can_view(Module::MOD_INVOICES)): ?>
 <a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=1&<?= Invoice::F_URI_ACT ?>=1&<?= Invoice::F_URI_SHTAMP ?>=1" class="btn btn-sm btn-outline-success me-1 my-1 px-1 py-1" title="<?= __('Показать для вывода на печать: '.CR.'Счёт, Акт и факсимиле'); ?>" target="_blank">
     <img src="<?= Icons::SRC_ICON_INV_ACT_SHTAMP ?>" alt="Счёт-Акт с подписью" height="38px"></a>
     <!-- <i class="bi bi-printer"></i> -->
-<?php endif; ?>
 <!-- Печатать Счёт=1 Акт=1 Штамп=0 -->
 <a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=1&<?= Invoice::F_URI_ACT ?>=1&<?= Invoice::F_URI_SHTAMP ?>=0" class="btn btn-sm btn-outline-success me-1 my-1 px-1 py-1" title="<?= __('Показать для вывода на печать: '.CR.'Счёт, Акт'); ?>" target="_blank">
     <img src="<?= Icons::SRC_ICON_INV_ACT ?>" alt="Счёт-Акт" height="38px"></a>
 <!-- Печатать Счёт=1 Акт=0 Штамп=1 -->
-<?php if (can_view(Module::MOD_INVOICES)): ?>
 <a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=1&<?= Invoice::F_URI_ACT ?>=0&<?= Invoice::F_URI_SHTAMP ?>=1" class="btn btn-sm btn-outline-success me-1 my-1 px-1 py-1" title="<?= __('Показать для вывода на печать: '.CR.'Счёт с факсимиле'); ?>" target="_blank">
     <img src="<?= Icons::SRC_ICON_INV_SHTAMP ?>" alt="Счёт с подписью" height="38px"></a>
-<?php endif; ?>
 <!-- Печатать Счёт=1 Акт=0 Штамп=0 -->
 <a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=1&<?= Invoice::F_URI_ACT ?>=0&<?= Invoice::F_URI_SHTAMP ?>=0" class="btn btn-sm btn-outline-success me-1 my-1 px-1 py-1" title="<?= __('Показать для вывода на печать: '.CR.'Счёт'); ?>" target="_blank">
     <img src="<?= Icons::SRC_ICON_INV ?>" alt="Счёт" height="38px"></a>
 <!-- Печатать Счёт=0 Акт=1 Штамп=1 -->
-<?php if (can_view(Module::MOD_INVOICES)): ?>
 <a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=0&<?= Invoice::F_URI_ACT ?>=1&<?= Invoice::F_URI_SHTAMP ?>=1" class="btn btn-sm btn-outline-success me-1 my-1 px-1 py-1" title="<?= __('Показать для вывода на печать: '.CR.'Акт с факсимиле'); ?>" target="_blank">
     <img src="<?= Icons::SRC_ICON_ACT_SHTAMP ?>" alt="Акт с подписью" height="38px"></a>
-<?php endif; ?>
 <!-- Печатать Счёт=0 Акт=1 Штамп=0 -->
 <a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=0&<?= Invoice::F_URI_ACT ?>=1&<?= Invoice::F_URI_SHTAMP ?>=0" class="btn btn-sm btn-outline-success me-1 my-1 px-1 py-1" title="<?= __('Показать для вывода на печать: '.CR.'Акт'); ?>" target="_blank">
     <img src="<?= Icons::SRC_ICON_ACT ?>" alt="Акт" height="38px"></a>
@@ -99,52 +93,54 @@ Lang::load_inc(__FILE__);
 
 -->
 
-<div class="card p-3 mt-3 shadow-sm">
+<?php if (can_view(Module::MOD_INVOICES)): ?>
+    <div class="card p-3 mt-3 shadow-sm">
 
-    <input type="hidden" id="base_url" value="<?= URL_HOST ?><?= Invoice::URI_PDF ?>/<?= $item[Invoice::F_ID] ?>">
+        <input type="hidden" id="base_url" value="<?= URL_HOST ?><?= Invoice::URI_PDF ?>/<?= $item[Invoice::F_ID] ?>">
 
-    <div class="form-check">
-        <input class="form-check-input parameter-field"
-               type="checkbox"
-               id="<?= Invoice::F_URI_INV ?>"
-               value="1"
-               checked>
-        <label class="form-check-label" for="<?= Invoice::F_URI_INV ?>">
-            Печатать счёт
-        </label>
+        <div class="form-check">
+            <input class="form-check-input parameter-field"
+                type="checkbox"
+                id="<?= Invoice::F_URI_INV ?>"
+                value="1"
+                checked>
+            <label class="form-check-label" for="<?= Invoice::F_URI_INV ?>">
+                Печатать счёт
+            </label>
+        </div>
+
+        <div class="form-check">
+            <input class="form-check-input parameter-field"
+                type="checkbox"
+                id="<?= Invoice::F_URI_ACT ?>"
+                value="1"
+                checked>
+            <label class="form-check-label" for="<?= Invoice::F_URI_ACT ?>">
+                Печатать акт
+            </label>
+        </div>
+
+        <div class="form-check mb-3">
+            <input class="form-check-input parameter-field"
+                type="checkbox"
+                id="<?= Invoice::F_URI_SHTAMP ?>"
+                value="1"
+                checked>
+            <label class="form-check-label" for="<?= Invoice::F_URI_SHTAMP ?>">
+                Печатать факсимиле
+            </label>
+        </div>
+
+        <a id="pdf_link"
+        href="#"
+        target="_blank"
+        class="btn btn-sm btn-outline-success">
+            <img src="<?= Icons::SRC_ICON_PDF ?>" alt="PDF" height="38">
+            Сгенерировать PDF (долго)
+        </a>
+
     </div>
-
-    <div class="form-check">
-        <input class="form-check-input parameter-field"
-               type="checkbox"
-               id="<?= Invoice::F_URI_ACT ?>"
-               value="1"
-               checked>
-        <label class="form-check-label" for="<?= Invoice::F_URI_ACT ?>">
-            Печатать акт
-        </label>
-    </div>
-
-    <div class="form-check mb-3">
-        <input class="form-check-input parameter-field"
-               type="checkbox"
-               id="<?= Invoice::F_URI_SHTAMP ?>"
-               value="1"
-               checked>
-        <label class="form-check-label" for="<?= Invoice::F_URI_SHTAMP ?>">
-            Печатать факсимиле
-        </label>
-    </div>
-
-    <a id="pdf_link"
-       href="#"
-       target="_blank"
-       class="btn btn-sm btn-outline-success">
-        <img src="<?= Icons::SRC_ICON_PDF ?>" alt="PDF" height="38">
-        Сгенерировать PDF (долго)
-    </a>
-
-</div>
+<?php endif; ?>
 
 
 

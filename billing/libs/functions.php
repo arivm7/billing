@@ -2293,6 +2293,13 @@ function get_diff_fields(array $new, array $prev, string|null $field_id = 'id'):
 
 
 
+/**
+ * Заменяет в тексте шаблоны на их значения.
+ * Шаблоны и значения передаются в ассоциативном масстве ['шаблон'=>'значение',...]
+ * @param string $text
+ * @param array $templates
+ * @return string
+ */
 function untemplate(string $text, array $templates = []): string {
     foreach ($templates as $key => $value) {
         $text = str_replace($key, $value, $text);

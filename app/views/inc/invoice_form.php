@@ -17,8 +17,7 @@
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
 
-
-
+use billing\core\App;
 use billing\core\Pagination;
 use config\tables\Abon;
 use config\tables\Firm;
@@ -44,7 +43,11 @@ use config\tables\User;
 
 $item = $invoice;
 
-// debug($contragent_list, '$contragent_list');
+// debug([
+//     '$invoice'=>$invoice,
+//     '$agent'=>$agent,
+//     '$contragent'=>$contragent,
+//     ]);
 
 $item_contragent = (!empty($contragent)
         ?   $contragent
@@ -59,7 +62,7 @@ $item_contragent = (!empty($contragent)
     <form action="" method="post">
         <div class="card-header fs-7">
             <!-- ID -->
-            <span class="text-secondary">[<span class="text-info"><?=num_len($item[Invoice::F_ID], 6);?></span>] <?= __('Счёт-фактра / Акт') ?></span><br>
+            <span class="text-secondary">[<span class="text-info"><?=num_len($item[Invoice::F_ID] ?? 0, 6);?></span>] <?= __('Счёт-фактра / Акт') ?></span><br>
             <!-- Абонент -->
             <span class="text-secondary">[<span class="text-info"><?=num_len($item[Invoice::F_ABON_ID], 6);?></span>] <?= $abon[Abon::F_ID] ?>. <?= $abon[Abon::F_ADDRESS] ?></span>
         </div>
@@ -67,22 +70,24 @@ $item_contragent = (!empty($contragent)
             <div class="row g-3 align-items-end">
 
                 <!-- ID -->
-                <input type="hidden" name="<?= Invoice::POST_REC ?>[<?= Invoice::F_ID ?>]"      value="<?=$item[Invoice::F_ID]?>">
+                <?php if (!empty($item[Invoice::F_ID])): ?>
+                    <input type="hidden" name="<?= Invoice::POST_REC ?>[<?= Invoice::F_ID ?>]"      value="<?=$item[Invoice::F_ID]?>">
+                <?php endif; ?>
                 <!-- Абонент -->
                 <input type="hidden" name="<?= Invoice::POST_REC ?>[<?= Invoice::F_ABON_ID ?>]" value="<?=$item[Invoice::F_ABON_ID]?>">
 
-                <!-- Заказчик. Абонент. Контрагент -->
+                <!-- Абонент. Заказчик. Контрагент -->
                 <div class="col-4" title="<?= __('Предприятие-Абонент') ?>,<?=CR;?><?= __('Предприятие, привязанное к пользователю') ?>.">
-                    <label class="form-label" for="<?= Invoice::F_FIRM_CONTRAGENT_ID ?>">
+                    <label class="form-label" for="<?= Invoice::F_CONTRAGENT_ID ?>">
                         <?= __('Контрагент') ?>
                         <span class="text-info small">
-                            [<?=$item[Invoice::F_FIRM_CONTRAGENT_ID]." ".$item_contragent[Firm::F_NAME_SHORT] ?>]
+                            [<?=($item[Invoice::F_CONTRAGENT_ID] ?? 0) ." ".$item_contragent[Firm::F_NAME_SHORT] ?>]
                         </span>
                     </label>
-                    <select class="form-select" name='<?=Invoice::POST_REC?>[<?= Invoice::F_FIRM_CONTRAGENT_ID ?>]' id="<?= Invoice::F_FIRM_CONTRAGENT_ID ?>" >
+                    <select class="form-select" name='<?=Invoice::POST_REC?>[<?= Invoice::F_CONTRAGENT_ID ?>]' id="<?= Invoice::F_CONTRAGENT_ID ?>" >
                         <option value='0'>-</option>
                         <?php foreach ($contragent_list as $contragent) : ?>
-                            <option value="<?= $contragent[Firm::F_ID] ?>" <?= ($contragent[Firm::F_ID] == $item[Invoice::F_FIRM_CONTRAGENT_ID] ? "selected" : "") ?> >
+                            <option value="<?= $contragent[Firm::F_ID] ?>" <?= ($contragent[Firm::F_ID] == ($item[Invoice::F_CONTRAGENT_ID] ?? 0) ? "selected" : "") ?> >
                                 <span class="text-secondary">[<?= sprintf("%03d", $contragent[Firm::F_ID]) ?>]</span>&nbsp;&nbsp;
                                 <?= $contragent[Firm::F_NAME_SHORT] ?>
                             </option>
@@ -90,18 +95,18 @@ $item_contragent = (!empty($contragent)
                     </select>
                 </div>
 
-                <!-- Исполнитель. Провайдер. Агент -->
+                <!-- Провайдер. Исполнитель. Агент -->
                 <div class="col-4" title="<?= __('Предприятие-Провайдер') ?>, <?=CR;?><?= __('Предприятие, привязанное к ТП, на котоорой производится обслуживание') ?>.">
-                    <label class="form-label" for="<?= Invoice::F_FIRM_AGENT_ID ?>" >
+                    <label class="form-label" for="<?= Invoice::F_AGENT_ID ?>" >
                         <?= __('Агент') ?>
                         <span class="text-info small">
-                            [<?=$item[Invoice::F_FIRM_AGENT_ID]." ".$agent[Firm::F_NAME_SHORT] ?? "-" ?>]
+                            [<?=($item[Invoice::F_AGENT_ID] ?? 0)." ".($agent[Firm::F_NAME_SHORT] ?? "-") ?>]
                         </span>
                     </label>
-                    <select class="form-select" id="<?= Invoice::F_FIRM_AGENT_ID ?>" name='<?=Invoice::POST_REC?>[<?= Invoice::F_FIRM_AGENT_ID ?>]'>
+                    <select class="form-select" id="<?= Invoice::F_AGENT_ID ?>" name='<?=Invoice::POST_REC?>[<?= Invoice::F_AGENT_ID ?>]'>
                         <option value='0'>-</option>
                         <?php foreach ($agent_list as $agent) : ?>
-                            <option value="<?= $agent[Firm::F_ID] ?>" <?= ($agent[Firm::F_ID] == $item[Invoice::F_FIRM_AGENT_ID] ? "selected" : "") ?> >
+                            <option value="<?= $agent[Firm::F_ID] ?>" <?= ($agent[Firm::F_ID] == ($item[Invoice::F_AGENT_ID] ?? 0) ? "selected" : "") ?> >
                                 <span class="text-secondary">[<?= sprintf("%03d", $agent[Firm::F_ID]) ?>]</span>&nbsp;&nbsp;
                                 <?= $agent[Firm::F_NAME_SHORT] ?>
                             </option>
@@ -133,7 +138,7 @@ $item_contragent = (!empty($contragent)
                             id="<?= Invoice::F_FIRM_PAYER_STR ?>"
                             name="<?=Invoice::POST_REC?>[<?= Invoice::F_FIRM_PAYER_STR ?>]" 
                             class="form-control" 
-                            value="<?=$item[Invoice::F_FIRM_PAYER_STR]?>" >
+                            value="<?=($item[Invoice::F_FIRM_PAYER_STR] ?? App::get_config('inv_payer_unknown'))?>" >
                 </div>
 
                 <!-- СФ № -->
@@ -153,7 +158,8 @@ $item_contragent = (!empty($contragent)
                             id="<?= Invoice::F_INV_DATE_STR ?>"
                             name="<?=Invoice::POST_REC?>[<?= Invoice::F_INV_DATE_STR ?>]" 
                             class="form-control text-center" 
-                            value="<?=$item[Invoice::F_INV_DATE_STR]?>">
+                            title="<?= __('Дата начала оказания услуги в виде') . " &laquo;" . date('d.m.Y') . "&raquo;\n"; ?>Или заглушка в виде &laquo;<?= App::get_config('inv_date_unknown') ?>&raquo;"
+                            value="<?=($item[Invoice::F_INV_DATE_STR] ?? App::get_config('inv_date_unknown'))?>">
                 </div>
 
                 <!-- Дата акта (строка) -->
@@ -163,7 +169,8 @@ $item_contragent = (!empty($contragent)
                             id="<?= Invoice::F_AKT_DATE_STR ?>"
                             name="<?=Invoice::POST_REC?>[<?= Invoice::F_AKT_DATE_STR ?>]" 
                             class="form-control text-center" 
-                            value="<?=$item[Invoice::F_AKT_DATE_STR]?>">
+                            title="<?= __('Дата завершения оказания услуги в виде') . ' ' . date('d.m.Y') . "\n"; ?>Или заглушка в виде &laquo;<?= App::get_config('inv_date_unknown') ?>&raquo;"
+                            value="<?=($item[Invoice::F_AKT_DATE_STR] ?? App::get_config('inv_date_unknown'))?>">
                 </div>
 
                 <!-- Цена за 1 (float) -->
@@ -178,7 +185,7 @@ $item_contragent = (!empty($contragent)
                             id="<?= Invoice::F_COST_1 ?>"
                             name="<?=Invoice::POST_REC?>[<?= Invoice::F_COST_1 ?>]"
                             class="form-control text-end"
-                            value="<?=$item[Invoice::F_COST_1]?>">
+                            value="<?=($item[Invoice::F_COST_1] ?? 0)?>">
                             <div class="invalid-feedback"><?= __('Укажите цену в виде числа') ?></div>
                 </div>
 
@@ -194,7 +201,7 @@ $item_contragent = (!empty($contragent)
                             id="<?= Invoice::F_COUNT ?>"
                             name="<?=Invoice::POST_REC?>[<?= Invoice::F_COUNT ?>]"
                             class="form-control text-end"
-                            value="<?=$item[Invoice::F_COUNT]?>">
+                            value="<?=($item[Invoice::F_COUNT] ?? 1)?>">
                             <div class="invalid-feedback"><?= __('Укажите количество') ?></div>
                 </div>
 
@@ -210,7 +217,7 @@ $item_contragent = (!empty($contragent)
                             id="<?= Invoice::F_COST_ALL ?>"
                             name="<?=Invoice::POST_REC?>[<?= Invoice::F_COST_ALL ?>]"
                             class="form-control text-end"
-                            value="<?=$item[Invoice::F_COST_ALL]?>">
+                            value="<?=($item[Invoice::F_COST_ALL] ?? 0)?>">
                             <div class="invalid-feedback"><?= __('Укажите итоговую цену') ?></div>
                 </div>
 
@@ -222,7 +229,7 @@ $item_contragent = (!empty($contragent)
                             id="<?= Invoice::F_TEXT ?>"
                             class="form-control" 
                             name="<?=Invoice::POST_REC?>[<?= Invoice::F_TEXT ?>]" 
-                            rows="3"><?=$item[Invoice::F_TEXT]?></textarea>
+                            rows="3"><?=($item[Invoice::F_TEXT] ?? '')?></textarea>
                 </div>
             </div>
         </div>
@@ -233,14 +240,16 @@ $item_contragent = (!empty($contragent)
                     <a class="btn btn-sm btn-secondary ms-1" href="<?= Invoice::URI_LIST ?>/<?= $item[Invoice::F_ABON_ID] ?>"><?= __('Вернуться к списку'); ?></a>
                 </div>
                 <div class="text-end text-secondary font-monospace fs-8">
-                    <!-- Кто создал -->
-                    <span title="<?= __user(user_id: $item[Invoice::F_CREATION_UID], field:User::F_NAME_FULL) ?>">Creation UID [<span class="text-info"><?=$item[Invoice::F_CREATION_UID]?></span>]</span>
-                    <!-- Когда создал -->
-                    <span> [<?=date('Y-m-d H:i:s', $item[Invoice::F_CREATION_DATE])?>]</span><br>
-                    <!-- Кто изменил -->
-                    <span title="<?= __user(user_id: $item[Invoice::F_MODIFIED_UID], field: User::F_NAME_FULL) ?>">Modified UID [<span class="text-info"><?=$item[Invoice::F_MODIFIED_UID]?></span>]</span>
-                    <!-- Когда изменил -->
-                    <span> [<?=date('Y-m-d H:i:s', $item[Invoice::F_MODIFIED_DATE])?>]</span>
+                    <?php if (!empty($item[Invoice::F_ID])): ?>
+                        <!-- Кто создал -->
+                        <span title="<?= __user(user_id: $item[Invoice::F_CREATION_UID], field:User::F_NAME_FULL) ?>">Creation UID [<span class="text-info"><?=$item[Invoice::F_CREATION_UID]?></span>]</span>
+                        <!-- Когда создал -->
+                        <span> [<?=date('Y-m-d H:i:s', $item[Invoice::F_CREATION_DATE])?>]</span><br>
+                        <!-- Кто изменил -->
+                        <span title="<?= __user(user_id: $item[Invoice::F_MODIFIED_UID], field: User::F_NAME_FULL) ?>">Modified UID [<span class="text-info"><?=$item[Invoice::F_MODIFIED_UID]?></span>]</span>
+                        <!-- Когда изменил -->
+                        <span> [<?=date('Y-m-d H:i:s', $item[Invoice::F_MODIFIED_DATE])?>]</span>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
