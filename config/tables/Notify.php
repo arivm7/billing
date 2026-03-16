@@ -25,7 +25,8 @@ use billing\core\base\Lang;
 class Notify {
 
     const URI_INFO = '/notice/info';    /*  /id -- Страница с информацией для отправки абоненту */
-    const URI_SMS_LIST = '/notice/sms';    /*  Страница генерации списка СМС-уведомлений */
+    const URI_SMS_LIST = '/notice/sms'; /*  Страница генерации списка СМС-уведомлений */
+    const URI_LIST = '/notice/list';    /*  /id --  Список уведомлений для абонента */
 
     /**
      * Имя поля с ID, передаваемого в _GET запросе

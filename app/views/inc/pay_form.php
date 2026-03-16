@@ -68,7 +68,19 @@ $wcol2 = 12 - $wcol1; // ширина второй колонки
 <div class="mx-auto w-auto">
     <div class="card mb-3">
         <div class="card-header">
-            <h3 class="text-center fs-4 pt-2"><?=$title?></h3>
+            <div class='d-flex justify-content-between align-items-center'>
+                <div class="me-3">
+                    <h3 class="text-center fs-4 pt-2"><?=$title?></h3>
+                </div>
+                <div>
+                    <!-- Вернуться к списку платедей -->
+                    <a href="<?=Pay::URI_LIST;?>/<?=$abon_id;?>" class="btn btn-outline-info btn-sm me-1"><span class="fw-bold">₴₴</span> <?=__('К списку платежей')?></a>
+                    <!-- Вернуться в карточку абонента -->
+                    <?php if ($abon_id) : ?>
+                        <a href="<?=Abon::URI_VIEW;?>/<?=$abon_id;?>" class="btn btn-outline-info btn-sm me-1" target="_self"><span class="fw-bold">🅐</span> <?= __('Картка'); ?></a>
+                    <?php endif; ?>
+                </div>
+            </div>
         </div>
         <form method="post" class="needs-validation" novalidate>
             <div class="card-body">
@@ -161,20 +173,12 @@ $wcol2 = 12 - $wcol1; // ширина второй колонки
             </div>
             <!-- Действия -->
             <div class="card-footer text-center">
-                <button class="btn btn-outline-primary btn-sm me-2" type="submit"><i class="bi bi-floppy"></i> <?=__('Сохранить')?></button>
-                <a href="<?=Pay::URI_LIST;?>/<?=$abon_id;?>" class="btn btn-outline-secondary btn-sm me-2"><span class="fw-bold">₴₴</span> <?=__('К списку платежей')?></a>
-                <!-- Вернуться в карточку абонента -->
-                <?php if ($abon_id) : ?>
-                    <?php if (can_use([Module::MOD_ABON])) : ?>
-                        <a href="<?=Abon::URI_VIEW;?>/<?=$abon_id;?>" class="btn btn-outline-secondary btn-sm" target="_self"><span class="fw-bold">🅐</span> <?= __('Картка'); ?></a>
-                    <?php else: ?>
-                        <a href="/my" class="btn btn-outline-secondary btn-sm" target="_self"><span class="fw-bold">(A)</span> <?= __('Картка'); ?></a>
-                    <?php endif; ?>
-                <?php endif; ?>
+                <button class="btn btn-outline-info btn-sm me-2" type="submit"><i class="bi bi-floppy"></i> <?=__('Сохранить')?></button>
             </div>
         </form>
     </div>
 </div>
+
 <script>
 (() => {
   'use strict';

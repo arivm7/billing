@@ -185,7 +185,7 @@ require_once DIR_LIBS . '/sms_functions.php';
                         <div class="col-2 text-end align-self-center">
 
                             <div class="form-check d-inline-flex align-items-center">
-                                <label class="form-check-label text-muted small mb-0" 
+                                <label class="form-check-label text-muted small hover-pointer mb-0" 
                                     for="checkbox<?= $lines[$index]['abon_id'] ?>">
                                     <?= $lines[$index]['abon_id'] ?>&nbsp;
                                 </label>

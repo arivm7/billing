@@ -144,6 +144,7 @@ function get_html_accordion(
                         . "<button class='{$button_class}' type='button' data-bs-toggle='collapse' data-bs-target='#collapse_{$collapse_id}'"
                             . " aria-expanded='{$aria_expanded}' aria-controls='collapse_{$collapse_id}'>"
                             . (!is_null($func_get_title) ? $func_get_title($item) : $item[$field_title])
+                            . "&nbsp;&nbsp;"
                         . "</button>"
                     . "</h3>"
                     . "<div id='collapse_{$collapse_id}' class='{$collapse_class}' data-bs-parent='#accordion_{$acc_id}'>"

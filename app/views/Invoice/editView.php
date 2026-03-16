@@ -32,31 +32,45 @@
  */
 
 use config\tables\Abon;
+use config\tables\Invoice;
+use config\tables\Module;
 use config\tables\User;
 
 ?>
 
-<div class="row justify-content-center">
-<div class="col-12 col-md-10 col-lg-8">
-    <div class="card mb-4 w-100 min-w-700">
-        <div class="card-header mb-3">
-            <h3 class="fs-4"><?= $title ?> <span class="text-secondary">[<?= __('Абонент') ?> <?= num_len($abon[Abon::F_ID], 6) ?>]</span></h3>
-            <h5 class="text-secondary fs-6">
-                <span title="User ID"><?= num_len($user[User::F_ID], 6); ?></span> :: 
-                <span title="User Name"><?= h($user[User::F_NAME_SHORT]); ?></span>
-            </h5>
-            <h5 class="text-secondary fs-6">
-                <span title="Абон ID"><?= num_len($abon[Abon::F_ID], 6); ?></span> :: 
-                <span title="Abon Address"><?= h($abon[Abon::F_ADDRESS]); ?>
-            </h5>
-        </div>
-        <div class="card-body">
-            <?php require DIR_INC . '/invoice_form.php'; ?>
-        </div>
-        <div class="card-footer">
-            |
+<?php if (can_edit(Module::MOD_INVOICES)): ?>
+
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8">
+            <div class="card mb-4 w-100 min-w-700">
+                <div class="card-header mb-3">
+
+                    <div class='d-flex justify-content-between align-items-center'>
+                        <div>
+                            <h3 class="fs-4"><?= $title ?> <span class="text-secondary">[<?= __('AID') ?> <?= num_len($abon[Abon::F_ID], 6) ?>]</span></h3>
+                            <h5 class="text-secondary fs-6">
+                                <span title="User ID"><?= num_len($user[User::F_ID], 6); ?></span> :: 
+                                <span title="User Name"><?= h($user[User::F_NAME_SHORT]); ?></span>
+                            </h5>
+                            <h5 class="text-secondary fs-6">
+                                <span title="Абон ID"><?= num_len($abon[Abon::F_ID], 6); ?></span> :: 
+                                <span title="Abon Address"><?= h($abon[Abon::F_ADDRESS]); ?>
+                            </h5>
+                        </div>
+                        <div>
+                            <a href="<?=Abon::URI_VIEW;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm" target="_self" title="<?= __('Перейти к карточке абонента'); ?>"><span class="fw-bold">🅐</span> <?= __('Картка'); ?></a> <!-- ⒶⒶ🅐Ⓐ(A) -->
+                        </div>
+                    </div>
+
+                </div>
+                <div class="card-body">
+                    <?php require DIR_INC . '/invoice_form.php'; ?>
+                </div>
+                <div class="card-footer">
+                    |
+                </div>
+            </div>
         </div>
     </div>
-</div>
-</div>
+<?php endif; ?>
 

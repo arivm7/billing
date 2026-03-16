@@ -12,7 +12,10 @@
  */
 
 /**
- * Description of smsView.php
+ * Страница формирования скрипта для отправки СМС-сообщений абонентам.
+ * Тут просто подклюжается фильтр и выводится форма списка или форма генерации скрипта
+ * 
+ * NoticeController.php -> smsView.php (этот файл) -> sms_filter_form.php, sms_generate_script.php | sms_list_form.php
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */

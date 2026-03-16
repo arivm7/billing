@@ -745,6 +745,7 @@ class ApiController extends AppBaseController {
                             Notify::F_METHOD => Notify::METHOD_KDE_CONNECT,
                             Notify::F_DATE => time(),
                             Notify::F_TEXT => $text,
+                            Notify::F_SENDER_ID => App::get_user_id(),
                         ];
 
                         // debug($notice, '$notice', die: 1);

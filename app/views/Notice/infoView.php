@@ -12,7 +12,7 @@
  */
 
 /**
- * Description of infoView.php
+ * Перечень СМС-информеров -- заготовок для отправки уведомлений абоненту по СМС.
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
@@ -70,17 +70,32 @@ $sms_print_num = 0;
 <div class="container w-auto">
 
     <!-- Статус абонента -->
-    <h3 class="fs-4 bukvitca">Статус абонента</h3>
+    <div class='d-flex justify-content-between align-items-center'>
+        <div>
+            <h3 class="fs-4 bukvitca">Статус абонента</h3>
+        </div>
+        <div>
+            <!-- Все уведомления -->
+            <a href="<?=Notify::URI_LIST;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-1" target="_self" 
+                title="<?= __('Полный список уведомлений'); ?>"
+                ><span class="fw-bold">Inf</span> <?= __('Список'); ?></a>
+            <!-- Вернуться в карточку абонента -->
+            <a href="<?=Abon::URI_VIEW;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-1" target="_self"
+                title="<?= __('Перейти в карточку абонента'); ?>"
+                ><span class="fw-bold">🅐</span> <?= __('Картка'); ?></a> <!-- ⒶⒶⒶ -->
+        </div>
+    </div>
+   
     <table class='table table-striped table-hover table-bordered w-auto'>
-        <tr><td class="text-end">Начислено:</td>            <td class="text-end font-monospace"><?= number_format($rest[AbonRest::F_SUM_COST], 2, '.', ' '); ?></td>   <td>грн</td></tr>
-        <tr><td class="text-end">Оплачено:</td>             <td class="text-end font-monospace"><?= number_format($rest[AbonRest::F_SUM_PAY], 2, '.', ' '); ?></td>    <td>грн</td></tr>
-        <tr><td class="text-end">Остаток на ЛС:</td>        <td class="text-end font-monospace"><?= number_format($rest[AbonRest::F_REST], 2, '.', ' '); ?></td>       <td>грн</td></tr>
+        <tr><td class="text-end">Остаток на ЛС:</td>        <td class="text-end font-monospace<?= ($rest[AbonRest::F_REST]      <  0 ? " text-danger" : " text-success") ?>"><?= number_format($rest[AbonRest::F_REST],      2, '.', ' '); ?></td><td>грн</td></tr>
+        <tr><td class="text-end">Абонплата за 30 дней:</td> <td class="text-end font-monospace<?= ($rest[AbonRest::F_SUM_PP30A] < 10 ? " text-danger" : " text-success") ?>"><?= number_format($rest[AbonRest::F_SUM_PP30A], 2, '.', ' '); ?></td><td>грн/30дней</td></tr>
         <!-- 
         <tr><td class="text-end">PPMA:</td>                 <td class="text-end font-monospace"><?= number_format($rest[AbonRest::F_SUM_PPMA], 2, '.', ' '); ?></td>   <td>грн/мес</td></tr>
         <tr><td class="text-end">PPDA:</td>                 <td class="text-end font-monospace"><?= number_format($rest[AbonRest::F_SUM_PPDA], 2, '.', ' '); ?></td>   <td>грн/сут</td></tr> 
         -->
-        <tr><td class="text-end">Абонплата за 30 дней:</td> <td class="text-end font-monospace<?= ($rest[AbonRest::F_SUM_PP30A] < 10 ? " text-danger" : " text-success") ?>"><?= number_format($rest[AbonRest::F_SUM_PP30A], 2, '.', ' '); ?></td>  <td>грн/30дней</td></tr>
         <tr><td class="text-end">Предоплачено дней:</td>    <td class="text-end font-monospace"><?= $rest[AbonRest::F_PREPAYED]; ?></td>                                                            <td>дней</td></tr>
+        <tr><td class="text-end">Начислено:</td>            <td class="text-end font-monospace"><?= number_format($rest[AbonRest::F_SUM_COST], 2, '.', ' '); ?></td>   <td>грн</td></tr>
+        <tr><td class="text-end">Оплачено:</td>             <td class="text-end font-monospace"><?= number_format($rest[AbonRest::F_SUM_PAY], 2, '.', ' '); ?></td>    <td>грн</td></tr>
     </table>
 
     <h2 class="fs-3 mt-5 mb-4"><?= h($title); ?></h2>

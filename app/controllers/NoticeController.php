@@ -26,6 +26,7 @@ use billing\core\App;
 use billing\core\base\View;
 use billing\core\MsgQueue;
 use billing\core\MsgType;
+use billing\core\Pagination;
 use config\Notice;
 use config\tables\Abon;
 use config\tables\AbonRest;
@@ -55,21 +56,41 @@ class NoticeController extends AppBaseController
 
 
 
-    public static function get_notice_list_sql(int $abon_id, int $type, int $month = NA): string {
+    /**
+     * Фозвращает строку SQL запрос для получения списка уведомлений для абонента
+     * 
+     * @param int $abon_id      -- id абонента
+     * @param int $type         -- Тип уведомления. null - все
+     * @param int|null $month   -- Месяц, в котором выбирать уведомления. NA - текущий месяц, null - все.
+     * @return string
+     */
+    public static function get_notice_list_sql(int $abon_id, int|null $type = null, int|null $month = null): string {
         if ($month == NA) { $month = TODAY(); }
-        $date1 = first_day_month($month);
-        $date2 = last_day_month($month);
+
         return "SELECT * FROM "
                 . "`sms_list` "
                 . "WHERE "
-                . "`abon_id` = {$abon_id} AND "
-                . "`date` >= {$date1} AND "
-                . "`date` <= {$date2} AND "
-                . "`type_id` = {$type}";
+                . "`abon_id` = {$abon_id} "
+                . (!is_null($type) 
+                    ?   "AND `type_id` = {$type} "
+                    :   "")
+                . (!is_null($month) 
+                    ?     "AND `date` >= ".first_day_month($month)." "
+                        . "AND `date` <= ".last_day_month($month)." "
+                    :   "")
+                . "ORDER BY `sms_list`.`date` DESC";
     }
 
 
 
+    /**
+     * Получает список уведомлений для указанного абонента
+     * 
+     * @param int $abon_id ID абонента
+     * @param int $type Тип уведомления
+     * @param int $month Месяц для фильтрации уведомлений
+     * @return array Массив уведомлений
+     */
     public static function get_notice_list(int $abon_id, int $type,  int $month): array {
         $sql = self::get_notice_list_sql($abon_id, $type, $month);
         $model = new AbonModel();
@@ -78,6 +99,14 @@ class NoticeController extends AppBaseController
 
 
 
+    /**
+     * Получает количество уведомлений для конкретного абонента
+     * 
+     * @param int $abon_id ID абонента
+     * @param int $type Тип уведомления
+     * @param int $month Месяц для фильтрации уведомлений
+     * @return int Количество уведомлений, соответствующих заданным параметрам
+     */
     public static function get_notice_count(int $abon_id, int $type,  int $month): int {
         $sql = self::get_notice_list_sql($abon_id, $type, $month);
         $model = new AbonModel();
@@ -86,6 +115,10 @@ class NoticeController extends AppBaseController
 
 
     
+    /**
+     * Страница СМС-информеров для абонента
+     * @return void
+     */
     public function infoAction()
     {
 
@@ -169,6 +202,65 @@ class NoticeController extends AppBaseController
 
 
 
+    /**
+     * Список уведомлений для указанного абонента
+     * @return void
+     */
+    public function listAction()
+    {
+        /**
+         * Проверка наличия авторизации
+         */
+        if (!App::isAuth()) {
+            MsgQueue::msg(MsgType::ERROR, __('Авторизуйтесь, пожалуйста'));
+            redirect('/');
+        }
+
+        /**
+         * Проверка прав
+         */
+        if (!can_view(Module::MOD_NOTICE)) {
+            MsgQueue::msg(MsgType::ERROR, __('Нет прав'));
+            redirect();
+        }
+
+        $model = new AbonModel();
+
+        $abon_id = $this->route[F_ALIAS] ?? 0;
+        if (!$model->validate_id(Abon::TABLE, $abon_id, Abon::F_ID)) {
+            MsgQueue::msg(MsgType::ERROR, __('ID абонента не верен'));
+            redirect();
+        }
+
+        $abon = $model->get_abon($abon_id);
+        $user = $model->get_user($abon[Abon::F_USER_ID]);
+
+        /**
+         * Инициализация пагинации
+         */
+        $pager = new Pagination(
+            sql: self::get_notice_list_sql($abon_id, null, null),
+            per_page: App::get_config('notify_list_pager'),
+        );
+
+        /**
+         * Получение данных с учётом пагинации
+         */
+        $notice_list = $pager->get_rows();
+
+        $title = __('Уведомления абонента') . ' ' . $abon[Abon::F_ID];
+        View::setMeta($title);
+        $this->setVariables([
+            'title' => $title,
+            'abon' => $abon,
+            'user' => $user,
+            'notice_list' => $notice_list,
+            'pager' => $pager,
+        ]);
+    }
+
+
+
     public function smsAction() {
 
         // debug($_POST, '_post');
@@ -178,8 +270,8 @@ class NoticeController extends AppBaseController
         $tp_list        = $model->get_tp_list(status: 1);
 
         /**
-         * Флаг установки фильтра. 
-         * Если его нет, то нечего отрисовывать
+         * Флаг установки фильтров выборки абонентов. 
+         * Если нет, то нечего отрисовывать
          */
         $filter_set     = isset($_POST[Notify::FLTR_PREFIX]) && is_array($_POST[Notify::FLTR_PREFIX]);
 
@@ -303,7 +395,9 @@ class NoticeController extends AppBaseController
                             ) 
                             &&
                             (
-                                ($row[AbonRest::TABLE][AbonRest::F_PREPAYED] <= ($row[Abon::F_DUTY_MAX_WARN] + 1))
+                                ($row[AbonRest::TABLE][AbonRest::F_PREPAYED] <= ($row[Abon::F_DUTY_MAX_WARN] 
+                                            + App::get_config('sms_filer_ower_edge_days') /* на столько дней больше, чем граница уведомлений, чтобы в списке были те, кому отправлять ближайшее время */ 
+                                        ))
                             )
                         )
                     {

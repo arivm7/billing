@@ -20,35 +20,49 @@
  */
 
 use config\Icons;
+use config\tables\Invoice;
 use billing\core\base\Lang;
 Lang::load_inc(__FILE__);
 
+/**
+ * Переменные полученные из контроллера
+ * 
+ * @var array $item  -- Одна запись Счёта
+ * 
+ */
+
 ?>
 
-<!--  Кнопка печати Счёта/Акта -->
-<button type="button" class="btn btn-sm btn-outline-success me-1 px-1 py-1" 
-    data-bs-toggle="modal" data-bs-target="#printModalForm"
-    title="<?= __('Печать Счёта/Акта разными способами') ?>">
-    <img src="<?= Icons::SRC_ICON_PRINT ?>" alt="Печать" height="28px">
-</button>
+<!-- Если есть ID счета, то Счёт есть, и его можно напечатать -->
+<?php if (!empty($item[Invoice::F_ID])): ?>
 
-<!-- Модальная форма выбора способа печати Счёта/Акта -->
-<div class="modal fade" id="printModalForm" tabindex="-1" aria-labelledby="printModalFormLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="printModalFormLabel"><?= __('Выберите форму печати Счёта/Акта') ?></h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
+    <!--  Кнопка печати Счёта/Акта -->
+    <button type="button" class="btn btn-sm btn-outline-success me-1 px-1 py-1" 
+        data-bs-toggle="modal" data-bs-target="#printModalForm"
+        title="<?= __('Печать Счёта/Акта разными способами') ?>">
+        <img src="<?= Icons::SRC_ICON_PRINT ?>" alt="Печать" height="28px">
+    </button>
 
-                <?php include DIR_INC . '/invoice_print_form.php'; ?>
+    <!-- Модальная форма выбора способа печати Счёта/Акта -->
+    <div class="modal fade" id="printModalForm" tabindex="-1" aria-labelledby="printModalFormLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="printModalFormLabel"><?= __('Выберите форму печати Счёта/Акта') ?></h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
 
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <!-- <button type="button" class="btn btn-primary">Print</button> -->
+                    <?php include DIR_INC . '/invoice_print_form.php'; ?>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <!-- <button type="button" class="btn btn-primary">Print</button> -->
+                </div>
             </div>
         </div>
     </div>
-</div>
+    
+<?php endif ?>
+
