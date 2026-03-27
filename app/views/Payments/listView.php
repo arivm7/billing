@@ -12,12 +12,14 @@
  */
 
 /**
- * Description of listView.php
+ * Вывод списка платежей постранично
+ * 
+ * PaymentsController.php
+ * PaymentsController::listAction() -> listView.php (этот)
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
 
-use app\controllers\MyController;
 use billing\core\Pagination;
 use config\Icons;
 use config\tables\Abon;
@@ -114,7 +116,8 @@ $view_my = can_view(Module::MOD_MY_PAYMENTS) && $user[User::F_ID] == $user[Abon:
                     <?php if (can_del(Module::MOD_PAYMENTS)) : ?>
                         <a href="<?=Pay::URI_DEL;?>/<?=h($pay_one[Pay::F_ID]);?>" 
                             class="btn btn-sm btn-outline-danger" 
-                            onclick="return confirm('[X] <?=__('Удалить этот платёж?');?>');"
+                            onclick="return confirm(
+                                    '[X] <?=__('Удалить этот платёж') . '? | ' . __('Важно') . ': ' . __('Это влияет на рассчеты баланса'); ?>');"
                             title="<?=__('Delete');?>"><img src="<?=Icons::SRC_ICON_TRASH;?>" alt="[Del]" height="22px"></a>
                     <?php endif; ?>
                 </td>

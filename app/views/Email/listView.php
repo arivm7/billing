@@ -22,7 +22,7 @@ use config\tables\Notify;
 use config\tables\User;
 
 /**
- * Description of listView.php
+ * Форма со списком  абонентов для рассылки счетов по электронной почте
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
@@ -31,6 +31,7 @@ use config\tables\User;
 
 /**
  * Данные из контроллера
+ * 
  * @var string $title
  * @var string $today
  * @var string $to_test_send

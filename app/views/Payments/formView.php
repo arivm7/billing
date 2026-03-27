@@ -12,7 +12,15 @@
  */
 
 /**
- * Description of formView.php
+ * Вызов формы редактирования платежа
+ * 
+ * @see app/controllers/PaymentsController.php 
+ * @see app/views/Payments/formView.php
+ * @see app/views/inc/pay_form.php
+ * 
+ *      PaymentsController::formAction() ->
+ *              formView.php (этот файл) ->
+ *                      pay_form.php
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */

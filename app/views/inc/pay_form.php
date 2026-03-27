@@ -13,6 +13,14 @@
 
 /**
  * Форма внесения или редактирования платежа
+ * 
+ * @see app/controllers/PaymentsController.php
+ * @see app/views/Payments/formView.php
+ * @see app/views/inc/pay_form.php
+ * 
+ *      PaymentsController::formAction() ->
+ *              formView.php ->
+ *                      pay_form.php (этот файл)
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
@@ -24,6 +32,7 @@ use config\tables\Pay;
 use billing\core\base\Lang;
 use config\tables\Abon;
 use config\tables\Module;
+use config\tables\Perm;
 
 Lang::load_inc(__FILE__);
 require_once DIR_LIBS . '/functions.php';
@@ -65,132 +74,140 @@ $form_data_fn = function(string $field) use ($form_data, $pay, $defaults): int|f
 $wcol1 = 4; // ширина первой колонки
 $wcol2 = 12 - $wcol1; // ширина второй колонки
 ?>
-<div class="mx-auto w-auto">
-    <div class="card mb-3">
-        <div class="card-header">
-            <div class='d-flex justify-content-between align-items-center'>
-                <div class="me-3">
-                    <h3 class="text-center fs-4 pt-2"><?=$title?></h3>
-                </div>
-                <div>
-                    <!-- Вернуться к списку платедей -->
-                    <a href="<?=Pay::URI_LIST;?>/<?=$abon_id;?>" class="btn btn-outline-info btn-sm me-1"><span class="fw-bold">₴₴</span> <?=__('К списку платежей')?></a>
-                    <!-- Вернуться в карточку абонента -->
-                    <?php if ($abon_id) : ?>
-                        <a href="<?=Abon::URI_VIEW;?>/<?=$abon_id;?>" class="btn btn-outline-info btn-sm me-1" target="_self"><span class="fw-bold">🅐</span> <?= __('Картка'); ?></a>
-                    <?php endif; ?>
+
+<?php if (can_perm(Module::MOD_PAYMENTS, Perm::ADD_VALUE)): ?>
+
+    <div class="mx-auto w-auto">
+        <div class="card mb-3">
+            <div class="card-header">
+                <div class='d-flex justify-content-between align-items-center'>
+                    <div class="me-3">
+                        <h3 class="text-center fs-4 pt-2"><?=$title?></h3>
+                    </div>
+                    <div>
+                        <!-- Вернуться к списку платедей -->
+                        <a href="<?=Pay::URI_LIST;?>/<?=$abon_id;?>" class="btn btn-outline-info btn-sm me-1"><span class="fw-bold">₴₴</span> <?=__('К списку платежей')?></a>
+                        <!-- Вернуться в карточку абонента -->
+                        <?php if ($abon_id) : ?>
+                            <a href="<?=Abon::URI_VIEW;?>/<?=$abon_id;?>" class="btn btn-outline-info btn-sm me-1" target="_self"><span class="fw-bold">🅐</span> <?= __('Картка'); ?></a>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
-        </div>
-        <form method="post" class="needs-validation" novalidate>
-            <div class="card-body">
-                <input type="hidden" name="<?=Pay::POST_REC?>[<?=Pay::F_AGENT_ID?>]" value="<?=$form_data_fn(Pay::F_AGENT_ID)?>">
-                <!-- Pay ID -->
-                <?php if (!empty($form_data_fn(Pay::F_ID))): ?>
+
+            <!-- ФОРМА -->
+
+            <form method="post" class="needs-validation" novalidate>
+                <div class="card-body">
+                    <input type="hidden" name="<?=Pay::POST_REC?>[<?=Pay::F_AGENT_ID?>]" value="<?=$form_data_fn(Pay::F_AGENT_ID)?>">
+                    <!-- Pay ID -->
+                    <?php if (!empty($form_data_fn(Pay::F_ID))): ?>
+                        <div class="row mb-3 g-3">
+                            <label class="col-<?=$wcol1?> col-form-label text-secondary" for="<?=Pay::F_ID?>">Pay ID</label>
+                            <div class="col-3">
+                                <input type="text" class="form-control min-w-100px text-secondary" id="<?=Pay::F_ID?>" name="<?=Pay::POST_REC?>[<?=Pay::F_ID?>]" value="<?=$form_data_fn(Pay::F_ID)?>" readonly>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                    <!-- ABON_ID -->
                     <div class="row mb-3 g-3">
-                        <label class="col-<?=$wcol1?> col-form-label text-secondary" for="<?=Pay::F_ID?>">Pay ID</label>
+                        <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_ABON_ID?>">Abon ID</label>
                         <div class="col-3">
-                            <input type="text" class="form-control min-w-100px text-secondary" id="<?=Pay::F_ID?>" name="<?=Pay::POST_REC?>[<?=Pay::F_ID?>]" value="<?=$form_data_fn(Pay::F_ID)?>" readonly>
+                            <input type="number" class="form-control min-w-100px" id="<?=Pay::F_ABON_ID?>" name="<?=Pay::POST_REC?>[<?=Pay::F_ABON_ID?>]" value="<?=$form_data_fn(Pay::F_ABON_ID)?>" required>
+                            <div class="invalid-feedback">Required</div>
                         </div>
                     </div>
-                <?php endif; ?>
-                <!-- ABON_ID -->
-                <div class="row mb-3 g-3">
-                    <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_ABON_ID?>">Abon ID</label>
-                    <div class="col-3">
-                        <input type="number" class="form-control min-w-100px" id="<?=Pay::F_ABON_ID?>" name="<?=Pay::POST_REC?>[<?=Pay::F_ABON_ID?>]" value="<?=$form_data_fn(Pay::F_ABON_ID)?>" required>
-                        <div class="invalid-feedback">Required</div>
+                    <!-- PAY_FAKT | Фактическая сумма -->
+                    <div class="row mb-3 g-3">
+                        <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_PAY_FAKT?>">Фактическая сумма</label>
+                        <div class="col-3">
+                            <input type="number" step="0.01" class="form-control min-w-100px" lang="en" id="<?=Pay::F_PAY_FAKT?>" name="<?=Pay::POST_REC?>[<?=Pay::F_PAY_FAKT?>]" value="<?=$form_data_fn(Pay::F_PAY_FAKT)?>" required>
+                            <div class="invalid-feedback">Required</div>
+                        </div>
+                    </div>
+                    <!-- PAY_ACNT | Сумма на ЛС -->
+                    <div class="row mb-3 g-3">
+                        <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_PAY_ACNT?>">Сумма на ЛС</label>
+                        <div class="col-3">
+                            <input type="number" step="0.01" class="form-control min-w-100px" lang="en" id="<?=Pay::F_PAY_ACNT?>" name="<?=Pay::POST_REC?>[<?=Pay::F_PAY_ACNT?>]" value="<?=$form_data_fn(Pay::F_PAY_ACNT)?>" required>
+                            <div class="invalid-feedback">Required</div>
+                        </div>
+                    </div>
+                    <!-- DATE | Дата -->
+                    <div class="row mb-3 g-3">
+                        <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_DATE_STR?>">Дата</label>
+                        <div class="col-4">
+                            <input type="text" class="form-control min-w-200" id="<?=Pay::F_DATE_STR?>" name="<?=Pay::POST_REC?>[<?=Pay::F_DATE_STR?>]" value="<?=$form_data_fn(Pay::F_DATE_STR)?>">
+                        </div>
+                    </div>
+                    <!-- BANK_NO | Bank No -->
+                    <div class="row mb-3 g-3">
+                        <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_BANK_NO?>">Bank No</label>
+                        <div class="col-<?=$wcol2?>">
+                            <input type="text" class="form-control min-w-200" id="<?=Pay::F_BANK_NO?>" name="<?=Pay::POST_REC?>[<?=Pay::F_BANK_NO?>]" value="<?=$form_data_fn(Pay::F_BANK_NO)?>" required>
+                            <div class="invalid-feedback">Required</div>
+                        </div>
+                    </div>
+                    <!-- TYPE_ID | Тип операции -->
+                    <div class="row mb-3 g-3">
+                        <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_TYPE_ID?>">Тип операции</label>
+                        <div class="col-<?=$wcol2?>">
+                            <select class="form-select" id="<?=Pay::F_TYPE_ID?>" name="<?=Pay::POST_REC?>[<?=Pay::F_TYPE_ID?>]" required>
+                                <option value="">--</option>
+                                <?php foreach (Pay::TYPES_TITLE as $type_id => $labels): ?>
+                                    <option value="<?=$type_id?>" <?=($type_id == $form_data_fn(Pay::F_TYPE_ID) ? 'selected' : '')?>><?=$labels[$lang]?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <div class="invalid-feedback">Required</div>
+                        </div>
+                    </div>
+                    <!-- PPP_ID | ППП -->
+                    <div class="row mb-3 g-3">
+                        <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_PPP_ID?>">ППП</label>
+                        <div class="col-<?=$wcol2?>">
+                            <select class="form-select" id="<?=Pay::F_PPP_ID?>" name="<?=Pay::POST_REC?>[<?=Pay::F_PPP_ID?>]" required>
+                                <option value="">--</option>
+                                <?php foreach ($ppp_list as $ppp_id => $title): ?>
+                                    <option value="<?=$ppp_id?>" <?=($ppp_id == $form_data_fn(Pay::F_PPP_ID) ? 'selected' : '')?>><?=$title?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <div class="invalid-feedback">Required</div>
+                        </div>
+                    </div>
+                    <!-- DESCRIPTION | Описание -->
+                    <div class="row mb-3 g-3">
+                        <div class="col-12">
+                            <label class="form-label" for="<?=Pay::F_DESCRIPTION?>">Описание</label>
+                            <textarea class="form-control" id="<?=Pay::F_DESCRIPTION?>" 
+                                    name="<?=Pay::POST_REC?>[<?=Pay::F_DESCRIPTION?>]" 
+                                    rows="<?=get_count_rows_for_textarea($form_data_fn(Pay::F_DESCRIPTION), 3);?>" 
+                                    required><?=$form_data_fn(Pay::F_DESCRIPTION)?></textarea>
+                            <div class="invalid-feedback">Required</div>
+                        </div>
                     </div>
                 </div>
-                <!-- PAY_FAKT | Фактическая сумма -->
-                <div class="row mb-3 g-3">
-                    <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_PAY_FAKT?>">Фактическая сумма</label>
-                    <div class="col-3">
-                        <input type="number" step="0.01" class="form-control min-w-100px" lang="en" id="<?=Pay::F_PAY_FAKT?>" name="<?=Pay::POST_REC?>[<?=Pay::F_PAY_FAKT?>]" value="<?=$form_data_fn(Pay::F_PAY_FAKT)?>" required>
-                        <div class="invalid-feedback">Required</div>
-                    </div>
+                <!-- Действия -->
+                <div class="card-footer text-center">
+                    <button class="btn btn-outline-info btn-sm me-2" type="submit"><i class="bi bi-floppy"></i> <?=__('Сохранить')?></button>
                 </div>
-                <!-- PAY_ACNT | Сумма на ЛС -->
-                <div class="row mb-3 g-3">
-                    <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_PAY_ACNT?>">Сумма на ЛС</label>
-                    <div class="col-3">
-                        <input type="number" step="0.01" class="form-control min-w-100px" lang="en" id="<?=Pay::F_PAY_ACNT?>" name="<?=Pay::POST_REC?>[<?=Pay::F_PAY_ACNT?>]" value="<?=$form_data_fn(Pay::F_PAY_ACNT)?>" required>
-                        <div class="invalid-feedback">Required</div>
-                    </div>
-                </div>
-                <!-- DATE | Дата -->
-                <div class="row mb-3 g-3">
-                    <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_DATE_STR?>">Дата</label>
-                    <div class="col-4">
-                        <input type="text" class="form-control min-w-200" id="<?=Pay::F_DATE_STR?>" name="<?=Pay::POST_REC?>[<?=Pay::F_DATE_STR?>]" value="<?=$form_data_fn(Pay::F_DATE_STR)?>">
-                    </div>
-                </div>
-                <!-- BANK_NO | Bank No -->
-                <div class="row mb-3 g-3">
-                    <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_BANK_NO?>">Bank No</label>
-                    <div class="col-<?=$wcol2?>">
-                        <input type="text" class="form-control min-w-200" id="<?=Pay::F_BANK_NO?>" name="<?=Pay::POST_REC?>[<?=Pay::F_BANK_NO?>]" value="<?=$form_data_fn(Pay::F_BANK_NO)?>" required>
-                        <div class="invalid-feedback">Required</div>
-                    </div>
-                </div>
-                <!-- TYPE_ID | Тип операции -->
-                <div class="row mb-3 g-3">
-                    <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_TYPE_ID?>">Тип операции</label>
-                    <div class="col-<?=$wcol2?>">
-                        <select class="form-select" id="<?=Pay::F_TYPE_ID?>" name="<?=Pay::POST_REC?>[<?=Pay::F_TYPE_ID?>]" required>
-                            <option value="">--</option>
-                            <?php foreach (Pay::TYPES_TITLE as $type_id => $labels): ?>
-                                <option value="<?=$type_id?>" <?=($type_id == $form_data_fn(Pay::F_TYPE_ID) ? 'selected' : '')?>><?=$labels[$lang]?></option>
-                            <?php endforeach; ?>
-                        </select>
-                        <div class="invalid-feedback">Required</div>
-                    </div>
-                </div>
-                <!-- PPP_ID | ППП -->
-                <div class="row mb-3 g-3">
-                    <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_PPP_ID?>">ППП</label>
-                    <div class="col-<?=$wcol2?>">
-                        <select class="form-select" id="<?=Pay::F_PPP_ID?>" name="<?=Pay::POST_REC?>[<?=Pay::F_PPP_ID?>]" required>
-                            <option value="">--</option>
-                            <?php foreach ($ppp_list as $ppp_id => $title): ?>
-                                <option value="<?=$ppp_id?>" <?=($ppp_id == $form_data_fn(Pay::F_PPP_ID) ? 'selected' : '')?>><?=$title?></option>
-                            <?php endforeach; ?>
-                        </select>
-                        <div class="invalid-feedback">Required</div>
-                    </div>
-                </div>
-                <!-- DESCRIPTION | Описание -->
-                <div class="row mb-3 g-3">
-                    <div class="col-12">
-                        <label class="form-label" for="<?=Pay::F_DESCRIPTION?>">Описание</label>
-                        <textarea class="form-control" id="<?=Pay::F_DESCRIPTION?>" 
-                                name="<?=Pay::POST_REC?>[<?=Pay::F_DESCRIPTION?>]" 
-                                rows="<?=get_count_rows_for_textarea($form_data_fn(Pay::F_DESCRIPTION), 3);?>" 
-                                required><?=$form_data_fn(Pay::F_DESCRIPTION)?></textarea>
-                        <div class="invalid-feedback">Required</div>
-                    </div>
-                </div>
-            </div>
-            <!-- Действия -->
-            <div class="card-footer text-center">
-                <button class="btn btn-outline-info btn-sm me-2" type="submit"><i class="bi bi-floppy"></i> <?=__('Сохранить')?></button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
-</div>
 
-<script>
-(() => {
-  'use strict';
-  const forms = document.querySelectorAll('.needs-validation');
-  Array.from(forms).forEach(form => {
-    form.addEventListener('submit', event => {
-      if (!form.checkValidity()) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-      form.classList.add('was-validated');
-    }, false);
-  });
-})();
-</script>
+    <script>
+    (() => {
+    'use strict';
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+        }, false);
+    });
+    })();
+    </script>
+
+<?php endif;

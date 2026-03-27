@@ -80,10 +80,10 @@ class PppType {
      * При измененнии структуры таблицы, необходимо обновить и этот массив.
      */
 
-    public const TYPE_0  = 0;  // ХЗ
-    public const TYPE_BANK  = 1;  // Р/с в банке
-    public const TYPE_CARD  = 2;  // Банковская карта
+    public const TYPE_0         = 0;  // ХЗ
+    public const TYPE_BANK      = 1;  // Р/с в банке
+    public const TYPE_CARD      = 2;  // Банковская карта
     public const TYPE_TERMINAL  = 3;  // Платёжный терминал
-    public const TYPE_CASH_DESK  = 4;  // ППП Касса
-    public const TYPE_AGENT  = 5;  // Агент Касса
+    public const TYPE_CASH_DESK = 4;  // ППП Касса
+    public const TYPE_AGENT     = 5;  // Агент Касса
 }

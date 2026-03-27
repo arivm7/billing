@@ -40,7 +40,7 @@ class AppBaseModel extends Model
 {
 
 
-    function normalize_pay(array &$pay): void {
+    function pay_update_fields(array &$pay): void {
         $pay[Pay::F_AGENT_TITLE]    = $this->get_user_name_short($pay[Pay::F_AGENT_ID]);
         $pay[Pay::F_PPP_TITLE]      = $this->get_ppp_title($pay[Pay::F_PPP_ID]);
         $pay[Pay::F_TYPE_TITLE]     = Pay::TYPES_TITLE[$pay[Pay::F_TYPE_ID]][Lang::code()];
@@ -63,7 +63,7 @@ class AppBaseModel extends Model
     function get_pay(int $id): array {
         if (!array_key_exists($id, self::$CASHE_PAY_LIST)) {
             self::$CASHE_PAY_LIST[$id] = $this->get_row_by_id(Pay::TABLE, $id, Pay::F_ID);
-            $this->normalize_pay(self::$CASHE_PAY_LIST[$id]);
+            $this->pay_update_fields(self::$CASHE_PAY_LIST[$id]);
         }
         return self::$CASHE_PAY_LIST[$id];
     }

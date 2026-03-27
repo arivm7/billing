@@ -35,8 +35,8 @@ $config = [
      * Список тем
      */
     'theme_list' => [
-            'light' => [ 'title' => 'Светлая', 'code' => 'data-bs-theme="light"', 'order' => 0 ],
             'dark'  => [ 'title' => 'Тёмная',  'code' => 'data-bs-theme="dark"',  'order' => 1 ],
+            'light' => [ 'title' => 'Светлая', 'code' => 'data-bs-theme="light"', 'order' => 0 ],
     ],
 
     /**
@@ -268,7 +268,7 @@ $config = [
         ."</font>\n"
         ."</body>\n"
         ."</html>\n",
-    'email_to_debug' => 'ariv@meta.ua',
+    'email_to_debug' => 'rilan@ukr.net',
     
     'email_inv_subject_template' => "{AGENT_TITLE}. Рахунок за інтернет. ОР: {PORT} | {ADDRESS}",
     'email_inv_body_html_template' => '',

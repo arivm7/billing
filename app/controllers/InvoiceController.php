@@ -48,7 +48,7 @@ class InvoiceController extends AppBaseController
 {
     
 
-    public function validate_deep($data): bool {
+    public static function validate_deep($data): bool {
         
         $model = new AbonModel();
         $rez = true;
@@ -668,8 +668,8 @@ class InvoiceController extends AppBaseController
         if (isset($_POST[Invoice::POST_REC]) && is_array($_POST[Invoice::POST_REC])) {
             $post_rec = $_POST[Invoice::POST_REC];
             $this->normalize($post_rec);
-            if ($this->validate($post_rec)) {
-                if ($this->validate_deep($post_rec)) {
+            if ($this::validate($post_rec)) {
+                if ($this::validate_deep($post_rec)) {
                     $data = (empty($post_rec[Invoice::F_ID]) 
                                 ? $post_rec 
                                 : get_diff_fields($post_rec, $invoice, Invoice::F_ID));

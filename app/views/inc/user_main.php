@@ -13,6 +13,18 @@
 
 /**
  * Главный вид карточки абонента
+ * 
+ * @see app/controllers/MyController.php
+ * @see app/views/My/indexView.php
+ * 
+ * @see app/views/inc/user_main.php
+ * @see app/views/inc/user_view.php
+ * @see app/views/inc/abon_card.php
+ * @see app/views/inc/notify_view.php
+ * @see app/views/inc/firm_tabs.php
+ * @see app/views/inc/pa_view.php
+ * 
+ * 
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */

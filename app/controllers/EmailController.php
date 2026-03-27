@@ -581,8 +581,17 @@ class EmailController extends AppBaseController  {
         $do_send = 
                 (isset($_POST[Email::REC][Email::F_DO_SEND]) ? intval($_POST[Email::REC][Email::F_DO_SEND]) : 0 );
 
+        $user_my = App::get_user();
+
         $to_test_send = trim(
-                (isset($_POST[Email::REC][Email::F_TO_TEST]) ? $_POST[Email::REC][Email::F_TO_TEST] : App::get_config('email_to_debug') ));
+                (isset($_POST[Email::REC][Email::F_TO_TEST]) 
+                    ?   $_POST[Email::REC][Email::F_TO_TEST] 
+                    :   (!empty($user_my[User::F_EMAIL_MAIN]) 
+                            ?   $user_my[User::F_EMAIL_MAIN]
+                            :   App::get_config('email_to_debug')
+                        )
+                )
+            );
 
         // debug([
         //     '$today'=>$today,

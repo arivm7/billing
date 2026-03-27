@@ -163,6 +163,25 @@ $templates = implode(
                     </div>
                 </div>
 
+                
+                <div class="row mb-3">
+                    <div class="col-sm-4">
+                        <label for="active" class="form-check-label"><?=__('Active | Активен | Активний');?></label>
+                    </div>
+                    <div class="col-sm-1 form-check form-switch">
+                        <input type="checkbox"
+                            class="form-check-input ms-1"
+                            id="active"
+                            name="<?=Ppp::POST_REC;?>[<?=Ppp::F_ACTIVE;?>]"
+                            value="1"
+                            <?=($form_data_fn(Ppp::F_ACTIVE)?'checked':'');?>>
+                    </div>
+                    <div class="col-sm-7 form-check form-switch">
+                        <?=__('Used for making payments | Используется для внесения платежей | Використовується для внесення платежів');?>
+                    </div>
+                </div>
+
+
                 <!-- Владелец -->
                 <div class="row mb-3">
                     <label class="col-sm-4 col-form-label" for="owner_id"><?=__('Owner | Владелец | Власник');?></label>
@@ -221,7 +240,7 @@ $templates = implode(
                     <label class="col-sm-4 col-form-label"><?=__('Commissions | Комиссии | Комісії');?></label>
                     <div class="col-sm-8">
                         <?php $lang = Lang::code(); ?>
-                        <?php foreach (Ppp::F_COMMISSIONS as $field => $cfg): ?>
+                        <?php foreach (Ppp::COMMISSIONS_DESCR as $field => $cfg): ?>
                             <?php
                                 $title  = $cfg['title'][$lang] ?? $cfg['title']['ru'] ?? reset($cfg['title']);
                                 $suffix = $cfg['suffix'] ?? '';

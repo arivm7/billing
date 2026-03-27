@@ -1635,7 +1635,7 @@ function return_bytes(string $val): int
 /**
  * Проверяет разрешение для одного или нескольких модулей
  * @param int|array|null $module -- список ID модулей
- * @param int $perm -- проверяемое разрешение
+ * @param int $perm -- проверяемое разрешение из Perm::*
  * @return bool
  */
 function can_perm(int|array|null $module, int $perm): bool {

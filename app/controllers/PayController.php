@@ -12,7 +12,7 @@
  */
 
 /**
- * Description of PayController.php
+ * Интерфейс для оплаты услуг абонентом
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */

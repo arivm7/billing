@@ -36,21 +36,19 @@ class Pay {
     public const URI_FORM      = '/payments/form';
     public const URI_DEL       = '/payments/delete';
 
-
     /*
      * URI для личного кабинета абонента
      */
     public const URI_MY            = '/payments';
     public const URI_LIST          = '/payments/list';
 
-
     public const POST_REC = 'payment';
 
     public const TABLE = 'payments';
 
-    public const F_ID = "id"; // ID платежа
+    public const F_ID = "id";                          // ID платежа в биллинге
 
-    public const F_AGENT_ID        = "agent_id";       // ID того, кто внёс запись
+    public const F_AGENT_ID        = "agent_id";       // ID пользователя, кто внёс запись
     public const F_ABON_ID         = "abon_id";        // Абонент, на которого зачисляется платеж
     public const F_PAY_FAKT        = "pay_fakt";       // Фактическая сумма, пришедшая на счёт
     public const F_PAY_ACNT        = "pay";            // Сумма платежа, вносимая на ЛС
@@ -64,6 +62,13 @@ class Pay {
     public const F_CREATION_UID    = "created_uid";    // Юзер, создавший запись
     public const F_MODIFIED_DATE   = "modified_date";  // Дата изменения записи
     public const F_MODIFIED_UID    = "modified_uid";   // Кто изменил запись
+
+
+
+    /**
+     * Чекбокс флага для отметки записей для внесения в биллинг
+     */
+    public const F_POST_SAVE = 'save';
 
 
 
@@ -85,11 +90,14 @@ class Pay {
     ];
 
 
+
     public const RECALC_FIELDS = [
         self::F_ABON_ID,
         self::F_PAY_FAKT,
         self::F_PAY_ACNT,
     ];
+
+
 
     /*
      * Вычисляемые поля
@@ -97,6 +105,89 @@ class Pay {
     public const F_AGENT_TITLE     = "agent_title";    // Имя того, кто внёс запись (вычисляемое)
     public const F_TYPE_TITLE      = "pay_type_title"; // Имя Типа платежа (вычисляемое)
     public const F_PPP_TITLE       = "pay_ppp_title";  // Имя ППП (вычисляемое)
+
+
+
+    /**
+     * Описание полей таблицы платежей
+     */
+    public const FIELDS_TITLE = [
+        self::F_ID => [
+            'uk' => 'ID платежу в білінгу',
+            'ru' => 'ID платежа в биллинге',
+            'en' => 'Payment ID in billing system',
+        ],
+        self::F_AGENT_ID => [
+            'uk' => 'ID користувача, який вніс платіж',
+            'ru' => 'ID пользователя, который внёс платёж',
+            'en' => 'User ID who added the payment',
+        ],
+        self::F_ABON_ID => [
+            'uk' => 'Абонент, на якого зараховується платіж',
+            'ru' => 'Абонент, на которого зачисляется платёж',
+            'en' => 'Subscriber to whom the payment is credited',
+        ],
+        self::F_PAY_FAKT => [
+            'uk' => 'Фактична сума платежу',
+            'ru' => 'Фактическая сумма платежа',
+            'en' => 'Actual received payment amount',
+        ],
+        self::F_PAY_ACNT => [
+            'uk' => 'Сума, зарахована на особовий рахунок',
+            'ru' => 'Сумма, зачисленная на лицевой счёт',
+            'en' => 'Amount credited to personal account',
+        ],
+        self::F_DATE => [
+            'uk' => 'Дата платежу',
+            'ru' => 'Дата платежа',
+            'en' => 'Payment date',
+        ],
+        self::F_DATE_STR => [
+            'uk' => 'Дата платежу (рядок)',
+            'ru' => 'Дата платежа (строка)',
+            'en' => 'Payment date (string)',
+        ],
+        self::F_BANK_NO => [
+            'uk' => 'Банківський номер операції',
+            'ru' => 'Банковский номер операции',
+            'en' => 'Bank transaction number',
+        ],
+        self::F_TYPE_ID => [
+            'uk' => 'Тип платежу',
+            'ru' => 'Тип платежа',
+            'en' => 'Payment type',
+        ],
+        self::F_PPP_ID => [
+            'uk' => 'ППП',
+            'ru' => 'ППП',
+            'en' => 'PPP',
+        ],
+        self::F_DESCRIPTION => [
+            'uk' => 'Опис платежу',
+            'ru' => 'Описание платежа',
+            'en' => 'Payment description',
+        ],
+        self::F_CREATION_DATE => [
+            'uk' => 'Дата створення',
+            'ru' => 'Дата создания',
+            'en' => 'Creation date',
+        ],
+        self::F_CREATION_UID => [
+            'uk' => 'Хто створив запис',
+            'ru' => 'Кто создал запись',
+            'en' => 'Created by user',
+        ],
+        self::F_MODIFIED_DATE => [
+            'uk' => 'Дата зміни',
+            'ru' => 'Дата изменения',
+            'en' => 'Last modified date',
+        ],
+        self::F_MODIFIED_UID => [
+            'uk' => 'Хто змінив запис',
+            'ru' => 'Кто изменил запись',
+            'en' => 'Modified by user',
+        ],
+    ];
 
 
 
@@ -112,6 +203,8 @@ class Pay {
     public const TYPE_CORRECT  = 2;    // Корректировка ЛС       | Начисление для корректировки остатка ЛС, компенсац...
     public const TYPE_REQUEST  = 3;    // Начисление за услугу   | Начисление за дополнительную услугу (ремонт, настройка, задолженность за подключение и пр.) как правило, единоразовое начисление.
 
+
+    
     public const TYPES_TITLE = [
         self::TYPE_MONEY => [
             'uk' => 'Грошове поповнення ОР',
@@ -129,6 +222,8 @@ class Pay {
             'en' => 'Charge for additional one-time service',
         ],
     ];
+
+
 
     public const TYPES_DESCR = [
         self::TYPE_MONEY => [
@@ -148,12 +243,25 @@ class Pay {
         ],
     ];
 
+
+
+    public static function field_title(string $field): string {
+        return self::FIELDS_TITLE[$field][Lang::code()]
+            ?? "<span title='Описание поля не найдено'>" . $field . "</span>";
+    }
+
+
+
     public static function type_title(int $type_id): string {
         return self::TYPES_TITLE[$type_id][Lang::code()] ?? 'ERROR';
     }
 
+
+
     public static function type_descr(int $type_id): string {
         return self::TYPES_DESCR[$type_id][Lang::code()] ?? 'ERROR';
     }
+
+
 
 }

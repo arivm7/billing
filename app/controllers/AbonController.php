@@ -34,7 +34,6 @@ use config\tables\Module;
 use config\tables\Price;
 use config\tables\Notify;
 use config\tables\TP;
-use config\tables\TSUserFirm;
 use config\tables\PA;
 use config\tables\User;
 use Valitron\Validator;
@@ -1158,7 +1157,7 @@ class AbonController extends AppBaseController {
 
 
 
-    public function validate_deep(array $data): bool {
+    public static function validate_deep(array $data): bool {
         $rezult = true;
         $model = new AbonModel();
 
@@ -1195,7 +1194,7 @@ class AbonController extends AppBaseController {
         $v->rule('integer', [Abon::F_ID, Abon::F_USER_ID]);
 
         // --- Проверка ---
-        if (!$v->validate() || !$this->validate_deep($data)) {
+        if (!$v->validate() || !$this::validate_deep($data)) {
             MsgQueue::msg(MsgType::ERROR, $v->errors());
             return false;
         }
@@ -1517,6 +1516,7 @@ class AbonController extends AppBaseController {
 
         if  (
                 empty($this->route[F_ALIAS]) ||
+                ($this->route[F_ALIAS] != AbonRest::ALIAS_FOR_ALL) &&
                 !$model->validate_id(table_name: Abon::TABLE, field_id: Abon::F_ID, id_value: (int)$this->route[F_ALIAS])
             ) 
         {
@@ -1524,7 +1524,16 @@ class AbonController extends AppBaseController {
             redirect();
         }
 
-        if ($model->recalc_abon((int)$this->route[F_ALIAS])) {
+        if ($this->route[F_ALIAS] === AbonRest::ALIAS_FOR_ALL ) { 
+            $abon_id = 0; 
+            $msg_info = false;
+        } else {
+            $abon_id = (int)$this->route[F_ALIAS];
+            $msg_info = true;
+        }
+
+
+        if ($model->recalc_abon($abon_id, $msg_info)) {
             MsgQueue::msg(MsgType::INFO_AUTO, __('Данные успешно обновлены'));
             redirect();
         } else {

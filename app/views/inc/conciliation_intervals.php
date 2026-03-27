@@ -12,7 +12,8 @@
  */
 
 /**
- * Description of conciliation_intervals.php
+ * Форма выбора интервалов отображения Акта сверки.
+ * Выбор интервала, наличие факсимиле, отладосная информация.
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */

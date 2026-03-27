@@ -25,6 +25,7 @@ use billing\core\App;
 use config\tables\Abon;
 use config\tables\PA;
 use billing\core\base\Lang;
+use config\tables\Module;
 use config\tables\Price;
 
 Lang::load_inc(__FILE__);
@@ -79,8 +80,12 @@ if (isset($item) && !isset($abon)) { $abon = $item; }
                                                     . ($pa[PA::F_DATE_END] ? date(DATE_FORMAT, $pa[PA::F_DATE_END]) : '____-__-__') . ' | '
                                                 . "</span>"
                                                 . "<span class='text-info' title='".$pa[PA::F_PRICE_DESCR]."'>".$pa[PA::F_PRICE_TITLE]."</span>"
-                                                . "<span class='text font-monospace text-secondary small'> | </span>"
-                                                . $pa[PA::F_NET_NAME];
+                                                . (can_use(Module::MOD_PA) 
+                                                    ?   "<span class='text font-monospace text-secondary small'> | </span>"
+                                                        . $pa[PA::F_NET_NAME]
+                                                    :   ""
+                                                  );
+                                                
                                         $right = get_html_pa_status(__pa_age($pa)) . "&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;";
                                         $title = get_html_content_left_right(
                                                     left:  $left,

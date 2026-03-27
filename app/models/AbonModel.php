@@ -55,12 +55,16 @@ class AbonModel extends UserModel {
 
 
     /**
-     * Заполнить таблицу остатков `abon_rest` на ЛС у всех абонентов
-     * собираем вместе поля: abon_id, sum_pay, sum_cost, sum_PPMA, sum_PPDA
-     * @param bool $force
-     * @return bool
+     * Обновляет таблицу остатков для всех или указанного абонента
+     * 
+     * Эта функция вычисляет и обновляет данные об остатках в таблице AbonRest, 
+     * включая общую сумму платежей, общую сумму расходов, сумму предоплаты в месяц и сумму предоплаты в день
+     * путем объединения данных из таблицы платежей (Pay) и таблицы применения цен (PA).
+     * 
+     * @param int $abon_id ID абонента для обновления. Если 0, обновляются все абоненты
+     * @return bool Возвращает true в случае успеха, false в случае ошибки
      */
-    function update_abon_rest_all(int|null $abon_id = null): bool {
+    function update_abon_rest_all(int $abon_id = 0): bool {
         $sql = "
             INSERT INTO ".AbonRest::TABLE." (
                 ".AbonRest::F_ABON_ID.",
@@ -70,27 +74,26 @@ class AbonModel extends UserModel {
                 ".AbonRest::F_SUM_PPDA."
             )
             SELECT
-                a.".Pay::F_ABON_ID.",
+                a.".AbonRest::F_ABON_ID.",
                 IFNULL( p.".AbonRest::F_SUM_PAY .", 0) AS ".AbonRest::F_SUM_PAY .",
                 IFNULL(pa.".AbonRest::F_SUM_COST.", 0) AS ".AbonRest::F_SUM_COST.",
                 IFNULL(pa.".AbonRest::F_SUM_PPMA.", 0) AS ".AbonRest::F_SUM_PPMA.",
                 IFNULL(pa.".AbonRest::F_SUM_PPDA.", 0) AS ".AbonRest::F_SUM_PPDA."
             FROM
             ( "
-                . (is_null($abon_id)
-
+                . (
+                    ($abon_id == 0)
                     ?   "SELECT ".Pay::F_ABON_ID." AS ".AbonRest::F_ABON_ID." FROM ".Pay::TABLE." "
                         . "UNION "
                         . "SELECT ".PA::F_ABON_ID."  AS ".AbonRest::F_ABON_ID." FROM ".PA::TABLE.""
 
                     :   "SELECT {$abon_id} AS ".AbonRest::F_ABON_ID.""
-
-                  )
+                )
             ." ) AS a
             LEFT JOIN (
                 SELECT ".Pay::F_ABON_ID.", SUM(".Pay::F_PAY_ACNT.") AS ".AbonRest::F_SUM_PAY."
                 FROM ".Pay::TABLE." 
-                ".(is_null($abon_id) ? "" : "WHERE ".Pay::F_ABON_ID." = {$abon_id}")."
+                ".(($abon_id == 0) ? "" : "WHERE ".Pay::F_ABON_ID." = {$abon_id}")."
                 GROUP BY ".Pay::F_ABON_ID."
             ) AS p ON p.".Pay::F_ABON_ID." = a.".AbonRest::F_ABON_ID."
             LEFT JOIN (
@@ -100,7 +103,7 @@ class AbonModel extends UserModel {
                     SUM(".PA::F_PPMA_VALUE.") AS ".AbonRest::F_SUM_PPMA.",
                     SUM(".PA::F_PPDA_VALUE.") AS ".AbonRest::F_SUM_PPDA."
                 FROM ".PA::TABLE." 
-                ".(is_null($abon_id) ? "" : "WHERE ".PA::F_ABON_ID." = {$abon_id}")."
+                ".(($abon_id == 0) ? "" : "WHERE ".PA::F_ABON_ID." = {$abon_id}")."
                 GROUP BY ".PA::F_ABON_ID."
             ) AS pa ON pa.".PA::F_ABON_ID." = a.".AbonRest::F_ABON_ID."
 
@@ -110,7 +113,6 @@ class AbonModel extends UserModel {
                 ".AbonRest::TABLE.".".AbonRest::F_SUM_PPMA." = VALUES(".AbonRest::F_SUM_PPMA."),
                 ".AbonRest::TABLE.".".AbonRest::F_SUM_PPDA." = VALUES(".AbonRest::F_SUM_PPDA.");
         ";
-        // echo 'SQL: '.  $sql . "\n";
         return $this->execute($sql);
     }
 
@@ -121,7 +123,7 @@ class AbonModel extends UserModel {
      * @param int $recalc_abon_id -- ID абонента, если нужно обновить только его прайсы (по умолчанию — 0, значит все)
      * @return bool
      */
-    function update_prices_cost_all(int $recalc_abon_id = 0): bool // версия 2021 года
+    function update_prices_cost_all(int $recalc_abon_id = 0, bool $msg_info = true): bool // версия 2021 года
     {
         $cost_value = 0.0; //* echo 'инициализируем поле "начислено"<br>';
         $cost_date = time(); //* echo 'инициализируем поле "дата начисления"<br>';
@@ -151,9 +153,9 @@ class AbonModel extends UserModel {
                 $cost_date = time();
                 // считаем стоимость ПФ
                 $cost_value = self::get_price_apply_cost($row);
-                if ($recalc_abon_id > 0) {
-                    MsgQueue::msg(MsgType::INFO_AUTO, "price_apply_id: {$row[PA::F_ID]}: {$cost_value}");
-                }
+                // if ($recalc_abon_id > 0) {
+                //     if ($msg_info) { MsgQueue::msg(MsgType::INFO_AUTO, "price_apply_id: {$row[PA::F_ID]}: {$cost_value}"); }
+                // }
                 // обновить данные в таблицах;
                 $sql = "UPDATE `".PA::TABLE."` "
                         . "SET `".PA::F_COST_VALUE."`='{$cost_value}',`".PA::F_COST_DATE."`={$cost_date} "
@@ -645,7 +647,7 @@ class AbonModel extends UserModel {
                 . "* "
                 . "FROM ".Notify::TABLE." "
                 . "WHERE ".Notify::F_ABON_ID."=".$this->quote($abon_id)." "
-                . "ORDER BY ".Notify::F_ID." DESC"
+                . "ORDER BY ".Notify::F_DATE." DESC"
                 . (empty($limit) ? "" : " LIMIT {$limit}");
     }
 
@@ -1484,57 +1486,61 @@ class AbonModel extends UserModel {
 
     /**
      * Обновляет стоимости начислений ПФ 
-     * (PA::F_COST_VALUE),
-     * активные абонплаты
-     * (PA::F_PPMA_VALUE, PA::F_PPDA_VALUE)
-     * для всех ПФ указанного абонента.
-     * Остатки для указанного абонента
+     * и активные абонплаты для всех ПФ указанного абонента
+     * (PA::F_COST_VALUE, PA::F_PPMA_VALUE, PA::F_PPDA_VALUE).
+     * Остатки для указанного абонента 
      * (AbonRest::F_SUM_COST, AbonRest::F_SUM_PPMA, AbonRest::F_SUM_PPDA)
-     * @param int $abon_id
+     * @param int|string $abon_id
+     * @param bool $msg_info -- Если true, то выводит сообщения в очередь сообщений.
      * @return bool
      */
-    function recalc_abon(int $abon_id): bool {
+    function recalc_abon(int|string $abon_id, bool $msg_info = true): bool {
         $result = true;
-        if ($this->validate_id(Abon::TABLE, $abon_id, Abon::F_ID)) {
+        if  (
+                ($abon_id === 0 ) /* AbonRest::ALIAS_FOR_ALL => 0 для int совместимости */
+                ||
+                $this->validate_id(Abon::TABLE, $abon_id, Abon::F_ID)
+            ) 
+        {
 
             /**
              * Обновление стоимосьти ПФ
              */
-            MsgQueue::msg(MsgType::INFO_AUTO, __("COST") . ': ' . __("Обновляем стоимость начисления в прайсовых фрагментах") . " [".$abon_id."]...");
-            if ($this->update_prices_cost_all($abon_id)) {
-                MsgQueue::msg(MsgType::INFO_AUTO, __("COST") . ': ' . __("Успешно."));
+            if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("COST") . ': ' . __("Обновляем стоимость начисления в прайсовых фрагментах") . " [".$abon_id."]..."); }
+            if ($this->update_prices_cost_all($abon_id, $msg_info)) {
+                if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("COST") . ': ' . __("Успешно.")); }
             } else {
-                MsgQueue::msg(MsgType::INFO_AUTO, __("COST") . ': ' . __("Ошибка"));
-                MsgQueue::msg(MsgType::ERROR, $this->errorInfo());
+                if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("COST") . ': ' . __("Ошибка")); }
+                if ($msg_info ) { MsgQueue::msg(MsgType::ERROR, $this->errorInfo()); }
                 $result = false;
             }
 
             /**
              * Обновление активных абонплат
              */
-            MsgQueue::msg(MsgType::INFO_AUTO, __("PA") . ': ' . __('Обновляем активные абонплаты прайсовых фрагментов') . " [".$abon_id."]...");
+            if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("PA") . ': ' . __('Обновляем активные абонплаты прайсовых фрагментов') . " [".$abon_id."]..."); }
             if ($this->update_prices_active_all($abon_id)) {
-                MsgQueue::msg(MsgType::INFO_AUTO, __("PA") . ': ' . __("Успешно."));
+                if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("PA") . ': ' . __("Успешно.")); }
             } else {
-                MsgQueue::msg(MsgType::INFO_AUTO, __("PA") . ': ' . __("Ошибка"));
-                MsgQueue::msg(MsgType::ERROR, $this->errorInfo());
+                if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("PA") . ': ' . __("Ошибка")); }
+                if ($msg_info ) { MsgQueue::msg(MsgType::ERROR, $this->errorInfo()); }
                 $result = false;
             }
 
             /**
              * Обновление остатков
              */
-            MsgQueue::msg(MsgType::INFO_AUTO, __("REST") . ': ' . __('Обновляем активные остатки') . " [".$abon_id."]...");
+            if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("REST") . ': ' . __('Обновляем активные остатки') . " [".$abon_id."]..."); }
             if ($this->update_abon_rest_all($abon_id)) {
-                MsgQueue::msg(MsgType::INFO_AUTO, __("REST") . ': ' . __("Успешно."));
+                if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("REST") . ': ' . __("Успешно.")); }
             } else {
-                MsgQueue::msg(MsgType::INFO_AUTO, __("REST") . ': ' . __("Ошибка"));
-                MsgQueue::msg(MsgType::ERROR, $this->errorInfo());
+                if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("REST") . ': ' . __("Ошибка")); }
+                if ($msg_info ) { MsgQueue::msg(MsgType::ERROR, $this->errorInfo()); }
                 $result = false;
             }
             
         } else {
-            MsgQueue::msg(MsgType::ERROR, 'RECALC: ' . __("Нет такого абонента") . " [".$abon_id."]");
+            if ($msg_info ) { MsgQueue::msg(MsgType::ERROR, 'RECALC: ' . __("Нет такого абонента") . " [".$abon_id."]"); }
             $result = false;
         }
         return $result;
@@ -1692,11 +1698,11 @@ class AbonModel extends UserModel {
         $aid_list = [];
         if(!empty($payer)) {
             $sql = 'SELECT
-                    abon_id
+                        abon_id
                     FROM payments
                     WHERE description LIKE "%'.$payer.'%"
                     GROUP BY abon_id
-                    ORDER BY pay_date DESC';
+                    ORDER BY MAX(pay_date) DESC';
             return array_column($this->get_rows_by_sql($sql), 'abon_id');
         }
         return $aid_list;
@@ -1771,14 +1777,29 @@ class AbonModel extends UserModel {
     }
 
 
-    function get_abon_id_list_from_text(string $text) {
-        $subject  = $text;
+
+    /**
+     * Извлекает список идентификаторов абонентов из текста
+     * 
+     * Функция анализирует переданный текст и извлекает из него возможные идентификаторы 
+     * абонентов, используя регулярное выражение для поиска числовых последовательностей 
+     * определенной длины, отделенных специальными символами. Затем проверяет каждый 
+     * найденный номер на валидность, сравнивая с существующими записями в таблице абонентов.
+     * 
+     * @param string $text Входной текст, содержащий потенциальные идентификаторы абонентов
+     * @return array Массив действительных идентификаторов абонентов, найденных в тексте; 
+     *               возвращает пустой массив, если текст пустой или действительных 
+     *               идентификаторов не найдено
+     */
+    function get_abon_id_list_from_text(string $text): array {
+        $subject  = trim($text);
+        if (empty($subject)) { return []; }
         $pattern1 = '/.*?([\s\.\-№#^]([1-9][0-9]{'.(LEN_DOG_NUM_MIN-1).','.(LEN_DOG_NUM_MAX-1).'}).*?)+/';
         $matches  = array();
         $aid_list = array();
         $p = preg_match_all($pattern1, $subject, $matches);
         if($p === false) {
-            die("Этого не должно быть: get_abon_id_list_from_text(string $text)");
+            throw new \Exception("Этого не должно быть: get_abon_id_list_from_text($text)", 1);
         } else {
             //return $matches;
             if((count($matches)>0)) {
@@ -1805,6 +1826,7 @@ class AbonModel extends UserModel {
     }
 
 
+
     function get_abon_id_one_by_payer_name(string $payer): int {
         $sql = 'SELECT
                 abon_id
@@ -1819,6 +1841,7 @@ class AbonModel extends UserModel {
 
 
     protected static $CASHE_PAY_TYPES = array();
+
 
 
     function get_pay_type_x_(int $id): array {
@@ -2181,34 +2204,44 @@ class AbonModel extends UserModel {
     function get_full_list_for_email_send(int $today = NA): array {
         if ($today == NA) { $today = TODAY(); }
 
-        $sql = "SELECT
-                `".Abon::TABLE."`.`".Abon::F_ID."`
-                FROM
-                        `".Abon::TABLE."`
-                        LEFT JOIN `".User::TABLE."` ON `".Abon::TABLE."`.`".Abon::F_USER_ID."` = `".User::TABLE."`.`".User::F_ID."`
-                WHERE
-                        (`".User::TABLE."`.`".User::F_EMAIL_DO_SEND."` = 1) AND
-                        (`".Abon::TABLE."`.`".Abon::F_IS_PAYER."` = 1) AND
-                        (`".Abon::TABLE."`.`".Abon::F_ID."` IN 
-                            (
-                                SELECT
-                                    `".PA::F_ABON_ID."`
-                                FROM
-                                    `".PA::TABLE."`
-                                WHERE
-                                (
-                                    (
-                                        (`".PA::TABLE."`.`".PA::F_DATE_START."` < UNIX_TIMESTAMP()) AND
-                                        (isnull(`".PA::TABLE."`.`".PA::F_DATE_END."`))
-                                    )
-                                    OR
-                                    (
-                                        `".PA::TABLE."`.`".PA::F_DATE_END."` > UNIX_TIMESTAMP()
-                                    )
-                                )
-                                GROUP BY `".PA::TABLE."`.`".PA::F_TP_ID."`                        
-                            )
-                        )";
+        $user_id = App::get_user_id();
+
+        $sql = "SELECT "
+                ."`".Abon::TABLE."`.`".Abon::F_ID."` "
+                ."FROM "
+                        ."`".Abon::TABLE."` "
+                        ."LEFT JOIN `".User::TABLE."` ON `".Abon::TABLE."`.`".Abon::F_USER_ID."` = `".User::TABLE."`.`".User::F_ID."` "
+                ."WHERE "
+                        ."(`".User::TABLE."`.`".User::F_EMAIL_DO_SEND."` = 1) AND "
+                        ."(`".Abon::TABLE."`.`".Abon::F_IS_PAYER."` = 1) AND "
+                        ."(`".Abon::TABLE."`.`".Abon::F_ID."` IN "
+                            ."( "
+                                ."SELECT "
+                                    ."`".PA::F_ABON_ID."` "
+                                ."FROM "
+                                    ."`".PA::TABLE."` "
+                                ."WHERE "
+                                    /**
+                                     * Если это не вызов от пользователя Биллинг, то выбирать список только для этого пользователя
+                                     */
+                                    .($user_id != User::UID_BILLING
+                                        ?   "(`".PA::F_TP_ID."` IN (SELECT `".TSUserTp::F_TP_ID."` FROM `".TSUserTp::TABLE."` WHERE `".TSUserTp::F_USER_ID."`=".$user_id.")) AND "
+                                        :   "") 
+                                    /** ---- */    
+                                    ."( "
+                                        ."( "
+                                            ."(`".PA::TABLE."`.`".PA::F_DATE_START."` < ".$today.") AND " // UNIX_TIMESTAMP()
+                                            ."(isnull(`".PA::TABLE."`.`".PA::F_DATE_END."`)) "
+                                        .") "
+                                        ."OR "
+                                        ."( "
+                                            ."`".PA::TABLE."`.`".PA::F_DATE_END."` > ".$today." " // UNIX_TIMESTAMP()
+                                        .") "
+                                    .") "
+                                ."GROUP BY `".PA::TABLE."`.`".PA::F_TP_ID."` "
+                            .") "
+                        .")";
+        // debug($sql, 'sql', die:1);
 
         $list = $this->query($sql, fetchVector: 0);
 

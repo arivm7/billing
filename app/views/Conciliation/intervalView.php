@@ -21,18 +21,43 @@
 use config\tables\User;
 use config\tables\Abon;
 use config\tables\Module;
-use config\Conciliation;
+use config\tables\Pay;
+
 require_once DIR_LIBS . '/form_functions.php';
 
-/** @var array $user */
-/** @var array $abon */
+/** 
+ * Данны переданные из контроллера
+ * 
+ * @var array $user 
+ * @var array $abon
+ * 
+ */
 
 ?>
 <div class="card col-12 col-md-10 col-lg-8">
+
     <div class="card-header">
-        <h2 class="h4 mb-3"><?=__('Select the period for drawing up the Reconciliation Report')?></h2>
-        <h3 class="h4 mb-3"><span class="text text-secondary"><?=num_len($user[User::F_ID], 6);?> |</span> <?=$user[User::F_NAME_FULL];?>:</h3>
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="h4 mb-3"><?=__('Select the period for drawing up the Reconciliation Report')?></h2>
+                <h3 class="h4 mb-3"><span class="text text-secondary"><?=num_len($user[User::F_ID], 6);?> |</span> <?=$user[User::F_NAME_FULL];?>:</h3>
+            </div>
+            <div>
+                <!-- Список платежей -->
+                <?php if (can_view([Module::MOD_MY_PAYMENTS, Module::MOD_PAYMENTS])) : ?>
+                    <a href="<?=Pay::URI_LIST;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-1" target="_self" title="<?= __('Full list of subscriber payments'); ?>">
+                        <span class="fw-bold">₴₴</span> <?= __('Payments'); ?></a>
+                <?php endif; ?>
+                <!-- Вернуться в карточку абонента -->
+                <?php if (can_use([Module::MOD_ABON])) : ?>
+                    <a href="<?=Abon::URI_VIEW;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm" target="_self"><span class="fw-bold">🅐</span> <?= __('Картка'); ?></a> <!-- ⒶⒶⒶ -->
+                <?php else: ?>
+                    <a href="/my" class="btn btn-outline-info btn-sm" target="_self"><span class="fw-bold">🅐</span> <?= __('Картка'); ?></a> <!-- ⒶⒶ🅐Ⓐ(A) -->
+                <?php endif; ?>
+            </div>
+        </div>
     </div>
+
     <div class="card-body">
         <?php require DIR_INC ."/conciliation_intervals.php"; ?>
     </div>

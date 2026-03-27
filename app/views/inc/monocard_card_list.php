@@ -23,6 +23,19 @@ use billing\core\base\Lang;
 Lang::load_inc(__FILE__);
 
 
+/**
+ * Данные переданные из контроллера
+ * 
+ * @var array{connect:array,client:array} $cards_info
+ * @var array{connect:array,statements:array} $data
+ * @var int $date1 -- int, timestamp, начало периода выборки
+ * @var int $date2 -- int, timestamp, конец периода выборки
+ * @var int $date_last_pay -- int, timestamp, Дата последнего зарегистрированного платежа на ППП
+ * @var array $ppp
+ */
+
+
+
 ?>
 
 <!-- 
@@ -30,12 +43,12 @@ Lang::load_inc(__FILE__);
 *   Список банковских карт 
 *
 -->
-<?php foreach ($cards_info['client']['accounts'] as $card): ?>
+<?php foreach ($cards_info['client'][MonoCard::F_ACCOUNTS] as $card): ?>
     <div class="card mb-3 shadow-sm"  style="width: fit-content;">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span>
                 Account
-                <?php if ($cards_info['client']['clientId'] == $card[MonoCard::F_CARD_SEND_ID]): ?>
+                <?php if ($cards_info['client'][MonoCard::F_CLIENT_ID] == $card[MonoCard::F_CARD_SEND_ID]): ?>
                     <span class="badge bg-success ms-2">clientId</span>
                 <?php endif; ?>
             </span>
@@ -74,7 +87,7 @@ Lang::load_inc(__FILE__);
                     </span>
                 </li>
 
-                <?php if (!empty($card['maskedPan'])): ?>
+                <?php if (!empty($card[MonoCard::F_CARD_MASKED_PAN])): ?>
                     <li class="list-group-item">
                         <strong>Cards:</strong>
                         <ul class="mb-0 ps-3">

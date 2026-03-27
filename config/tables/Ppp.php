@@ -36,7 +36,7 @@ class Ppp {
        ========================= */
 
     public const F_ID                      = 'id';                  // ID записи
-    public const F_ORDER_NUM                = 'order_num';          // Порядок сортировки
+    public const F_ORDER_NUM               = 'order_num';           // Порядок сортировки
     public const F_FIRM_ID                 = 'firm_id';             // ID предприятия
     public const F_TITLE                   = 'title';               // Название источника приема платежей
     public const F_OWNER_ID                = 'owner_id';            // ID владельца счета/кассы
@@ -85,7 +85,7 @@ class Ppp {
     /**
      * Поля с денежными/комиссионными значениями
      */
-    public const F_COMMISSIONS = [
+    public const COMMISSIONS_DESCR = [
         /**
          * Расчетно-кассовое обслуживание счёта, процентное значение
          */

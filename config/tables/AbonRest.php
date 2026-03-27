@@ -22,6 +22,11 @@ class AbonRest {
 
     const TABLE      = 'abon_rest';
 
+    /**
+     * Для abon/restupdate/all  - для обновления остатков всех абонентов
+     */
+    const ALIAS_FOR_ALL = 'all';
+
     /*
      * Поля из базы
      */

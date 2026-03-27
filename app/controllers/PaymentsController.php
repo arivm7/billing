@@ -30,7 +30,7 @@ use config\tables\User;
 use DebugView;
 
 /**
- * Description of PaymentsController.php
+ * Интерфейс для работы с платежами в биллинге
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
@@ -74,15 +74,17 @@ class PaymentsController extends AppBaseController {
     }
 
 
-    function normalize(array &$pay) {
+    public static function normalize(array &$pay) {
         $pay[Pay::F_PAY_FAKT] = floatval($pay[Pay::F_PAY_FAKT]);
         $pay[Pay::F_PAY_ACNT] = floatval($pay[Pay::F_PAY_ACNT]);
-        $pay[Pay::F_DATE] = strtotime($pay[Pay::F_DATE_STR]);
-        unset($pay[Pay::F_DATE_STR]);
+        if (!empty($pay[Pay::F_DATE_STR])) {
+            $pay[Pay::F_DATE] = strtotime($pay[Pay::F_DATE_STR]);
+            unset($pay[Pay::F_DATE_STR]);
+        }
     }
 
 
-    function validate_deep(array $pay): bool {
+    public static function validate_deep(array $pay): bool {
         $valid = true;
         $model = new AbonModel();
 
@@ -194,18 +196,60 @@ class PaymentsController extends AppBaseController {
 
 
 
-    function paySave(array $pay): never {
+    /**
+     * Вставка новой записи в биллинг
+     * @param array $pay -- массив полей платежа
+     * @return int|false -- id вставленной строки или false
+     */
+    public static function payInsert(array $data): int|false {
+
+        if (!empty($data[Pay::F_ID])) {
+            return false;
+        }
+
+        $model = new AbonModel();
+
+        $data[Pay::F_CREATION_DATE] = time();
+        $data[Pay::F_CREATION_UID] = App::get_user_id();
+        return $model->insert_row(Pay::TABLE, $data);
+
+    }
+
+
+
+    /**
+     * Обновление записи в биллинге
+     * @param array $pay -- массив полей платежа
+     * @return bool -- true если запись обновлена, false если нет
+     */
+    public static function payUpdate(array $data): bool {
+
+        if (empty($data[Pay::F_ID])) {
+            return false;
+        }
+
+        $model = new AbonModel();
+
+        $data[Pay::F_MODIFIED_DATE] = time();
+        $data[Pay::F_MODIFIED_UID] = App::get_user_id();
+        return ($model->update_row_by_id(table: Pay::TABLE,  row: $data,  field_id: Pay::F_ID));
+
+    }
+
+
+
+    function formPaySave(array $pay): never {
         $model = new AbonModel();
 
         /**
          * Нормализация полей платежа
          */
-        $this->normalize($pay);
+        $this::normalize($pay);
 
         /**
          * Валидация полей платежа
          */
-        if (!$this->validate_deep($pay)) {
+        if (!$this::validate_deep($pay)) {
             $_SESSION[SessionFields::FORM_DATA] = $pay;
             redirect();
         }
@@ -218,9 +262,8 @@ class PaymentsController extends AppBaseController {
                 MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
                 redirect();
             }
-            $pay[Pay::F_CREATION_DATE] = time();
-            $pay[Pay::F_CREATION_UID] = App::get_user_id();
-            if ($model->insert_row(Pay::TABLE, $pay)) {
+            
+            if (self::payInsert($pay)) {
                 MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Платеж сохранен'));
                 $model->recalc_abon($pay[Pay::F_ABON_ID]);
                 redirect(url: Pay::URI_LIST .'/'. $pay[Pay::F_ABON_ID]);
@@ -244,9 +287,8 @@ class PaymentsController extends AppBaseController {
                 redirect();
             }
             $pay_diff[Pay::F_ID] = $pay[Pay::F_ID];
-            $pay_diff[Pay::F_MODIFIED_DATE] = time();
-            $pay_diff[Pay::F_MODIFIED_UID] = App::get_user_id();
-            if ($model->update_row_by_id(table: Pay::TABLE,  row: $pay_diff,  field_id: Pay::F_ID)) {
+
+            if (self::payUpdate($pay_diff)) {
                 MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Платёж обновлен'));
                 if ($this->need_recalc($pay_diff)) {
                     $model->recalc_abon($pay[Pay::F_ABON_ID]);
@@ -276,7 +318,7 @@ class PaymentsController extends AppBaseController {
             /**
              * Обработка, проверка и сохранение платежа
              */
-            $this->paySave($_POST[Pay::POST_REC]);
+            $this->formPaySave($_POST[Pay::POST_REC]);
         }
 
         $model = new AbonModel();
@@ -410,7 +452,7 @@ class PaymentsController extends AppBaseController {
          * Заполнение вычисляемых полей
          */
         foreach ($payments as &$pay) {
-            $model->normalize_pay($pay);
+            $model->pay_update_fields($pay);
         }
 
         $this->setVariables([

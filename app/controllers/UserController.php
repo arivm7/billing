@@ -38,7 +38,7 @@ require_once DIR_LIBS . '/phone_functions.php';
 class UserController extends AppBaseController {
 
 
-    public function validate_deep(array $user): bool {
+    public static function validate_deep(array $user): bool {
         $model = new UserModel();
 
         /**
@@ -77,7 +77,7 @@ class UserController extends AppBaseController {
      * @param bool  $isNew true — при создании, false — при обновлении
      * @return boolean
      */
-    public function validate(array $data, bool $isNew = false): bool
+    public static function validate(array $data, bool $isNew = false): bool
     {
         // Инициализация валидатора
 
@@ -196,7 +196,7 @@ class UserController extends AppBaseController {
         $v->rule('jabber', User::F_JABBER);
 
         // --- Проверка ---
-        if (!$v->validate() || !$this->validate_deep($data)) {
+        if (!$v->validate() || !self::validate_deep($data)) {
             MsgQueue::msg(type: MsgType::ERROR, message: $v->errors());
             return false;
         }
@@ -206,7 +206,7 @@ class UserController extends AppBaseController {
 
 
 
-    public function normalize(array &$data) {
+    public static function normalize(array &$data) {
 
         // Убираем лишние пробелы
         foreach (User::T_FIELDS as $field=>$default) {
@@ -380,10 +380,10 @@ class UserController extends AppBaseController {
             }
 
             // Нормализация (очистка и форматирование данных)
-            $this->normalize($user_rec);
+            self::normalize($user_rec);
 
             // Проверка
-            if ($this->validate($user_rec)) {
+            if (self::validate($user_rec)) {
 
                 // Проверка и обновление пароля
                 $this->check_pass_new($user_rec);
