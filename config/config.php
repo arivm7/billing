@@ -237,7 +237,7 @@ $config = [
     'bank_http_user_agent'    => "Mozilla/5.0 BASH (Linux x86_64)", // "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.214 Safari/537.36";
     'bank_get_iteration_max'  => 10, // Максимальное количество итераций для выборки транзакций
     'bank_limit_per_page'     => 25, // Количество записей на одной странице при получении списка транзакций
-    'bank_comission_text'     => [
+    'bank_comission_texts'     => [
             "за вычетом комиссии банка в размере 3.00грн",
             "утрим. комісія банку 3.00грн"
         ],

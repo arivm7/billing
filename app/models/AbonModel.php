@@ -1821,7 +1821,7 @@ class AbonModel extends UserModel {
                     }
                 }
             }
-            return $aid_list;
+            return array_unique($aid_list);
         }
     }
 

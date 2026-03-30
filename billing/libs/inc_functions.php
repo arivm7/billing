@@ -297,3 +297,35 @@ function url_pay_form(int $id): string {
 }
 
 
+
+const BADGE_NA          = BADGE_SECONDARY;
+
+const STATUSES = [
+    1 => BADGE_DANGER,
+    2 => BADGE_WARNING,
+    3 => BADGE_SUCCESS,
+    4 => BADGE_INFO,
+    5 => BADGE_PRIMARY,
+    6 => BADGE_SECONDARY,
+    7 => BADGE_LIGHT,
+    8 => BADGE_DARK,
+];
+
+/**
+ * Функция генерации HTML-бейджа (значка) с заданным текстом и цветовым статусом
+ * 
+ * @param string $text Текст, который будет отображаться в бейдже
+ * @param int|string $sign Ключ для определения цветового статуса из массива $statuses
+ * @param array $statuses Массив соответствия ключей к классам статусов (по умолчанию используется константа STATUSES)
+ * @return string Возвращает HTML-строку с тегом span и соответствующим CSS-классом
+ */
+function html_badge(string $text, int|string $sign, array $statuses = STATUSES, string $bage_na = BADGE_NA, string $title = ''): string {
+
+    // Получаем значение статуса из переданного массива по ключу $sign или используем значение по умолчанию BADGE_NA
+    $warn = $statuses[$sign] ?? $bage_na;
+    // Формируем HTML-тег span с присвоением CSS-класса статуса и отображаемым текстом
+    $s = '<span class="'.$warn.'" '.(!empty($title) ? 'title="'.$title.'"' : "").' >'.$text.'</span>';
+    // Возвращаем сформированную строку
+    return $s;
+
+}

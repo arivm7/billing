@@ -1,25 +1,35 @@
 <?php
 /**
  *  Project : my.ri.net.ua
- *  File    : monocardView.php
- *  Path    : app/views/Bank/monocardView.php
+ *  File    : get_monocard_dispatcher.php
+ *  Path    : app/views/inc/get_monocard_dispatcher.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
  *  Org     : RI-Network, Kiev, UK
- *  Created : 29 Jan 2026 11:01:20
+ *  Created : 28 Mar 2026 22:16:16
  *  License : GPL v3
  *
  *  Copyright (C) 2026 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
  */
 
+
+
 /**
  * Вид отображения данных и транзакций из MonoCard
  * 
- * BankController.php 
- * BankController::monocardAction() -> 
- *      monocardView.php -> (этот)
- *              monocard_card_list.php
- *              monocard_statement.php
- *              monocard_pay_rec_form.php
+ * app/controllers/BankController.php
+ *          public function getAction()
+ *                  app/views/Bank/getView.php
+ *                          app/views/inc/get_monocard_dispatcher.php
+ *                                  app/views/inc/get_monocard_accounts.php
+ *                                  app/views/inc/get_navigation.php
+ *                                  app/views/inc/get_monocard_statement.php
+ *                                  app/views/inc/get_pay_rec_form.php
+ * 
+ *                          app/views/inc/get_p24acc_dispatcher.php
+ *                                  app/views/inc/get_p24acc_account.php
+ *                                  app/views/inc/get_navigation.php
+ *                                  app/views/inc/get_p24acc_transaction_card.php
+ *                                  app/views/inc/get_pay_rec_form.php
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
@@ -27,21 +37,16 @@
 
 
 /**
- * Данные переданные из контроллера
+ * Данные приходящие от контроллера
  * 
- * @var array{connect:array,client:array} $cards_info
- * @var array{connect:array,statements:array} $data
- * @var int $date1 -- int, timestamp, начало периода выборки
- * @var int $date2 -- int, timestamp, конец периода выборки
- * @var int $date_last_pay -- int, timestamp, Дата последнего зарегистрированного платежа на ППП
- * @var array $ppp
+ * @var array $accounts     [], Банковские карты или рассчётные счета
+ * @var array $data         [ Bank::F_STATEMENT[], Bank::F_FOUND_REC[], Bank::F_PAY_REC[] ]
+ * @var int   $date1_ts     int, timestamp, начало периода выборки
+ * @var int   $date2_ts     int, timestamp, конец периода выборки
+ * @var array $ppp          [], ППП
+ * 
  */
 
-
-
-/**
- * @var array{id:string,time:int,description:string,comment:string,mcc:int,originalMcc:int,amount:int,operationAmount:int,currencyCode:int,commissionRate:int,cashbackAmount:int,balance:int,hold:int} $statement
- */
 
 
 use billing\core\App;
@@ -51,57 +56,35 @@ use config\tables\Pay;
 use config\tables\Ppp;
 use config\tables\User;
 
-$statements = &$data[Bank::F_STATEMENTS];
-$d_start = $date1; 
-$d_end = $date2;
+
 
 ?>
-<h2 class="fs-6">Информация по MonoCard</h2>
-<h3 class="fs-6"><span class="text-primary" title="[client][name]"><?=$cards_info['client']['name']?></span><span class="text-secondary fs-8" title="[client][clientId]"> | <?=$cards_info['client']['clientId']?></span></h3>
-
-
-
 <!-- 
 *
 *   Список банковских карт 
 *
 -->
-<?php include DIR_INC . '/monocard_card_list.php'; ?>
+<?php include DIR_INC . '/get_monocard_accounts.php'; ?>
 
 
 
 <!-- 
 *
-*   Навигация по датам:
+*   Навигация по датам
 *
 -->
-<div align=center>
-    <?php 
-        $d1 = date('Y-m-d', $d_start-App::get_config('bank_date_interval')); 
-        $d2 = date('Y-m-d', $d_start);
-    ?>
-    | <a href=?startDate=<?= $d1 ?>&endDate=<?= $d2 ?>><?= $d1 ?> -- <?= $d2 ?></a>
-    <?php 
-        $d1 = date('Y-m-d', timestamp: $d_start); 
-        $d2 = date('Y-m-d', timestamp: $d_end);
-    ?>
-    &nbsp;&nbsp;|&nbsp;<<<===&nbsp;|&nbsp;&nbsp;<font size=+2 color=green><?= $d1 ?> -- <?= $d2 ?></font>&nbsp;&nbsp;|&nbsp;===>>>&nbsp;|&nbsp;&nbsp;
-    <?php 
-        $d1 = date('Y-m-d', $d_end); 
-        $d2 = date('Y-m-d', $d_end+App::get_config('bank_date_interval'));
-    ?>
-    <a href=?startDate=<?= $d1 ?>&endDate=<?= $d2 ?>><?= $d1 ?> -- <?= $d2 ?></a> | 
-    <hr>
-    <a class="text text-end mb-2" href='https://prev.ri.net.ua/ab_templates.php?ppp_id=<?=$ppp[Pay::F_ID]?>' target=_blank>Редактирование абонентских шаблонов</a> | 
-</div>
+<?php include DIR_INC . '/get_navigation.php'; ?>
 
 
 <!-- =======================FORM======================== -->
 
 <form method="post" action="">
 
-        <?php foreach ($statements as $index => &$statement) : ?>
+        <?php foreach ($data as $index => $rec) : ?>
             <?php 
+                $statement = $rec[Bank::F_STATEMENT];
+                $pay_rec = $rec[Bank::F_PAY_REC];
+                $found_rec = $rec[Bank::F_FOUND_REC];
                 if (sign(get_numeric_part($statement[MonoCard::F_AMOUNT])) === -1) { continue; } 
                 if (!empty($statement[MonoCard::F_COMMENT])) {
                     $statement[MonoCard::F_DESCRIPTION] = $statement[MonoCard::F_DESCRIPTION]." | ".$statement[MonoCard::F_COMMENT];
@@ -112,11 +95,11 @@ $d_end = $date2;
 
             <div class="row">
                 <div class="col-4">
-                    <?php include DIR_INC . '/monocard_statement.php'; ?>
+                    <?php include DIR_INC . '/get_monocard_statement.php'; ?>
                 </div>
 
                 <div class="col-8">
-                    <?php include DIR_INC . '/monocard_pay_rec_form.php'; ?>
+                    <?php include DIR_INC . '/get_pay_rec_form.php'; ?>
                 </div>
 
             </div>
@@ -131,7 +114,12 @@ $d_end = $date2;
 
 </form>
 
-
+<!-- 
+*
+*   Навигация по датам
+*
+-->
+<?php include DIR_INC . '/get_navigation.php'; ?>
 
 
 
@@ -259,4 +247,3 @@ $d_end = $date2;
     <tr><td colspan=9 align=right><input type=submit name=do value='отправить' ></td></tr>
     </table>
     </form>
-

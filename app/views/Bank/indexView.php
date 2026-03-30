@@ -12,7 +12,10 @@
  */
 
 /**
- * Description of indexView.php
+ * Пречень кнопок перехода на формы внесения платежей по всем ТП
+ * 
+ * app/controllers/BankController.php
+ *          app/views/Bank/indexView.php (этот)
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
@@ -31,7 +34,10 @@ use config\tables\Ppp;
 <?php foreach ($ppp_list as $api_type => $by_type_list): ?>
     <?php foreach ($by_type_list as $ppp): ?>
         <div>
-            <a class="btn btn-outline-primary" href="<?= Bank::URI_API_LIST[$api_type]; ?>/<?= $ppp[Ppp::F_ID]; ?>"><?= $ppp[Ppp::F_TITLE]; ?></a>
+            <a class="btn btn-outline-primary ms-3" 
+                href="<?= Bank::URI_GET; ?>/<?= $ppp[Ppp::F_ID]; ?>"
+                title="<?= __('Проверить платежи') ?> <?= $ppp[Ppp::F_TITLE]; ?>"
+                ><?= $ppp[Ppp::F_TITLE]; ?> | GET/<?= $ppp[Ppp::F_ID]; ?></a>
         </div>
     <?php endforeach; ?>
 <?php endforeach; ?>

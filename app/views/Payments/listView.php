@@ -108,11 +108,13 @@ $view_my = can_view(Module::MOD_MY_PAYMENTS) && $user[User::F_ID] == $user[Abon:
                     <span title="<?=__('Who and when modified record');?>"><?=date('Y-m-d H:i:s', $pay_one[Pay::F_MODIFIED_DATE])?> : <?=h($pay_one[Pay::F_MODIFIED_UID])?></span>
                 </td>
                 <td class="text-start align-middle">
+                    <!-- Редактирование платежа -->
                     <?php if (can_edit(Module::MOD_PAYMENTS)) : ?>
                         <a href="<?=Pay::URI_FORM;?>/<?=h($pay_one[Pay::F_ID]);?>" 
                             class="btn btn-sm btn-outline-info" 
                             title="<?=__('Edit');?>"><img src="<?=Icons::SRC_EDIT_REC;?>" alt="[Edit]" height="22px"></a>
                     <?php endif; ?>
+                    <!-- Удаление платежа -->
                     <?php if (can_del(Module::MOD_PAYMENTS)) : ?>
                         <a href="<?=Pay::URI_DEL;?>/<?=h($pay_one[Pay::F_ID]);?>" 
                             class="btn btn-sm btn-outline-danger" 

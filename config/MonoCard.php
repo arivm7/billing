@@ -307,11 +307,11 @@ class MonoCard
     public static function normalize_statements(array &$statements): void {
         foreach ($statements as &$statement) {
             $statement[self::F_AMOUNT]           = floatval($statement[self::F_AMOUNT])/100;
-            $statement[self::F_OPERATION_AMOUNT]  = floatval($statement[self::F_OPERATION_AMOUNT])/100;
-            $statement[self::F_COMMISSION_RATE]   = floatval($statement[self::F_COMMISSION_RATE])/100;
-            $statement[self::F_CASHBACK_AMOUNT]   = floatval($statement[self::F_CASHBACK_AMOUNT])/100;
+            $statement[self::F_OPERATION_AMOUNT] = floatval($statement[self::F_OPERATION_AMOUNT])/100;
+            $statement[self::F_COMMISSION_RATE]  = floatval($statement[self::F_COMMISSION_RATE])/100;
+            $statement[self::F_CASHBACK_AMOUNT]  = floatval($statement[self::F_CASHBACK_AMOUNT])/100;
             $statement[self::F_BALANCE]          = floatval($statement[self::F_BALANCE])/100;
-            $statement[self::F_CASHBACK_AMOUNT]   = floatval($statement[self::F_CASHBACK_AMOUNT])/100;
+            $statement[self::F_CASHBACK_AMOUNT]  = floatval($statement[self::F_CASHBACK_AMOUNT])/100;
         }
     }
 
@@ -329,7 +329,9 @@ class MonoCard
 
         $headers = MonoCard::get_headers($token);
 
-        // Формирование URL запроса, добавляем 1 день к конечной дате, чтобы включить date2 в выборку
+        // Формирование URL запроса к API монобанка
+        // Добавляем 1 день к конечной дате, чтобы включить операции за date2 в выборку
+        // Номер счета по умолчанию устанавливается в "0"
         $request_url = $api_url . "" . "0" . "/" . $date1 . "/" . ($date2 + (1 * 24 * 60 * 60));
 
         $ch = curl_init($request_url);
@@ -342,194 +344,37 @@ class MonoCard
 
         // Выполнить cURL запрос и получить информацию о соединении и ответ
         $connect_info = curl_getinfo($ch);
-        $res = curl_exec($ch);
-        $statements = json_decode($res, true);
+        $res = curl_exec($ch); // Получение результата запроса
+        $statements = json_decode($res, true); // Преобразование JSON ответа в PHP массив
         curl_close($ch);
-
-        // Нормализовать данные выписки (преобразовать суммы из копеек в гривны)
-        self::normalize_statements($statements);
+        
+        $credit_list = [];
+        // debug($statements, '$statements');
+        if (isset($statements['errorDescription'])) {
+            MsgQueue::msg(MsgType::ERROR, __('Error in the request | Ошибка в запросе | Помилка в запиті') . ": " . $statements['errorDescription']);
+        } else { 
+            /**
+             * Выбираем только входные платежи [+]
+             */
+            foreach ($statements as $statement) {
+                if ($statement[MonoCard::F_AMOUNT] > 0) {
+                    $credit_list[] =$statement;
+                }
+            }
+            /**
+             * Нормализовать данные выписки (преобразовать суммы из копеек в гривны)
+             */
+            self::normalize_statements($credit_list);
+        }
 
         return [
             'connect' => $connect_info, // Информация о соединении
-            'statements' => $statements, // Данные по операциям
+            Bank::F_STATEMENTS => $credit_list, // Данные по операциям
         ];
     }
 
 
 
-    /**
-     * Получает отображаемое содержимое поля просмотра
-     * Используется в Виде.
-     * Генерирует соответствующий HTML-контент на основе типа поля и статуса платежной записи (найдена ли она в биллинге)
-     * 
-     * @param string $field Имя поля
-     * @param array &$statement Массив оператора, содержащий платежную запись и результаты поиска (ссылка)
-     * @return string Возвращает форматированное содержимое поля отображения (HTML-строка)
-     */
-    public static function get_view_field(int|string $index, string $field, array &$statement): string {
-
-        /**
-         * Запись с результатами поиска транзакции в биллинге
-         * 
-         * @var array{on_billing: true, 
-         *      searched_on: string, 
-         *      pay: array, 
-         *      abon: array, 
-         *      aid_list: array, 
-         *      template: string} $found_rec
-         */
-        $found_rec = &$statement[Bank::F_FOUND_REC];
-
-        /**
-        * платеж для внесения или сравнения, который соответствует транзакции из монокарты
-        */ 
-        $pay_rec = &$statement[Bank::F_PAY_REC];
-
-        $s = '';
-
-        switch ($field) {
-
-            case Pay::F_ID:
-                $s .=   ($found_rec[Bank::F_FOUND_ON_BILLING] 
-                            ?   '<span title="'.Pay::field_title($field).'">'.h($found_rec[Bank::F_FOUND_PAY][$field]).'</span>'
-                            :   ""
-                        );
-                break;
-
-            case Pay::F_AGENT_ID:
-                $s .=   ($found_rec[Bank::F_FOUND_ON_BILLING] 
-                            ?   intval($found_rec[Bank::F_FOUND_PAY][$field])
-                            :   intval($pay_rec[$field]) . '<span class="text-secondary small"> | ' . __user(user_id: intval($pay_rec[$field]), field: User::F_NAME_FULL). '</span>'
-                                . '<input type="hidden" name="'.Bank::POST_REC.'['.$index.']['.$field.']" value="' . intval($pay_rec[$field]) . '"> '
-                        );
-                break;
-                
-            case Pay::F_ABON_ID:
-                $s .=   ($found_rec[Bank::F_FOUND_ON_BILLING]
-                            ?   '<span title="'.Pay::field_title($field).'">'.h($found_rec[Bank::F_FOUND_PAY][$field]).'</span>'
-                            :   '<div class="row g-0 py-1 align-items-center w-100">'
-                                    . '<div class="col-9">'
-                                        . '<input type="number" class="form-control min-w-100px" name="'.Bank::POST_REC .'['.$index.']['.$field.']" value="' 
-                                        . (empty($found_rec[Bank::F_FOUND_ABON]) 
-                                                ?   ($pay_rec[$field] ?? '') 
-                                                :   $found_rec[Bank::F_FOUND_ABON][Abon::F_ID]
-                                            )
-                                        . '"> '
-                                    . '</div>'
-                                    . '<div class="col-3 text-end">'
-                                        . '<span class="badge text-bg-warning d-inline-flex align-items-center fs-6 py-2 px-3">'
-                                            . '<label class="hover-pointer mb-0" 
-                                                for="'.Bank::POST_REC .'['.$index.']['.Pay::F_POST_SAVE.']">'
-                                                . __('Save') 
-                                            . '</label>'
-                                            . '<input class="form-check-input hover-pointer ms-2 m-0" 
-                                                type="checkbox"
-                                                id="'.Bank::POST_REC .'['.$index.'][' . Pay::F_POST_SAVE . ']" 
-                                                name="'.Bank::POST_REC .'['.$index.'][' . Pay::F_POST_SAVE . ']" 
-                                                value="1">'
-                                        . '</span>'
-
-                                    . '</div>'
-                                    . '<div class="col-12">'
-                                        . '<label class="form-check-label me-2 text-secondary">'.$found_rec[Bank::F_FOUND_SEARCHED_ON].'</label>'
-                                    . '</div>'
-                                    // . (!empty($found_rec[Bank::F_FOUND_AID_LIST]) 
-                                    //         ?   '<div class="col-12">'
-                                    //                 . '<label class="form-check-label me-2 text-secondary">' . implode(' | ', $found_rec[Bank::F_FOUND_AID_LIST]) . '</label>'
-                                    //             . '</div>'
-                                    //         :   ""
-                                    //   )
-                                . '</div>'
-                        );
-                break;
-
-            case Pay::F_PAY_FAKT:
-            case Pay::F_PAY_ACNT:
-                $s .=   ($found_rec[Bank::F_FOUND_ON_BILLING] 
-                            ?   '<span title="'.Pay::field_title($field).'">'.number_format($found_rec[Bank::F_FOUND_PAY][$field], 2).'</span>'
-                            :   '<span title="'.Pay::field_title($field).'">'.number_format($pay_rec[$field], 2).'</span>'
-                                . '<input type="hidden" name="'.Bank::POST_REC .'['.$index.'][' . $field . ']" value="' . ($pay_rec[$field]) . '"> '
-                        );
-                break;
-
-            case Pay::F_DATE:
-                $s .=   ($found_rec[Bank::F_FOUND_ON_BILLING] 
-                            ?   '<span title="'.Pay::field_title($field).'">'.date('d.m.Y H:i:s', $found_rec[Bank::F_FOUND_PAY][$field]).'</span>'
-                            :   '<span title="'.Pay::field_title($field).'">'.date('d.m.Y H:i:s', $pay_rec[$field]).'</span>'
-                                . '<input type="hidden" name="'.Bank::POST_REC .'['.$index.'][' . $field . ']" value="' . ($pay_rec[$field]) . '"> '
-                        );
-                break;
-
-            case Pay::F_BANK_NO:
-                $s .=   ($found_rec[Bank::F_FOUND_ON_BILLING] 
-                            ?   '<span title="'.Pay::field_title($field).'">'.h($found_rec[Bank::F_FOUND_PAY][$field]).'</span>'
-                            :   '<span title="'.Pay::field_title($field).'">'.h($pay_rec[$field]).'</span>'
-                                . '<input type="hidden" name="'.Bank::POST_REC .'['.$index.'][' . $field . ']" value="' . h($pay_rec[$field]) . '"> '
-                        );
-                break;
-
-            case Pay::F_TYPE_ID:
-                $s .=   ($found_rec[Bank::F_FOUND_ON_BILLING] 
-                            ?   '<span title="'.Pay::field_title($field).'">'.h($found_rec[Bank::F_FOUND_PAY][$field]).'</span>'
-                                . '<span class="text-secondary small"> | ' . Pay::type_title($found_rec[Bank::F_FOUND_PAY][$field]). '</span>'
-                            :   '<span title="'.Pay::field_title($field).'">'.h($pay_rec[$field]).'</span>'
-                                . '<span class="text-secondary small"> | ' . Pay::type_title($pay_rec[$field]). '</span>'
-                                . '<input type="hidden" name="'.Bank::POST_REC .'['.$index.'][' . $field . ']" value="' . h($pay_rec[$field]) . '"> '
-                        );
-                break;
-
-            case Pay::F_PPP_ID:
-
-                $model = new AbonModel();
-
-                $s .=   ($found_rec[Bank::F_FOUND_ON_BILLING] 
-                            ?   '<span title="'.Pay::field_title($field).'">'
-                                . h($found_rec[Bank::F_FOUND_PAY][$field])
-                                . '</span>'
-                                . '<span class="text-secondary small"> | ' . $model->get_ppp_title($found_rec[Bank::F_FOUND_PAY][$field]) . '</span>'
-                            :   '<span title="'.Pay::field_title($field).'">'
-                                . h($pay_rec[$field])
-                                . '</span>'
-                                . '<span class="text-secondary small"> | '. $model->get_ppp_title($pay_rec[$field]) .'</span>'
-                                . '<input type="hidden" name="'.Bank::POST_REC .'['.$index.'][' . $field . ']" value="' . h($pay_rec[$field]) . '"> '
-                        );
-                break;
-
-            case Pay::F_DESCRIPTION:
-                $s .=   ($found_rec[Bank::F_FOUND_ON_BILLING] 
-                            ?   h($found_rec[Bank::F_FOUND_PAY][$field])
-                            :   '<textarea class="form-control"  
-                                    name="'.Bank::POST_REC.'['.$index.']['.Pay::F_DESCRIPTION.']" 
-                                    rows="'.get_count_rows_for_textarea($pay_rec[Pay::F_DESCRIPTION], 2).'" 
-                                    required>'.$pay_rec[Pay::F_DESCRIPTION].'</textarea>'
-
-
-                        );
-                break;
-            
-            default:
-                throw new \Exception("необработанное имя поля: " . $field, 1);
-                break;
-        }
-
-        // Сравнение полей
-        if  (
-                $found_rec[Bank::F_FOUND_ON_BILLING] &&
-                // Поля, подлежащие сравнению в биллинге и в транзакции
-                in_array($field, [Pay::F_DATE, Pay::F_PAY_ACNT, Pay::F_PAY_FAKT, Pay::F_DESCRIPTION])
-            ) 
-        {
-            if ($pay_rec[$field] == $found_rec[Bank::F_FOUND_PAY][$field]) {
-                $s = '<span class="text-success">'.$s.'</span>';
-            } else {
-                $s = '<span class="text-warning" title="В базе: ['.$found_rec[Bank::F_FOUND_PAY][$field].']'.CR
-                                                        . 'Транзакция: ['.$pay_rec[$field].']">'.$s.'</span>';
-            }
-        }
-        
-        return $s;
-        
-    }
 
 
 

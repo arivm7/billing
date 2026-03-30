@@ -57,6 +57,7 @@ use billing\core\base\View;
             .min-w-600 { min-width: 600px !important; }
             .min-w-700 { min-width: 700px !important; }
             .min-w-800 { min-width: 800px !important; }
+            .min-w-900 { min-width: 800px !important; }
 
             .w-10 { width: 10% !important; }
             .w-15 { width: 15% !important; }

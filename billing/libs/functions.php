@@ -2829,3 +2829,5 @@ function is_html(string $text): bool
 {
     return preg_match('/<\s*[a-z][^>]*>/i', $text) === 1;
 }
+
+
