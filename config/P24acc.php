@@ -1202,7 +1202,11 @@ class P24acc {
 
 
 
-    public static function renderField(array $rec = [], string $field = '', ?string $label = null, int|string|null $value = null, ?string $tooltip = null) {
+    public static function renderField(array $rec = [], string $field = '', 
+            ?string $label = null, int|string|null $value = null, ?string $tooltip = null,
+            ?string $value_add_class = null
+        ) 
+    {
 
         if (is_null($label)) {
             $label = P24acc::field_title($field);
@@ -1210,19 +1214,18 @@ class P24acc {
         
         $is_text = false;
 
-        if (is_null($value)) {
+        if (!empty($field)) {
             switch (true) {
                 case in_array($field, P24acc::FIELDS_CURRENCY):
-                    $value = number_format(($rec[$field] ?? 0), 2, '.', ' ');
+                    $value = (is_null($value) ? number_format(($rec[$field] ?? 0), 2, '.', ' ') : $value);
                     break;
-                
                 case in_array($field, P24acc::FIELDS_TEXT):
-                    $value = h(nl2br($rec[$field] ?? ''));
+                    $value = (is_null($value) ? h(nl2br($rec[$field] ?? '')) : $value);
                     $is_text = true;
                     break;
                 
                 default:
-                    $value = h($rec[$field] ?? '');
+                    $value = (is_null($value) ? h($rec[$field] ?? '') : $value);
                     break;
             }
         }
@@ -1234,7 +1237,7 @@ class P24acc {
         return  '<div class="mb-3 d-flex justify-content-between align-items-start small">' .
                     '<span class="fw-bold text-muted pe-3" style="min-width: 25%;">' . $label . '</span>' .
                     '<div class="d-flex align-items-start flex-grow-1 justify-content-end">' .
-                        '<span class="me-2 '.($is_text ? '' : 'text-nowrap').' text-break text-end">' . $value . '</span>' .
+                        '<span class="me-2 '.($is_text ? '' : 'text-nowrap').' text-break text-end '.($value_add_class ?: '').'">' . $value . '</span>' .
                         '<i class="bi bi-info-circle ms-1" data-bs-toggle="tooltip" data-bs-placement="top" title="' . $tooltip . '"></i>' .
                     '</div>' .
                 '</div>';

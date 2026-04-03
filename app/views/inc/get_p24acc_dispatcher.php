@@ -88,6 +88,8 @@ use config\P24acc;
                 <div class="col-8">
                     <?php include DIR_INC . '/get_pay_rec_form.php'; ?>
                 </div>
+                
+                <hr>
 
             </div>
 

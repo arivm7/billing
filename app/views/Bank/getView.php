@@ -39,6 +39,8 @@ use config\MonoCard;
 use config\P24acc;
 use config\tables\Ppp;
 use config\tables\PppType;
+use billing\core\base\Lang;
+Lang::load_inc(__FILE__);
 
 /**
  * Данные приходящие от контроллера
@@ -64,11 +66,19 @@ switch ($ppp[Ppp::F_TYPE_ID]) {
          * Банковская карта
          */
         switch (true) {
+
             /**
              * Карта Монобанк
              */
             case is_supported_api($ppp, Bank::API_TYPE_MONO_CARD):
                 include DIR_INC . '/get_monocard_dispatcher.php';
+                break;
+            
+            /**
+             * Карта Приватбанка
+             */
+            case is_supported_api($ppp, Bank::API_TYPE_P24_MANUAL):
+                include DIR_INC . '/get_p24card_dispatcher.php';
                 break;
             
             default:

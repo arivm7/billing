@@ -39,6 +39,7 @@ class Ppp {
     public const F_ORDER_NUM               = 'order_num';           // Порядок сортировки
     public const F_FIRM_ID                 = 'firm_id';             // ID предприятия
     public const F_TITLE                   = 'title';               // Название источника приема платежей
+    public const F_URL_ICON                = 'url_icon';            // Ссылка на файл иконки ППП 
     public const F_OWNER_ID                = 'owner_id';            // ID владельца счета/кассы
     public const F_ACTIVE                  = 'active';              // Активен ли ППП
     public const F_ABON_PAYMENTS           = 'abon_payments';       // Показывать в списке для абонентов
@@ -143,11 +144,12 @@ class Ppp {
         /**
          * Коэффициент возврата комиссии LiqPay
          */
-        self::F_API_LIQPAY_RET_COMM=>['title'=>[
-            'ru'=>'Коэффициент возврата комиссии LiqPay',
-            'ua'=>'Коефіцієнт повернення комісії LiqPay',
-            'en'=>'LiqPay Commission Refund Rate',
-        ],'suffix'=>'Koef.'],
+        self::F_API_LIQPAY_RET_COMM=>[
+            'title'=>[
+                'ru'=>'Коэффициент возврата комиссии LiqPay',
+                'ua'=>'Коефіцієнт повернення комісії LiqPay',
+                'en'=>'LiqPay Commission Refund Rate'],
+            'suffix'=>'Koef.'],
     ];
 
     /**

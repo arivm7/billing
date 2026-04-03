@@ -27,17 +27,28 @@
  */
 
 use config\Bank;
+use config\Icons;
 use config\tables\Ppp;
 
 ?>
 
 <?php foreach ($ppp_list as $api_type => $by_type_list): ?>
     <?php foreach ($by_type_list as $ppp): ?>
+        
         <div>
-            <a class="btn btn-outline-primary ms-3" 
+            <a class="btn btn-outline-primary ms-3 px-3" 
                 href="<?= Bank::URI_GET; ?>/<?= $ppp[Ppp::F_ID]; ?>"
-                title="<?= __('Проверить платежи') ?> <?= $ppp[Ppp::F_TITLE]; ?>"
-                ><?= $ppp[Ppp::F_TITLE]; ?> | GET/<?= $ppp[Ppp::F_ID]; ?></a>
+                title="<?= __('Проверить платежи') ?> <?= $ppp[Ppp::F_TITLE]; ?>">
+                <?php if ($ppp[Ppp::F_URL_ICON]): ?>
+                    <img class="me-2" src="<?= $ppp[Ppp::F_URL_ICON]; ?>" width=28 alt="!!!" >
+                <?php else: ?>
+                    <img class="me-2" src="<?= Icons::SRC_ICON_PPP_CARD; ?>" width=28 alt="!!!" >
+                <?php endif; ?>
+                <?= $ppp[Ppp::F_TITLE]; ?>
+            </a>
         </div>
+
     <?php endforeach; ?>
 <?php endforeach; ?>
+
+

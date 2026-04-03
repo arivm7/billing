@@ -74,8 +74,9 @@ $templates = implode(
 ?>
 <div class="container-fluid d-flex justify-content-center">
     <div class="card col-12 col-sm-12 col-md-10 col-lg-8 col-xl-6">
-        <div class="card-header">
+        <div class="card-header d-flex justify-content-between align-items-center">
             <h3 class="mb-3"><?=__('Edit payment point | Редактирование ППП | Редагування ППП');?></h3>
+            <a href="<?=Ppp::URI_INDEX;?>" class="btn btn-outline-info btn-sm ms-2 me-0"><i class="bi bi-cancel"></i> <?=__('To the list | К списку | До списку');?></a>
         </div>
 
         <form method="post" class="needs-validation" action="<?=Ppp::URI_EDIT;?>/<?=$ppp_id;?>" novalidate>
@@ -95,6 +96,28 @@ $templates = implode(
                             required>
                         <div class="invalid-feedback"><?=__('Please enter title | Укажите название ППП | Вкажіть назву ППП');?></div>
                     </div>
+                </div>
+
+                <!-- URL иконки -->
+                <div class="row mb-3">
+                    <label class="col-sm-4 col-form-label" for="icon"><?=__('Icon | Иконка | Іконка');?></label>
+                    <?php 
+                        if ($form_data_fn(Ppp::F_URL_ICON)) {
+                            $col2 = 7; $col3 = 1;
+                        } else {
+                            $col2 = 8; $col3 = 0;
+                        } 
+                    ?>                    
+                    <div class="col-sm-<?= $col2 ?>">
+                        <input type="text" class="form-control" id="icon"
+                            name="<?=Ppp::POST_REC;?>[<?=Ppp::F_URL_ICON;?>]"
+                            value="<?=$form_data_fn(Ppp::F_URL_ICON);?>">
+                    </div>
+                    <?php if ($col3 > 0): ?>
+                        <div class="col-sm-<?= $col3 ?>">
+                            <img class="mt-1" src="<?=$form_data_fn(Ppp::F_URL_ICON);?>" height=30 alt="!!!">
+                        </div>
+                    <?php endif; ?>
                 </div>
 
                 <!-- Активность и показ -->

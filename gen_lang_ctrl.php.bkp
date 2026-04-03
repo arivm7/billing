@@ -46,13 +46,15 @@ foreach ($functions as $f) {
     echo '    ' . $f['name'] . "\n";
 }
 
-// Собираем все переводы по методам
-$allTranslationsByMethod = [];
-
 $allClean = $sourceCode;
 
 foreach ($functions as $f) {
     echo "Обработка функции: {$f['name']}...\n";
+
+    // ['name'] => $name,
+    // ['body'] => $body,
+    // ['start'] => $posStart,
+    // ['end'] => $i
 
     $funcName = $f['name'];
     $funcBody  = $f['body'];
@@ -60,26 +62,25 @@ foreach ($functions as $f) {
 
     // Извлекаем переводы
     $translations = extractTranslations($funcBody);
-    if ($translations) {
-        $allTranslationsByMethod[$funcName] = $translations;
-        echo "  найдено переводов: " . count($translations) . "\n";
-    }
+    if (!$translations) continue;
+
+    // Генерируем файлы
+    $outBase = GEN_LANGS . "/__{$basename}_{$funcName}";
+
+    echo "funcName: $funcName\n";
+    echo "context: $context\n";
+    echo "outBase: $outBase\n";
+    echo "translations: " . count($translations) . "\n";
+
+    writeLang('en', $translations, "{$outBase}_en.php", $context);
+    writeLang('ru', $translations, "{$outBase}_ru.php", $context);
+    writeLang('uk', $translations, "{$outBase}_uk.php", $context);
 
     // Вносим изменения в общий clean
     $cleanBody = cleanSource($funcBody);
     $allClean = str_replace($funcBody, $cleanBody, $allClean);
     echo "ok.\n\n";
-}
 
-// Генерируем один файл на каждый язык
-if (!empty($allTranslationsByMethod)) {
-    echo "Генерация языковых файлов...\n";
-    
-    writeLangByMethod('en', $allTranslationsByMethod, GEN_LANGS . "/__{$basename}_en.php", $basename);
-    writeLangByMethod('ru', $allTranslationsByMethod, GEN_LANGS . "/__{$basename}_ru.php", $basename);
-    writeLangByMethod('uk', $allTranslationsByMethod, GEN_LANGS . "/__{$basename}_uk.php", $basename);
-} else {
-    echo "Нет переводов для генерации.\n";
 }
 
 // Пишем общий clean-файл

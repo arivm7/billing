@@ -2831,3 +2831,23 @@ function is_html(string $text): bool
 }
 
 
+
+/**
+ * Нормализует строку: удаляет начальные и конечные пробелы,
+ * заменяет множественные пробельные символы на один пробел
+ * @param string $comment Входимая строка
+ * @param bool $rmOnlySpace Заменять только двойные пробелы (а не табы или переносы)
+ * @return string Нормализованная строка
+ */
+function normal_str(string $comment, bool $rmOnlySpace = false) {
+    // Удаляем начальные и конечные пробелы
+    $str = trim($comment);
+
+    return  ($rmOnlySpace
+                // заменять только двойные пробелы (а не табы или переносы)
+                ? preg_replace('/ {2,}/', ' ', $str)
+                // Заменяем множественные пробелы на один
+                : preg_replace('/\s+/', ' ', $str)
+            );
+}
+

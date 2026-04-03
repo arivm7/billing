@@ -233,8 +233,8 @@ $config = [
      */
     'bank_payment_min'        => 50, // сумма минимального платежа
     'bank_date_interval'      => 10*24*60*60, // 10 дней. Для листания в web-форме
-    'bank_date_interval_auto' => 2*24*60*60, // 2 дня.  Для скриптов автоматического внесения платежей.
-    'bank_http_user_agent'    => "Mozilla/5.0 BASH (Linux x86_64)", // "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.214 Safari/537.36";
+    'bank_date_interval_auto' => 1*24*60*60, // 2 дня.  Для скриптов автоматического внесения платежей.
+    'bank_http_user_agent'    => "Mozilla/5.0 bash/php (Linux x86_64)", // "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.214 Safari/537.36";
     'bank_get_iteration_max'  => 10, // Максимальное количество итераций для выборки транзакций
     'bank_limit_per_page'     => 25, // Количество записей на одной странице при получении списка транзакций
     'bank_comission_texts'     => [
@@ -243,7 +243,9 @@ $config = [
         ],
     'bank_comission_value'    => 3.00, // Значение комиссии банка в грн
     'bank_liqpay_ident_text'  => "LIQPAY", // Идентификатор LiqPay в тексте назначения платежа
-
+    'bank_api_log_path'       => '/tmp/my-auto-logs', // Путь, где сохраняются логи автоматических внесений платежей
+    'bank_pay_num_len'        => 8, // максимальное количество цифр в сумме платежа, включая 2 цифры копеек
+    
 
 
     /**

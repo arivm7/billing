@@ -27,6 +27,8 @@ Lang::load_inc(__FILE__);
 /**
  * Переменные полученные из контроллера
  * 
+ * Данные из app/views/inc/invoice_view.php
+ * 
  * @var array $item  -- Одна запись Счёта
  * 
  */
@@ -37,18 +39,19 @@ Lang::load_inc(__FILE__);
 <?php if (!empty($item[Invoice::F_ID])): ?>
 
     <!--  Кнопка печати Счёта/Акта -->
-    <button type="button" class="btn btn-sm btn-outline-success me-1 px-1 py-1" 
-        data-bs-toggle="modal" data-bs-target="#printModalForm"
+    <button type="button" class="btn btn-sm btn-outline-success me-1 px-1 py-1"
+        data-bs-toggle="modal" 
+        data-bs-target="#printModalForm_<?= $item[Invoice::F_ID] ?>"
         title="<?= __('Печать Счёта/Акта разными способами') ?>">
         <img src="<?= Icons::SRC_ICON_PRINT ?>" alt="Печать" height="28px">
     </button>
 
-    <!-- Модальная форма выбора способа печати Счёта/Акта -->
-    <div class="modal fade" id="printModalForm" tabindex="-1" aria-labelledby="printModalFormLabel" aria-hidden="true">
+    <!-- Модальная форма выбора способа печати Счёта/Акта (уникальная для каждого счёта) -->
+    <div class="modal fade" id="printModalForm_<?= $item[Invoice::F_ID] ?>" tabindex="-1" aria-labelledby="printModalFormLabel_<?= $item[Invoice::F_ID] ?>" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="printModalFormLabel"><?= __('Выберите форму печати Счёта/Акта') ?></h1>
+                    <h1 class="modal-title fs-5" id="printModalFormLabel_<?= $item[Invoice::F_ID] ?>"><?= __('Выберите форму печати Счёта/Акта') ?> #<?= $item[Invoice::F_ID] ?></h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -58,11 +61,10 @@ Lang::load_inc(__FILE__);
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <!-- <button type="button" class="btn btn-primary">Print</button> -->
                 </div>
             </div>
         </div>
     </div>
-    
+
 <?php endif ?>
 

@@ -31,7 +31,7 @@ use billing\core\base\Lang;
 $num = 0;
 
 if (!can_use(Module::MOD_TP)) {
-    MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+    MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
     redirect();
 }
 ?>

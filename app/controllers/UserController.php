@@ -351,12 +351,12 @@ class UserController extends AppBaseController {
         // debug($this->route, '$this->route', die: 0);
 
         if (!App::isAuth()) {
-            MsgQueue::msg(MsgType::ERROR,__('Авторизуйтесь, пожалуйста'));
+            MsgQueue::msg(MsgType::ERROR,__('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
             redirect(Auth::URI_LOGIN);
         }
 
         if (!can_edit([Module::MOD_MY_USER_CARD, Module::MOD_USER_CARD])) {
-            MsgQueue::msg(MsgType::ERROR,__('Нет прав'));
+            MsgQueue::msg(MsgType::ERROR,__('No rights | Нет прав | Немає прав'));
             redirect();
         }
 
@@ -420,12 +420,12 @@ class UserController extends AppBaseController {
 
     function editAction() { 
         if (!App::isAuth()) {
-            MsgQueue::msg(MsgType::ERROR,__('Авторизуйтесь, пожалуйста'));
+            MsgQueue::msg(MsgType::ERROR,__('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
             redirect(Auth::URI_LOGIN);
         }
 
         if (!can_edit([Module::MOD_MY_USER_CARD, Module::MOD_USER_CARD])) {
-            MsgQueue::msg(MsgType::ERROR,__('Нет прав'));
+            MsgQueue::msg(MsgType::ERROR,__('No rights | Нет прав | Немає прав'));
             redirect();
         }
 

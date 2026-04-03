@@ -33,21 +33,16 @@ Lang::load_inc(__FILE__);
 
 /**
  * Переменные полученные из контроллера
- * 
+ *
  * @var array $item  -- Одна запись Счёта
- * 
+ *
  */
-
-
-
 ?>
 
-<!-- 
-
-    Статичные кнопки для печати Счёта/Акта 
-    с различными комбинациями отображения: Счёт, Акт, Штамп. 
-    И кнопка для генерации PDF. 
-
+<!--
+    Статичные кнопки для печати Счёта/Акта
+    с различными комбинациями отображения: Счёт, Акт, Штамп.
+    И кнопка для генерации PDF.
 -->
 
 <!-- Печатать Счёт=1 Акт=1 Штамп=1 -->
@@ -70,19 +65,9 @@ Lang::load_inc(__FILE__);
 <a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=0&<?= Invoice::F_URI_ACT ?>=1&<?= Invoice::F_URI_SHTAMP ?>=0" class="btn btn-sm btn-outline-success me-1 my-1 px-1 py-1" title="<?= __('Показать для вывода на печать: '.CR.'Акт'); ?>" target="_blank">
     <img src="<?= Icons::SRC_ICON_ACT ?>" alt="Акт" height="38px"></a>
 
-<!-- PDF -->
-<!-- 
-<a href="<?= URL_HOST ?><?= Invoice::URI_PDF ?>/<?= $item[Invoice::F_ID] ?>?inv=1&act=1&sht=1" class="btn btn-sm btn-outline-success me-1 my-1 px-1 py-1" title="Сгенерировать PDF" target="_blank">
-    <img src="<?= Icons::SRC_ICON_PDF ?>" alt="PDF" height="38px">Сгенерировать PDF</a> 
--->
-
-
-
-<!-- 
-
-    Форма для выбора параметров генерации PDF 
+<!--
+    Форма для выбора параметров генерации PDF
     При изменении чекбоксов, ссылка для генерации PDF автоматически обновляется с новыми параметрами.
-
 -->
 
 <?php if (can_view(Module::MOD_INVOICES)): ?>

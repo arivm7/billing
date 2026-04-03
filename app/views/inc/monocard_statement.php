@@ -45,7 +45,6 @@ use config\MonoCard;
  */
 
 
-
 // $accordion_id = '_stmt_' . $statement[MonoCard::F_ID]; // уникальный ID
 $amount = $statement[MonoCard::F_AMOUNT];
 $opAmount = $statement[MonoCard::F_OPERATION_AMOUNT];

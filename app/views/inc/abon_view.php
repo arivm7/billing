@@ -155,7 +155,7 @@ $rest[AbonRest::F_SUM_PP30A] ??= 0;
                     <td><?= h($abon[Abon::F_ID]); ?>
                         <?php if (can_use(Module::MOD_ABON)): ?>
                             <?php if (!empty($abon[Abon::F_ID_HASH])): ?>
-                                <small class="text-muted"> | (hash: <?= h($abon[Abon::F_ID_HASH]); ?>)</small>
+                                <small class="text-muted" title="<?= h($abon[Abon::F_ID_HASH]); ?>" > | (hash: ***)</small>
                             <?php endif; ?>
                         <?php endif; ?>
                     </td>

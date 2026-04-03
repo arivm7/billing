@@ -58,6 +58,42 @@ function writeLang(string $lang, array $trs, string $fileName, string $helperStr
 
 
 /**
+ * Записать языковой файл с группировкой по методам
+ */
+function writeLangByMethod(string $lang, array $allTranslationsByMethod, string $fileName, string $basename): void {
+    $out = "<?php\n"
+         . "/**\n"
+         . " * dict {$lang}\n"
+         . " * for {$basename}\n"
+         . " */\n\n"
+         . "return [\n";
+    
+    $firstMethod = true;
+    foreach ($allTranslationsByMethod as $methodName => $translations) {
+        if (!$firstMethod) {
+            $out .= "\n";
+        }
+        $out .= "    /**\n"
+              . "     * {$methodName}()\n"
+              . "     */\n"
+        
+        ;
+        foreach ($translations as $key => $row) {
+            $k = addslashes($key);
+            $v = addslashes($row[$lang]);
+            $out .= "    '{$k}' => '{$v}',\n";
+        }
+        $firstMethod = false;
+    }
+    $out .= "];\n";
+
+    file_put_contents($fileName, $out);
+    echo "✅ Generated: {$fileName}\n";
+}
+
+
+
+/**
  * Записать чистый PHP-файл (clean)
  */
 function writeClean(string $basename, string $clean): void {

@@ -93,7 +93,7 @@ use config\tables\User;
 
             ?>
 
-            <div class="row">
+            <div class="row min-w-800">
                 <div class="col-4">
                     <?php include DIR_INC . '/get_monocard_statement.php'; ?>
                 </div>
@@ -101,7 +101,7 @@ use config\tables\User;
                 <div class="col-8">
                     <?php include DIR_INC . '/get_pay_rec_form.php'; ?>
                 </div>
-
+                <hr>
             </div>
 
         <?php endforeach; ?>

@@ -90,9 +90,9 @@ $view_my = can_view(Module::MOD_MY_PAYMENTS) && $user[User::F_ID] == $user[Abon:
             <tr>
                 <td class="text-center align-middle">
                     <?php if ($view_all) : ?>
-                        <?=str_replace(' ', '<br>', date('Y-m-d H:i:s', $pay_one[Pay::F_DATE]))?>
+                        <?=str_replace(' ', '<br>', date('d.m.Y H:i:s', $pay_one[Pay::F_DATE]))?> <!-- 'Y-m-d H:i:s' -->
                     <?php else : ?>
-                        <?=date('Y-m-d H:i:s', $pay_one[Pay::F_DATE])?>
+                        <?=date('d.m.Y H:i:s', $pay_one[Pay::F_DATE])?> <!-- 'Y-m-d H:i:s' -->
                     <?php endif; ?>
                 </td>
                 <td class="text-end align-middle text-nowrap"><?=number_format($pay_one[Pay::F_PAY_FAKT], 2, '.', ' ')?></td>

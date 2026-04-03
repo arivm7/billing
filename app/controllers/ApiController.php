@@ -456,7 +456,7 @@ class ApiController extends AppBaseController {
                             }
                         }
                     } else {
-                        MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+                        MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
                     }
                     redirect();
                     break;
@@ -492,7 +492,7 @@ class ApiController extends AppBaseController {
                             redirect(PA::URI_EDIT . '/' . $pa_new_id);
                         }
                     } else {
-                        MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+                        MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
                     }
                     redirect();
                     break;
@@ -511,7 +511,7 @@ class ApiController extends AppBaseController {
                         $model->recalc_abon($pa[PA::F_ABON_ID]);
                         redirect(PA::URI_EDIT . '/' . $pa_new_id);
                     } else {
-                        MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+                        MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
                         redirect();
                     }
                     break;
@@ -538,7 +538,7 @@ class ApiController extends AppBaseController {
                             redirect(PA::URI_EDIT . '/' . $pa_new_id);
                         }
                     } else {
-                        MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+                        MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
                         redirect();
                     }
                     break;
@@ -550,7 +550,7 @@ class ApiController extends AppBaseController {
                      * Закрыть ПФ
                      */
                     if (!can_edit(Module::MOD_PA)) {
-                        MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+                        MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
                         redirect();
                     }
 
@@ -579,7 +579,7 @@ class ApiController extends AppBaseController {
                             redirect();
                         }
                     } else {
-                        MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+                        MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
                         redirect();
                     }
                     break;
@@ -596,7 +596,7 @@ class ApiController extends AppBaseController {
                         $user = $model->get_user($uid);
                         UserController::update_pass($user, 1);
                     } else {
-                        MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+                        MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
                     }
                     redirect();
                     break;
@@ -622,7 +622,7 @@ class ApiController extends AppBaseController {
                             MsgQueue::msg(MsgType::ERROR_AUTO, __('ID счета не верен'));
                         }
                     } else {
-                        MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+                        MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
                     }
                     redirect();
                     break;
@@ -761,7 +761,7 @@ class ApiController extends AppBaseController {
 
                     } else {
                         http_response_code(403);
-                        echo __('Нет прав') . "\n";
+                        echo __('No rights | Нет прав | Немає прав') . "\n";
                         exit(1);
                     }
                     break;

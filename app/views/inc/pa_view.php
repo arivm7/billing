@@ -12,7 +12,7 @@
  */
 
 /**
- * Description of pa_view.php
+ * Содержимое одного прайсового фрагмента
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
@@ -22,6 +22,7 @@ use billing\core\Api;
 use config\tables\Module;
 use config\tables\PA;
 use billing\core\base\Lang;
+use config\Icons;
 use config\tables\TP;
 
 Lang::load_inc(__FILE__);
@@ -47,19 +48,34 @@ $tp = $model->get_tp($item[PA::F_TP_ID]);
                             <div>
                                 <span class="text text-secondary small"><?= h($item[PA::F_ABON_ID]); ?></span><?= ' | ' . __user(abon_id: $item[PA::F_ABON_ID]) . ' | ' . __abon(abon_id: $item[PA::F_ABON_ID]); ?>
                             </div>
-                            <?php if (can_edit(Module::MOD_PA)) : ?>
-                                <!-- Кнопка редактирования ПФ -->
-                                <a href="<?=PA::URI_EDIT;?>/<?=$item[PA::F_ID];?>" class="btn btn-outline-info btn-sm">
-                                    <i class="bi bi-pencil-square"></i> <?= __('Редактировать'); ?>
-                                </a>
-                            <?php endif; ?>
+                            <div>
+                                <?php if (can_edit(Module::MOD_PA)) : ?>
+                                    <!-- Кнопка редактирования ПФ -->
+                                    <a href="<?=PA::URI_EDIT;?>/<?=$item[PA::F_ID];?>" class="btn btn-outline-info btn-sm">
+                                        <i class="bi bi-pencil-square"></i> <?= __('Редактировать'); ?>
+                                    </a>
+                                <?php endif; ?>
+                                <?php if (can_view(Module::MOD_PA)) : ?>
+                                    <!-- Кнопка Копирования строки описания ПФ в системны буфер обмена -->
+                                    <?php 
+                                    $text = ($item[PA::F_DATE_START] ? date(DATE_FORMAT, $item[PA::F_DATE_START]) : '____-__-__') . ' | '
+                                            . ($item[PA::F_DATE_END] ? date(DATE_FORMAT, $item[PA::F_DATE_END]) : '____-__-__') . ' | '
+                                            . $item[PA::F_PRICE_TITLE]
+                                            . " | "
+                                            . $item[PA::F_NET_NAME];
+                                    ?>
+                                    <button class="btn btn-outline-info btn-sm p-1 copy-btn" data-text="<?= h(html_to_text($text)) ?>">
+                                        <img src="<?= Icons::SRC_ICON_CLIPBOARD ?>" title="<?= __('Скопировать Описание прайсового фрагмента в системный буфер обмена clipboard') ?>" alt="[copy]" height="22">
+                                    </button>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </td>
                 </tr>
                 <tr>
                     <td></td>
                     <td>
-                        <fieldset class="border-1"><legend><span class="text-secondary small"><?= h($item[PA::F_PRICE_ID]) ?></span> <?= h($item[PA::F_PRICE_TITLE] ?? '') ?></legend>
+                        <fieldset><legend><span class="text-secondary small"><?= h($item[PA::F_PRICE_ID]) ?></span> <?= h($item[PA::F_PRICE_TITLE] ?? '') ?></legend>
                             <table <?= TABLE_ATTRIBUTES; ?>>
                                 <tr>
                                     <td>

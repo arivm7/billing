@@ -12,7 +12,7 @@
  */
 
 /**
- * Description of invoice_view.php
+ * Отображение записи одного счёта в виде компактной таблицы
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
@@ -39,6 +39,8 @@ use config\tables\User;
  * @var array $invoices        -- список счетов
  * @var array $agent_list      -- список предприятий провайдера
  * @var array $contragent_list -- список предприятий абонента
+ * 
+ * Данные из app/views/Invoice/listView.php
  * 
  * @var array $item  -- Одна запись Счёта
  * 

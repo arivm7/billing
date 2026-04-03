@@ -25,6 +25,7 @@ use billing\core\App;
 use config\tables\Abon;
 use config\tables\PA;
 use billing\core\base\Lang;
+use config\Icons;
 use config\tables\Module;
 use config\tables\Price;
 
@@ -86,7 +87,10 @@ if (isset($item) && !isset($abon)) { $abon = $item; }
                                                     :   ""
                                                   );
                                                 
-                                        $right = get_html_pa_status(__pa_age($pa)) . "&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;";
+                                        $right = '<span class="text-nowrap small">'
+                                                . get_html_pa_status(__pa_age($pa))
+                                                . "&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;"
+                                                . '</span>';
                                         $title = get_html_content_left_right(
                                                     left:  $left,
                                                     right: $right,

@@ -12,7 +12,7 @@
  */
 
 /**
- * Description of pa_form.php
+ * Форма редактирования прайсового фрагмента
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */

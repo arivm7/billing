@@ -108,7 +108,7 @@ class PppController extends AppBaseController{
     function indexAction(){
 
         if (!App::$auth->isAuth) {
-            MsgQueue::msg(MsgType::ERROR, __('Авторизуйтесь, пожалуйста'));
+            MsgQueue::msg(MsgType::ERROR, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
             redirect('/');
         }
 
@@ -136,7 +136,7 @@ class PppController extends AppBaseController{
     function editAction(){
         
         if (!App::$auth->isAuth) {
-            MsgQueue::msg(MsgType::ERROR, __('Авторизуйтесь, пожалуйста'));
+            MsgQueue::msg(MsgType::ERROR, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
             redirect('/');
         }
 

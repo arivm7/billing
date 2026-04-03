@@ -62,12 +62,12 @@ class Icons {
     const SRC_ABON_0          = '/img/icon_valid_id_0.svg';
     const SRC_ABON_NA         = '/img/icon_valid_id_xz.svg';
     const SRC_SW              = '/img/icon_sw_01.svg';
+    const SRC_ABON_OK         = '/img/icon_abon_ok.svg';
     const SRC_ABON_OFF        = '/img/icon_abon_off.svg';
     const SRC_ABON_LONG       = '/img/icon_abon_long_paused.svg';
     const SRC_ABON_PAUSED     = '/img/icon_abon_paused.svg';
     const SRC_ABON_WARN       = '/img/icon_abon_warn.svg';
     const SRC_ABON_WARN2      = '/img/icon_abon_warn2.svg';
-    const SRC_ABON_OK         = '/img/icon_abon_ok.svg';
 
     const SRC_LEASES_ACT      = '/img/icon_dhcp_ok.svg';
     const SRC_LEASES_OFF      = '/img/icon_dhcp_gray.svg';
@@ -141,6 +141,7 @@ class Icons {
     const SRC_ICON_MIK_ABON_NET_ON      = '/img/icon_mik_abon_net_on.svg';
 
     const SRC_ICON_PPP                  = '/img/icon_pap.svg';
+    const SRC_ICON_PPP_CARD             = '/img/icon_ppp_card.svg';
 
     const SRC_ICON_ZABBIX               = '/img/icon_zabbix.svg';
 

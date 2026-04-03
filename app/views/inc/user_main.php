@@ -22,7 +22,7 @@
  * @see app/views/inc/abon_card.php
  * @see app/views/inc/notify_view.php
  * @see app/views/inc/firm_tabs.php
- * @see app/views/inc/pa_view.php
+ * @see app/views/inc/pa_view.php -- просмотр одного ПФ
  * 
  * 
  *

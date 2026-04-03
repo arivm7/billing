@@ -15,11 +15,16 @@
 
 /**
  * Сравнение float чисел с точностью ACCURACY
- * @param float $a
- * @param float $b
+ * NULL всегда считаетмя меньшим числом
+ * @param float|null $a
+ * @param float|null $b
  * @return int -- возвращает -1 | 0 | 1
  */
-function cmp_float(float $a, float $b): int {
+function cmp_float(?float $a, ?float $b): int {
+    // debug(['a' => $a, 'b' => $b]);
+    if ($a === null || $b === null) { return 0; }
+    if ($a === null || $b !== null) { return 1; }
+    if ($a !== null || $b === null) { return -1; }
     if (round($a * ACCURACY) == round($b * ACCURACY)) { return 0; }
     return (($a < $b) ? -1 : 1);
 }

@@ -30,6 +30,7 @@ use config\tables\Module;
 use config\Bank;
 use config\MonoCard;
 use config\P24acc;
+use config\P24card;
 use config\SessionFields;
 use config\tables\Pay;
 use config\tables\Ppp;
@@ -53,37 +54,8 @@ class BankController extends AppBaseController
     public const SUPPORTED_API_LIST = [
         Bank::API_TYPE_P24_ACC, 
         Bank::API_TYPE_MONO_CARD,
+        Bank::API_TYPE_P24_MANUAL,
     ];
-
-
-
-    // function monocardUpdate(array &$data) {
-
-    //     $model = new AbonModel();
-    //     foreach ($data as $index => $rec) {
-    //         if (($rec[Pay::F_POST_SAVE] ?? 0) == 1) {
-    //             unset($rec[Pay::F_POST_SAVE]);
-    //             /**
-    //              * Нормализация полей платежа
-    //              */
-    //             PaymentsController::normalize($rec);
-
-    //             /**
-    //              * Валидация полей платежа
-    //              */
-    //             if (PaymentsController::validate_deep($rec)) {
-    //                 if (PaymentsController::payInsert($rec)) {
-    //                     MsgQueue::msg(MsgType::SUCCESS, __('Платеж внесён') . ': ' 
-    //                             . $rec[Pay::F_ABON_ID] . ' | ' 
-    //                             . $rec[Pay::F_PAY_FAKT] . ' грн.' . ' | ' 
-    //                             . date('Y-m-d H:i:s', $rec[Pay::F_DATE]) . ' | ' 
-    //                             . h($rec[Pay::F_DESCRIPTION] ));
-    //                     $model->recalc_abon($rec[Pay::F_ABON_ID], false);
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
 
 
 
@@ -136,12 +108,19 @@ class BankController extends AppBaseController
             $post_rec = $_POST[Bank::POST_REC];
 
             foreach ($post_rec as $index => $rec) {
+
+                /**
+                 * Сохранение шаблона, если он передан
+                 */
                 if (($rec[Bank::F_FOUND_TEMPLATE_SAVE] ?? 0) == 1) {
                     TemplateController::insert($rec[Pay::F_PPP_ID], $rec[Pay::F_ABON_ID], $rec[Bank::F_FOUND_TEMPLATE]);
                 }
                 unset($rec[Bank::F_FOUND_TEMPLATE_SAVE]);
                 unset($rec[Bank::F_FOUND_TEMPLATE]);
 
+                /**
+                 * Сохранение платежа
+                 */
                 if (($rec[Pay::F_POST_SAVE] ?? 0) == 1) {
                     unset($rec[Pay::F_POST_SAVE]);
 
@@ -149,6 +128,11 @@ class BankController extends AppBaseController
                      * Нормализация полей платежа
                      */
                     PaymentsController::normalize($rec);
+
+                    if (!empty($rec[Pay::F_SAVE_SUFFIX])) {
+                        $rec[Pay::F_DESCRIPTION] = $rec[Pay::F_DESCRIPTION] . ' ' . trim($rec[Pay::F_SAVE_SUFFIX]);
+                    }
+                    unset($rec[Pay::F_SAVE_SUFFIX]);
 
                     /**
                      * Валидация полей платежа
@@ -166,7 +150,7 @@ class BankController extends AppBaseController
                 }
             }
             
-            redirect();
+            // redirect();
         }
         /**
          * Конец блока внесение данных в базу
@@ -193,14 +177,6 @@ class BankController extends AppBaseController
         unset($api_type);
 
 
-
-        /**
-         * Чтение шаблонов распознавания абонентов
-         */
-        $templates   = $model->get_abons_templates($ppp[Ppp::F_ID]);
-        MsgQueue::msg(MsgType::INFO, __('Number of entries in the template table | Количество записей в таблице шаблонов | Кількість записів у таблиці шаблонів') . ": " . count($templates));
-
-
         
         /**
          * Вычисляем даты интервала для получения транзакции
@@ -220,7 +196,7 @@ class BankController extends AppBaseController
                             )
                     );
 
-        MsgQueue::msg(MsgType::INFO, __("Sampling dates | Даты выборки | Дати вибірки") . ": [". date('Y-m-d', $date1_ts) . "] - [" . date('Y-m-d', $date2_ts) . "]");
+        // MsgQueue::msg(MsgType::INFO, __("Sampling dates | Даты выборки | Дати вибірки") . ": [". date('Y-m-d', $date1_ts) . "] - [" . date('Y-m-d', $date2_ts) . "]");
 
 
 
@@ -229,6 +205,7 @@ class BankController extends AppBaseController
         $accounts = [];
         $statements = [];
         $map_fields = [];
+        $save_suffix = '';
 
 
         
@@ -243,16 +220,42 @@ class BankController extends AppBaseController
                  * Банковская карта
                  */
                 switch (true) {
+                    
                     /**
                      * Карта Монобанк
                      */
                     case is_supported_api($ppp, Bank::API_TYPE_MONO_CARD):
                         $accounts   = MonoCard::get_card_info($token)['client'];
-                        $statements = MonoCard::get_statements($token, $date1_ts, $date2_ts, $api_url)[Bank::F_STATEMENTS];
+                        $statements = MonoCard::get_statements($token, $accounts, $date1_ts, $date2_ts, $api_url)[Bank::F_STATEMENTS];
+                        // debug($accounts, '$accounts');
+                        // debug($statements, '$statements');
                         $map_fields = Bank::MAP_MONOCARD;
                         if (isset($cards_info['errorDescription'])) {
                             MsgQueue::msg(MsgType::ERROR, __('Error receiving card information | Ошибка получения информации о карте | Помилка отримання інформації про карту') . ': ' . $cards_info['client']['errorDescription']);
                             // redirect(); // Bank::URI_INDEX
+                        }
+                        break;
+                    
+                    /**
+                     * Карта Приватбанка
+                     */
+                    case is_supported_api($ppp, Bank::API_TYPE_P24_MANUAL):
+
+                        /**
+                         * Входные данные получаюся НЕ из базы, а из формы с текстовым полем, 
+                         * в которое копипастится таблица с транзакциями.
+                         * 
+                         * Если данных нет, то выводится поля для ввода текстовой таблицы
+                         */
+                        
+                        if  (isset($_POST[P24card::F_RAW_TEXT])) { 
+                            /**
+                             * Данные есть
+                             */
+                            $text_raw = $_POST[P24card::F_RAW_TEXT];
+                            $statements = P24card::get_transactions($text_raw);
+                            $map_fields = Bank::MAP_P24CARD;
+                            $save_suffix = '(Manual ODF)';
                         }
                         break;
                     
@@ -264,10 +267,12 @@ class BankController extends AppBaseController
                 break;
             
             case PppType::TYPE_BANK :
+                
                 /** 
                  * Рассчётный счёт в банке
                  */
                 switch (true) {
+
                     /**
                      * Приватбанк, Автоклиент
                      */
@@ -292,7 +297,15 @@ class BankController extends AppBaseController
 
 
 
-        // MsgQueue::msg(MsgType::INFO, "==== ".__("Getting data from billing | Получение данных из биллинга | Отримання даних з білінгу")." ====");
+        /**
+         * Чтение шаблонов распознавания абонентов
+         */
+        if ($statements) {
+            $templates   = $model->get_abons_templates($ppp[Ppp::F_ID]);
+            MsgQueue::msg(MsgType::INFO, __('Number of entries in the template table | Количество записей в таблице шаблонов | Кількість записів у таблиці шаблонів') . ": " . count($templates));
+        }
+
+
 
         /**
          * Формирование записи для каждой транзакции включающей:
@@ -320,6 +333,9 @@ class BankController extends AppBaseController
                     );
             $pay_rec[Pay::F_PAY_FAKT]    = floatval(get_numeric_part($statement[$map_fields[Pay::F_PAY_FAKT]]));
             $pay_rec[Pay::F_PAY_ACNT]    = floatval(get_numeric_part($statement[$map_fields[Pay::F_PAY_ACNT]]) + $comission);
+            $pay_rec[Pay::F_REST]        = (isset($map_fields[Pay::F_REST]) 
+                                            ?   floatval(get_numeric_part($statement[$map_fields[Pay::F_REST]]) + $comission)
+                                            :   null);
             $pay_rec[Pay::F_DATE]        = (is_int($statement[$map_fields[Pay::F_DATE]]) 
                                             ?   $statement[$map_fields[Pay::F_DATE]]
                                             :   strtotime($statement[$map_fields[Pay::F_DATE]]));
@@ -356,6 +372,7 @@ class BankController extends AppBaseController
                             }
                         )
                     );
+            $pay_rec[Pay::F_SAVE_SUFFIX] = $save_suffix;
 
             $data[$index][Bank::F_PAY_REC] = $pay_rec;
 
@@ -387,7 +404,7 @@ class BankController extends AppBaseController
         if (!App::isAuth()) { redirect('/'); }
 
         if (!can_add(Module::MOD_PAYMENTS)) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
             redirect();
         }
 

@@ -64,7 +64,7 @@ class ConciliationController extends AbonController {
              * Это мой user_id
              */
             if (!can_view(Module::MOD_MY_CONCILIATION)) {
-                MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+                MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
                 redirect();
             }
         } else {
@@ -72,7 +72,7 @@ class ConciliationController extends AbonController {
              * Это чужой user_id
              */
             if (!can_view(Module::MOD_CONCILIATION)) {
-                MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+                MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
                 redirect();
             }
         }
@@ -123,7 +123,7 @@ class ConciliationController extends AbonController {
              * Это мой user_id
              */
             if (!can_view(Module::MOD_MY_CONCILIATION)) {
-                MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+                MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
                 redirect();
             }
         } else {
@@ -131,7 +131,7 @@ class ConciliationController extends AbonController {
              * Это чужой user_id
              */
             if (!can_view(Module::MOD_CONCILIATION)) {
-                MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+                MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
                 redirect();
             }
         }

@@ -81,15 +81,15 @@ $wcol2 = 12 - $wcol1; // ширина второй колонки
         <div class="card mb-3">
             <div class="card-header">
                 <div class='d-flex justify-content-between align-items-center'>
-                    <div class="me-3">
+                    <div class="me-4">
                         <h3 class="text-center fs-4 pt-2"><?=$title?></h3>
                     </div>
                     <div>
                         <!-- Вернуться к списку платедей -->
-                        <a href="<?=Pay::URI_LIST;?>/<?=$abon_id;?>" class="btn btn-outline-info btn-sm me-1"><span class="fw-bold">₴₴</span> <?=__('К списку платежей')?></a>
+                        <a href="<?=Pay::URI_LIST;?>/<?=$abon_id;?>" class="btn btn-outline-info btn-sm me-1"><span class="fw-bold">₴₴</span> <?=__('To the payment list')?></a>
                         <!-- Вернуться в карточку абонента -->
                         <?php if ($abon_id) : ?>
-                            <a href="<?=Abon::URI_VIEW;?>/<?=$abon_id;?>" class="btn btn-outline-info btn-sm me-1" target="_self"><span class="fw-bold">🅐</span> <?= __('Картка'); ?></a>
+                            <a href="<?=Abon::URI_VIEW;?>/<?=$abon_id;?>" class="btn btn-outline-info btn-sm me-1" target="_self"><span class="fw-bold">🅐</span> <?= __('Card'); ?></a>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -103,7 +103,7 @@ $wcol2 = 12 - $wcol1; // ширина второй колонки
                     <!-- Pay ID -->
                     <?php if (!empty($form_data_fn(Pay::F_ID))): ?>
                         <div class="row mb-3 g-3">
-                            <label class="col-<?=$wcol1?> col-form-label text-secondary" for="<?=Pay::F_ID?>">Pay ID</label>
+                            <label class="col-<?=$wcol1?> col-form-label text-secondary" for="<?=Pay::F_ID?>" title="<?= __('Payment ID in billing') ?>">Pay ID</label>
                             <div class="col-3">
                                 <input type="text" class="form-control min-w-100px text-secondary" id="<?=Pay::F_ID?>" name="<?=Pay::POST_REC?>[<?=Pay::F_ID?>]" value="<?=$form_data_fn(Pay::F_ID)?>" readonly>
                             </div>
@@ -119,30 +119,38 @@ $wcol2 = 12 - $wcol1; // ширина второй колонки
                     </div>
                     <!-- PAY_FAKT | Фактическая сумма -->
                     <div class="row mb-3 g-3">
-                        <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_PAY_FAKT?>">Фактическая сумма</label>
-                        <div class="col-3">
+                        <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_PAY_FAKT?>"><?= __('The actual amount') ?></label>
+                        <div class="col-4">
                             <input type="number" step="0.01" class="form-control min-w-100px" lang="en" id="<?=Pay::F_PAY_FAKT?>" name="<?=Pay::POST_REC?>[<?=Pay::F_PAY_FAKT?>]" value="<?=$form_data_fn(Pay::F_PAY_FAKT)?>" required>
                             <div class="invalid-feedback">Required</div>
                         </div>
                     </div>
                     <!-- PAY_ACNT | Сумма на ЛС -->
                     <div class="row mb-3 g-3">
-                        <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_PAY_ACNT?>">Сумма на ЛС</label>
-                        <div class="col-3">
+                        <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_PAY_ACNT?>"><?= __('The amount on the account') ?></label>
+                        <div class="col-4">
                             <input type="number" step="0.01" class="form-control min-w-100px" lang="en" id="<?=Pay::F_PAY_ACNT?>" name="<?=Pay::POST_REC?>[<?=Pay::F_PAY_ACNT?>]" value="<?=$form_data_fn(Pay::F_PAY_ACNT)?>" required>
+                            <div class="invalid-feedback">Required</div>
+                        </div>
+                    </div>
+                    <!-- BALANCE/REST | на счету в банке по результатм транзакции -->
+                    <div class="row mb-3 g-3">
+                        <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_REST?>"><?= Pay::field_title(Pay::F_REST) ?></label>
+                        <div class="col-4">
+                            <input type="number" step="0.01" class="form-control min-w-100px" lang="en" id="<?=Pay::F_REST?>" name="<?=Pay::POST_REC?>[<?=Pay::F_REST?>]" value="<?=$form_data_fn(Pay::F_REST)?>">
                             <div class="invalid-feedback">Required</div>
                         </div>
                     </div>
                     <!-- DATE | Дата -->
                     <div class="row mb-3 g-3">
-                        <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_DATE_STR?>">Дата</label>
+                        <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_DATE_STR?>" title="<?= __('Payment date') ?>"><?= __('Date') ?></label>
                         <div class="col-4">
                             <input type="text" class="form-control min-w-200" id="<?=Pay::F_DATE_STR?>" name="<?=Pay::POST_REC?>[<?=Pay::F_DATE_STR?>]" value="<?=$form_data_fn(Pay::F_DATE_STR)?>">
                         </div>
                     </div>
                     <!-- BANK_NO | Bank No -->
                     <div class="row mb-3 g-3">
-                        <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_BANK_NO?>">Bank No</label>
+                        <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_BANK_NO?>" title="<?= __('Bank transaction ID') ?>">Bank No</label>
                         <div class="col-<?=$wcol2?>">
                             <input type="text" class="form-control min-w-200" id="<?=Pay::F_BANK_NO?>" name="<?=Pay::POST_REC?>[<?=Pay::F_BANK_NO?>]" value="<?=$form_data_fn(Pay::F_BANK_NO)?>" required>
                             <div class="invalid-feedback">Required</div>
@@ -150,7 +158,7 @@ $wcol2 = 12 - $wcol1; // ширина второй колонки
                     </div>
                     <!-- TYPE_ID | Тип операции -->
                     <div class="row mb-3 g-3">
-                        <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_TYPE_ID?>">Тип операции</label>
+                        <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_TYPE_ID?>"><?= __('Type of operation') ?></label>
                         <div class="col-<?=$wcol2?>">
                             <select class="form-select" id="<?=Pay::F_TYPE_ID?>" name="<?=Pay::POST_REC?>[<?=Pay::F_TYPE_ID?>]" required>
                                 <option value="">--</option>
@@ -163,7 +171,7 @@ $wcol2 = 12 - $wcol1; // ширина второй колонки
                     </div>
                     <!-- PPP_ID | ППП -->
                     <div class="row mb-3 g-3">
-                        <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_PPP_ID?>">ППП</label>
+                        <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_PPP_ID?>" title="<?= __('Payment acceptance point') ?>"><?= __('PAP') ?></label>
                         <div class="col-<?=$wcol2?>">
                             <select class="form-select" id="<?=Pay::F_PPP_ID?>" name="<?=Pay::POST_REC?>[<?=Pay::F_PPP_ID?>]" required>
                                 <option value="">--</option>
@@ -177,7 +185,7 @@ $wcol2 = 12 - $wcol1; // ширина второй колонки
                     <!-- DESCRIPTION | Описание -->
                     <div class="row mb-3 g-3">
                         <div class="col-12">
-                            <label class="form-label" for="<?=Pay::F_DESCRIPTION?>">Описание</label>
+                            <label class="form-label" for="<?=Pay::F_DESCRIPTION?>" title="<?= __('Purpose of payment') ?>"><?= __('Description') ?></label>
                             <textarea class="form-control" id="<?=Pay::F_DESCRIPTION?>" 
                                     name="<?=Pay::POST_REC?>[<?=Pay::F_DESCRIPTION?>]" 
                                     rows="<?=get_count_rows_for_textarea($form_data_fn(Pay::F_DESCRIPTION), 3);?>" 
@@ -188,7 +196,7 @@ $wcol2 = 12 - $wcol1; // ширина второй колонки
                 </div>
                 <!-- Действия -->
                 <div class="card-footer text-center">
-                    <button class="btn btn-outline-info btn-sm me-2" type="submit"><i class="bi bi-floppy"></i> <?=__('Сохранить')?></button>
+                    <button class="btn btn-outline-info btn-sm me-2" type="submit"><i class="bi bi-floppy"></i> <?=__('Save')?></button>
                 </div>
             </form>
         </div>

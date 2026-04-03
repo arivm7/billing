@@ -71,7 +71,7 @@ class TpController extends AppBaseController {
                 redirect();
             }
         } else {
-            MsgQueue::msg(MsgType::ERROR, __('Авторизуйтесь, пожалуйста'));
+            MsgQueue::msg(MsgType::ERROR, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
             redirect();
         }
     }
@@ -117,7 +117,7 @@ class TpController extends AppBaseController {
                 redirect();
             }
         } else {
-            MsgQueue::msg(MsgType::ERROR, __('Авторизуйтесь, пожалуйста'));
+            MsgQueue::msg(MsgType::ERROR, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
             redirect();
         }
     }
@@ -163,7 +163,7 @@ class TpController extends AppBaseController {
                 redirect();
             }
         } else {
-            MsgQueue::msg(MsgType::ERROR, __('Авторизуйтесь, пожалуйста'));
+            MsgQueue::msg(MsgType::ERROR, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
             redirect();
         }
     }

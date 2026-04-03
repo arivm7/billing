@@ -168,10 +168,11 @@ class Bank
      * Поля таблицы billing.payments и соответствующие поля из тразакции карты Монобанк.
      */
     const MAP_MONOCARD = [
-        Pay::F_BANK_NO          => MonoCard::F_BANK_ID,  // Банковский номер операции
-        Pay::F_DATE             => MonoCard::F_TIME,     // Дата платежа
-        Pay::F_PAY_FAKT         => MonoCard::F_AMOUNT,   // Фактическая сумма, пришедшая на счёт
-        Pay::F_PAY_ACNT         => MonoCard::F_AMOUNT,   // Сумма платежа, вносимая на ЛС
+        Pay::F_BANK_NO          => MonoCard::F_BANK_ID, // Банковский номер операции
+        Pay::F_DATE             => MonoCard::F_TIME,    // Дата платежа
+        Pay::F_PAY_FAKT         => MonoCard::F_AMOUNT,  // Фактическая сумма, пришедшая на счёт
+        Pay::F_PAY_ACNT         => MonoCard::F_AMOUNT,  // Сумма платежа, вносимая на ЛС
+        Pay::F_REST             => MonoCard::F_BALANCE, // number <int64>  Баланс рахунку в мінімальних одиницях валюти (копійках, центах)
         Pay::F_DESCRIPTION      => [MonoCard::F_DESCRIPTION, MonoCard::F_COMMENT, MonoCard::F_COUNTER_NAME],    // Описание платежа
 
         /**
@@ -195,6 +196,7 @@ class Bank
         Pay::F_DATE             => P24acc::F_DATE_TIME_DAT_OD_TIM_P,    // Дата платежа
         Pay::F_PAY_FAKT         => P24acc::F_SUM_E,                     // Фактическая сумма, пришедшая на счёт
         Pay::F_PAY_ACNT         => P24acc::F_SUM_E,                     // Сумма платежа, вносимая на ЛС
+        Pay::F_REST             => null,
         Pay::F_DESCRIPTION      => [P24acc::F_OSND, P24acc::F_AUT_CNTR_NAM],    // Описание платежа
 
         /**
@@ -209,7 +211,32 @@ class Bank
     ];
 
 
+
+    /**
+     * Поля таблицы billing.payments и соответствующие поля из тразакции карты Приватбанка.
+     */
+    const MAP_P24CARD = [
+        Pay::F_BANK_NO          => P24card::F_BANK_NO,          // Банковский номер операции
+        Pay::F_DATE             => P24card::F_DATE,             // Дата платежа
+        Pay::F_PAY_FAKT         => P24card::F_AMOUNT,         // Фактическая сумма, пришедшая на счёт
+        Pay::F_PAY_ACNT         => P24card::F_AMOUNT,         // Сумма платежа, вносимая на ЛС
+        Pay::F_REST             => P24card::F_REST,
+        Pay::F_DESCRIPTION      => [P24card::F_DESCRIPTION],    // Описание платежа
+
+        /**
+         * Поле в котором указана коммисия, если есть
+         */
+        self::F_COMISSION_FIELD  => null,
+
+        /**
+         * Поля для поиска номера договора по таблице шаблонов
+         */
+        self::F_SEARCH_FIELDS   => [Pay::F_DESCRIPTION],
+
+    ];
     
+
+
     /**
      * Возвращает список транзакций
      * @param array $ppp
@@ -672,26 +699,31 @@ class Bank
         $template_excludes  = ['Тел.', 'тел.', 'карта'];
 
         // Определяем шаблон для имени, который соответствует последовательности символов без цифр, запятых, скобок, плюсов, точек и пробелов
-        $template_name      = "[^0-9,(\+\.\s]+\.?";
+        // $template_name   = "[^0-9,(\+\.\s]+\.?";
+        $template_name      = "[A-Za-zА-ЯІЇЄҐа-яіїєґ'-]+\.?";
 
-        $subject            = $text;
+        $subject = trim($text);
         
+        // --- 1. Основной паттерн (как было)
         // Шаблон регулярного выражения: находит структуру текста, содержащую идентификатор плательщика с последующим именем
         // Группа 1: идентификатор плательщика; Группа 2: имя плательщика (состоящее из 2-4 слов)
         // Номера групп:           |-------1-------|     |------------2-------------|
-        $pattern            = "/^.*($template_words):?\s+((($template_name)\s*){2,4}).*$/";
-        $matches            = array();
-        $p                  = preg_match_all($pattern, $subject, $matches);
-        if($p === false) {
-            die("Этого не должно быть: get_abon_id_from_text(string $text)");
-        } else {
-            if($p > 0) {
-                //echo "<pre>"; var_dump($matches); echo "</pre>";
-                return trim(str_replace($template_excludes, "", trim($matches[2][0])));
-            } else {
-                return "";
-            }
+        $pattern               = "/($template_words):?\s+((?:$template_name\s*){2,4})/u";
+
+        if (preg_match($pattern, $subject, $matches)) {
+            return trim(str_replace($template_excludes, "", $matches[2]));
         }
+
+        // --- 2. Новый fallback: вся строка = ФИО
+        $pattern_fullname = '/^[^\d,()+]+(?:\s+[А-ЯІЇЄҐA-Z][а-яіїєґa-z]+|\s+[А-ЯІЇЄҐA-Z]\.)+(?:\s+[А-ЯІЇЄҐA-Z]\.)?$/u';
+
+        if (preg_match($pattern_fullname, $subject)) {
+            return $subject;
+        }
+
+        return "";
+
+
     }
 
 
@@ -993,7 +1025,8 @@ class Bank
         /**
          * Запись с результатами поиска транзакции в биллинге
          * 
-         * @var array{on_billing: true, 
+         * @var array{
+         *      on_billing: true, 
          *      searched_on: string, 
          *      pay: array, 
          *      abon: array, 
@@ -1067,9 +1100,9 @@ class Bank
                                                     . '<span class="fw-bold">🅐</span></a><!-- ⒶⒶⒶ -->'
                                             :   '')
                                         // Кнопка Список платежей
-                                        . (can_view([Module::MOD_MY_PAYMENTS, Module::MOD_PAYMENTS] && !empty($found_rec[Bank::F_FOUND_ABON][Abon::F_ID]))
+                                        . (can_view([Module::MOD_PAYMENTS]) && !empty($found_rec[Bank::F_FOUND_ABON][Abon::F_ID])
                                             ?   '<a href="'.Pay::URI_LIST.'/'.$found_rec[Bank::F_FOUND_ABON][Abon::F_ID].'" '
-                                                    . 'class="btn btn-outline-info align-items-center fs-6 py-1 px-1 ms-2" '
+                                                    . 'class="btn btn-outline-info align-items-center fs-6 px-2 py-1 ms-2" '
                                                     . 'title="' . __('Full list of subscriber payments') . '" '
                                                     . 'target="_blank">'
                                                     . '<span class="fw-bold">₴₴</span>'
@@ -1085,6 +1118,7 @@ class Bank
                                             . '</label>'
                                             . '<input class="form-check-input hover-pointer ms-2 m-0" 
                                                 type="checkbox"
+                                                '.(!empty($found_rec[Bank::F_FOUND_ABON][Abon::F_ID]) ? "checked" : "").'
                                                 id="'.Bank::POST_REC .'['.$index.'][' . Pay::F_POST_SAVE . ']" 
                                                 name="'.Bank::POST_REC .'['.$index.'][' . Pay::F_POST_SAVE . ']" 
                                                 value="1">'
@@ -1110,6 +1144,20 @@ class Bank
                             ?   '<span title="'.Pay::field_title($field).'">'.number_format($found_rec[Bank::F_FOUND_PAY][$field], 2, '.', ' ').'</span>'
                             :   '<span title="'.Pay::field_title($field).'">'.number_format($pay_rec[$field], 2, '.', ' ').'</span>'
                                 . '<input type="hidden" name="'.Bank::POST_REC .'['.$index.'][' . $field . ']" value="' . ($pay_rec[$field]) . '"> '
+                        );
+                break;
+
+            case Pay::F_REST:
+                // debug($statement, '$statement');
+                // debug($found_rec, '$found_rec');
+                // debug($pay_rec, '$pay_rec');
+                $s .=   ($found_rec[Bank::F_FOUND_ON_BILLING] 
+                            ?   '<span>'.(!is_null($found_rec[Bank::F_FOUND_PAY][$field]) ? number_format($found_rec[Bank::F_FOUND_PAY][$field], 2, '.', ' '):"-" ).'</span>'
+                            :   (!empty($pay_rec[$field]) 
+                                    ?   '<span title="'.Pay::field_title($field).'">'.number_format($pay_rec[$field], 2, '.', ' ').'</span>'
+                                        . '<input type="hidden" name="'.Bank::POST_REC .'['.$index.'][' . $field . ']" value="' . ($pay_rec[$field]) . '"> '
+                                    :   "") 
+                                
                         );
                 break;
 
@@ -1140,9 +1188,7 @@ class Bank
                 break;
 
             case Pay::F_PPP_ID:
-
                 $model = new AbonModel();
-
                 $s .=   ($found_rec[Bank::F_FOUND_ON_BILLING] 
                             ?   '<span title="'.Pay::field_title($field).'">'
                                 . h($found_rec[Bank::F_FOUND_PAY][$field])
@@ -1190,6 +1236,14 @@ class Bank
                 }
                 break;
             
+            case Pay::F_SAVE_SUFFIX:
+                $s .=   ($pay_rec[Pay::F_SAVE_SUFFIX] 
+                            ?   '<span title="'.Pay::field_title($field).'">'.h($pay_rec[$field]).'</span>'
+                                . '<input type="hidden" name="'.Bank::POST_REC.'['.$index.']['.$field.']" value="' . h($pay_rec[$field]) . '"> '
+                            :   ''
+                        );
+                break;
+
             default:
                 throw new \Exception("необработанное имя поля: " . $field, 1);
                 break;
@@ -1200,7 +1254,7 @@ class Bank
         /**
          * Поля, подлежащие прямому сравнению в биллинге и в транзакции
          */
-        $fields_for_equal = [Pay::F_DATE, Pay::F_PAY_ACNT, Pay::F_PAY_FAKT];
+        $fields_for_equal = [Pay::F_DATE, Pay::F_PAY_ACNT, Pay::F_PAY_FAKT, Pay::F_REST];
 
         /**
          * Поля сравниваемые по вхождению фрагмента
@@ -1254,6 +1308,30 @@ class Bank
         return $s;
         
     }
+
+
+
+    /**
+     * Формирует строку банковского номера (платёжного документа).
+     * 
+     * Формат: {дата}{сумма_факт}{знак_остатка}{сумма_остатка}
+     * где:
+     *   - дата: YYYYMMDDHHMMSS
+     *   - суммы: в копейках, дополненные ведущими нулями до заданной длины
+     *   - знак остатка: '+' если остаток положительный, '-' если отрицательный
+     * 
+     * @param int $date_ts временная метка даты формирования
+     * @param float $pay_fact фактическая сумма платежа
+     * @param float $pay_rest остаток суммы (положительный/отрицательный)
+     * @return string строка банковского номера
+     */
+    public static function make_bank_no(int $date_ts, float $pay_fact, float $pay_rest) { 
+        return  date('YmdHis', $date_ts) 
+                . num_len(round($pay_fact * 100), App::get_config('bank_pay_num_len'))
+                . ((sign($pay_rest) == 1) ? '+' : '-')
+                . num_len(round(abs($pay_rest) * 100), App::get_config('bank_pay_num_len'));
+    }
+
 
 
 

@@ -161,16 +161,18 @@ class EmailController extends AppBaseController  {
         //     [
         //         '$to'=>$to, 
         //         '$subject'=>$subject, 
-        //         '$body_text'=>$body_text, 
-        //         '$body_html'=>$body_html, 
-        //         '$attachments'=>$attachments, 
-        //         '$as_html'=>$as_html
+        //         // '$body_text'=>$body_text, 
+        //         // '$body_html'=>$body_html, 
+        //         // '$attachments'=>$attachments, 
+        //         // '$as_html'=>$as_html
         //     ], 
         //     'Отправка', 
-        //     die:1
+        //     die:0
         // );
 
         try {
+
+            $this->mailer->clearAddresses();
 
             foreach ($to as $rec) {
                 $rec['email'] = trim($rec['email']);
@@ -188,10 +190,12 @@ class EmailController extends AppBaseController  {
             
             if ($as_html) {
                 $this->mailer->Body    = $body_html;     // HTML версия
-                $this->mailer->AltBody = ($body_text ?: html_to_text($body_text));     // текстовая версия
+                $this->mailer->AltBody = $body_text ?: html_to_text($body_html);     // текстовая версия
             } else {
                 $this->mailer->Body    = $body_text;     // текстовая версия
             }
+
+            $this->mailer->clearAttachments();
 
             foreach ($attachments as $attach_rec) {
                 // вложение
@@ -640,11 +644,11 @@ class EmailController extends AppBaseController  {
                             continue;
                         }
                     }
-                    $to = self::parse_mail_recipients($rec[User::TABLE][User::F_EMAIL_MAIN]);
-                    $subject = self::make_email_subject($rec['agents'], $rec[Abon::TABLE]);
-                    $body_html = self::make_email_body($rec['agents'], $rec[Abon::TABLE], $rec[Invoice::TABLE]);
-                    $body_text = html_to_text($body_html);
-                    $as_html = boolval($rec[User::TABLE][User::F_EMAIL_SEND_HTML]);
+                    $to         = self::parse_mail_recipients($rec[User::TABLE][User::F_EMAIL_MAIN]);
+                    $subject    = self::make_email_subject($rec['agents'], $rec[Abon::TABLE]);
+                    $body_html  = self::make_email_body($rec['agents'], $rec[Abon::TABLE], $rec[Invoice::TABLE]);
+                    $body_text  = html_to_text($body_html);
+                    $as_html    = boolval($rec[User::TABLE][User::F_EMAIL_SEND_HTML]);
 
                     $attachments = [];
                     if ($rec[User::TABLE][User::F_EMAIL_SEND_PDF]) {
@@ -662,7 +666,6 @@ class EmailController extends AppBaseController  {
                                     type: 'application/pdf',
                                 );
                         }
-
                     }
 
                     if (empty($to_test_send)) {
@@ -676,8 +679,7 @@ class EmailController extends AppBaseController  {
                                     body_html: $body_html, 
                                     attachments: $attachments, 
                                     as_html: $as_html
-                                )
-                            )
+                            ))
                         {
                             MsgQueue::msg(MsgType::SUCCESS, 
                                     (boolval($rec[User::TABLE][User::F_EMAIL_SEND_HTML]) ? "HTML" : "TEXT") . ' | ' 
@@ -704,8 +706,7 @@ class EmailController extends AppBaseController  {
                                     body_html: $body_html, 
                                     attachments: $attachments, 
                                     as_html: $as_html
-                                )
-                            )
+                            ))
                         {
                             MsgQueue::msg(MsgType::SUCCESS, 
                                     (boolval($rec[User::TABLE][User::F_EMAIL_SEND_HTML]) ? "HTML" : "TEXT") . ' | ' 

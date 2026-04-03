@@ -14,6 +14,8 @@
 use billing\core\App;
 use config\Bank;
 use config\tables\Ppp;
+use billing\core\base\Lang;
+Lang::load_inc(__FILE__);
 
 /**
  * Вывод навигации для  app/controllers/BankController.php | getAction()

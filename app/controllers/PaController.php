@@ -496,7 +496,7 @@ class PaController extends AppBaseController {
          * Проверка наличия авторизации
          */
         if (!App::isAuth()) {   
-            MsgQueue::msg(MsgType::ERROR, __('Авторизуйтесь, пожалуйста'));
+            MsgQueue::msg(MsgType::ERROR, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
             redirect('/');
         }
 
@@ -504,7 +504,7 @@ class PaController extends AppBaseController {
          * Проверка прав на редактирование
          */
         if (!can_edit(Module::MOD_PA)) {   
-            MsgQueue::msg(MsgType::ERROR, __('Нет прав'));
+            MsgQueue::msg(MsgType::ERROR, __('No rights | Нет прав | Немає прав'));
             redirect();
         }
 

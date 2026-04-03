@@ -37,18 +37,19 @@ use DebugView;
 class PaymentsController extends AppBaseController {
 
 
+
     function deleteAction() {
         // debug($_GET, '$_GET');
         // debug($_POST, '$_POST');
         // debug($this->route, '$this->route');
 
         if (!App::$auth->isAuth) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Авторизуйтесь, пожалуйста'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in'));
             redirect('/');
         }
 
         if (!can_del([Module::MOD_PAYMENTS]))  {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights'));
             redirect();
         }
 
@@ -58,20 +59,21 @@ class PaymentsController extends AppBaseController {
         $abon_id = $pay[Pay::F_ABON_ID] ?? 0;
 
         if (empty($pay_id) || !$model->validate_id(table_name: Pay::TABLE, id_value: $pay_id, field_id: Pay::F_ID)) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('ID платежа не верен'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('The payment ID is incorrect'));
             redirect();
         }
 
         if ($model->delete_rows_by_field(table: Pay::TABLE, value_id: $pay_id, field_id: Pay::F_ID)) {
             // !!! Доавить логирование удаления платежа !!!
-            MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Платёж удалён'));
+            MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Payment deleted'));
             $model->recalc_abon($abon_id);
             redirect();
         } else {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Ошибка удаления платежа'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Payment deletion error'));
             redirect();
         }
     }
+
 
 
     public static function normalize(array &$pay) {
@@ -81,7 +83,19 @@ class PaymentsController extends AppBaseController {
             $pay[Pay::F_DATE] = strtotime($pay[Pay::F_DATE_STR]);
             unset($pay[Pay::F_DATE_STR]);
         }
+        $pay[Pay::F_DESCRIPTION] = trim($pay[Pay::F_DESCRIPTION]);
+        if (empty($pay[Pay::F_REST])) {
+            $pay[Pay::F_REST] = null;
+        }
+
+        foreach (Pay::TEXT_FIELDS as $field) {
+            if (isset($pay[$field])) {
+                $pay[$field] = trim($pay[$field]);
+            }
+        }
+        // debug($pay, '1 $pay', DebugView::DUMP, die:1);
     }
+
 
 
     public static function validate_deep(array $pay): bool {
@@ -92,64 +106,64 @@ class PaymentsController extends AppBaseController {
 
         // const F_ID = "id"; // ID платежа
         if (!empty($pay[Pay::F_ID]) && !$model->validate_id(table_name: Pay::TABLE, id_value: $pay[Pay::F_ID], field_id: Pay::F_ID)) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('ID платежа не верен'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('The payment ID is incorrect | ID платежа не верен | ID платежу не вірний'));
             $valid = false;
         }
 
         // const F_AGENT_ID        = "agent_id";       // ID того, кто внёс запись
         if (empty($pay[Pay::F_AGENT_ID]) || !$model->validate_id(table_name: User::TABLE, id_value: $pay[Pay::F_AGENT_ID], field_id: User::F_ID)) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('ID Агента не верен'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Invalid agent ID | ID Агента не верен | ID Агента невірний'));
             $valid = false;
         }
-        
+
         // const F_ABON_ID         = "abon_id";        // Абонент, на которого зачисляется платеж
         if (empty($pay[Pay::F_ABON_ID]) || !$model->validate_id(table_name: Abon::TABLE, id_value: $pay[Pay::F_ABON_ID], field_id: Abon::F_ID)) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('ID Абонента не верен'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Invalid subscriber ID | ID Абонента не верен | ID Абонента невірний'));
             $valid = false;
         }
 
         // const F_TYPE_ID         = "pay_type_id";    // ИД Типа платежа
         if (empty($pay[Pay::F_TYPE_ID]) || !in_array($pay[Pay::F_TYPE_ID], array_keys(Pay::TYPES_TITLE))) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Тип платежа не верен'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Invalid payment type | Тип платежа не верен | Тип платежу невірний'));
             $valid = false;
         }
 
         // const F_PPP_ID          = "pay_ppp_id";     // ППП
         if (empty($pay[Pay::F_PPP_ID]) || !$model->validate_ppp($pay[Pay::F_PPP_ID])) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('ID ППП не верен'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Invalid PPP ID | ID ППП не верен | ID ППП невірний'));
             $valid = false;
         }
 
         // const F_DESCRIPTION     = "description";    // Описание платежа
         if (empty(trim($pay[Pay::F_DESCRIPTION]))) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Описание платежа не может быть пустым'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Payment description cannot be empty | Описание платежа не может быть пустым | Опис платежу не може бути порожнім'));
             $valid = false;
         }
-        
+
         // const F_DATE            = "pay_date";       // Дата платежа
         if (empty($pay[Pay::F_DATE]) || !validate_timestamp($pay[Pay::F_DATE]) || $pay[Pay::F_DATE] > time()) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Дата платежа не верна'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Invalid payment date | Дата платежа не верна | Дата платежу невірна'));
             $valid = false;
         }
 
         // const F_PAY_FAKT        = "pay_fakt";       // Фактическая сумма, пришедшая на счёт
         if (!isset($pay[Pay::F_PAY_FAKT]) || !is_numeric($pay[Pay::F_PAY_FAKT])) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Фактическая сумма платежа должна быть числом [с десятичной точкой]'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Actual payment amount must be a number [with decimal point] | Фактическая сумма платежа должна быть числом [с десятичной точкой] | Фактична сума платежу повинна бути числом [з десятковою крапкою]'));
             $valid = false;
         }
 
         // const F_PAY_ACNT        = "pay";            // Сумма платежа, вносимая на ЛС
         if (!isset($pay[Pay::F_PAY_ACNT]) || !is_numeric($pay[Pay::F_PAY_ACNT])) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Сумма платежа на ЛС должна быть числом [с десятичной точкой]'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Payment amount to personal account must be a number [with decimal point] | Сумма платежа на ЛС должна быть числом [с десятичной точкой] | Сума платежу на ОС повинна бути числом [з десятковою крапкою]'));
             $valid = false;
         }
 
         // const F_BANK_NO         = "pay_bank_no";    // Банковский номер операции
         if (empty(trim($pay[Pay::F_BANK_NO]))) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Номер операции не может быть пустым'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Transaction number cannot be empty | Номер операции не может быть пустым | Номер операції не може бути порожнім'));
             $valid = false;
         } elseif ($is_new && $model->get_count(Pay::TABLE, "`".Pay::F_BANK_NO."`='".$pay[Pay::F_BANK_NO]."'", Pay::F_BANK_NO) > 0) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Банковский номер операции дожен быть уникальным'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Bank transaction number must be unique | Банковский номер операции дожен быть уникальным | Банківський номер операції повинен бути унікальним'));
             $valid = false;
         }
 
@@ -187,7 +201,7 @@ class PaymentsController extends AppBaseController {
         $old_rec = $model->get_row_by_id(table_name: Pay::TABLE, id_value: $new_rec[Pay::F_ID], field_id: Pay::F_ID);
         $diff = [];
         foreach (Pay::SAVE_FIELDS as $key) {
-            if (!isset($old_rec[$key]) || $old_rec[$key] != $new_rec[$key]) {
+            if (!isset($old_rec[$key]) && isset($new_rec[$key]) || $old_rec[$key] != $new_rec[$key]) {
                 $diff[$key] = $new_rec[$key];
             }
         }
@@ -211,6 +225,8 @@ class PaymentsController extends AppBaseController {
 
         $data[Pay::F_CREATION_DATE] = time();
         $data[Pay::F_CREATION_UID] = App::get_user_id();
+        $data[Pay::F_MODIFIED_DATE] = time();
+        $data[Pay::F_MODIFIED_UID] = App::get_user_id();
         return $model->insert_row(Pay::TABLE, $data);
 
     }
@@ -232,6 +248,7 @@ class PaymentsController extends AppBaseController {
 
         $data[Pay::F_MODIFIED_DATE] = time();
         $data[Pay::F_MODIFIED_UID] = App::get_user_id();
+        // debug($data,'$data', die:1);
         return ($model->update_row_by_id(table: Pay::TABLE,  row: $data,  field_id: Pay::F_ID));
 
     }
@@ -259,17 +276,17 @@ class PaymentsController extends AppBaseController {
              * Создание новой записи платежа в базе
              */
             if (!can_add([Module::MOD_PAYMENTS]))  {
-                MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+                MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
                 redirect();
             }
             
             if (self::payInsert($pay)) {
-                MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Платеж сохранен'));
+                MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Payment saved | Платеж сохранен | Платіж збережено'));
                 $model->recalc_abon($pay[Pay::F_ABON_ID]);
                 redirect(url: Pay::URI_LIST .'/'. $pay[Pay::F_ABON_ID]);
             } else {
                 $_SESSION[SessionFields::FORM_DATA] = $pay;
-                MsgQueue::msg(MsgType::ERROR_AUTO, __('Ошибка сохранения платежа'));
+                MsgQueue::msg(MsgType::ERROR_AUTO, __('Payment save error | Ошибка сохранения платежа | Помилка збереження платежу'));
                 redirect();
             }
         } else {
@@ -277,26 +294,26 @@ class PaymentsController extends AppBaseController {
              * Редактирование имеющейся записи платежа в базе
              */
             if (!can_edit([Module::MOD_PAYMENTS]))  {
-                MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+                MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
                 redirect();
             }
 
             $pay_diff = $this->get_diff_fields($pay);
             if (empty($pay_diff)) {
-                MsgQueue::msg(MsgType::INFO_AUTO, __('Нет изменений для сохранения'));
+                MsgQueue::msg(MsgType::INFO_AUTO, __('No changes to save | Нет изменений для сохранения | Немає змін для збереження'));
                 redirect();
             }
             $pay_diff[Pay::F_ID] = $pay[Pay::F_ID];
 
             if (self::payUpdate($pay_diff)) {
-                MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Платёж обновлен'));
+                MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Payment updated | Платёж обновлен | Платіж оновлено'));
                 if ($this->need_recalc($pay_diff)) {
                     $model->recalc_abon($pay[Pay::F_ABON_ID]);
                 }
                 redirect(url: Pay::URI_LIST.'/'.$pay[Pay::F_ABON_ID]);
             } else {
                 $_SESSION[SessionFields::FORM_DATA] = $pay;
-                MsgQueue::msg(MsgType::ERROR_AUTO, __('Ошибка обновления платежа'));
+                MsgQueue::msg(MsgType::ERROR_AUTO, __('Payment update error | Ошибка обновления платежа | Помилка оновлення платежу'));
                 redirect();
             }
         }
@@ -310,7 +327,7 @@ class PaymentsController extends AppBaseController {
         // debug($this->route, '$this->route');
 
         if (!App::$auth->isAuth) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Авторизуйтесь, пожалуйста'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in'));
             redirect('/');
         }
 
@@ -326,7 +343,7 @@ class PaymentsController extends AppBaseController {
         $abon_id = $_GET[Abon::F_GET_ID] ?? 0;
 
         if (!$pay_id && !$abon_id) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Не указан ни ID платежа, ни ID абонента'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Neither the payment ID for editing nor the subscriber ID for creating the payment is specified'));
             redirect();
         }
 
@@ -335,22 +352,22 @@ class PaymentsController extends AppBaseController {
              * Редактирование платежа
              */
             if (!$model->validate_id(table_name: Pay::TABLE, id_value: $pay_id, field_id: Pay::F_ID)) {
-                MsgQueue::msg(MsgType::ERROR_AUTO, __('ID не верен'));
+                MsgQueue::msg(MsgType::ERROR_AUTO, __('The payment ID is incorrect'));
                 redirect();
             }
             if (!can_edit([Module::MOD_PAYMENTS]))  {
-                MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+                MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights'));
                 redirect();
             }
             $pay = $model->get_pay($pay_id);
-            $title = __('Редактирование платежа');
+            $title = __('Editing a payment');
             $pay_type_id = $pay[Pay::F_TYPE_ID];
         } else {
             /**
              * Новый платёж
              */
             if (!can_add([Module::MOD_PAYMENTS]))  {
-                MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+                MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights'));
                 redirect();
             }
             $pay = [
@@ -358,7 +375,7 @@ class PaymentsController extends AppBaseController {
                 Pay::F_TYPE_ID  => Pay::TYPE_MONEY,
                 Pay::F_PPP_ID  => PppType::TYPE_CASH_DESK,
             ];
-            $title = __('Внесение нового платежа');
+            $title = __('New payment');
             $pay_type_id = Pay::TYPE_MONEY;
         }
         $ppp_list = array_column($model->get_ppp_my(active: 1), Ppp::F_TITLE, Ppp::F_ID);
@@ -381,11 +398,11 @@ class PaymentsController extends AppBaseController {
     function indexAction() {
 
         if (!App::$auth->isAuth) {
-            MsgQueue::msg(MsgType::ERROR, __('Авторизуйтесь, пожалуйста'));
+            MsgQueue::msg(MsgType::ERROR, __('Please log in'));
             redirect();
         }
         if (!can_view([Module::MOD_MY_PAYMENTS, Module::MOD_PAYMENTS]))  {
-            MsgQueue::msg(MsgType::ERROR, __('У Вас нет прав для этого модуля'));
+            MsgQueue::msg(MsgType::ERROR, __('You have no rights for this module'));
             redirect();
         }
         $model = new AbonModel();
@@ -396,7 +413,7 @@ class PaymentsController extends AppBaseController {
             'user' => $user,
         ]);
 
-        View::setMeta(title: __('Выбор абонента для просмотра истории платежей'));
+        View::setMeta(title: __('Select subscriber to view payment history'));
     }
 
 
@@ -407,12 +424,12 @@ class PaymentsController extends AppBaseController {
     function listAction() {
 
         if (!App::$auth->isAuth) {
-            MsgQueue::msg(MsgType::ERROR, __('Авторизуйтесь, пожалуйста'));
+            MsgQueue::msg(MsgType::ERROR, __('Please log in'));
             redirect();
         }
 
         if (empty($this->route[F_ALIAS])) {
-            MsgQueue::msg(MsgType::ERROR, __('Не указан номер договора'));
+            MsgQueue::msg(MsgType::ERROR, __('Contract number not specified'));
             redirect();
         }
 
@@ -420,7 +437,7 @@ class PaymentsController extends AppBaseController {
 
         $model = new AbonModel();
         if (!$model->validate_id(table_name: Abon::TABLE, field_id: Abon::F_ID, id_value: $abon_id)) {
-            MsgQueue::msg(MsgType::ERROR, __('Номер договора указан не верно'));
+            MsgQueue::msg(MsgType::ERROR, __('Invalid contract number'));
             redirect();
         }
 
@@ -439,7 +456,7 @@ class PaymentsController extends AppBaseController {
             )  
         {
             // отказать в просмотре
-            MsgQueue::msg(MsgType::ERROR, __('У Вас нет прав для этого модуля'));
+            MsgQueue::msg(MsgType::ERROR, __('You have no rights for this module'));
             redirect();
         }
 
@@ -461,7 +478,7 @@ class PaymentsController extends AppBaseController {
             'payments' => $payments,
         ]);
 
-        View::setMeta(title: __('История платежей'));
+        View::setMeta(title: __('Payment history'));
     }
 
 }

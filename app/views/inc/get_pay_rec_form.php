@@ -40,6 +40,12 @@
 use config\Bank;
 use config\MonoCard;
 use config\tables\Pay;
+use billing\core\base\Lang;
+use config\Icons;
+
+Lang::load_inc(__FILE__);
+
+require_once DIR_LIBS . '/compare_functions.php';
 
 
 
@@ -102,22 +108,49 @@ use config\tables\Pay;
         </div>
 
         <div class="row g-3">
-            <!-- PAY FAKT -->
-            <div class="col-3"><strong>Pay Fakt:</strong></div>
-            <div class="col-3"><span class="font-monospace"><?= Bank::get_view_field($index, Pay::F_PAY_FAKT, $statement, $found_rec, $pay_rec) ?></span> ₴</div>
+            <!-- PAY -->
+            <div class="col-3"><strong>Pay:</strong></div>
+            <div class="col-9">
+                <!-- PAY FAKT -->
+                <span class="text-secondary small">FAKT:</span> <span class="font-monospace"><?= Bank::get_view_field($index, Pay::F_PAY_FAKT, $statement, $found_rec, $pay_rec) ?></span> <span class="text-secondary small">₴</span> | 
+                <!-- PAY ACNT -->
+                <span class="text-secondary small">ACNT:</span> <span class="font-monospace"><?= Bank::get_view_field($index, Pay::F_PAY_ACNT, $statement, $found_rec, $pay_rec) ?></span> <span class="text-secondary small">₴</span>
+                <!-- BALANCE -->
+                 
+                <?php if ($found_rec[Bank::F_FOUND_ON_BILLING]) : ?>
+                    <?php if (!is_null($pay_rec[Pay::F_REST])) : ?>
+                        <?php if (empty($found_rec[Bank::F_FOUND_PAY][Pay::F_REST])) : ?>
+                            | <img class="p-0 mb-1" src="<?= Icons::SRC_WARN ?>" alt="[!!!]" height="22" title="<?= __('Остаток на счету после операции не внесён') ?>">
+                        <?php else: ?>
+                            <?php $warn = (
+                                (cmp_float($found_rec[Bank::F_FOUND_PAY][Pay::F_REST], $pay_rec[Pay::F_REST]) != 0)   
+                                    ? 'text-warning' 
+                                    : 'text-secondary' ) ?>
+                            | <span class="small text-secondary">Balance:</span> <span class="<?= $warn ?> font-monospace"><?= Bank::get_view_field($index, Pay::F_REST, $statement, $found_rec, $pay_rec) ?></span> <span class=" text-secondary small ">₴</span>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                <?php else: ?>
+                    <?php if (!empty($pay_rec[Pay::F_REST])) : ?>
+                        | <span class="small text-secondary">Balance:</span> <span class="text-secondary font-monospace"><?= Bank::get_view_field($index, Pay::F_REST, $statement, $found_rec, $pay_rec) ?></span> <span class=" text-secondary small ">₴</span>
+                    <?php endif; ?>
+                <?php endif; ?>
+            </div>
         </div>
 
-        <div class="row g-3">
-            <!-- PAY ACNT -->
-            <div class="col-3"><strong>Pay Acnt:</strong></div>
-            <div class="col-3"><span class="font-monospace"><?= Bank::get_view_field($index, Pay::F_PAY_ACNT, $statement, $found_rec, $pay_rec) ?></span> ₴</div>
-        </div>
 
         <div class="row g-3">
             <!-- DESCRIPTION -->
-            <div class="col-3" title="<?= MonoCard::field_descr(MonoCard::F_DESCRIPTION) ?>"><strong>Description:</strong></div>
-            <div class="col-9"><span><?= Bank::get_view_field($index, Pay::F_DESCRIPTION, $statement, $found_rec, $pay_rec) ?></span></div>
+            <div class="col-3" title="<?= Pay::field_title(Pay::F_DESCRIPTION) ?>"><strong>Description:</strong></div>
+            <div class="col-9 bg-body-tertiary px-3 py-1 mt-4"><span><?= Bank::get_view_field($index, Pay::F_DESCRIPTION, $statement, $found_rec, $pay_rec) ?></span></div>
         </div>
+        
+        <?php if (!$found_rec[Bank::F_FOUND_ON_BILLING]): ?>
+        <div class="row g-3">
+            <!-- SAVE SUFFIX -->
+            <div class="col-3" title="<?= Pay::field_title(Pay::F_SAVE_SUFFIX) ?>"><strong>Save Suffix:</strong></div>
+            <div class="col-9"><span><?= Bank::get_view_field($index, Pay::F_SAVE_SUFFIX, $statement, $found_rec, $pay_rec) ?></span></div>
+        </div>
+        <?php endif; ?>
         
         <hr class="my-2">
 

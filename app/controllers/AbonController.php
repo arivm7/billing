@@ -212,7 +212,7 @@ class AbonController extends AppBaseController {
 
     function indexAction() {
         if (!App::isAuth()) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Авторизуйтесь, пожалуйста'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
             redirect(Auth::URI_LOGIN);
         }
 
@@ -352,7 +352,7 @@ class AbonController extends AppBaseController {
 
     function lastAction() {
         if (!App::isAuth()) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Авторизуйтесь, пожалуйста'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
             redirect(Auth::URI_LOGIN);
         }
 
@@ -1305,12 +1305,12 @@ class AbonController extends AppBaseController {
 
     function editAction() {
         if (!App::isAuth()) {
-            MsgQueue::msg(MsgType::ERROR,__('Авторизуйтесь, пожалуйста'));
+            MsgQueue::msg(MsgType::ERROR,__('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
             redirect(Auth::URI_LOGIN);
         }
 
         if (!can_edit([Module::MOD_ABON])) {
-            MsgQueue::msg(MsgType::ERROR,__('Нет прав'));
+            MsgQueue::msg(MsgType::ERROR,__('No rights | Нет прав | Немає прав'));
             redirect();
         }
 
@@ -1343,7 +1343,7 @@ class AbonController extends AppBaseController {
 
         if (!App::$auth->isAuth)
         {
-            MsgQueue::msg(MsgType::ERROR, __('Авторизуйтесь, пожалуйста'));
+            MsgQueue::msg(MsgType::ERROR, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
             redirect(Auth::URI_LOGIN);
         }
 
@@ -1353,7 +1353,7 @@ class AbonController extends AppBaseController {
         if (!can_use(Module::MOD_ABON))
         {
             // !!! Возможно это надо это писать в логи и сообщать
-            MsgQueue::msg(MsgType::ERROR, 'Нет прав');
+            MsgQueue::msg(MsgType::ERROR, __('No rights | Нет прав | Немає прав'));
             redirect();
         }
 
@@ -1503,12 +1503,12 @@ class AbonController extends AppBaseController {
 
     function restupdateAction() {
         if (!App::isAuth()) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Авторизуйтесь, пожалуйста'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
             redirect(Auth::URI_LOGIN);
         }
 
         if (!can_use(Module::MOD_ABON)) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
             redirect();
         }
 

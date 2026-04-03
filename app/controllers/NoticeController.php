@@ -126,7 +126,7 @@ class NoticeController extends AppBaseController
          * Проверка наличия авторизации
          */
         if (!App::isAuth()) {   
-            MsgQueue::msg(MsgType::ERROR, __('Авторизуйтесь, пожалуйста'));
+            MsgQueue::msg(MsgType::ERROR, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
             redirect('/');
         }
 
@@ -134,7 +134,7 @@ class NoticeController extends AppBaseController
          * Проверка прав
          */
         if (!can_view(Module::MOD_NOTICE)) {   
-            MsgQueue::msg(MsgType::ERROR, __('Нет прав'));
+            MsgQueue::msg(MsgType::ERROR, __('No rights | Нет прав | Немає прав'));
             redirect();
         }
 
@@ -212,7 +212,7 @@ class NoticeController extends AppBaseController
          * Проверка наличия авторизации
          */
         if (!App::isAuth()) {
-            MsgQueue::msg(MsgType::ERROR, __('Авторизуйтесь, пожалуйста'));
+            MsgQueue::msg(MsgType::ERROR, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
             redirect('/');
         }
 
@@ -220,7 +220,7 @@ class NoticeController extends AppBaseController
          * Проверка прав
          */
         if (!can_view(Module::MOD_NOTICE)) {
-            MsgQueue::msg(MsgType::ERROR, __('Нет прав'));
+            MsgQueue::msg(MsgType::ERROR, __('No rights | Нет прав | Немає прав'));
             redirect();
         }
 
@@ -401,7 +401,7 @@ class NoticeController extends AppBaseController
                             )
                         )
                     {
-                        $row['last_sms'] = $model->get_notify_last($row['abon_id']);
+                        $row['last_sms'] = $model->get_notify_last($row['abon_id'], Notify::TYPE_SMS);
                         $row['last_pay'] = $model->get_payment_last($row['abon_id']);
                         $row['do_send'] = 0;
                         $lines[] = $row;

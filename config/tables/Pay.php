@@ -54,6 +54,7 @@ class Pay {
     public const F_PAY_ACNT        = "pay";            // Сумма платежа, вносимая на ЛС
     public const F_DATE            = "pay_date";       // Дата платежа
     public const F_DATE_STR        = "pay_date_str";   // Дата платежа в строковом формате
+    public const F_REST            = "pay_bank_rest";  // Остаток на счету после данной транзакции (для контроля банка) 
     public const F_BANK_NO         = "pay_bank_no";    // Банковский номер операции
     public const F_TYPE_ID         = "pay_type_id";    // ИД Типа платежа
     public const F_PPP_ID          = "pay_ppp_id";     // ППП
@@ -62,6 +63,12 @@ class Pay {
     public const F_CREATION_UID    = "created_uid";    // Юзер, создавший запись
     public const F_MODIFIED_DATE   = "modified_date";  // Дата изменения записи
     public const F_MODIFIED_UID    = "modified_uid";   // Кто изменил запись
+
+
+    /**
+     * Суффикс, добавляемый к описанию (F_DESCRIPTION) при сохранении в биллинге
+     */
+    public const F_SAVE_SUFFIX     = "save_suffix";    
 
 
 
@@ -82,6 +89,7 @@ class Pay {
         self::F_ABON_ID,
         self::F_PAY_FAKT,
         self::F_PAY_ACNT,
+        self::F_REST,
         self::F_DATE,
         self::F_BANK_NO,
         self::F_TYPE_ID,
@@ -90,6 +98,14 @@ class Pay {
     ];
 
 
+
+    public const TEXT_FIELDS = [
+        self::F_DATE_STR,       // Дата платежа в строковом формате
+        self::F_BANK_NO,        // Банковский номер операции
+        self::F_DESCRIPTION,    // Описание платежа
+    ];
+
+    
 
     public const RECALC_FIELDS = [
         self::F_ABON_ID,
@@ -137,6 +153,11 @@ class Pay {
             'ru' => 'Сумма, зачисленная на лицевой счёт',
             'en' => 'Amount credited to personal account',
         ],
+        self::F_REST => [
+            'uk' => 'Залишок у банку',
+            'ru' => 'Остаток в банке',
+            'en' => 'Bank balance',
+        ],
         self::F_DATE => [
             'uk' => 'Дата платежу',
             'ru' => 'Дата платежа',
@@ -166,6 +187,11 @@ class Pay {
             'uk' => 'Опис платежу',
             'ru' => 'Описание платежа',
             'en' => 'Payment description',
+        ],
+        self::F_SAVE_SUFFIX => [
+            'uk' => 'Суфікс для опису платежу',
+            'ru' => 'Суффикс для описания платежа',
+            'en' => 'Suffix to describe the payment',
         ],
         self::F_CREATION_DATE => [
             'uk' => 'Дата створення',

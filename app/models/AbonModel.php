@@ -1451,8 +1451,10 @@ class AbonModel extends UserModel {
                 }
             }
         }
-        $check0 = "<font size=-1 face=monospace color=gray>[<font color=". GRAY.">$</font>]</font>";
-        $check1 = "<font size=-1 face=monospace color=gray>[<font color=".GREEN.">$</font>]</font>";
+        // $check0 = "<font size=-1 face=monospace color=gray>[<font color=". GRAY.">$</font>]</font>";
+        $check0 = '<img src="'.Icons::SRC_ABON_OFF.'" alt="[-]" height=16 >';
+        // $check1 = "<font size=-1 face=monospace color=gray>[<font color=".GREEN.">$</font>]</font>";
+        $check1 = '<img src="'.Icons::SRC_ABON_OK.'" alt="[-]" height=16 >';
 
         return get_html_CHECK(has_check: $payer, title_on: 'Есть подключения в статусе "Плательщик"', title_off: 'Не "Плательщик" ', check0: $check0, check1: $check1);
     }
@@ -2105,8 +2107,14 @@ class AbonModel extends UserModel {
      * @param int $abon_id -- ID абонента
      * @return array -- запись уведомления (СМС) или пустой массив если нет уведомлений
      */
-    function get_notify_last(int $abon_id): array {
-        $sql= "SELECT * FROM ".Notify::TABLE." WHERE ".Notify::F_ABON_ID." = $abon_id ORDER BY ".Notify::F_DATE." DESC LIMIT 1";
+    function get_notify_last(int $abon_id, ?int $notify_type = null): array {
+        $sql= "SELECT * 
+                FROM ".Notify::TABLE." 
+                WHERE 
+                    `".Notify::F_ABON_ID."` = $abon_id 
+                    ".(!is_null($notify_type) ? "AND `".Notify::F_TYPE_ID."` = 1" : "")."
+                ORDER BY ".Notify::F_DATE." DESC 
+                LIMIT 1";
         $rows = $this->get_rows_by_sql($sql);
         return $rows[array_key_first($rows)] ?? [];
     }    
@@ -2159,6 +2167,7 @@ class AbonModel extends UserModel {
         $rec[Abon::TABLE] = $this->get_abon($abon_id);
         $rec[User::TABLE] = $this->get_user($rec[Abon::TABLE][Abon::F_USER_ID]);
         $rec[AbonRest::TABLE] = $this->get_abon_rest($abon_id, $today);
+
         /**
          * Препдирятия агента
          */
@@ -2181,13 +2190,14 @@ class AbonModel extends UserModel {
 
         $rec[Invoice::TABLE] = $this->get_invoice_list_by_sf_date(
                 $abon_id, 
-                date("%.m.Y", first_day_month($today))
+                date("%.m.Y", $today)
             );
 
         return $rec;
     }
 
 
+    
     /**
      * Возвращает список записей, содержащих записи 
      *      [Абонента]

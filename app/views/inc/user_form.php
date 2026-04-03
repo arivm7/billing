@@ -117,7 +117,7 @@ $form_data_fn = function(string $field) use ($form_data, $user): int|float|strin
 
                 <div class="col-4 d-flex align-items-center">
                     <?php if (can_edit(Module::MOD_USER_CARD)): ?>
-                        <a class="btn btn-sm btn-outline-warning" href="<?= Api::URI_CMD ?>?<?= Api::F_CMD ?>=<?= Api::CMD_PASS_DEF ?>&<?= Api::F_UID ?>=<?=$form_data_fn(User::F_ID);?>" target="_self" title="<?= __('Сгенерировать и установить начальный пароль') ?>"><?= __('Def') ?></a>
+                        <a class="btn btn-sm btn-outline-warning" href="<?= Api::URI_CMD ?>?<?= Api::F_CMD ?>=<?= Api::CMD_PASS_DEF ?>&<?= Api::F_UID ?>=<?=$form_data_fn(User::F_ID);?>" target="_self" title="<?= __('Сгенерировать и установить начальный пароль') ?>"><?= __('Def Pass') ?></a>
                     <?php else: ?>
                         :::
                     <?php endif; ?>

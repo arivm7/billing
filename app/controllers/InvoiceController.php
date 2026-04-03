@@ -445,12 +445,12 @@ class InvoiceController extends AppBaseController
     public function pdfAction() {
 
         if (!App::isAuth()) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Авторизуйтесь, пожалуйста'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
             redirect(Auth::URI_LOGIN);
         }
 
         if (!can_view(Module::MOD_INVOICES)) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав')); // !!! регистрировать
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав')); // !!! регистрировать
             redirect();
         }
 
@@ -512,12 +512,12 @@ class InvoiceController extends AppBaseController
         // debug($this->route, '$this->route');
 
         // if (!App::isAuth()) {
-        //     MsgQueue::msg(MsgType::ERROR_AUTO, __('Авторизуйтесь, пожалуйста'));
+        //     MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
         //     redirect(Auth::URI_LOGIN);
         // }
 
         // if (!can_view(Module::MOD_INVOICES)) {
-        //     MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав')); // !!! регистрировать
+        //     MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав')); // !!! регистрировать
         //     redirect();
         // }
 
@@ -630,12 +630,12 @@ class InvoiceController extends AppBaseController
         // debug($this->route, '$this->route');
 
         if (!App::isAuth()) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Авторизуйтесь, пожалуйста'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
             redirect(Auth::URI_LOGIN);
         }
 
         if (!can_edit(Module::MOD_INVOICES)) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав')); // !!! регистрировать
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав')); // !!! регистрировать
             redirect();
         }
 
@@ -752,12 +752,12 @@ class InvoiceController extends AppBaseController
         // debug($this->route, '$this->route');
 
         if (!App::isAuth()) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Авторизуйтесь, пожалуйста'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
             redirect(Auth::URI_LOGIN);
         }
 
         if (!can_use([Module::MOD_INVOICES, Module::MOD_MY_INVOICES])) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Нет прав')); // !!! регистрировать
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав')); // !!! регистрировать
             redirect();
         }
 

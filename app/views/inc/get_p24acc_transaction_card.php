@@ -79,7 +79,7 @@ if (!isset($transaction) || empty($transaction)) {
        
         <div class="row mb-2">
             <?= P24acc::renderField($transaction, P24acc::F_DATE_TIME_DAT_OD_TIM_P) ?>
-            <?= P24acc::renderField($transaction, P24acc::F_AUT_CNTR_NAM) ?>
+            <?= P24acc::renderField($transaction, P24acc::F_AUT_CNTR_NAM, value_add_class: "bg-body-tertiary px-3 py-2") ?>
             <?= P24acc::renderField(
                 label: P24acc::F_REF .'+'. P24acc::F_REFN . " Bank No",
                 value: h($transaction[P24acc::F_REF] . $transaction[P24acc::F_REFN]),
@@ -96,7 +96,8 @@ if (!isset($transaction) || empty($transaction)) {
                     ?>
             <?= P24acc::renderField($transaction, P24acc::F_SUM_E, 
                     value: number_format($transaction[P24acc::F_SUM_E], 2, '.', ' ') . ' <span class="text-secondary">' . $transaction[P24acc::F_CCY] . '</span>') ?>
-            <?= P24acc::renderField($transaction, P24acc::F_OSND) ?>
+            <?= P24acc::renderField($transaction, P24acc::F_OSND, value_add_class: "bg-body-tertiary px-3 py-2") ?>
+                        <!-- value: '<span class="text-end bg-body-tertiary px-3 py-2">'.h(nl2br($transaction[P24acc::F_OSND] ?? '')).'</span>' -->
             <!-- <hr> -->
             <!-- ==================== Проводка и Контрагент (Аккордеон) ==================== -->
             <div class="accordion accordion-flush" id="accordionDetails<?= $transaction[P24acc::F_REF] ?>">

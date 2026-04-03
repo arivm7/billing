@@ -177,7 +177,7 @@ function update_rest_fields(array &$rest, int $today = NA): void {
     /**
      * Количество предоплаченных дней
      */
-    $rest[AbonRest::F_PREPAYED] = (cmp_float($rest[AbonRest::F_SUM_PP01A], 0) == 0 ? 0 : intval($rest[AbonRest::F_REST] / $rest[AbonRest::F_SUM_PP01A]));
+    $rest[AbonRest::F_PREPAYED] = (round($rest[AbonRest::F_SUM_PP01A] * 100) == 0 ? 0 : intval($rest[AbonRest::F_REST] / $rest[AbonRest::F_SUM_PP01A]));
 
     /**
      * Оплата до конца текущего месяца
