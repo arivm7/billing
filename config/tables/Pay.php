@@ -23,11 +23,6 @@ use billing\core\base\Lang;
  */
 class Pay {
 
-    /*
-     * URI для пользовательских платежей
-     */
-
-    public const URI_PAY = '/pay';
 
     /*
      * URI для управления платежами
@@ -35,25 +30,42 @@ class Pay {
 
     public const URI_FORM      = '/payments/form';
     public const URI_DEL       = '/payments/delete';
+    public const URI_SEARCH    = '/payments/search';
+    public const URI_DOUBLES   = '/payments/doubles';
 
-    /*
-     * URI для личного кабинета абонента
+    /**
+     * Для личного кабинета абонента
+     * URI вывод списка абонентских подключений, для которых нужно показать список платежей
      */
     public const URI_MY            = '/payments';
+
+    /**
+     * Для личного кабинета абонента
+     * Вывод списка платежей для указанного аюбонента
+     */
     public const URI_LIST          = '/payments/list';
 
+    /*
+     * Для личного кабинета абонента
+     * URI для интерфейса внесения платежей для абонентов
+     */
+    public const URI_PAY = '/pay';
+
+
     public const POST_REC = 'payment';
+    public const GET_REC  = 'payment';
 
     public const TABLE = 'payments';
 
+    /*
+     * Поля таблицы
+     */
     public const F_ID = "id";                          // ID платежа в биллинге
-
     public const F_AGENT_ID        = "agent_id";       // ID пользователя, кто внёс запись
     public const F_ABON_ID         = "abon_id";        // Абонент, на которого зачисляется платеж
     public const F_PAY_FAKT        = "pay_fakt";       // Фактическая сумма, пришедшая на счёт
     public const F_PAY_ACNT        = "pay";            // Сумма платежа, вносимая на ЛС
     public const F_DATE            = "pay_date";       // Дата платежа
-    public const F_DATE_STR        = "pay_date_str";   // Дата платежа в строковом формате
     public const F_REST            = "pay_bank_rest";  // Остаток на счету после данной транзакции (для контроля банка) 
     public const F_BANK_NO         = "pay_bank_no";    // Банковский номер операции
     public const F_TYPE_ID         = "pay_type_id";    // ИД Типа платежа
@@ -64,11 +76,26 @@ class Pay {
     public const F_MODIFIED_DATE   = "modified_date";  // Дата изменения записи
     public const F_MODIFIED_UID    = "modified_uid";   // Кто изменил запись
 
+    /**
+     * Вычисляемое поле. 
+     * Добавляется в AbonModel::pay_update_fields()
+     */
+    public const F_ABON_ADDRESS    = "abon_address";   // Адрес абонента, на которого зачисляется платеж
+    public const F_AGENT_TITLE     = "agent_title";    // Имя того, кто внёс запись (вычисляемое)
+    public const F_TYPE_TITLE      = "pay_type_title"; // Имя Типа платежа (вычисляемое)
+    public const F_PPP_TITLE       = "pay_ppp_title";  // Имя ППП (вычисляемое)
+
+
+    /**
+     * Поля из формы
+     */
+    public const F_DATE_STR        = "pay_date_str";   // Дата платежа в строковом формате
+
 
     /**
      * Суффикс, добавляемый к описанию (F_DESCRIPTION) при сохранении в биллинге
      */
-    public const F_SAVE_SUFFIX     = "save_suffix";    
+    public const F_SAVE_DESCR_SUFFIX = "save_suffix";    
 
 
 
@@ -99,6 +126,15 @@ class Pay {
 
 
 
+    public const INT_FIELDS = [
+        self::F_ID,             // ID платежа в биллинге
+        self::F_DATE,
+        self::F_AGENT_ID,       // ID пользователя, кто внёс запись
+        self::F_ABON_ID,        // Абонент, на якого зараховується платіж
+        self::F_TYPE_ID,
+        self::F_PPP_ID,
+    ];
+
     public const TEXT_FIELDS = [
         self::F_DATE_STR,       // Дата платежа в строковом формате
         self::F_BANK_NO,        // Банковский номер операции
@@ -112,15 +148,6 @@ class Pay {
         self::F_PAY_FAKT,
         self::F_PAY_ACNT,
     ];
-
-
-
-    /*
-     * Вычисляемые поля
-     */
-    public const F_AGENT_TITLE     = "agent_title";    // Имя того, кто внёс запись (вычисляемое)
-    public const F_TYPE_TITLE      = "pay_type_title"; // Имя Типа платежа (вычисляемое)
-    public const F_PPP_TITLE       = "pay_ppp_title";  // Имя ППП (вычисляемое)
 
 
 
@@ -188,7 +215,7 @@ class Pay {
             'ru' => 'Описание платежа',
             'en' => 'Payment description',
         ],
-        self::F_SAVE_SUFFIX => [
+        self::F_SAVE_DESCR_SUFFIX => [
             'uk' => 'Суфікс для опису платежу',
             'ru' => 'Суффикс для описания платежа',
             'en' => 'Suffix to describe the payment',

@@ -100,13 +100,13 @@ class RolesController extends AdminBaseController {
      */
     private function tsUserAdd(int $user_id, int $role_id) {
         $model = new RolesModel;
-        $this->log("Попытка добавления роли  user[{$user_id}] role[{$role_id}]");
+        self::log("Попытка добавления роли  user[{$user_id}] role[{$role_id}]");
         $sql = "INSERT INTO `".TSUserRole::TABLE."`(`".TSUserRole::F_USER_ID."`, `".TSUserRole::F_ROLE_ID."`) VALUES ('{$user_id}','{$role_id}')";
         if ($model->execute($sql)) {
-            $this->log(__("Роль успешно добавлена") . " user[{$user_id}] role[{$role_id}]");
+            self::log(__("Роль успешно добавлена") . " user[{$user_id}] role[{$role_id}]");
             msg_to_session(__('Роль успешно добавлена'), MSG_HAS_SUCCESS);
         } else {
-            $this->log(__("Ошибка добавления роли") . " user[{$user_id}] role[{$role_id}] " . CR . print_r($model->errorInfo(), 1));
+            self::log(__("Ошибка добавления роли") . " user[{$user_id}] role[{$role_id}] " . CR . print_r($model->errorInfo(), 1));
             msg_to_session($model->errorInfo(), MSG_HAS_ERROR);
         }
     }
@@ -115,13 +115,13 @@ class RolesController extends AdminBaseController {
 
     private function tsUserDel(int $user_id, int $role_id) {
         $model = new RolesModel;
-        $this->log("Попытка отключения роли user[{$user_id}] role[{$role_id}]");
+        self::log("Попытка отключения роли user[{$user_id}] role[{$role_id}]");
         $sql = "DELETE FROM `".TSUserRole::TABLE."` WHERE `".TSUserRole::F_USER_ID."`={$user_id} AND `".TSUserRole::F_ROLE_ID."`={$role_id}";
         if ($model->execute($sql)) {
-            $this->log(__("Роль успешно отключена") . " user[{$user_id}] role[{$role_id}]");
+            self::log(__("Роль успешно отключена") . " user[{$user_id}] role[{$role_id}]");
             msg_to_session(__('Роль успешно отключена'), MSG_HAS_SUCCESS);
         } else {
-            $this->log(__("Ошибка отключения роли") . " user[{$user_id}] role[{$role_id}] " . CR . print_r($model->errorInfo(), 1));
+            self::log(__("Ошибка отключения роли") . " user[{$user_id}] role[{$role_id}] " . CR . print_r($model->errorInfo(), 1));
             msg_to_session($model->errorInfo(), MSG_HAS_ERROR);
         }
     }

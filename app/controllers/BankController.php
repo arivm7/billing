@@ -23,6 +23,7 @@ namespace app\controllers;
 use app\models\AbonModel;
 use billing\core\Api;
 use billing\core\App;
+use billing\core\base\Model;
 use billing\core\base\View;
 use billing\core\MsgQueue;
 use billing\core\MsgType;
@@ -32,9 +33,11 @@ use config\MonoCard;
 use config\P24acc;
 use config\P24card;
 use config\SessionFields;
+use config\tables\Abon;
 use config\tables\Pay;
 use config\tables\Ppp;
 use config\tables\PppType;
+use DebugView;
 
 class BankController extends AppBaseController
 {
@@ -100,6 +103,25 @@ class BankController extends AppBaseController
 
 
         /**
+         * Проверка, что ППП поддерживает те Апи, которые поддерживает этот Action
+         */
+        $api_suported = false;
+        foreach (self::SUPPORTED_API_LIST as $api_type) {
+            if (is_supported_api($ppp, $api_type)) {
+                $api_suported = true;
+                break;
+            }
+        }
+        if (!$api_suported) {
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('API type is not supported | Тип API не поддерживается | Тип API не підтримується'));
+            redirect();
+        }
+        unset($api_suported);
+        unset($api_type);
+
+
+
+        /**
          * -------------------------------------------------------------------------------
          * Внесение данных в базу
          */
@@ -108,6 +130,10 @@ class BankController extends AppBaseController
             $post_rec = $_POST[Bank::POST_REC];
 
             foreach ($post_rec as $index => $rec) {
+
+                // debug($rec, 'save template:', DebugView::DUMP);
+                PaymentsController::normalize($rec);
+                // debug($rec, 'save template:', DebugView::DUMP, die:1);
 
                 /**
                  * Сохранение шаблона, если он передан
@@ -129,22 +155,25 @@ class BankController extends AppBaseController
                      */
                     PaymentsController::normalize($rec);
 
-                    if (!empty($rec[Pay::F_SAVE_SUFFIX])) {
-                        $rec[Pay::F_DESCRIPTION] = $rec[Pay::F_DESCRIPTION] . ' ' . trim($rec[Pay::F_SAVE_SUFFIX]);
+                    if (!empty($rec[Pay::F_SAVE_DESCR_SUFFIX])) {
+                        $rec[Pay::F_DESCRIPTION] = $rec[Pay::F_DESCRIPTION] . ' ' . trim($rec[Pay::F_SAVE_DESCR_SUFFIX]);
                     }
-                    unset($rec[Pay::F_SAVE_SUFFIX]);
+                    unset($rec[Pay::F_SAVE_DESCR_SUFFIX]);
 
                     /**
                      * Валидация полей платежа
                      */
                     if (PaymentsController::validate_deep($rec)) {
                         if (PaymentsController::payInsert($rec)) {
-                            MsgQueue::msg(MsgType::SUCCESS, __('Платеж внесён') . ': ' 
-                                    . $rec[Pay::F_ABON_ID] . ' | ' 
-                                    . $rec[Pay::F_PAY_FAKT] . ' грн.' . ' | ' 
+                            MsgQueue::msg(MsgType::SUCCESS, 
+                                '<span class="font-monospace" style="white-space: pre;">'
+                                    . __('Платеж внесён') . ': ' 
+                                    . sprintf('%8d', $rec[Pay::F_ABON_ID]) . ' | ' 
+                                    . sprintf('%9.2f', $rec[Pay::F_PAY_FAKT]) . ' грн.' . ' | ' 
                                     . date('Y-m-d H:i:s', $rec[Pay::F_DATE]) . ' | ' 
-                                    . h($rec[Pay::F_DESCRIPTION] ));
-                            $model->recalc_abon($rec[Pay::F_ABON_ID], false);
+                                    . h($rec[Pay::F_DESCRIPTION] )
+                                . '</span>'
+                            );
                         }
                     }
                 }
@@ -156,25 +185,6 @@ class BankController extends AppBaseController
          * Конец блока внесение данных в базу
          * -------------------------------------------------------------------------------
          */
-
-
-
-        /**
-         * Проверка, что ППП поддерживает те Апи, которые поддерживает этот Action
-         */
-        $api_suported = false;
-        foreach (self::SUPPORTED_API_LIST as $api_type) {
-            if (is_supported_api($ppp, $api_type)) {
-                $api_suported = true;
-                break;
-            }
-        }
-        if (!$api_suported) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('API type is not supported | Тип API не поддерживается | Тип API не підтримується'));
-            redirect();
-        }
-        unset($api_suported);
-        unset($api_type);
 
 
         
@@ -302,7 +312,7 @@ class BankController extends AppBaseController
          */
         if ($statements) {
             $templates   = $model->get_abons_templates($ppp[Ppp::F_ID]);
-            MsgQueue::msg(MsgType::INFO, __('Number of entries in the template table | Количество записей в таблице шаблонов | Кількість записів у таблиці шаблонів') . ": " . count($templates));
+            MsgQueue::msg(MsgType::INFO_AUTO, __('Number of entries in the template table | Количество записей в таблице шаблонов | Кількість записів у таблиці шаблонів') . ": " . count($templates));
         }
 
 
@@ -372,7 +382,7 @@ class BankController extends AppBaseController
                             }
                         )
                     );
-            $pay_rec[Pay::F_SAVE_SUFFIX] = $save_suffix;
+            $pay_rec[Pay::F_SAVE_DESCR_SUFFIX] = $save_suffix;
 
             $data[$index][Bank::F_PAY_REC] = $pay_rec;
 
@@ -385,7 +395,7 @@ class BankController extends AppBaseController
         }
         // MsgQueue::msg(MsgType::INFO, "==== ". __("All data is collected | Все данные собраны | Всі дані зібрані") ." ====");
 
-        View::setMeta(__('Payments to a Monobank card | Платежи на карту Монобанка | Платежі на карту Монобанку'));
+        View::setMeta(__(' | Получение платежей | ') . $ppp[Ppp::F_TITLE]);
 
         $this->setVariables([
             'accounts'      => $accounts,   // [], Банковские карты или рассчётные счета

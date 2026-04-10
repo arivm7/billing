@@ -39,15 +39,6 @@ require_once DIR_LIBS . '/billing_functions.php';
 class AppBaseModel extends Model
 {
 
-
-    function pay_update_fields(array &$pay): void {
-        $pay[Pay::F_AGENT_TITLE]    = $this->get_user_name_short($pay[Pay::F_AGENT_ID]);
-        $pay[Pay::F_PPP_TITLE]      = $this->get_ppp_title($pay[Pay::F_PPP_ID]);
-        $pay[Pay::F_TYPE_TITLE]     = Pay::TYPES_TITLE[$pay[Pay::F_TYPE_ID]][Lang::code()];
-        // $pay[Pay::F_TYPE_TITLE] = $this->get_ppp_type_title($pay[Pay::F_TYPE_ID]);
-    }
-
-
     /**
      * Кэш-таблица для get_pay(int $id)
      */
@@ -67,139 +58,6 @@ class AppBaseModel extends Model
         }
         return self::$CASHE_PAY_LIST[$id];
     }
-
-
-
-
-    // /**
-    //  * Проверяет, есть ли такой платёж
-    //  * @param int    $abon_id      Абонент, на которого зачисляется поалёж
-    //  * @param float  $pay_fakt     Фактическая сумма пришедшая на р/с
-    //  * @param float  $pay          Сумма платежа вносимая на ЛС
-    //  * @param string $pay_date     Дата платежа
-    //  * @param int    $pay_type_id  ID Типа платежа
-    //  * @param int    $pay_ppp_id  ID ППП
-    //  * @param string $description Описание платежа
-    //  * @return bool TRUE если такой платёж есть
-    //  */
-    // function pay_has_exist(
-    //     //$id,             //int
-    //     //$agent_id,       //int     ID того, кто внёс запись
-    //         $abon_id,        //int     Абонент, на которого зачисляется поалёж
-    //         $pay_fakt,       //float   Фактическая сумма пришедшая на p/c
-    //         $pay,            //float   Сумма платежа вносимая на ЛС
-    //         $pay_date,       //str     Дата платежа
-    //     //$pay_bank_no,    //tiny    Банковский номер операции
-    //         $pay_type_id,    //int     ID Типа платежа
-    //     //$pay_ppp_id,     //int     ID ППП
-    //     //$pay_sourse_id,  //int     На какой счёт пришёл платёж
-    //         $description     //text    Описание платежа
-    //         ) {
-
-    //     $SQL = "SELECT `id` FROM `payments` "
-    //             . "WHERE "
-    //             . "`abon_id`='".$abon_id."' AND "
-    //             . "`pay_fakt`='".$pay_fakt."' AND "
-    //             . "`pay`='".$pay."' AND "
-    //             . "`pay_date`=UNIX_TIMESTAMP('".$pay_date."') AND "
-    //             . "`pay_type_id`='".$pay_type_id."' AND "
-    //         //. "`pay_ppp_id`='".$pay_ppp_id."' AND "
-    //             . "`description` like '%".my_real_escape_string(preg_replace('/\s+/', '%', trim($description)))."%' ";
-    //     //echo $SQL."<hr>";
-    //     return mysqli_num_rows(my_query($SQL))>0;
-    // }
-
-
-
-
-    // /**
-    //  * Добавление платежа на ЛС
-    //  * @param int    $abon_id        Абонент, на которого зачисляется поалёж
-    //  * @param float  $pay_fakt       Фактическая сумма пришедшая на р/с
-    //  * @param float  $pay            Сумма платежа вносимая на ЛС
-    //  * @param string $pay_date_str   Дата платежа
-    //  * @param string $pay_bank_no    Банковский номер операции
-    //  * @param int    $pay_type_id    ID Типа платежа
-    //  * @param int    $pay_ppp_id     ID ППП
-    //  * @param string $description    Описание платежа
-    //  */
-    // function pay_add(
-    //         int    $abon_id,        //int     Абонент, на которого зачисляется поалёж
-    //         float  $pay_fakt,       //float   Фактическая сумма пришедшая на р/с
-    //         float  $pay,            //float   Сумма платежа вносимая на ЛС
-    //         string $pay_date_str,   //str     Дата платежа
-    //         string $pay_bank_no,    //tiny    Банковский номер операции
-    //         int    $pay_type_id,    //int     ИД Типа платежа
-    //         int    $pay_ppp_id,     //int     Изменить Изменить
-    //         string $description,    //text    Краткое описание платежа
-    //         $log_handler = null     //file handler для перенаправления логов
-    //         ) {
-
-    //     // Проверка чтобы такой записи небыло
-    //     if(!pay_has_exist($abon_id, $pay_fakt, $pay, $pay_date_str, $pay_type_id, $description)) {
-    //         // добавление новой записи
-    //         $SQL = "INSERT INTO `payments`"
-    //                 . "(agent_id, abon_id, pay_fakt, pay, pay_date, pay_bank_no, pay_type_id, pay_ppp_id, description, "
-    //                 . "created_date, created_uid, modified_date, modified_uid) "
-    //                 . "VALUES "
-    //                 . "("
-    //                 . "'".(isset($_SESSION['id'])?$_SESSION['id']:0)."', "
-    //                 . "'".$abon_id."', "
-    //                 . "'".$pay_fakt."', "
-    //                 . "'".$pay."', "
-    //                 . "UNIX_TIMESTAMP('".$pay_date_str."'), "
-    //                 . "'".$pay_bank_no."', "
-    //                 . "'".$pay_type_id."', "
-    //                 . "'".$pay_ppp_id."', "
-    //                 . "'".my_real_escape_string($description)."', "
-    //                 . "'".time()."', "
-    //                 . "'".(isset($_SESSION['id'])?$_SESSION['id']:0)."', "
-    //                 . "'".time()."', "
-    //                 . "'".(isset($_SESSION['id'])?$_SESSION['id']:0)."' "
-    //                 . ")";
-
-    //         if(my_query($SQL)) {
-    //             price_apply_auto_ON($abon_id, $log_handler);
-    //             return true;
-    //         }
-    //     } else {
-    //         echo "Такая запись в базе есть.<br>\n";
-    //     }
-    //     return false;
-    // }
-
-
-
-    // function pay_update(
-    //         int    $id,             //int     ID записи в базе
-    //         int    $abon_id,        //int     Абонент, на которого зачисляется поалёж
-    //         float  $pay_fakt,       //float   Фактическая сумма пришедшая на счёт
-    //         float  $pay,            //float   Сумма платежа
-    //         string $pay_date,       //str     Дата платежа
-    //         string $pay_bank_no,    //tiny    Банковский номер операции
-    //         int    $pay_type_id,    //int     ИД Типа платежа
-    //         int    $pay_ppp_id,     //int     Изменить Изменить
-    //         string $description     //text    Краткое описание платежа
-    //         ) {
-
-    //     // редактирование имеющейся записи
-    //     $SQL = "UPDATE payments SET "
-    //             . "agent_id='".$_SESSION['id']."',"
-    //             . "abon_id='".$abon_id."',"
-    //             . "pay_fakt='".$pay_fakt."',"
-    //             . "pay='".$pay."',"
-    //             . "pay_date=UNIX_TIMESTAMP('".$pay_date."'), "
-    //             . "pay_bank_no='".$pay_bank_no."',"
-    //             . ($this->validate_id("payments_types", $pay_type_id) ? "pay_type_id='".$pay_type_id."'," : "")
-    //             . ($this->validate_id("ppp_list", $pay_ppp_id) ? "pay_ppp_id='".$pay_ppp_id."'," : "")
-    //             . "description='".$description."',"
-    //             . "modified_date='".time()."',"
-    //             . "modified_uid='".$_SESSION['id']."' "
-    //             . "WHERE `id`='".$id."'";
-    //     //echo "sql:".$SQL."<br>";
-    //     return my_query($SQL);
-    // }
-
 
 
 
@@ -586,7 +444,7 @@ class AppBaseModel extends Model
     function url_pay_form(int $id): string {
         // !!! требуется переписать
         $pay = $this->get_row_by_id(table_name: Pay::TABLE, id_value: $id, field_id: Pay::F_ID);
-        return "<a title='PAY: ". h(print_r($pay, true))."' href='".Pay::URI_FORM."/{$id}' target=_blank ><img src='".Icons::SRC_ICON_UAH."' alt=CALL width=18 height=18></a>";
+        return "<a title='PAY: ". h(print_r($pay, true))."' href='".Pay::URI_FORM."/{$id}' target=_blank ><img src='".Icons::SRC_ICON_UAH."' alt=PAY width=18 height=18></a>";
     }
 
 
@@ -678,7 +536,7 @@ class AppBaseModel extends Model
         $html =
             ($tp[TP::F_IS_MANAGED]
                     ? a(
-                            href: "/tp_status_mik.php?tp_id={$tp[TP::F_ID]}",
+                            href: TP::URI_COMBINE.'/'.$tp[TP::F_ID],
                             target: TARGET_BLANK,
                             title: "TP [{$tp[TP::F_ID]}] {$tp[TP::F_TITLE]}". CR . __('Управление микротиком'),
                             src: Icons::SRC_MIK_LOGO16,

@@ -27,9 +27,14 @@
  *                                  app/views/inc/get_pay_rec_form.php
  * 
  *                          app/views/inc/get_p24acc_dispatcher.php
- *                                  app/views/inc/get_p24acc_account.php
+ *                                  app/views/inc/get_p24acc_accounts.php
  *                                  app/views/inc/get_navigation.php
  *                                  app/views/inc/get_p24acc_transaction_card.php
+ *                                  app/views/inc/get_pay_rec_form.php
+ * 
+ *                          app/views/inc/get_p24card_dispatcher.php
+ *                                  app/views/inc/get_navigation.php
+ *                                  app/views/inc/get_p24card_statement.php
  *                                  app/views/inc/get_pay_rec_form.php
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -147,8 +152,8 @@ require_once DIR_LIBS . '/compare_functions.php';
         <?php if (!$found_rec[Bank::F_FOUND_ON_BILLING]): ?>
         <div class="row g-3">
             <!-- SAVE SUFFIX -->
-            <div class="col-3" title="<?= Pay::field_title(Pay::F_SAVE_SUFFIX) ?>"><strong>Save Suffix:</strong></div>
-            <div class="col-9"><span><?= Bank::get_view_field($index, Pay::F_SAVE_SUFFIX, $statement, $found_rec, $pay_rec) ?></span></div>
+            <div class="col-3" title="<?= Pay::field_title(Pay::F_SAVE_DESCR_SUFFIX) ?>"><strong>Save Suffix:</strong></div>
+            <div class="col-9"><span><?= Bank::get_view_field($index, Pay::F_SAVE_DESCR_SUFFIX, $statement, $found_rec, $pay_rec) ?></span></div>
         </div>
         <?php endif; ?>
         

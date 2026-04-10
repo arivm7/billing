@@ -24,8 +24,8 @@ if (!isset($pager)) return;
 /** @var Pagination $pager */
 
 ?>
-<div class="text-center p-0 m-0">
-    <?php if ($pager->count_pages > 1) : ?>
+<?php if ($pager->count_pages > 1) : ?>
+    <div class="text-center p-0 m-0">
         <?=$pager;?>
-    <?php endif; ?>
-</div>
+    </div>
+<?php endif; ?>

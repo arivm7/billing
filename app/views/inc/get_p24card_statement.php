@@ -39,6 +39,8 @@
 use config\P24card;
 use config\tables\Pay;
 use billing\core\base\Lang;
+use config\Icons;
+
 Lang::load_inc(__FILE__);
 
 
@@ -112,6 +114,10 @@ $date_str = $statement[P24card::F_DATE_STR]; // date('d.m.Y H:i:s', $statement[P
         <div class='d-flex justify-content-between align-items-center' title="<?= P24card::field_title(P24card::F_REST) ?>">
             <strong><?= P24card::field_title(P24card::F_REST) ?>:</strong>
             <div>
+                <button type="button" 
+                    class="btn btn-outline-info btn-sm align-items-center fs-8 py-0 px-2 me-2 copy-btn" data-text="<?= json_encode($balance) ?>">
+                    <img src="<?= Icons::SRC_ICON_CLIPBOARD ?>" title="<?= __('Скопировать остаток на счету после транзакции в clipboard') ?>" alt="[copy]" height="16">
+                </button>
                 <span class="fw-bold font-monospace <?= $balance < 0 ? 'text-danger' : 'text-success' ?>"><?= sign($balance) < 0 ? "-" /* &#8722; */ :"+" ?></span><span class="text-secondary font-monospace"><?= number_format(abs($balance), 2, '.', ' ') ?> ₴</span>
             </div>
         </div>

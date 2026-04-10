@@ -85,9 +85,9 @@ $templates = implode(
             <div class="card-body">
 
                 <!-- Название -->
-                <div class="row mb-3">
-                    <label for="title" class="col-sm-4 col-form-label"><?=__('Title | Название | Назва');?></label>
-                    <div class="col-sm-8">
+                <div class="row mb-3 align-items-center">
+                    <label class="col-sm-4 col-form-label" for="title"><?=__('Title | Название | Назва');?></label>
+                    <div class="col-sm-7">
                         <input type="text"
                             class="form-control fs-4"
                             id="title"
@@ -95,6 +95,14 @@ $templates = implode(
                             value="<?=$form_data_fn(Ppp::F_TITLE);?>"
                             required>
                         <div class="invalid-feedback"><?=__('Please enter title | Укажите название ППП | Вкажіть назву ППП');?></div>
+                    </div>
+                    <div class="col-sm-1 ps-0 pe-1">
+                        <input type="text"
+                            class="form-control small fs-8 text-center mx-0 px-0"
+                            name="<?=Ppp::POST_REC;?>[<?=Ppp::F_ORDER_NUM;?>]"
+                            value="<?=$form_data_fn(Ppp::F_ORDER_NUM);?>"
+                            title="<?=__('Sorting order number | Порядковый номер для сортировки | Порядковий номер для сортування');?>"
+                            >
                     </div>
                 </div>
 

@@ -2264,4 +2264,13 @@ class AbonModel extends UserModel {
 
 
 
+    function pay_update_fields(array &$pay): void {
+        $pay[Pay::F_ABON_ADDRESS]   = $this->get_abon_address($pay[Pay::F_ABON_ID]);
+        $pay[Pay::F_AGENT_TITLE]    = $this->get_user_name_short($pay[Pay::F_AGENT_ID]);
+        $pay[Pay::F_PPP_TITLE]      = $this->get_ppp_title($pay[Pay::F_PPP_ID]);
+        $pay[Pay::F_TYPE_TITLE]     = Pay::TYPES_TITLE[$pay[Pay::F_TYPE_ID]][Lang::code()];
+    }
+
+
+
 }

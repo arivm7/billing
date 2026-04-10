@@ -27,7 +27,8 @@ class Pagination {
     public int $count_pages;
     public string $uri;
     public string|null $sql;
-    public $f_get_page; // 'page'
+    public string $f_get_page; // 'page'
+    public string|null $anchor_name; // 'page'
 
 
 
@@ -44,10 +45,12 @@ class Pagination {
             int $per_page = 10,
             int $count_rows = 0,
             string|null $sql = null,
-            string $f_get_page = 'page')
+            string $f_get_page = 'page',
+            string $anchor_name = null)
     {
         $this->row_per_page = $per_page;
         $this->f_get_page = $f_get_page;
+        $this->anchor_name = $anchor_name;
         if ($sql) {
             $model = new AppBaseModel();
             $this->count_rows = $model->get_count_by_sql($sql);
@@ -184,7 +187,7 @@ class Pagination {
 
         if ($this->current_page > 1) {
             $startPage = "<li class='page-item' title='На первую страницу'>"
-                    . "<a class='page-link' href='{$this->uri}page=1'>|&laquo;</a></li>";
+                    . "<a class='page-link' href='{$this->uri}".$this->f_get_page."=1".($this->anchor_name ? "#".h($this->anchor_name) : "")."'>|&laquo;</a></li>";
         } else {
             $startPage = "<li class='page-item disabled' title='На первую страницу'>"
                     . "<a class='page-link'>|&laquo;</a></li>";
@@ -192,7 +195,7 @@ class Pagination {
 
         if ($this->current_page < $this->count_pages) {
             $endPage = "<li class='page-item' title='На последнюю страницу'>"
-                    . "<a class='page-link' href='{$this->uri}page=" . $this->count_pages . "'>&raquo;|</a></li>";
+                    . "<a class='page-link' href='{$this->uri}".$this->f_get_page."=" . $this->count_pages . "".($this->anchor_name ? "#".h($this->anchor_name) : "")."'>&raquo;|</a></li>";
         } else {
             $endPage = "<li class='page-item disabled' title='На последнюю страницу'>"
                     . "<a class='page-link'>&raquo;|</a></li>";
@@ -200,7 +203,7 @@ class Pagination {
 
         if ($this->current_page - 3 > 0) {
             $page3left = "<li class='page-item' title='Назад на 3 старницы'>"
-                    . "<a class='page-link' href='{$this->uri}page=" . ($this->current_page - 3) . "'>&lt;&lt;&lt;</a></li>"; // &laquo;
+                    . "<a class='page-link' href='{$this->uri}".$this->f_get_page."=" . ($this->current_page - 3) . "".($this->anchor_name ? "#".h($this->anchor_name) : "")."'>&lt;&lt;&lt;</a></li>"; // &laquo;
         } else {
             $page3left = "<li class='page-item disabled' title='Назад на 2 старницы'>"
                     . "<a class='page-link'>&lt;&lt;&lt;</a></li>"; // &laquo;
@@ -208,7 +211,7 @@ class Pagination {
 
         if ($this->current_page + 3 <= $this->count_pages) {
             $page3right = "<li class='page-item' title='Вперёд на 3 старницы'>"
-                    . "<a class='page-link' href='{$this->uri}page=" . ($this->current_page + 3) . "'>&gt;&gt;&gt;</a></li>"; // &raquo;
+                    . "<a class='page-link' href='{$this->uri}".$this->f_get_page."=" . ($this->current_page + 3) . "".($this->anchor_name ? "#".h($this->anchor_name) : "")."'>&gt;&gt;&gt;</a></li>"; // &raquo;
         } else {
             $page3right = "<li class='page-item disabled' title='Вперёд на 2 старницы'>"
                     . "<a class='page-link'>&gt;&gt;&gt;</a></li>"; // &raquo;
@@ -216,7 +219,7 @@ class Pagination {
 
         if ($this->current_page - 2 > 0) {
             $page2left = "<li class='page-item' title='Назад на 2 старницы'>"
-                    . "<a class='page-link' href='{$this->uri}page=" . ($this->current_page - 2) . "'>&lt;&lt;</a></li>"; // &laquo;
+                    . "<a class='page-link' href='{$this->uri}".$this->f_get_page."=" . ($this->current_page - 2) . "".($this->anchor_name ? "#".h($this->anchor_name) : "")."'>&lt;&lt;</a></li>"; // &laquo;
         } else {
             $page2left = "<li class='page-item disabled' title='Назад на 2 старницы'>"
                     . "<a class='page-link'>&lt;&lt;</a></li>"; // &laquo;
@@ -224,7 +227,7 @@ class Pagination {
 
         if ($this->current_page + 2 <= $this->count_pages) {
             $page2right = "<li class='page-item' title='Вперёд на 2 старницы'>"
-                    . "<a class='page-link' href='{$this->uri}page=" . ($this->current_page + 2) . "'>&gt;&gt;</a></li>"; // &raquo;
+                    . "<a class='page-link' href='{$this->uri}".$this->f_get_page."=" . ($this->current_page + 2) . "".($this->anchor_name ? "#".h($this->anchor_name) : "")."'>&gt;&gt;</a></li>"; // &raquo;
         } else {
             $page2right = "<li class='page-item disabled' title='Вперёд на 2 старницы'>"
                     . "<a class='page-link'>&gt;&gt;</a></li>"; // &raquo;
@@ -232,7 +235,7 @@ class Pagination {
 
         if ($this->current_page - 1 > 0) {
             $page1left = "<li class='page-item' title='Назад на 1 старницу'>"
-                    . "<a class='page-link' href='{$this->uri}page=" . ($this->current_page - 1) . "'>&lt;</a></li>"; // < &lt;
+                    . "<a class='page-link' href='{$this->uri}".$this->f_get_page."=" . ($this->current_page - 1) . "".($this->anchor_name ? "#".h($this->anchor_name) : "")."'>&lt;</a></li>"; // < &lt;
         } else {
             $page1left = "<li class='page-item disabled' title='Назад на 1 старницу'>"
                     . "<a class='page-link'>&lt;</a></li>"; // < &lt;
@@ -240,13 +243,14 @@ class Pagination {
 
         if ($this->current_page + 1 <= $this->count_pages) {
             $page1right = "<li class='page-item' title='Вперёд на 1 старницу'>"
-                    . "<a class='page-link' href='{$this->uri}page=" . ($this->current_page + 1) . "'>&gt;</a></li>"; // > &gt;
+                    . "<a class='page-link' href='{$this->uri}".$this->f_get_page."=" . ($this->current_page + 1) . "".($this->anchor_name ? "#".h($this->anchor_name) : "")."'>&gt;</a></li>"; // > &gt;
         } else {
             $page1right = "<li class='page-item disabled' title='Вперёд на 1 старницу'>"
                     . "<a class='page-link'>&gt;</a></li>"; // > &gt;
         }
 
-        return    '<nav>'
+        return  ($this->anchor_name ? "<a name='{$this->anchor_name}' id='{$this->anchor_name}'></a>" : "") 
+                . '<nav>'
                 . '<ul class="pagination justify-content-center">'
                 . $startPage . $page3left . $page2left . $page1left
                 . '<li class="page-item active"><a class="page-link">'

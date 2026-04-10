@@ -11,6 +11,8 @@
  *  Copyright (C) 2026 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
  */
 
+
+
 /**
  * Вид-диспетчер по внесению абонентских платежей в биллинг
  * 
@@ -24,9 +26,14 @@
  *                                  app/views/inc/get_pay_rec_form.php
  * 
  *                          app/views/inc/get_p24acc_dispatcher.php
- *                                  app/views/inc/get_p24acc_account.php
+ *                                  app/views/inc/get_p24acc_accounts.php
  *                                  app/views/inc/get_navigation.php
  *                                  app/views/inc/get_p24acc_transaction_card.php
+ *                                  app/views/inc/get_pay_rec_form.php
+ * 
+ *                          app/views/inc/get_p24card_dispatcher.php
+ *                                  app/views/inc/get_navigation.php
+ *                                  app/views/inc/get_p24card_statement.php
  *                                  app/views/inc/get_pay_rec_form.php
  * 
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
@@ -53,8 +60,11 @@ Lang::load_inc(__FILE__);
  * 
  */
 
+?>
 
+<h1 class="fs-2"><?= $ppp[Ppp::F_TITLE] ?></h1>
 
+<?php
 /**
  * Диспетчер получения данных из банка 
  * в зависимост от типа ППП и поддерживаемого API
@@ -118,7 +128,8 @@ switch ($ppp[Ppp::F_TYPE_ID]) {
 
 
 
-
 // debug($accounts, '$accounts');
 // debug($data, '$data');
 // debug($ppp, '$ppp');
+
+?>

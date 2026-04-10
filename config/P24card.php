@@ -24,21 +24,39 @@
 namespace config;
 
 use billing\core\App;
+use billing\core\MsgQueue;
+use billing\core\MsgType;
 use config\tables\Pay;
 
 class P24card
 {
 
-    const INDEX_DATE_STR             = 0; // Дата
-    const INDEX_CATEGORY             = 1; // Категорія транзакции
-    const INDEX_CARD                 = 2; // Картка
-    const INDEX_DESCR                = 3; // Опис операції
-    const INDEX_AMOUNT               = 4; // Сума в валюті картки
-    const INDEX_CARD_CURRENCY        = 5; // Валюта картки
-    const INDEX_AMOUNT_TRANSACTION   = 6; // Сума в валюті транзакції
-    const INDEX_TRANSACTION_CURRENCY = 7; // Валюта транзакції
-    const INDEX_REST                 = 8; // Залишок на кінець періоду
-    const INDEX_REST_CURRENCY        = 9; // Валюта залишку
+    const INDEX_DATE_STR                = 0; // Дата
+    const INDEX_CATEGORY                = 1; // Категорія транзакции
+    const INDEX_CARD                    = 2; // Картка
+    const INDEX_DESCR                   = 3; // Опис операції
+    const INDEX_AMOUNT                  = 4; // Сума в валюті картки
+    const INDEX_CARD_CURRENCY           = 5; // Валюта картки
+    const INDEX_AMOUNT_TRANSACTION      = 6; // Сума в валюті транзакції
+    const INDEX_TRANSACTION_CURRENCY    = 7; // Валюта транзакції
+    const INDEX_REST                    = 8; // Залишок на кінець періоду
+    const INDEX_REST_CURRENCY           = 9; // Валюта залишку
+
+
+
+    const REQUIRED_INPUT_FIELDS = [
+        self::INDEX_DATE_STR,                // Дата
+        self::INDEX_CATEGORY,                // Категорія транзакции
+        self::INDEX_CARD,                    // Картка
+        self::INDEX_DESCR,                   // Опис операції
+        self::INDEX_AMOUNT,                  // Сума в валюті картки
+        self::INDEX_CARD_CURRENCY,           // Валюта картки
+        self::INDEX_AMOUNT_TRANSACTION,      // Сума в валюті транзакції
+        self::INDEX_TRANSACTION_CURRENCY,    // Валюта транзакції
+        self::INDEX_REST,                    // Залишок на кінець періоду
+     // self::INDEX_REST_CURRENCY,           // Валюта залишку
+    ];
+
 
 
     /**
@@ -170,19 +188,41 @@ class P24card
             // Разделяет по табуляции на поля
             $line_rec = preg_split("/[\t]/", $line);
 
-            // Формируем запись транзакции в соответсвии с записью биллинга
-            $transaction[self::F_AMOUNT]                = floatval(str_replace(",", ".", (preg_replace($digit_off, '', $line_rec[P24card::INDEX_AMOUNT]))));
-            if ($transaction[self::F_AMOUNT] < 0) { continue; }
-            $transaction[self::F_DATE_STR]              = str_replace($char_off, '', trim($line_rec[P24card::INDEX_DATE_STR]));
-            $transaction[self::F_DATE]                  = strtotime($transaction[P24card::F_DATE_STR]);
-            if ($transaction[P24card::F_DATE] === false) {
-                throw new \Exception("Некорректная дата: ".h($line_rec[P24card::INDEX_DATE_STR]) . ' => ' . h($transaction[self::F_DATE_STR]) . ' Обратитесь к программистам');
+            try {
+
+                /**
+                 * Предварительно проверяем на наличие нужных полей
+                 */
+                
+                foreach (P24card::REQUIRED_INPUT_FIELDS as $field) {
+                    if (!array_key_exists($field, $line_rec)) { 
+                        throw new \Exception(__('Отсутствует обязательное поле в строке') . ': ' . $field); 
+                    }
+                }
+
+                /**
+                 * Формируем запись транзакции в соответсвии с записью биллинга
+                 */
+
+                $transaction[self::F_AMOUNT]                = floatval(str_replace(",", ".", (preg_replace($digit_off, '', $line_rec[P24card::INDEX_AMOUNT]))));
+                if ($transaction[self::F_AMOUNT] < 0) { continue; }
+                $transaction[self::F_DATE_STR]              = str_replace($char_off, '', trim($line_rec[P24card::INDEX_DATE_STR]));
+                $transaction[self::F_DATE]                  = strtotime($transaction[P24card::F_DATE_STR]);
+                if ($transaction[P24card::F_DATE] === false) {
+                    throw new \Exception("Некорректная дата: ".h($line_rec[P24card::INDEX_DATE_STR]) . ' => ' . h($transaction[self::F_DATE_STR]) . ' Обратитесь к программистам');
+                }
+                $transaction[self::F_AMOUNT_TRANSACTION]    = floatval(str_replace(",", ".", (preg_replace($digit_off, '', $line_rec[P24card::INDEX_AMOUNT_TRANSACTION]))));
+                $transaction[self::F_REST]                  = floatval(str_replace(",", ".", (preg_replace($digit_off, '', $line_rec[P24card::INDEX_REST]))));
+                $transaction[self::F_CURRENCY]              = normal_str($line_rec[P24card::INDEX_CARD_CURRENCY]);
+                $transaction[self::F_BANK_NO]               = Bank::make_bank_no($transaction[P24card::F_DATE], $transaction[P24card::F_AMOUNT], $transaction[P24card::F_REST]);
+                $transaction[self::F_DESCRIPTION]           = normal_str($line_rec[P24card::INDEX_DESCR]);
+
+            } catch (\Throwable $th) {
+                MsgQueue::msg(MsgType::ERROR, __('Ошибка разбора строки из текстовой таблицы'));
+                MsgQueue::msg(MsgType::ERROR, '<pre>' . print_r($line_rec, true) . '</pre>');
+                MsgQueue::msg(MsgType::ERROR, $th->getMessage());
+                redirect();
             }
-            $transaction[self::F_AMOUNT_TRANSACTION]    = floatval(str_replace(",", ".", (preg_replace($digit_off, '', $line_rec[P24card::INDEX_AMOUNT_TRANSACTION]))));
-            $transaction[self::F_REST]                  = floatval(str_replace(",", ".", (preg_replace($digit_off, '', $line_rec[P24card::INDEX_REST]))));
-            $transaction[self::F_CURRENCY]              = normal_str($line_rec[P24card::INDEX_CARD_CURRENCY]);
-            $transaction[self::F_BANK_NO]               = Bank::make_bank_no($transaction[P24card::F_DATE], $transaction[P24card::F_AMOUNT], $transaction[P24card::F_REST]);
-            $transaction[self::F_DESCRIPTION]           = normal_str($line_rec[P24card::INDEX_DESCR]);
 
             $transactions[] = $transaction;
         }

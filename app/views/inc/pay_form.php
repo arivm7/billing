@@ -30,6 +30,7 @@ use billing\core\App;
 use config\SessionFields;
 use config\tables\Pay;
 use billing\core\base\Lang;
+use config\Icons;
 use config\tables\Abon;
 use config\tables\Module;
 use config\tables\Perm;
@@ -82,7 +83,7 @@ $wcol2 = 12 - $wcol1; // ширина второй колонки
             <div class="card-header">
                 <div class='d-flex justify-content-between align-items-center'>
                     <div class="me-4">
-                        <h3 class="text-center fs-4 pt-2"><?=$title?></h3>
+                        <h3 class="text-center <?= (empty($form_data_fn(Pay::F_ID)) ? "text-warning" : "text-primary-emphasis") ?> fs-4 pt-2"><?=$title?></h3>
                     </div>
                     <div>
                         <!-- Вернуться к списку платедей -->
@@ -196,7 +197,23 @@ $wcol2 = 12 - $wcol1; // ширина второй колонки
                 </div>
                 <!-- Действия -->
                 <div class="card-footer text-center">
-                    <button class="btn btn-outline-info btn-sm me-2" type="submit"><i class="bi bi-floppy"></i> <?=__('Save')?></button>
+                    <div class="d-flex justify-content-between align-items-center w-100">
+                        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+                        <div>
+                            <button class="btn btn-outline-info btn-sm me-2" type="submit"><i class="bi bi-floppy"></i> <?=__('Save')?></button>
+                        </div>
+                        <div>
+                            <!-- Удаление платежа -->
+                            <?php if (!empty($form_data_fn(Pay::F_ID)) && can_del(Module::MOD_PAYMENTS)) : ?>
+                                <a href="<?=Pay::URI_DEL;?>/<?=h($form_data_fn(Pay::F_ID));?>" 
+                                    class="btn btn-sm btn-outline-danger" 
+                                    onclick="return confirm(
+                                            '[X] <?=__('Удалить этот платёж') . '? | ' . __('Важно') . ': ' . __('Это влияет на рассчеты баланса'); ?>');"
+                                    title="<?=__('Удалить этот платёж');?>&#13;<?= __('Важно') . ': ' . __('Это влияет на рассчеты баланса') ?>"
+                                    ><img src="<?=Icons::SRC_ICON_TRASH;?>" alt="[Del]" height="22px"></a>
+                            <?php endif; ?>
+                        </div>
+                    </div>
                 </div>
             </form>
         </div>

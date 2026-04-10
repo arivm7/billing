@@ -111,36 +111,44 @@ require_once DIR_LIBS . '/sms_functions.php';
                                 </a>
                             </div>
 
-                            <div>
-                                <span class="text-secondary">
-                                    Границы обслуживания:
-                                    <span title="<?= Abon::description(Abon::F_DUTY_MAX_WARN) ?>"><?= $lines[$index][Abon::F_DUTY_MAX_WARN] ?></span> |
-                                    <span title="<?= Abon::description(Abon::F_DUTY_MAX_OFF) ?>"><?= $lines[$index][Abon::F_DUTY_MAX_OFF] ?></span> |
-                                    <span title="<?= Abon::description(Abon::F_DUTY_AUTO_OFF) ?>"><?= get_html_CHECK($lines[$index][Abon::F_DUTY_AUTO_OFF]) ?></span> |
-                                    Оплаченных дней:&nbsp;&nbsp;
-                                    <?=
-                                        (($lines[$index][AbonRest::TABLE][AbonRest::F_SUM_PP30A] > 0)
-                                            ? round($lines[$index][AbonRest::TABLE][AbonRest::F_PREPAYED])
-                                            : '<span class="text-danger">НУЛЕВОЙ ПРАЙС</span>')
-                                    ?>
-                                </span>
-                            </div>
-
-                            <div class="text-muted">
-                                <?= Notify::get_warn_message(
-                                    $warn_status = Notify::get_warn_status(
+                            <?php
+                                $warn_status = Notify::get_warn_status(
                                         $lines[$index][AbonRest::TABLE],
                                         $lines[$index][Abon::F_DUTY_MAX_WARN],
                                         $lines[$index][Abon::F_DUTY_MAX_OFF]
-                                        )
-                                    ) 
-                                . ($warn_status == Notify::WARN_IS_OFF 
-                                    ? '<span class="text ms-2">'
-                                        .date('Y-m-d', $lines[$index][AbonRest::TABLE][ AbonRest::F_DATE_PAUSED] ?? 0) . ' | '
-                                        .get_between_days($lines[$index][AbonRest::TABLE][ AbonRest::F_DATE_PAUSED] ?? 0, TODAY(), NULL_HAS_TODAY, IGNORE_TIME_ON).' дней тому</span>' 
-                                    : ''
-                                  )
-                                ?>
+                                    );
+                            ?>
+
+                            <div class='d-flex justify-content-between mb-3'>
+
+                                <div class="mt-2">
+                                    <?= Notify::get_warn_message($warn_status) 
+                                    . ($warn_status == Notify::WARN_IS_OFF 
+                                        ? '<span class="text ms-2">'
+                                            .date('Y-m-d', $lines[$index][AbonRest::TABLE][ AbonRest::F_DATE_PAUSED] ?? 0) . ' | '
+                                            .get_between_days($lines[$index][AbonRest::TABLE][ AbonRest::F_DATE_PAUSED] ?? 0, TODAY(), NULL_HAS_TODAY, IGNORE_TIME_ON).' дней тому</span>' 
+                                        : ''
+                                    )
+                                    ?>
+                                </div>
+
+                                <div class="mt-2 me-2">
+                                    <span class="text">
+                                        Оплаченных дней:&nbsp;&nbsp;
+                                        <?=
+                                            (($lines[$index][AbonRest::TABLE][AbonRest::F_SUM_PP30A] > 0)
+                                                ? sprintf(Notify::WARN_TEMPLATES[$warn_status], round($lines[$index][AbonRest::TABLE][AbonRest::F_PREPAYED]))
+                                                : '<span class="text-danger">НУЛЕВОЙ ПРАЙС</span>')
+                                        ?>
+                                    </span>
+                                    <span class="text-secondary">
+                                        | Границы обслуживания:
+                                        <span title="<?= Abon::description(Abon::F_DUTY_MAX_WARN) ?>"><?= $lines[$index][Abon::F_DUTY_MAX_WARN] ?></span> |
+                                        <span title="<?= Abon::description(Abon::F_DUTY_MAX_OFF) ?>"><?= $lines[$index][Abon::F_DUTY_MAX_OFF] ?></span> |
+                                        <span title="<?= Abon::description(Abon::F_DUTY_AUTO_OFF) ?>"><?= get_html_CHECK($lines[$index][Abon::F_DUTY_AUTO_OFF]) ?></span>
+                                    </span>
+                                </div>
+
                             </div>
 
                             <div class="mt-2 fs-6 text-bg-secondary p-2 rounded">

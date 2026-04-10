@@ -281,7 +281,7 @@ define('NULL_HAS_NULL',   true);
  * ---|---------|---------|---------|---------|---
  *    |         |         |         |         |
  *        |                               |
- *        date1                       date2
+ *        Date1                       Date2
  *
  * @param int $date1
  * @param int $date2

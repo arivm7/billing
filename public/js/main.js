@@ -149,57 +149,65 @@ jQuery(document).ready(function($) {
 /**
  * контейнер тостов не обязателен в разметке — создаётся скриптом при необходимости
  */
-document.addEventListener('DOMContentLoaded', function() {    
-  const toastContainerId = 'toastContainer';
-  let container = document.getElementById(toastContainerId);
-  if (!container) {
-    container = document.createElement('div');
-    container.id = toastContainerId;
-    container.className = 'position-fixed bottom-0 end-0 p-3';
-    container.style.zIndex = 1080;
-    document.body.appendChild(container);
-  }
-
-  function getTextFromBtn(btn){
-    const v = btn.getAttribute('data-text');
-    try { return JSON.parse(v); } catch { return v; }
-  }
-
-  async function copyText(text){
-    // Требует HTTPS и современных браузеров
-    await navigator.clipboard.writeText(text);
-  }
-
-  function showToast(title, body, delay = 3000){
-    const id = 'toast-' + Date.now() + '-' + Math.random().toString(36).slice(2,8);
-    const wrapper = document.createElement('div');
-    wrapper.innerHTML = `
-      <div id="${id}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-header">
-          <strong class="me-auto">${title}</strong>
-          <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
-        <div class="toast-body">${body}</div>
-      </div>
-    `.trim();
-    const toastEl = wrapper.firstElementChild;
-    container.appendChild(toastEl);
-    const bsToast = new bootstrap.Toast(toastEl, { delay, autohide: true });
-    bsToast.show();
-    toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
-  }
-
-  document.addEventListener('click', async (e) => {
-    const btn = e.target.closest('.copy-btn');
-    if (!btn) return;
-    const text = getTextFromBtn(btn);
-    try {
-      await copyText(text);
-      showToast('Успех', 'Текст скопирован в буфер обмена');
-    } catch (err) {
-      showToast('Ошибка', 'Не удалось скопировать текст', 5000);
+document.addEventListener('DOMContentLoaded', function () {
+    const toastContainerId = 'toastContainer';
+    let container = document.getElementById(toastContainerId);
+    if (!container) {
+        container = document.createElement('div');
+        container.id = toastContainerId;
+        container.className = 'position-fixed bottom-0 end-0 p-3';
+        container.style.zIndex = 1080;
+        document.body.appendChild(container);
     }
-  });
+
+    function getTextFromBtn(btn) {
+        const v = btn.getAttribute('data-text');
+        try { return JSON.parse(v); } catch { return v; }
+    }
+
+    async function copyText(text) {
+        // Требует HTTPS и современных браузеров
+        await navigator.clipboard.writeText(text);
+
+        // console.log('COPY VALUE:', text);
+        // try {
+        //     await navigator.clipboard.writeText(text);
+        //     console.log('COPIED OK');
+        // } catch (err) {
+        //     console.error('COPY FAILED:', err);
+        // }
+    }
+
+    function showToast(title, body, delay = 3000) {
+        const id = 'toast-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = `
+        <div id="${id}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+            <strong class="me-auto">${title}</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">${body}</div>
+        </div>
+        `.trim();
+            const toastEl = wrapper.firstElementChild;
+            container.appendChild(toastEl);
+            const bsToast = new bootstrap.Toast(toastEl, { delay, autohide: true });
+            bsToast.show();
+            toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
+    }
+
+    document.addEventListener('click', async (e) => {
+        const btn = e.target.closest('.copy-btn');
+        if (!btn) return;
+        const text = getTextFromBtn(btn);
+        try {
+            await copyText(text);
+            showToast('Успех', 'Текст скопирован в буфер обмена');
+        } catch (err) {
+            showToast('Ошибка', 'Не удалось скопировать текст', 5000);
+        }
+    });
 });
 
 /* Конец Блока Копирования текста в буфер обмена */

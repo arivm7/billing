@@ -229,7 +229,8 @@ abstract class Model {
      * @param int $id
      * @return bool
      */
-    public function validate_ppp(int $id): bool {
+    public function validate_ppp(int|null $id): bool {
+        if (empty($id)) { return false; }
         return $this->validate_id(Ppp::TABLE, $id, Ppp::F_ID);
     }
 

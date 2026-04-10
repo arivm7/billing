@@ -202,6 +202,14 @@ class Notify {
     const WARN_MSG_PAY = 4;     // СООБЩИТЬ О НЕОБХОДИМОСТИ ПЛАТЕЖА
     const WARN_OK = 5;          // НОРМ. Уведомление не требуется
 
+    const WARN_TEMPLATES = [
+        self::WARN_IS_OFF   => '<span class="badge text-bg-danger">%s</span>',
+        self::WARN_NEED_OFF => '<span class="badge text-bg-warning">%s</span>',
+        self::WARN_MSG_PAY  => '<span class="badge text-bg-info">%s</span>',
+        self::WARN_OK       => '<span class="badge text-bg-success">%s</span>',
+    ];
+
+
     const WARN_TEXT = [
         self::WARN_IS_OFF => [
             Lang::C_RU => '<span class="badge text-bg-danger">УЖЕ ОТКЛЮЧЁН</span>',

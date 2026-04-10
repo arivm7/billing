@@ -19,6 +19,7 @@
 
 namespace config;
 
+use app\controllers\TemplateController;
 use app\models\AbonModel;
 use billing\core\App;
 use billing\core\MsgQueue;
@@ -339,248 +340,194 @@ class Bank
 
 
 
-    /**
-     * Возвращает abon_id из таблицы шаблонов по входной строке
-     * @param array $templates -- ссылка на массив шаблонов (из БД/TSAbonTmpl::TABLE)
-     * @param string $text -- входная строка
-     * @return int -- abon_id или 0 если не найдено
-     */
-    public static function get_abon_id_from_templates(array &$templates, string $text): int {
-        $text = trim($text);
-        if (!empty($text)) {
-            foreach ($templates as $template) {
-                if(is_empty(trim($template[TSAbonTmpl::F_TEMPLATE]))) {
-                    continue;
-                }
-                if(strpos($text, $template[TSAbonTmpl::F_TEMPLATE]) !== false) {
-                    return $template[TSAbonTmpl::F_ABON_ID];
-                }
-            }
-        }
-        return 0;
-    }
+    // /**
+    //  * Поиск платежа в биллинге или поиск абонента, для которого этот платеж.
+    //  * Поиск в базе проводится только по номеру документа (ID транзакции в банке).
+    //  * Возвращает ассоциативный массив:
+    //  * [payments]    -- массив найденных платежей, считается найденным, если найден один платёж
+    //  * [abon]        -- если платёж не найден, то абонент, для которого этот платёж
+    //  * [on_billing]  -- найден в биллинге, платёж уже внесён
+    //  * [searched_on] -- коментарий к поиску, где найден платёж или абонент
+    //  * @param array $transaction
+    //  * @param int $ppp_id
+    //  * @param array $templates
+    //  * @return array{
+    //  *      payments: array,
+    //  *      on_billing: bool, 
+    //  *      abon: array, 
+    //  *      searched_on: string, 
+    //  *      template: string}
+    //  */
+    // public static function p24acc_search_payments_on_billing($transaction, $ppp_id, &$templates): array {
+    //     $model = new AbonModel();
+    //     $found_pay['payments'] = $model->get_billing_payments_by_no($transaction[P24acc::F_ID], $ppp_id);
+    //     // if (count($found_pay['payments']) == 0) {
+    //     //     $found_pay['payments'] = $model->get_billing_payments_id_date_pay($transaction[P24acc::F_NUM_DOC], strtotime($transaction[P24acc::F_DATE_TIME_DAT_OD_TIM_P]), get_numeric_part($transaction[P24acc::F_SUM]), $ppp_id, true);
+    //     // }
+
+    //     if (count($found_pay['payments']) > 1) {
+    //         // Если найдено несколько платежей, то считаем, что НЕ найдено
+    //         $id_list = array_column($found_pay['payments'], Pay::F_ID);
+    //         foreach ($id_list as &$item) { $item = url_abon_form($item); }
+    //         $found_pay['on_billing']  = false;
+    //         $found_pay['searched_on'] = 'billing ('.__('Many found | Найдено много | Знайдено багато').': '.implode(", ", $id_list).')';
+    //     } elseif (count($found_pay['payments']) == 1) {
+    //         $found_pay['abon']        = $model->get_abon($found_pay['payments'][0][Pay::F_ABON_ID]);
+    //         $found_pay['on_billing']  = true;
+    //         $found_pay['searched_on'] = 'billing by ID';
+    //     } else {
+    //         $aid = TemplateController::get_abon_id_from_templates($templates, $transaction[P24acc::F_OSND]);
+    //         if ($aid > 0) {
+    //             $found_pay['abon']        = $model->get_abon($aid);
+    //             $found_pay['on_billing']  = false;
+    //             $found_pay['searched_on'] = 'Templates (by [' . P24acc::F_OSND .'])';
+    //         } else {
+    //             $aid = TemplateController::get_abon_id_from_templates($templates, $transaction[P24acc::F_AUT_CNTR_NAM]);
+    //             if ($aid > 0) {
+    //                 $found_pay['abon']        = $model->get_abon($aid);
+    //                 $found_pay['on_billing']  = false;
+    //                 $found_pay['searched_on'] = 'Templates (by [' . P24acc::F_AUT_CNTR_NAM . '])';
+    //             } else {
+    //                 $aid = $model->get_abon_id_from_text($transaction[P24acc::F_OSND]);
+    //                 if ($aid > 0) {
+    //                     $found_pay['abon']        = $model->get_abon($aid);
+    //                     $found_pay['on_billing']  = false;
+    //                     $found_pay['searched_on'] = 'from [' . P24acc::F_OSND .']';
+    //                 } else {
+    //                     $payer_txt = Bank::get_payer_from_text($transaction[P24acc::F_OSND]);
+    //                     if (strlen($payer_txt)>0) {
+    //                         $aid = $model->get_abon_id_one_by_payer_name($payer_txt);
+    //                         if ($aid > 0) {
+    //                             $found_pay['abon']        = $model->get_abon($aid);
+    //                             $found_pay['on_billing']  = false;
+    //                             $found_pay['searched_on'] = 'Payments &laquo;'.$payer_txt.'&raquo;';
+    //                             $found_pay['template']    = $payer_txt;
+    //                         } else {
+    //                             $found_pay['on_billing']  = false;
+    //                             $found_pay['searched_on'] = __('Nowhere | Нигде | Ніде');
+    //                         }
+    //                     } else {
+    //                         $found_pay['on_billing']  = false;
+    //                         $found_pay['searched_on'] = __('Nowhere | Нигде | Ніде');
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     return $found_pay;
+    // }
 
 
 
-    /**
-     * Поиск шаблона в массиве шаблонов по заданному тексту
-     * 
-     * Метод проходит по всем элементам массива шаблонов и проверяет, содержится ли
-     * текст из поля F_TEMPLATE текущего шаблона в переданной строке $text.
-     * Возвращает первый найденный шаблон, соответствующий условию поиска.
-     * 
-     * @param array &$templates -- Ссылка на массив шаблонов для поиска (обычно из таблицы TSAbonTmpl)
-     * @param string $text -- Текст, в котором осуществляется поиск шаблона
-     * @return array -- Возвращает найденный шаблон (ассоциативный массив) или пустой массив, если ничего не найдено
-     */
-    public static function get_abon_rec_from_templates(string $text, array &$templates): array {
-        $text = trim($text); // Удаляем пробелы по краям текста
-        if (!empty($text)) { // Проверяем, что текст не пустой
-            // Проходим по каждому шаблону в массиве
-            foreach ($templates as $template) {
-                // Проверяем, что поле шаблона не пустое
-                if(is_empty(trim($template[TSAbonTmpl::F_TEMPLATE]))) {
-                    continue; // Пропускаем итерацию, если шаблон пустой
-                }
-                // Проверяем, содержится ли шаблон в тексте
-                if(strpos($text, $template[TSAbonTmpl::F_TEMPLATE]) !== false) {
-                    return $template; // Возвращаем найденный шаблон
-                }
-            }
-        }
-        return []; // Возвращаем пустой массив, если ничего не нашли
-    }
+    // /**
+    //  * Поиск платежа в биллинге или поиск абонента, для которого этот платеж.
+    //  * Поиск в базе проводится только по номеру документа (ID транзакции в банке).
+    //  * Возвращает ассоциативный массив:
+    //  *      F_FOUND_ON_BILLING: true,       -- найден в биллинге, платёж уже внесён
+    //  *      F_FOUND_SEARCHED_ON: string,    -- коментарий к результатам поиска
+    //  *      F_FOUND_PAY: array,             -- найденный внесённый платёж в базе, соответсвующий транзакции
+    //  *      F_FOUND_ABON: array,            -- если платёж не найден, то абонент, для которого этот платёж
+    //  *      F_FOUND_AID_LIST: array,        -- список предположительных абонентов, к котороым относится платёж
+    //  *      F_FOUND_TEMPLATE: string        -- строка-шаблон для идентификации этого платежа
+    //  * @param array $statement      // -- Запись транзакции полученная из банка
+    //  * @param array $text_fields    // -- array, имена текстовых полей для анализа плательщика и назначени платежа
+    //  * @param int   $ppp_id         // -- ППП к которому относится платёж
+    //  * @param array $templates      // -- ссылка на таблицу шаблонов
+    //  * @return array{
+    //  *      on_billing: true,       // -- найден в биллинге, платёж уже внесён
+    //  *      searched_on: string,    // -- коментарий к результатам поиска
+    //  *      pay: array,             // -- найденный внесённый платёж в базе, соответсвующий транзакции
+    //  *      abon: array,            // -- если платёж не найден, то абонент, для которого этот платёж
+    //  *      aid_list: array,        // -- список предположительных абонентов, к котороым относится платёж
+    //  *      template: string}       // -- строка шаблон для идентификации этого платежа
+    //  */
+    // public static function search_payments_on_billing(array &$statement, array $text_fields = [], int $ppp_id = 0, array &$templates = []): array {
+    //     $model = new AbonModel();
+    //     $found_rec = [];
 
+    //     $found_payments = $model->get_billing_payments_by_no($statement[MonoCard::F_BANK_ID], $ppp_id);
 
-
-    /**
-     * Поиск платежа в биллинге или поиск абонента, для которого этот платеж.
-     * Поиск в базе проводится только по номеру документа (ID транзакции в банке).
-     * Возвращает ассоциативный массив:
-     * [payments]    -- массив найденных платежей, считается найденным, если найден один платёж
-     * [abon]        -- если платёж не найден, то абонент, для которого этот платёж
-     * [on_billing]  -- найден в биллинге, платёж уже внесён
-     * [searched_on] -- коментарий к поиску, где найден платёж или абонент
-     * @param array $transaction
-     * @param int $ppp_id
-     * @param array $templates
-     * @return array{
-     *      payments: array,
-     *      on_billing: bool, 
-     *      abon: array, 
-     *      searched_on: string, 
-     *      template: string}
-     */
-    public static function p24acc_search_payments_on_billing($transaction, $ppp_id, &$templates): array {
-        $model = new AbonModel();
-        $found_pay['payments'] = $model->get_billing_payments_by_no($transaction[P24acc::F_ID], $ppp_id);
-        // if (count($found_pay['payments']) == 0) {
-        //     $found_pay['payments'] = $model->get_billing_payments_id_date_pay($transaction[P24acc::F_NUM_DOC], strtotime($transaction[P24acc::F_DATE_TIME_DAT_OD_TIM_P]), get_numeric_part($transaction[P24acc::F_SUM]), $ppp_id, true);
-        // }
-
-        if (count($found_pay['payments']) > 1) {
-            // Если найдено несколько платежей, то считаем, что НЕ найдено
-            $id_list = array_column($found_pay['payments'], Pay::F_ID);
-            foreach ($id_list as &$item) { $item = url_abon_form($item); }
-            $found_pay['on_billing']  = false;
-            $found_pay['searched_on'] = 'billing ('.__('Many found | Найдено много | Знайдено багато').': '.implode(", ", $id_list).')';
-        } elseif (count($found_pay['payments']) == 1) {
-            $found_pay['abon']        = $model->get_abon($found_pay['payments'][0][Pay::F_ABON_ID]);
-            $found_pay['on_billing']  = true;
-            $found_pay['searched_on'] = 'billing by ID';
-        } else {
-            $aid = Bank::get_abon_id_from_templates($templates, $transaction[P24acc::F_OSND]);
-            if ($aid > 0) {
-                $found_pay['abon']        = $model->get_abon($aid);
-                $found_pay['on_billing']  = false;
-                $found_pay['searched_on'] = 'Templates (by [' . P24acc::F_OSND .'])';
-            } else {
-                $aid = Bank::get_abon_id_from_templates($templates, $transaction[P24acc::F_AUT_CNTR_NAM]);
-                if ($aid > 0) {
-                    $found_pay['abon']        = $model->get_abon($aid);
-                    $found_pay['on_billing']  = false;
-                    $found_pay['searched_on'] = 'Templates (by [' . P24acc::F_AUT_CNTR_NAM . '])';
-                } else {
-                    $aid = $model->get_abon_id_from_text($transaction[P24acc::F_OSND]);
-                    if ($aid > 0) {
-                        $found_pay['abon']        = $model->get_abon($aid);
-                        $found_pay['on_billing']  = false;
-                        $found_pay['searched_on'] = 'from [' . P24acc::F_OSND .']';
-                    } else {
-                        $payer_txt = Bank::get_payer_from_text($transaction[P24acc::F_OSND]);
-                        if (strlen($payer_txt)>0) {
-                            $aid = $model->get_abon_id_one_by_payer_name($payer_txt);
-                            if ($aid > 0) {
-                                $found_pay['abon']        = $model->get_abon($aid);
-                                $found_pay['on_billing']  = false;
-                                $found_pay['searched_on'] = 'Payments &laquo;'.$payer_txt.'&raquo;';
-                                $found_pay['template']    = $payer_txt;
-                            } else {
-                                $found_pay['on_billing']  = false;
-                                $found_pay['searched_on'] = __('Nowhere | Нигде | Ніде');
-                            }
-                        } else {
-                            $found_pay['on_billing']  = false;
-                            $found_pay['searched_on'] = __('Nowhere | Нигде | Ніде');
-                        }
-                    }
-                }
-            }
-        }
-        return $found_pay;
-    }
-
-
-
-    /**
-     * Поиск платежа в биллинге или поиск абонента, для которого этот платеж.
-     * Поиск в базе проводится только по номеру документа (ID транзакции в банке).
-     * Возвращает ассоциативный массив:
-     *      F_FOUND_ON_BILLING: true,       -- найден в биллинге, платёж уже внесён
-     *      F_FOUND_SEARCHED_ON: string,    -- коментарий к результатам поиска
-     *      F_FOUND_PAY: array,             -- найденный внесённый платёж в базе, соответсвующий транзакции
-     *      F_FOUND_ABON: array,            -- если платёж не найден, то абонент, для которого этот платёж
-     *      F_FOUND_AID_LIST: array,        -- список предположительных абонентов, к котороым относится платёж
-     *      F_FOUND_TEMPLATE: string        -- строка-шаблон для идентификации этого платежа
-     * @param array $statement      // -- Запись транзакции полученная из банка
-     * @param array $text_fields    // -- array, имена текстовых полей для анализа плательщика и назначени платежа
-     * @param int   $ppp_id         // -- ППП к которому относится платёж
-     * @param array $templates      // -- ссылка на таблицу шаблонов
-     * @return array{
-     *      on_billing: true,       // -- найден в биллинге, платёж уже внесён
-     *      searched_on: string,    // -- коментарий к результатам поиска
-     *      pay: array,             // -- найденный внесённый платёж в базе, соответсвующий транзакции
-     *      abon: array,            // -- если платёж не найден, то абонент, для которого этот платёж
-     *      aid_list: array,        // -- список предположительных абонентов, к котороым относится платёж
-     *      template: string}       // -- строка шаблон для идентификации этого платежа
-     */
-    public static function search_payments_on_billing(array &$statement, array $text_fields = [], int $ppp_id = 0, array &$templates = []): array {
-        $model = new AbonModel();
-        $found_rec = [];
-
-        $found_payments = $model->get_billing_payments_by_no($statement[MonoCard::F_BANK_ID], $ppp_id);
-
-        if (count($found_payments) > 1) {
-            // Если найдено несколько платежей, то считаем, что НЕ найдено
-            $aid_list = array_column($found_payments, Pay::F_ABON_ID);
-            foreach ($aid_list as &$item) { $item = $model->url_abon_form($item); }
-            $found_rec[self::F_FOUND_ON_BILLING]  = false;
-            $found_rec[self::F_FOUND_SEARCHED_ON] = 'ERROR: on Billing by BankNo ('.__('Many found | Найдено много | Знайдено багато').': '.implode(", ", $aid_list).')';
-            return $found_rec;
-        }
+    //     if (count($found_payments) > 1) {
+    //         // Если найдено несколько платежей, то считаем, что НЕ найдено
+    //         $aid_list = array_column($found_payments, Pay::F_ABON_ID);
+    //         foreach ($aid_list as &$item) { $item = $model->url_abon_form($item); }
+    //         $found_rec[self::F_FOUND_ON_BILLING]  = false;
+    //         $found_rec[self::F_FOUND_SEARCHED_ON] = 'ERROR: on Billing by BankNo ('.__('Many found | Найдено много | Знайдено багато').': '.implode(", ", $aid_list).')';
+    //         return $found_rec;
+    //     }
         
-        if (count($found_payments) == 1) {
-            $found_rec[self::F_FOUND_PAY]         = $found_payments[array_key_first($found_payments)];
-            $found_rec[self::F_FOUND_ABON]        = $model->get_abon($found_payments[array_key_first($found_payments)][Pay::F_ABON_ID]);
-            $found_rec[self::F_FOUND_ON_BILLING]  = true;
-            $found_rec[self::F_FOUND_SEARCHED_ON] = 'billing by ID';
-            return $found_rec;
-        }
+    //     if (count($found_payments) == 1) {
+    //         $found_rec[self::F_FOUND_PAY]         = $found_payments[array_key_first($found_payments)];
+    //         $found_rec[self::F_FOUND_ABON]        = $model->get_abon($found_payments[array_key_first($found_payments)][Pay::F_ABON_ID]);
+    //         $found_rec[self::F_FOUND_ON_BILLING]  = true;
+    //         $found_rec[self::F_FOUND_SEARCHED_ON] = 'billing by ID';
+    //         return $found_rec;
+    //     }
 
-        /**
-         * Поиск по шаблонам
-         */
-        foreach ($text_fields as $field) {
-            $aid = Bank::get_abon_id_from_templates($templates, ($statement[$field] ?? ''));
-            if ($aid > 0) {
-                $found_rec[self::F_FOUND_ABON]        = $model->get_abon($aid);
-                $found_rec[self::F_FOUND_ON_BILLING]  = false;
-                $found_rec[self::F_FOUND_SEARCHED_ON] = 'Templates (by [' . $statement[$field] . '])';
-                return $found_rec;
-            }
-        }
+    //     /**
+    //      * Поиск по шаблонам
+    //      */
+    //     foreach ($text_fields as $field) {
+    //         $aid = TemplateController::get_abon_id_from_templates($templates, ($statement[$field] ?? ''));
+    //         if ($aid > 0) {
+    //             $found_rec[self::F_FOUND_ABON]        = $model->get_abon($aid);
+    //             $found_rec[self::F_FOUND_ON_BILLING]  = false;
+    //             $found_rec[self::F_FOUND_SEARCHED_ON] = 'Templates (by [' . $statement[$field] . '])';
+    //             return $found_rec;
+    //         }
+    //     }
 
-        /**
-         * Поиск ID в текстовых полях
-         */
-        $aid_list = [];
-        foreach ($text_fields as $field) {
-            $aid_list = array_unique(array_merge($aid_list, $model->get_abon_id_list_from_text(($statement[$field] ?? '')))); 
-        }
+    //     /**
+    //      * Поиск ID в текстовых полях
+    //      */
+    //     $aid_list = [];
+    //     foreach ($text_fields as $field) {
+    //         $aid_list = array_unique(array_merge($aid_list, $model->get_abon_id_list_from_text(($statement[$field] ?? '')))); 
+    //     }
 
-        if (count($aid_list) == 1) {
-            $found_rec[self::F_FOUND_ABON]        = $model->get_abon($aid_list[array_key_first($aid_list)]);
-            $found_rec[self::F_FOUND_ON_BILLING]  = false;
-            $found_rec[self::F_FOUND_SEARCHED_ON] = 'on Text Fields';
-            return $found_rec;
-        }
+    //     if (count($aid_list) == 1) {
+    //         $found_rec[self::F_FOUND_ABON]        = $model->get_abon($aid_list[array_key_first($aid_list)]);
+    //         $found_rec[self::F_FOUND_ON_BILLING]  = false;
+    //         $found_rec[self::F_FOUND_SEARCHED_ON] = 'on Text Fields';
+    //         return $found_rec;
+    //     }
 
-        if (count($aid_list) > 1) {
-            foreach ($aid_list as &$item) { $item = $model->url_abon_form($item); }
-            $found_rec[self::F_FOUND_ON_BILLING]  = false;
-            $found_rec[self::F_FOUND_SEARCHED_ON] = 'billing ('.__('Many found | Найдено много | Знайдено багато').': '.implode(" | ", $aid_list).')';
-            return $found_rec;
-        }
+    //     if (count($aid_list) > 1) {
+    //         foreach ($aid_list as &$item) { $item = $model->url_abon_form($item); }
+    //         $found_rec[self::F_FOUND_ON_BILLING]  = false;
+    //         $found_rec[self::F_FOUND_SEARCHED_ON] = 'billing ('.__('Many found | Найдено много | Знайдено багато').': '.implode(" | ", $aid_list).')';
+    //         return $found_rec;
+    //     }
 
-        /**
-         * Поиск имени плательщика из текстовых полей
-         * Поиск абонента по имени плательщика
-         */
-        foreach ($text_fields as $field) {
-            $payer_txt = Bank::get_payer_from_text($statement[$field] ?? '');
-            if (!empty($payer_txt)) {
-                $aid_list = $model->get_abon_id_list_by_payer_name($payer_txt);
-                if(count($aid_list) > 0) {
-                    if (count($aid_list) == 1) {
-                        $found_rec[self::F_FOUND_ABON]    = $model->get_abon($aid_list[array_key_first($aid_list)]);
-                    }
-                    foreach ($aid_list as &$item) { $item = $model->url_abon_form($item); }
-                    $found_rec[self::F_FOUND_ON_BILLING]  = false;
-                    $found_rec[self::F_FOUND_SEARCHED_ON] = 'on Payments ('.__('Found | Найдено | Знайдено').': '.implode(" | ", $aid_list).')';
-                    $found_rec[self::F_FOUND_AID_LIST]    = $aid_list;
-                    $found_rec[self::F_FOUND_TEMPLATE]    = $payer_txt;
-                    return $found_rec;
-                }
-            }
-        }
+    //     /**
+    //      * Поиск имени плательщика из текстовых полей
+    //      * Поиск абонента по имени плательщика
+    //      */
+    //     foreach ($text_fields as $field) {
+    //         $payer_txt = Bank::get_payer_from_text($statement[$field] ?? '');
+    //         if (!empty($payer_txt)) {
+    //             $aid_list = $model->get_abon_id_list_by_payer_name($payer_txt);
+    //             if(count($aid_list) > 0) {
+    //                 if (count($aid_list) == 1) {
+    //                     $found_rec[self::F_FOUND_ABON]    = $model->get_abon($aid_list[array_key_first($aid_list)]);
+    //                 }
+    //                 foreach ($aid_list as &$item) { $item = $model->url_abon_form($item); }
+    //                 $found_rec[self::F_FOUND_ON_BILLING]  = false;
+    //                 $found_rec[self::F_FOUND_SEARCHED_ON] = 'on Payments ('.__('Found | Найдено | Знайдено').': '.implode(" | ", $aid_list).')';
+    //                 $found_rec[self::F_FOUND_AID_LIST]    = $aid_list;
+    //                 $found_rec[self::F_FOUND_TEMPLATE]    = $payer_txt;
+    //                 return $found_rec;
+    //             }
+    //         }
+    //     }
         
-        $found_rec[self::F_FOUND_ON_BILLING] = false;
-        $found_rec[self::F_FOUND_SEARCHED_ON] = __('Nowhere | Нигде | Ніде');
+    //     $found_rec[self::F_FOUND_ON_BILLING] = false;
+    //     $found_rec[self::F_FOUND_SEARCHED_ON] = __('Nowhere | Нигде | Ніде');
 
-        // debug($found_rec, '1 $found_rec');
+    //     // debug($found_rec, '1 $found_rec');
 
-        return $found_rec;
-    }
+    //     return $found_rec;
+    // }
 
 
 
@@ -613,7 +560,7 @@ class Bank
         /**
          * Поиск по шаблонам
          */
-        $template = Bank::get_abon_rec_from_templates($pay_rec[Pay::F_DESCRIPTION], $templates);
+        $template = TemplateController::get_abon_rec_from_templates($pay_rec[Pay::F_DESCRIPTION], $templates);
         $aid = $template[TSAbonTmpl::F_ABON_ID] ?? 0;
         if ($aid > 0) {
             $found_rec[self::F_FOUND_ABON]        = $model->get_abon($aid);
@@ -772,179 +719,37 @@ class Bank
 
 
 
-    public static function template_has_exist(int $ppp_id, string $template): bool { 
-        // !!! нужно уменьшить количество запросов, свести к одному. или оставить как есть.
-        $model = new AbonModel();
-        $sql = "SELECT `id` FROM `ts_abons_templates` WHERE `ppp_id`=".$ppp_id." AND `template`='".$template."'";
-        $count = $model->get_count_by_sql($sql);
-        return $count > 0;
-    }    
+    // public static function template_has_exist(int $ppp_id, string $template): bool { 
+    //     // !!! нужно уменьшить количество запросов, свести к одному. или оставить как есть.
+    //     $model = new AbonModel();
+    //     $sql = "SELECT `id` FROM `ts_abons_templates` WHERE `ppp_id`=".$ppp_id." AND `template`='".$template."'";
+    //     $count = $model->get_count_by_sql($sql);
+    //     return $count > 0;
+    // }    
 
 
 
-    public static function template_add(int $ppp_id, int $abon_id, string $template): int|false {
-
-        $model = new AbonModel();
-
-        // Проверка чтобы такой записи небыло
-        $template = $model->quote($template);
-        if(!self::template_has_exist($ppp_id, $template)) {
-            // добавление новой записи
-            $row = [
-                'ppp_id' => $ppp_id,
-                'abon_id' => $abon_id,
-                'template' => $template,
-                'modified_uid' => App::get_user_id(),
-                'modified_date' => time(),
-                'created_uid' => App::get_user_id(),
-                'created_date' => time(),
-            ];
-            return $model->insert_row('ts_abons_templates', $row);
-        } else {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Такая запись шаблона в базе есть'));
-            return false;
-        }
-    }
-
-
-
-    /**
-     * Проверяет, есть ли такой платёж
-     * @param int    $abon_id      Абонент, на которого зачисляется поалёж
-     * @param float  $pay_fakt     Фактическая сумма пришедшая на р/с
-     * @param float  $pay          Сумма платежа вносимая на ЛС
-     * @param string $pay_date_str Дата платежа
-     * @param int    $pay_type_id  ID Типа платежа
-     * @param string $description  Описание платежа
-     * @return bool TRUE если такой платёж есть
-     */
-    public static function pay_has_exist(
-            int     $abon_id,        //int     Абонент, на которого зачисляется поалёж
-            float   $pay_fakt,       //float   Фактическая сумма пришедшая на p/c
-            float   $pay,            //float   Сумма платежа вносимая на ЛС
-            string  $pay_date_str,   //str     Дата платежа
-            int     $pay_type_id,    //int     ID Типа платежа
-            string  $description     //text    Описание платежа
-            ) 
-    {
-        $model = new AbonModel();
-        $sql = "SELECT `id` "
-                . "FROM `payments` "
-                . "WHERE "
-                . "`abon_id`='".$abon_id."' AND "
-                . "`pay_fakt`='".$pay_fakt."' AND "
-                . "`pay`='".$pay."' AND "
-                . "`pay_date`=UNIX_TIMESTAMP('".$pay_date_str."') AND "
-                . "`pay_type_id`='".$pay_type_id."' AND "
-            //. "`pay_ppp_id`='".$pay_ppp_id."' AND "
-                . "`description` like '%". $model->quote(preg_replace('/\s+/', '%', trim($description)))."%' ";
-        //echo $SQL."<hr>";
-        return $model->get_count_by_sql($sql)>0;
-    }
-
-
-
-    /**
-     * Добавление платежа на ЛС
-     * @param int    $abon_id       Абонент, на которого зачисляется поалёж
-     * @param float  $pay_fakt      Фактическая сумма пришедшая на р/с
-     * @param float  $pay_acnt      Сумма платежа вносимая на ЛС
-     * @param string $pay_date_str  Дата платежа
-     * @param string $pay_bank_no   Банковский номер операции
-     * @param int    $pay_type_id   ID Типа платежа
-     * @param int    $ppp_id        ID ППП
-     * @param string $description   Описание платежа
-     */
-    public static function pay_add(
-            int    $abon_id,        //int     Абонент, на которого зачисляется поалёж
-            float  $pay_fakt,       //float   Фактическая сумма пришедшая на р/с
-            float  $pay_acnt,       //float   Сумма платежа вносимая на ЛС
-            string $pay_date_str,   //str     Дата платежа
-            string $pay_bank_no,    //tiny    Банковский номер операции
-            int    $pay_type_id,    //int     ИД Типа платежа
-            int    $ppp_id,         //int     ID ППП
-            string $description,    //text    Краткое описание платежа
-            ): int|false 
-    {
-
-        $model = new AbonModel();
-        // Проверка чтобы такой записи небыло
-        if(!self::pay_has_exist($abon_id, $pay_fakt, $pay_acnt, $pay_date_str, $pay_type_id, $description)) {
-            // добавление новой записи
-            $row = [
-                Pay::F_AGENT_ID      => App::get_user_id(), 
-                Pay::F_ABON_ID       => $abon_id, 
-                Pay::F_PAY_FAKT      => $pay_fakt, 
-                Pay::F_PAY_ACNT      => $pay_acnt, 
-                Pay::F_DATE          => strtotime($pay_date_str), 
-                Pay::F_BANK_NO       => $pay_bank_no, 
-                Pay::F_TYPE_ID       => $pay_type_id, 
-                Pay::F_PPP_ID        => $ppp_id, 
-                Pay::F_DESCRIPTION   => $model->quote($description), 
-                Pay::F_CREATION_DATE => time(), 
-                Pay::F_CREATION_UID  => App::get_user_id(), 
-                Pay::F_MODIFIED_DATE => time(), 
-                Pay::F_MODIFIED_UID  => App::get_user_id(),
-            ];
-
-            $id = $model->insert_row(Pay::TABLE, $row);
-
-            if ($id !== false ) {
-                $model->price_apply_auto_ON($abon_id);
-                $model->recalc_abon($abon_id);
-            }
-            return true;
-        } else {
-            MsgQueue::msg(MsgType::INFO_AUTO, "Такая запись в базе есть");
-        }
-        return false;
-    }
-
-
-
-    /**
-     * Редактирование имеющейся записи
-     * @param int $id
-     * @param int $abon_id
-     * @param float $pay_fakt
-     * @param float $pay_acnt
-     * @param string $pay_date_str
-     * @param string $pay_bank_no
-     * @param int $pay_type_id
-     * @param int $pay_ppp_id
-     * @param string $description
-     * @return void
-     */
-    public static function pay_update(
-            int    $id,             //int     ID записи в базе
-            int    $abon_id,        //int     Абонент, на которого зачисляется поалёж
-            float  $pay_fakt,       //float   Фактическая сумма пришедшая на счёт
-            float  $pay_acnt,       //float   Сумма платежа вносимая на ЛС
-            string $pay_date_str,   //str     Дата платежа
-            string $pay_bank_no,    //tiny    Банковский номер операции
-            int    $pay_type_id,    //int     ИД Типа платежа
-            int    $pay_ppp_id,     //int     Изменить Изменить
-            string $description     //text    Краткое описание платежа
-            ) 
-    {
-        $model = new AbonModel();    
-        $row[Pay::F_ID]          = $id;
-        $row[Pay::F_AGENT_ID]    = App::get_user_id();
-        $row[Pay::F_ABON_ID]     = $abon_id;
-        $row[Pay::F_PAY_FAKT]    = $pay_fakt;
-        $row[Pay::F_PAY_ACNT]    = $pay_acnt;
-        $row[Pay::F_DATE]        = strtotime($pay_date_str);
-        $row[Pay::F_BANK_NO]     = $pay_bank_no;
-        $row[Pay::F_DESCRIPTION] = $model->quote($description);
-        if ($model->validate_id( "payments_types", $pay_type_id, 'id')) {
-            $row[Pay::F_TYPE_ID] = $pay_type_id;
-        }
-        if ($model->validate_ppp($pay_ppp_id)) {
-            $row[Pay::F_PPP_ID]  = $pay_ppp_id;
-        }
-        $model->update_row_by_id(Pay::TABLE, $row, Pay::F_ID);
-        $model->recalc_abon($abon_id);
-    }
+    // public static function template_add(int $ppp_id, int $abon_id, string $template): int|false {
+    //     $model = new AbonModel();
+    //     // Проверка чтобы такой записи небыло
+    //     $template = $model->quote($template);
+    //     if(!self::template_has_exist($ppp_id, $template)) {
+    //         // добавление новой записи
+    //         $row = [
+    //             'ppp_id' => $ppp_id,
+    //             'abon_id' => $abon_id,
+    //             'template' => $template,
+    //             'modified_uid' => App::get_user_id(),
+    //             'modified_date' => time(),
+    //             'created_uid' => App::get_user_id(),
+    //             'created_date' => time(),
+    //         ];
+    //         return $model->insert_row('ts_abons_templates', $row);
+    //     } else {
+    //         MsgQueue::msg(MsgType::ERROR_AUTO, __('Такая запись шаблона в базе есть'));
+    //         return false;
+    //     }
+    // }
 
 
 
@@ -1056,7 +861,7 @@ class Bank
                                 // Редактирование платежа
                                 . (can_edit(Module::MOD_PAYMENTS) 
                                     ?   '<a href="'.Pay::URI_FORM.'/'.$found_rec[Bank::F_FOUND_PAY][Pay::F_ID].'" '
-                                            . 'class="btn btn-sm btn-outline-info align-items-center fs-8 py-0 px-2 ms-2" '
+                                            . 'class="btn btn-sm btn-outline-info align-items-center fs-8 py-0 px-2 ms-3" '
                                             . 'title="' . __('Редактировать платеж') . '" '
                                             . 'target="_blank">'
                                             . '<span class="fw-bold">₴</span>'
@@ -1078,8 +883,11 @@ class Bank
                 
             case Pay::F_ABON_ID:
                 $s .=   ($found_rec[Bank::F_FOUND_ON_BILLING]
-                            ?   url_abon_form($found_rec[Bank::F_FOUND_PAY][$field])
-                                // . '<span title="'.Pay::field_title($field).'">'.h($found_rec[Bank::F_FOUND_PAY][$field]).'</span>'
+                            ?   (
+                                    $found_rec[Bank::F_FOUND_PAY][$field] > 0
+                                        ?   url_abon_form($found_rec[Bank::F_FOUND_PAY][$field])
+                                        :   '<span title="'.__('Не распределённый платёж').'" class="text-bg-danger py-1 px-4">'.url_abon_form($found_rec[Bank::F_FOUND_PAY][$field]).'<span>'
+                                )
 
                             :   '<div class="row g-0 py-1 align-items-center w-100">'
                                     . '<div class="col-6">'
@@ -1106,6 +914,37 @@ class Bank
                                                     . 'title="' . __('Full list of subscriber payments') . '" '
                                                     . 'target="_blank">'
                                                     . '<span class="fw-bold">₴₴</span>'
+                                                    . '</a>'
+                                            :   '')
+                                        // Кнопка Поиска ОДНОГО платежа
+                                        . (can_view([Module::MOD_PAYMENTS]) && !empty($found_rec[Bank::F_FOUND_ABON][Abon::F_ID])
+                                            ?   '<a href="'.Pay::URI_SEARCH.'?'.http_build_query([
+                                                                Pay::F_ABON_ID => $found_rec[Bank::F_FOUND_ABON][Abon::F_ID],
+                                                                Pay::F_DATE => $pay_rec[Pay::F_DATE],
+                                                                Pay::F_PAY_FAKT => $pay_rec[Pay::F_PAY_FAKT],
+                                                                Pay::F_TYPE_ID => $pay_rec[Pay::F_TYPE_ID],
+                                                                Pay::F_PPP_ID => $pay_rec[Pay::F_PPP_ID],
+                                                                Pay::F_DESCRIPTION => $pay_rec[Pay::F_DESCRIPTION],
+                                                            ]) . '" '
+                                                    . 'class="btn btn-outline-info align-items-center fs-6 px-2 py-1 ms-2" '
+                                                    . 'title="' . __('Поиск одного платежа среди платежей, уже внесённых в биллинг') . '" '
+                                                    . 'target="_blank">'
+                                                    . '<span class="fw-bold">?1₴</span>'
+                                                    . '</a>'
+                                            :   '')
+                                        // Кнопка Поиска СПИСКА платежей
+                                        . (can_view([Module::MOD_PAYMENTS]) && empty($found_rec[Bank::F_FOUND_ABON][Abon::F_ID])
+                                            ?   '<a href="'.Pay::URI_SEARCH.'?'.http_build_query([
+                                                                Pay::F_DATE => $pay_rec[Pay::F_DATE],
+                                                                Pay::F_PAY_FAKT => $pay_rec[Pay::F_PAY_FAKT],
+                                                                Pay::F_TYPE_ID => $pay_rec[Pay::F_TYPE_ID],
+                                                                Pay::F_PPP_ID => $pay_rec[Pay::F_PPP_ID],
+                                                                Pay::F_DESCRIPTION => $pay_rec[Pay::F_DESCRIPTION],
+                                                            ]) . '" '
+                                                    . 'class="btn btn-outline-info align-items-center fs-6 px-2 py-1 ms-2" '
+                                                    . 'title="' . __('Поиск списка платежей среди платежей, уже внесённых в биллинг') . '" '
+                                                    . 'target="_blank">'
+                                                    . '<span class="fw-bold">?₴₴</span>'
                                                     . '</a>'
                                             :   '')
                                     . '</div>'
@@ -1152,7 +991,7 @@ class Bank
                 // debug($found_rec, '$found_rec');
                 // debug($pay_rec, '$pay_rec');
                 $s .=   ($found_rec[Bank::F_FOUND_ON_BILLING] 
-                            ?   '<span>'.(!is_null($found_rec[Bank::F_FOUND_PAY][$field]) ? number_format($found_rec[Bank::F_FOUND_PAY][$field], 2, '.', ' '):"-" ).'</span>'
+                            ?   '<span class="text-nowrap">'.(!is_null($found_rec[Bank::F_FOUND_PAY][$field]) ? number_format($found_rec[Bank::F_FOUND_PAY][$field], 2, '.', ' '):"-" ).'</span>'
                             :   (!empty($pay_rec[$field]) 
                                     ?   '<span title="'.Pay::field_title($field).'">'.number_format($pay_rec[$field], 2, '.', ' ').'</span>'
                                         . '<input type="hidden" name="'.Bank::POST_REC .'['.$index.'][' . $field . ']" value="' . ($pay_rec[$field]) . '"> '
@@ -1163,16 +1002,20 @@ class Bank
 
             case Pay::F_DATE:
                 $s .=   ($found_rec[Bank::F_FOUND_ON_BILLING] 
-                            ?   '<span>'.date('d.m.Y H:i:s', $found_rec[Bank::F_FOUND_PAY][$field]).'</span>'
-                            :   '<span>'.date('d.m.Y H:i:s', $pay_rec[$field]).'</span>'
+                            ?   '<span class="text-nowrap">'.date('d.m.Y H:i:s', $found_rec[Bank::F_FOUND_PAY][$field]).'</span>'
+                            :   '<span class="text-nowrap">'.date('d.m.Y H:i:s', $pay_rec[$field]).'</span>'
                                 . '<input type="hidden" name="'.Bank::POST_REC .'['.$index.'][' . $field . ']" value="' . ($pay_rec[$field]) . '"> '
                         );
                 break;
 
             case Pay::F_BANK_NO:
                 $s .=   ($found_rec[Bank::F_FOUND_ON_BILLING] 
-                            ?   '<span title="'.Pay::field_title($field).'">'.h($found_rec[Bank::F_FOUND_PAY][$field]).'</span>'
-                            :   '<span title="'.Pay::field_title($field).'">'.h($pay_rec[$field]).'</span>'
+                            ?   '<span class="text-nowrap" title="'.Pay::field_title($field).'">'.h($found_rec[Bank::F_FOUND_PAY][$field]).'</span>'
+                            :   '<span class="text-nowrap" title="'.Pay::field_title($field).'">'.h($pay_rec[$field]).'</span>'
+                                . '<button type="button" '
+                                    . 'class="btn btn-outline-info btn-sm align-items-center fs-8 py-0 px-2 ms-3 copy-btn" data-text="'.h($pay_rec[$field]).'">'
+                                    . '<img src="'.Icons::SRC_ICON_CLIPBOARD.'" title="'.__('Скопировать Номер транзакции в clipboard').'" alt="[copy]" height="16">'
+                                . '</button>'
                                 . '<input type="hidden" name="'.Bank::POST_REC .'['.$index.'][' . $field . ']" value="' . h($pay_rec[$field]) . '"> '
                         );
                 break;
@@ -1236,8 +1079,8 @@ class Bank
                 }
                 break;
             
-            case Pay::F_SAVE_SUFFIX:
-                $s .=   ($pay_rec[Pay::F_SAVE_SUFFIX] 
+            case Pay::F_SAVE_DESCR_SUFFIX:
+                $s .=   ($pay_rec[Pay::F_SAVE_DESCR_SUFFIX] 
                             ?   '<span title="'.Pay::field_title($field).'">'.h($pay_rec[$field]).'</span>'
                                 . '<input type="hidden" name="'.Bank::POST_REC.'['.$index.']['.$field.']" value="' . h($pay_rec[$field]) . '"> '
                             :   ''

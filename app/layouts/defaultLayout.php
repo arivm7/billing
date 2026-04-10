@@ -179,8 +179,8 @@ use billing\core\base\View;
                     <!-- Блок с копирайтом -->
                     <div class="text-start fs-6 mt-2 mt-sm-0">
                         © RI-Network 2006-<?=date('Y');?>.<br>
-                        <a href="tel:+380983633578">+38 (098) 363-35-78</a>, <a href="tel:+380936480009">+38 (093) 648-00-09</a><br>
-                        <a href="tel:+380939576944">+38 (093) 957-69-44</a>, <a href="tel:+380502685229">+38 (050) 268-52-29</a>
+                        <a href="tel:+380983633578"><span class="text-secondary">+38 (098) 363-35-78</span></a>, <a href="tel:+380936480009"><span class="text-secondary">+38 (093) 648-00-09</span></a><br>
+                        <a href="tel:+380939576944"><span class="text-secondary">+38 (093) 957-69-44</span></a>, <a href="tel:+380502685229"><span class="text-secondary">+38 (050) 268-52-29</span></a>
                     </div>
                 </div>
 

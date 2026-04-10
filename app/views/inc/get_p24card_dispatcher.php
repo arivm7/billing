@@ -12,7 +12,29 @@
  */
 
 /**
- * Description of get_p24card_dispatcher.php
+ * Диспетчер для получения платежей по карте P24.
+ * Поскольку АПИ нет, то данные получаются копипастом в текстовое поле,
+ * которое далее обрабатывается как талица.
+ * 
+ * app/controllers/BankController.php
+ *          public function getAction()
+ *                  app/views/Bank/getView.php
+ *                          app/views/inc/get_monocard_dispatcher.php
+ *                                  app/views/inc/get_monocard_accounts.php
+ *                                  app/views/inc/get_navigation.php
+ *                                  app/views/inc/get_monocard_statement.php
+ *                                  app/views/inc/get_pay_rec_form.php
+ * 
+ *                          app/views/inc/get_p24acc_dispatcher.php
+ *                                  app/views/inc/get_p24acc_accounts.php
+ *                                  app/views/inc/get_navigation.php
+ *                                  app/views/inc/get_p24acc_transaction_card.php
+ *                                  app/views/inc/get_pay_rec_form.php
+ * 
+ *                          app/views/inc/get_p24card_dispatcher.php
+ *                                  app/views/inc/get_navigation.php
+ *                                  app/views/inc/get_p24card_statement.php
+ *                                  app/views/inc/get_pay_rec_form.php
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
@@ -74,10 +96,18 @@ Lang::load_inc(__FILE__);
 <?php else: ?>
 
     <div class="card text-center w-auto" >
-        <h1 class="fs-6">Внесение платежей из текстового поля</h1>
         <form method="post" action="">
-            <textarea class="w-100" rows=15 cols=60 name="<?= P24card::F_RAW_TEXT ?>"></textarea><br><br>
-            <input value='>>>' type=submit>
+            <div class="card-header">
+                <h2 class="fs-4 mt-1">Внесение платежей из текстового поля</h2>
+            </div>
+            <div class="card-body m-3">
+                <textarea class="w-100" rows=15 cols=60 name="<?= P24card::F_RAW_TEXT ?>"></textarea>
+            </div>
+            <div class="card-footer text-center">
+                <button type="submit" class="btn btn-primary px-5">
+                    >>>
+                </button>
+            </div>
         </form>
     </div>
 

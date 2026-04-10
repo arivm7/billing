@@ -33,6 +33,61 @@ use config\tables\TSAbonTmpl;
 class TemplateController extends AppBaseController {
 
 
+
+    /**
+     * Возвращает abon_id из таблицы шаблонов по входной строке
+     * @param array $templates -- ссылка на массив шаблонов (из БД/TSAbonTmpl::TABLE)
+     * @param string $text -- входная строка
+     * @return int -- abon_id или 0 если не найдено
+     */
+    public static function get_abon_id_from_templates(array &$templates, string $text): int {
+        $text = trim($text);
+        if (!empty($text)) {
+            foreach ($templates as $template) {
+                if(is_empty(trim($template[TSAbonTmpl::F_TEMPLATE]))) {
+                    continue;
+                }
+                if(strpos($text, $template[TSAbonTmpl::F_TEMPLATE]) !== false) {
+                    return $template[TSAbonTmpl::F_ABON_ID];
+                }
+            }
+        }
+        return 0;
+    }
+
+
+
+    /**
+     * Поиск шаблона в массиве шаблонов по заданному тексту
+     * 
+     * Метод проходит по всем элементам массива шаблонов и проверяет, содержится ли
+     * текст из поля F_TEMPLATE текущего шаблона в переданной строке $text.
+     * Возвращает первый найденный шаблон, соответствующий условию поиска.
+     * 
+     * @param array &$templates -- Ссылка на массив шаблонов для поиска (обычно из таблицы TSAbonTmpl)
+     * @param string $text -- Текст, в котором осуществляется поиск шаблона
+     * @return array -- Возвращает найденный шаблон (ассоциативный массив) или пустой массив, если ничего не найдено
+     */
+    public static function get_abon_rec_from_templates(string $text, array &$templates): array {
+        $text = trim($text); // Удаляем пробелы по краям текста
+        if (!empty($text)) { // Проверяем, что текст не пустой
+            // Проходим по каждому шаблону в массиве
+            foreach ($templates as $template) {
+                // Проверяем, что поле шаблона не пустое
+                if(is_empty(trim($template[TSAbonTmpl::F_TEMPLATE]))) {
+                    continue; // Пропускаем итерацию, если шаблон пустой
+                }
+                // Проверяем, содержится ли шаблон в тексте
+                if(strpos($text, $template[TSAbonTmpl::F_TEMPLATE]) !== false) {
+                    return $template; // Возвращаем найденный шаблон
+                }
+            }
+        }
+        return []; // Возвращаем пустой массив, если ничего не нашли
+    }
+
+
+
     /**
      * Метод для вставки шаблона в базу данных
      * 
@@ -41,7 +96,7 @@ class TemplateController extends AppBaseController {
      * @param string $template Текст шаблона
      * @return bool Возвращает true при успешной вставке, иначе false
      */
-    public static function insert(int $ppp_id, int $abon_id, string $template): bool { 
+    public static function insert(?int $ppp_id, ?int $abon_id, ?string $template): bool { 
 
         /**
          * Добавляем шаблон
