@@ -42,6 +42,7 @@ use config\P24acc;
 use config\tables\Firm;
 use config\tables\Invoice;
 use config\tables\TSAbonTmpl;
+use config\tables\TSUserFirm;
 
 require_once DIR_LIBS . '/billing_functions.php';
 
@@ -1310,6 +1311,22 @@ class AbonModel extends UserModel {
     }
 
 
+    /**
+     * Через Сотрудники - Предприятия - ППП
+     */
+    function is_my_ppp(int $ppp_id, ?int $user_id = null): bool { 
+        if (empty($user_id)) {
+            $user_id = App::get_user_id();
+        }
+        return 
+            1 === $this->get_count_by_sql(
+                    sql: "SELECT * FROM `".Ppp::TABLE."` WHERE "
+                            . "(`".Ppp::F_ID."` = {$ppp_id}) AND "
+                            . "(`".Ppp::F_FIRM_ID."` IN (SELECT `".TSUserFirm::F_FIRM_ID."` FROM `".TSUserFirm::TABLE."` WHERE `".TSUserFirm::F_USER_ID."` = {$user_id}))",
+                    field_count: Ppp::F_ID);
+    }
+
+
 
     /**
      * Получение списка пунктов приёма платежей (ППП), связанных с указанным или текущим пользователем.
@@ -1347,11 +1364,14 @@ class AbonModel extends UserModel {
     }
 
 
-    function is_ppp_my(int $ppp_id, int|null $user_id = null): bool {
-        $ppp_list = $this->get_ppp_my(user_id: $user_id);
-        $ppp = find_row_by_field_value($ppp_list, Ppp::F_ID, $ppp_id);
-        return !is_null($ppp);
-    }
+    // /**
+    //  * Через TS_USER_TP
+    //  */
+    // function is_ppp_my(int $ppp_id, int|null $user_id = null): bool {
+    //     $ppp_list = $this->get_ppp_my(user_id: $user_id);
+    //     $ppp = find_row_by_field_value($ppp_list, Ppp::F_ID, $ppp_id);
+    //     return !is_null($ppp);
+    // }
 
 
 

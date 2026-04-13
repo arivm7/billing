@@ -64,6 +64,12 @@ class PaymentsController extends AppBaseController {
         $pay = $model->get_pay($pay_id);
         $abon_id = $pay[Pay::F_ABON_ID] ?? 0;
 
+        if (!$model->is_my_ppp($pay[Pay::F_PPP_ID]))
+        {
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('You are not an employee of the enterprise servicing the PAP from which you are trying to delete the payment | Вы не сотрудник предприятия, обслуживающего ППП, с колторого Вы пытаетесь удалить платёж | Ви не співробітник підприємства, що обслуговує ППП, з якого Ви намагаєтеся видалити платіж'));
+            redirect();
+        }
+        
         if (empty($pay_id) || !$model->validate_id(table_name: Pay::TABLE, id_value: $pay_id, field_id: Pay::F_ID)) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('The payment ID is incorrect'));
             redirect();
@@ -684,6 +690,142 @@ class PaymentsController extends AppBaseController {
 
 
     /**
+     * Поиск ошибочных платежей
+     */
+    function wrongsAction() {
+
+        if (!App::$auth->isAuth) {
+            MsgQueue::msg(MsgType::ERROR, __('Please log in'));
+            redirect();
+        }
+
+        if (!can_use(Module::MOD_PAYMENTS)) {
+            MsgQueue::msg(MsgType::ERROR, __('You have no rights for this module'));
+            redirect();
+        }
+        
+
+        $model = new AbonModel();
+
+
+        /**
+         * Начальная дата поиска ошибочных платежей
+         */
+        $filter[Doubles::F_DATE1_TS] = 
+                (isset($_POST[Doubles::F_DATE1_STR])
+                    ? strtotime(h($_POST[Doubles::F_DATE1_STR]))
+                    : time() - App::get_config('duplicates_search_time'));
+
+        /**
+         * Список ППП по которым искать платежи, 
+         */
+        $filter[Doubles::F_PPP_LIST] = $model->get_rows_by_sql(Doubles::get_ppp_id_list_sql());
+
+        /**
+         * Список ID ППП для поиска платежей
+         */
+        $filter[Doubles::F_PPP_INCLUDE] = [];
+
+        /**
+         * Собираем 
+         * @var array $filter[Doubles::F_PPP_LIST]
+         * @var array $filter[Doubles::F_PPP_INCLUDE]
+         */
+        foreach ($filter[Doubles::F_PPP_LIST] as &$ppp) {
+            $ppp[Doubles::F_PPP_INCLUDE] = 
+                    (isset($_POST[Doubles::F_PPP_INCLUDE])
+                        ? ((isset($_POST[Doubles::F_PPP_INCLUDE][$ppp[Ppp::F_ID]]) && ($_POST[Doubles::F_PPP_INCLUDE][$ppp[Ppp::F_ID]] == 1)) 
+                            ? 1 
+                            : 0)
+                        : Doubles::BY_PPP_INCLUDE_AUTOSELECT);
+            if ($ppp[Doubles::F_PPP_INCLUDE]) {
+                $filter[Doubles::F_PPP_INCLUDE][] = $ppp[Ppp::F_ID];
+            }
+        }
+
+        if (empty($filter[Doubles::F_PPP_INCLUDE])) {
+            MsgQueue::msg(MsgType::ERROR, __('Нужно выбрать один или более ППП'));
+            redirect();
+        }
+
+
+        $errors = [
+
+            'date' => [
+                'title' => __('Ошибки даты платежа'),
+                'sql' => "SELECT * FROM `payments` WHERE "
+                            // старые записи
+                            . "(`pay_date` < UNIX_TIMESTAMP('".App::get_config('payment_error_before_date')."')) "
+                            . "AND ( "
+                                . Pay::F_PPP_ID." IN (".implode(',', $filter[Doubles::F_PPP_INCLUDE]).") "
+                            . ")",
+                'pager' => __('Дата не корректна'),
+            ],
+
+            'fields' => [
+                'title' => __('Ошибки пустых полей'),
+                'sql' => "SELECT * FROM `payments` WHERE \n"
+                            . "(".Pay::F_PPP_ID." IN (".implode(',', $filter[Doubles::F_PPP_INCLUDE]).")) "
+                            . "AND ( "
+                                // пустые поля
+                                .    "(`pay_bank_no` IS NULL OR `pay_bank_no` = '') \n"
+                                . "OR (`abon_id` IS NULL) \n"
+                                . "OR (`pay_type_id` IS NULL OR `pay_type_id` = 0) \n"
+                                . "OR (`pay_ppp_id` IS NULL OR `pay_ppp_id` = 0) \n"
+                            . ")",
+            ],
+
+            'incorrect' => [
+                'title' => __('Не корректные суммы платежей'),
+                'sql' => "SELECT * FROM `payments` WHERE \n"
+                            . "(".Pay::F_PPP_ID." IN (".implode(',', $filter[Doubles::F_PPP_INCLUDE]).")) "
+                            . "AND ( "
+                                // некорректные суммы
+                                . "(`pay_fakt` > 0 AND `pay` = 0) \n"
+                            . ")",
+            ],
+
+            'empty' => [
+                'title' => __('Нулевые платежи'),
+                'sql' => "SELECT * FROM `payments` WHERE \n"
+                            . "(".Pay::F_PPP_ID." IN (".implode(',', $filter[Doubles::F_PPP_INCLUDE]).")) "
+                            . "AND ( "
+                                // полностью пустая запись
+                                . "(`pay_fakt` = 0 AND `pay` = 0) \n"
+                            . ")",
+            ],
+        ];
+
+        foreach ($errors as $type => &$rec) {
+            // debug($type, '$type');
+            // debug($rec, '$rec');
+            $rec['pager'] = new Pagination(
+                    per_page: App::get_config('payment_error_per_page'),
+                    sql: $rec['sql'],
+                    f_get_page: $type . '_page',
+                    anchor_name: $type
+                );
+            $rec['count'] = $rec['pager']->count_rows;
+            $rec['payments'] = $rec['pager']->get_rows();
+            foreach ($rec['payments'] as &$pay) { $model->pay_update_fields($pay); }
+        }
+
+
+        $title = __("Поиск ошибочных платежей");
+
+        $this->setVariables([
+            'title'   => $title,
+            'filter'  => $filter,
+            'errors'    => $errors,
+        ]);
+
+        View::setMeta(title: $title);
+
+    }
+
+
+
+    /**
      * Поиск задвоенных платежей
      */
     function doublesAction() {
@@ -796,68 +938,6 @@ class PaymentsController extends AppBaseController {
         }
 
 
-        $errors = [
-
-            'date' => [
-                'title' => __('Ошибки даты платежа'),
-                'sql' => "SELECT * FROM `payments` WHERE "
-                            // старые записи
-                            . "(`pay_date` < UNIX_TIMESTAMP('".App::get_config('payment_error_before_date')."')) "
-                            . "AND ( "
-                                . Pay::F_PPP_ID." IN (".implode(',', $filter[Doubles::F_PPP_INCLUDE]).") "
-                            . ")",
-                'pager' => __('Дата не корректна'),
-            ],
-
-            'fields' => [
-                'title' => __('Ошибки пустых полей'),
-                'sql' => "SELECT * FROM `payments` WHERE \n"
-                            . "(".Pay::F_PPP_ID." IN (".implode(',', $filter[Doubles::F_PPP_INCLUDE]).")) "
-                            . "AND ( "
-                                // пустые поля
-                                .    "(`pay_bank_no` IS NULL OR `pay_bank_no` = '') \n"
-                                . "OR (`abon_id` IS NULL) \n"
-                                . "OR (`pay_type_id` IS NULL OR `pay_type_id` = 0) \n"
-                                . "OR (`pay_ppp_id` IS NULL OR `pay_ppp_id` = 0) \n"
-                            . ")",
-            ],
-
-            'incorrect' => [
-                'title' => __('Не корректные суммы платежей'),
-                'sql' => "SELECT * FROM `payments` WHERE \n"
-                            . "(".Pay::F_PPP_ID." IN (".implode(',', $filter[Doubles::F_PPP_INCLUDE]).")) "
-                            . "AND ( "
-                                // некорректные суммы
-                                . "(`pay_fakt` > 0 AND `pay` = 0) \n"
-                            . ")",
-            ],
-
-            'empty' => [
-                'title' => __('Нулевые платежи'),
-                'sql' => "SELECT * FROM `payments` WHERE \n"
-                            . "(".Pay::F_PPP_ID." IN (".implode(',', $filter[Doubles::F_PPP_INCLUDE]).")) "
-                            . "AND ( "
-                                // полностью пустая запись
-                                . "(`pay_fakt` = 0 AND `pay` = 0) \n"
-                            . ")",
-            ],
-        ];
-
-        foreach ($errors as $type => &$rec) {
-            // debug($type, '$type');
-            // debug($rec, '$rec');
-            $rec['pager'] = new Pagination(
-                    per_page: App::get_config('payment_error_per_page'),
-                    sql: $rec['sql'],
-                    f_get_page: $type . '_page',
-                    anchor_name: $type
-                );
-            $rec['count'] = $rec['pager']->count_rows;
-            $rec['payments'] = $rec['pager']->get_rows();
-            foreach ($rec['payments'] as &$pay) { $model->pay_update_fields($pay); }
-        }
-
-
 
         /**
          * Массив записей-дубликатов
@@ -956,7 +1036,6 @@ class PaymentsController extends AppBaseController {
             'filter'  => $filter,
             'doubles' => $doubles,
             'pager'   => $pager ?? null,
-            'errors'    => $errors,
         ]);
 
         View::setMeta(title: $title);

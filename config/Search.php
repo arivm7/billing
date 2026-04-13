@@ -90,7 +90,7 @@ class Search {
             self::F_SEARSH_IN_FIELDS  => [Pay::F_DESCRIPTION],
             self::F_ORDER_BY          => "`".Pay::F_ABON_ID."` DESC, `".Pay::F_ID."` DESC",
             self::F_REPLACE_FIELDS    => [
-            //     [self::F_FIELD => 'id', self::F_FUNC => 'url_pay_form'],
+                [self::F_FIELD => 'id', self::F_FUNC => 'url_pay_form'],
                 [self::F_FIELD => 'abon_id', self::F_FUNC => 'url_abon_form']
             ]
         ],

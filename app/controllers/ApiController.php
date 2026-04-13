@@ -180,7 +180,7 @@ class ApiController extends AppBaseController {
             $pa_rec['inf']      =  get_str_cut($pa_one['net_name'], max_length:30)."<br>"
                                     . get_html_CHECK(has_check: (bool)$pa_one['price_closed'], title: "Закрыт ли &laquo;Прайсовий фрагмент&raquo;")
                                     . " " . date_Ymd($pa_one['date_start'])." : ".date_Ymd($pa_one['date_end'], value_if_null: "____-__-__")."<br>"
-                                    . price_frm($pa_one['prices_id'], has_img: false, target: "_blank");
+                                    . url_price_form($pa_one['prices_id'], has_img: false, target: "_blank");
 
             $pa_rec['ip_service']    =  get_html_CHECK((bool)$pa_one['net_ip_service'], "IP услуга");
 

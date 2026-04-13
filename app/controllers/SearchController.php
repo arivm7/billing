@@ -30,6 +30,7 @@ use config\Search;
 use config\tables\Module;
 
 require_once DIR_LIBS ."/functions.php";
+require_once DIR_LIBS ."/inc_functions.php";
 
 class SearchController extends AppBaseController {
 

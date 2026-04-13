@@ -95,7 +95,7 @@ class BankController extends AppBaseController
 
         $ppp = $model->get_ppp((int)$this->route[F_ALIAS]);
 
-        if (!$model->is_ppp_my($ppp[Ppp::F_ID])) {
+        if (!$model->is_my_ppp($ppp[Ppp::F_ID])) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('The payment acceptance point is not yours | Пункт приема платежей не Ваш | Пункт прийому платежів не Ваш'));
             redirect();
         }

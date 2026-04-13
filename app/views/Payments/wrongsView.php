@@ -1,19 +1,29 @@
 <?php
 /**
  *  Project : my.ri.net.ua
- *  File    : doublesView.php
- *  Path    : app/views/Payments/doublesView.php
+ *  File    : wrongsView.php
+ *  Path    : app/views/Payments/wrongsView.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
  *  Org     : RI-Network, Kiev, UK
- *  Created : 08 Apr 2026 21:21:49
+ *  Created : 13 Apr 2026 15:49:39
  *  License : GPL v3
  *
  *  Copyright (C) 2026 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
  */
 
+/**
+ * Description of wrongsView.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
+
+
+
+
+
 
 /**
- * Диспетчер форм и видов поиска дубликатов
+ * Диспетчер вывода вида для отоблажения ошибок в платежах
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
@@ -30,8 +40,9 @@ use billing\core\Pagination;
  * 
  * @var string $title
  * @var array $filter
- * @var array $doubles
- * @var Pagination $pager
+ * 
+ * Данные для вывода ошибок в платежах
+ * @var array $errors
  * 
  * Данные для вывода ошибок в платежах
  * @var string $type
@@ -45,15 +56,7 @@ use billing\core\Pagination;
 
 ?>
 
-<fieldset style='width:60%;'>
-    <legend>Поиск задвоенных платежей</legend>
-    <form action='' method='post' name='form1' target='_self' >
-        <?php include DIR_INC . '/doubles_filters.php' ?>
-    </form>
-</fieldset>
+<?php if (!empty($errors)): ?>
+    <?php include DIR_INC . '/wrongs_list_pays.php'; ?>
+<?php endif; ?>
 
-<hr>
-
-<?php if (!empty($doubles)): ?>
-    <?php include DIR_INC . '/doubles_diff_list_view.php' ?>
-<?php endif ?>

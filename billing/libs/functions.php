@@ -1963,11 +1963,10 @@ function url_pa_form_22($pa_id): string {
 
 
 
-function price_frm(int $price_id, bool $has_img = true, int $icon_width = 22, int $icon_height = 22, string $target = "_self"): string {
+function url_price_form(int $price_id, bool $has_img = true, int $icon_width = 22, int $icon_height = 22, string $target = "_self"): string {
     // !!! Убрать обращение к базе
     $model = new AbonModel();
-    $price = $model->get_price($price_id);
-    return "<a href='/price_form.php?id={$price_id}' title='Редактировать прайс \n[".$price_id."] ".$price['title']."\n{$price['description']}' target={$target}>".($has_img?"<img src=/img/price_edit.png alt='[edit]' width=$icon_width height=$icon_height>":$price['title'])."</a>";
+    return $model->url_price_form($price_id, $has_img, $icon_width, $icon_height, $target);
 }
 
 

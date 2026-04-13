@@ -1,18 +1,28 @@
 <?php
 /**
  *  Project : my.ri.net.ua
- *  File    : doubles_errors_one_pay.php
- *  Path    : app/views/inc/doubles_errors_one_pay.php
+ *  File    : wrongs_one_pay.php
+ *  Path    : app/views/inc/wrongs_one_pay.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
  *  Org     : RI-Network, Kiev, UK
- *  Created : 10 Apr 2026 16:01:24
+ *  Created : 13 Apr 2026 00:01:30
  *  License : GPL v3
  *
  *  Copyright (C) 2026 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
  */
 
 /**
- * Description of doubles_errors_one_pay.php
+ * Description of wrongs_one_pay.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
+
+
+
+
+
+/**
+ * Вывод одного платежа с ошибками
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */

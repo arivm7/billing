@@ -150,8 +150,8 @@ class Bank
      */
     const API_MANUAL_LIST = [
         self::API_TYPE_P24_ACC,
-        self::API_TYPE_P24_MANUAL,
         self::API_TYPE_MONO_CARD,
+        self::API_TYPE_P24_MANUAL,
     ];
 
 

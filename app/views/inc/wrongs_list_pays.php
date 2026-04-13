@@ -1,18 +1,28 @@
 <?php
 /**
  *  Project : my.ri.net.ua
- *  File    : doubles_errors_list_pays.php
- *  Path    : app/views/inc/doubles_errors_list_pays.php
+ *  File    : wrongs_list_pays.php
+ *  Path    : app/views/inc/wrongs_list_pays.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
  *  Org     : RI-Network, Kiev, UK
- *  Created : 10 Apr 2026 16:01:24
+ *  Created : 13 Apr 2026 00:01:30
  *  License : GPL v3
  *
  *  Copyright (C) 2026 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
  */
 
 /**
- * Description of doubles_errors_list_pays.php
+ * Description of wrongs_list_pays.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
+
+
+
+
+
+/**
+ * Вывод списков платежей с ошибками
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
@@ -51,7 +61,7 @@
         <?php include DIR_INC . '/pager.php'; ?>
 
         <?php foreach ($error_rec['payments'] as $pay): ?>
-            <?php include DIR_INC . '/doubles_errors_one_pay.php' ?>
+            <?php include DIR_INC . '/wrongs_one_pay.php' ?>
         <?php endforeach; ?>
 
         <?php include DIR_INC . '/pager.php'; ?>

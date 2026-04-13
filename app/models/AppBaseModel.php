@@ -444,7 +444,14 @@ class AppBaseModel extends Model
     function url_pay_form(int $id): string {
         // !!! требуется переписать
         $pay = $this->get_row_by_id(table_name: Pay::TABLE, id_value: $id, field_id: Pay::F_ID);
-        return "<a title='PAY: ". h(print_r($pay, true))."' href='".Pay::URI_FORM."/{$id}' target=_blank ><img src='".Icons::SRC_ICON_UAH."' alt=PAY width=18 height=18></a>";
+        return 
+            "<a "
+            . "title='PAY: ". h(print_r($pay, true))."' "
+            . "href='".Pay::URI_FORM."/{$id}' "
+            . "target=_blank "
+            . ">"
+                . "<img src='".Icons::SRC_ICON_UAH."' alt=PAY width=18 height=18>"
+            . "</a>";
     }
 
 
@@ -491,7 +498,7 @@ class AppBaseModel extends Model
 
 
 
-    function price_frm(int $price_id, bool $has_img = true, int $icon_width = 22, int $icon_height = 22, string $target = "_self"): string {
+    function url_price_form(int $price_id, bool $has_img = true, int $icon_width = 22, int $icon_height = 22, string $target = "_self"): string {
         $price = $this->get_price($price_id);
         return "<a href='/price_form.php?id={$price_id}' title='Редактировать прайс \n[".$price_id."] ".$price['title']."\n{$price['description']}' target={$target}>".($has_img?"<img src=/img/price_edit.png alt='[edit]' width=$icon_width height=$icon_height>":$price['title'])."</a>";
     }
