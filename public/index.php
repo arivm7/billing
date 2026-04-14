@@ -64,10 +64,60 @@ define('MODEL_SUFFIX',          'Model');
 
 /**
  * -----------------------------------------------------------------
+ * Проверка запрещённого хоста
+ */
+
+$DENIED_ADDRESS = false;
+$DENIED_ADDRESSES = [
+    '65.49.0.0/17', // 760 Mission Court, Fremont, CA, US
+    '173.249.0.0/18', // Amsterdam, NL
+    // '0.0.0.0/0',
+    // '192.168.1.100',
+    // '10.0.0.0/8',
+];
+
+$remoteAddress = $_SERVER['REMOTE_ADDR'] ?? '';
+
+if (!filter_var($remoteAddress, FILTER_VALIDATE_IP)) {
+    echo 'Доступ запрещён. Обратитесь к мастеру участка. Лог записан.';
+    error_log(
+        message: date('Y-m-d H:i:s') . ' | IP DENIED: INVALID OR HIDDEN IP: ' . ($remoteAddress ?: 'UNKNOWN') . "\n",
+        message_type: 3,
+        destination: DIR_LOG . '/ip_denied.log'
+    );
+    die;
+}
+
+if (filter_var($remoteAddress, FILTER_VALIDATE_IP)) {
+    foreach ($DENIED_ADDRESSES as $cidr) {
+        if (ip_in_range(ip: $remoteAddress, cidr: $cidr)) {
+            $DENIED_ADDRESS = true;
+            break;
+        }
+    }
+    if ($DENIED_ADDRESS) {
+        echo 'Доступ запрещён. Обратитесь к мастеру участка. Лог записан.';
+        error_log(
+            message: date('Y-m-d H:i:s') . ' | IP DENIED: ' . $remoteAddress . "\n",
+            message_type: 3,
+            destination: DIR_LOG . '/ip_denied.log'
+        );
+        die;
+    }
+}
+
+/*
+ * -----------------------------------------------------------------
+ */
+
+
+
+/**
+ * -----------------------------------------------------------------
  * Проверка разрешённого хоста
  */
 
-$ALLOWED_ADDRES = false;
+$ALLOWED_ADDRESS = false;
 $ALLOWED_ADDRESSES = [
     "0.0.0.0/0",
     '176.36.12.167',
@@ -77,21 +127,20 @@ $ALLOWED_ADDRESSES = [
     '95.158.32.243',
 ];
 
-if (filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP)) {
+if (filter_var($remoteAddress, FILTER_VALIDATE_IP)) {
     foreach ($ALLOWED_ADDRESSES as $cidr) {
-        if (ip_in_range(ip: $_SERVER['REMOTE_ADDR'], cidr: $cidr)) {
-            $ALLOWED_ADDRES = 1;
+        if (ip_in_range(ip: $remoteAddress, cidr: $cidr)) {
+            $ALLOWED_ADDRESS = true;
             break;
         }
     }
-    if (!$ALLOWED_ADDRES) {
-        echo $_SERVER['REMOTE_ADDR'] . ' - Не разрешённый IP';
+    if (!$ALLOWED_ADDRESS) {
+        echo $remoteAddress . ' - Не разрешённый IP';
         die;
     }
-} else {
-    echo $_SERVER['REMOTE_ADDR'] . 'IP скрыт?';
-    die;
 }
+
+unset($DENIED_ADDRESSES, $ALLOWED_ADDRESSES, $DENIED_ADDRESS, $ALLOWED_ADDRESS, $remoteAddress);
 
 /*
  * -----------------------------------------------------------------

@@ -79,6 +79,8 @@ EXEC_SCRIPTS=(
     "gen_lang_dict.sh"
     "scripts/updates.sh"
     "scripts/sms_sender.sh"
+    "scripts/rotate_log.sh"
+    "codex.run.sh"
 )
 
 for f in "${EXEC_SCRIPTS[@]}"; do

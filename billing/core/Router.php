@@ -132,7 +132,9 @@ class Router {
                 throw new \Exception("Контроллер [<b>$controllerPathClass</b>] не найден.", 404);
             }
         } else {
-            throw new \Exception("[{$urlPath}] Не верный адрес. Страница не найдена.", 404);
+            throw new \Exception("[{$urlPath}] Не верный адрес. Страница не найдена. \n" 
+                        . print_r($_SERVER, true) . "\n"
+                        . "Лог записан.\n", 404);
         }
     }
 

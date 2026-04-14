@@ -60,8 +60,7 @@ class Module {
     const MOD_PPP           = 43;
     const MOD_ADMIN_MENU    = 27;
     const MOD_MONITORING    = 44;
-
-
+    const MOD_LOGS          = 47;
 
 
 
@@ -80,12 +79,12 @@ class Module {
 
     const F_ID              = "id";             // ID административного модуля
 
-    const  _TITLE           =   "_title";       // суффикс поля. Полное поле: язык + суффикс
+    const     _TITLE        =   "_title";       // суффикс поля. Полное поле: язык + суффикс
     const F_UK_TITLE        = "uk_title";       // uk - Ім'я модуля
     const F_RU_TITLE        = "ru_title";       // ru - Имя модуля
     const F_EN_TITLE        = "en_title";       // en - Module name
 
-    const  _DESCRIPTION     =   "_description"; // суффикс поля. Полное поле: язык + суффикс
+    const     _DESCRIPTION  =   "_description"; // суффикс поля. Полное поле: язык + суффикс
     const F_UK_DESCRIPTION  = "uk_description"; // uk - Опис модуля
     const F_RU_DESCRIPTION  = "ru_description"; // ru - Описание модуля
     const F_EN_DESCRIPTION  = "en_description"; // en - Description of the module
