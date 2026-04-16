@@ -66,10 +66,13 @@ class LogController extends AppBaseController {
      * Проверяет, что имя файла соответствует формату base.log или base.log.NNN.
      */
     private static function isValidLogFileName(string $fileName): bool {
+        // разрешено только "чистое имя файла", без директорий
         if ($fileName === '' || basename($fileName) !== $fileName) {
             return false;
         }
-
+        // [^\/\\\\]+ -- один или более символов, кроме '/' и '\' -- защита от путей
+        // имя.log
+        // имя.log.NNN
         return (bool) preg_match('/^[^\/\\\\]+\.log(?:\.\d{3})?$/', $fileName);
     }
 
@@ -103,6 +106,7 @@ class LogController extends AppBaseController {
         return null;
     }
 
+    
 
     /**
      * Возвращает метаданные файла из каталога логов.
@@ -117,6 +121,7 @@ class LogController extends AppBaseController {
         ];
     }
 
+    
 
     /**
      * Группирует лог-файлы: базовый лог и список его архивов.
@@ -260,6 +265,36 @@ class LogController extends AppBaseController {
         View::setMeta(
             title: $title,
         );
+    }
+
+
+    public function deleteAction(): void {
+
+        if (!App::isAuth()) {
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
+            redirect(Auth::URI_LOGIN);
+        }
+
+        if (!can_del(Module::MOD_LOGS)) {
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights to delete | Нет прав на удаление | Немає прав на видалення'));
+            redirect();
+        }
+
+        $fileName = isset($_GET['file']) ? trim((string) $_GET['file']) : '';
+        $fullPath = self::resolveLogFilePath($fileName);
+
+        if ($fullPath === null) {
+            MsgQueue::msg(MsgType::ERROR, __('Log file not found | Лог-файл не найден | Лог-файл не знайдено'));
+            redirect('/log');
+        }
+
+        if (@unlink($fullPath)) {
+            MsgQueue::msg(MsgType::SUCCESS, __('Log file deleted | Лог-файл удалён | Лог-файл видалено') . ': ' . $fileName);
+        } else {
+            MsgQueue::msg(MsgType::ERROR, __('Failed to delete log file | Ошибка удаления лог-файла | Помилка видалення лог-файлу') . ': ' . $fileName);
+        }
+
+        redirect('/log');
     }
 
 }

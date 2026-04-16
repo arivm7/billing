@@ -44,6 +44,24 @@ class Router {
     }
 
 
+    /**
+     * Записывает в лог данные о подозрительном запросе.
+     */
+    protected static function logHackAttempt(): void {
+        $remoteIp = $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN';
+        $requestUri = $_SERVER['REQUEST_URI'] ?? '';
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? ($_SERVER['SERVER_NAME'] ?? 'UNKNOWN_HOST');
+        $fullUrl = $requestUri !== '' ? $scheme . '://' . $host . $requestUri : 'UNKNOWN_URL';
+
+        error_log(
+            message: date('Y-m-d H:i:s') . ' | ' . $remoteIp . ' | ' . $fullUrl . PHP_EOL,
+            message_type: 3,
+            destination: DIR_LOG . '/' . App::get_config('log_hackers_attack')
+        );
+    }
+
+
 
     protected static function matchRoute(string $urlPath): bool {
         $matches = [];
@@ -126,14 +144,17 @@ class Router {
 
                     $controllerObj->getView();
                 } else {
+                    self::logHackAttempt();
                     throw new \Exception("Действие [<b>$controllerPathClass::$action</b>] отсутствует", 404);
                 }
             } else {
+                self::logHackAttempt();
                 throw new \Exception("Контроллер [<b>$controllerPathClass</b>] не найден.", 404);
             }
         } else {
+            self::logHackAttempt();
             throw new \Exception("[{$urlPath}] Не верный адрес. Страница не найдена. \n" 
-                        . print_r($_SERVER, true) . "\n"
+//                        . print_r($_SERVER, true) . "\n"
                         . "Лог записан.\n", 404);
         }
     }

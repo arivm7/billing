@@ -12,6 +12,11 @@
  */
 
 
+
+use config\tables\Module;
+
+
+
 ?>
 <div class="container my-4">
     <h1 class="display-6 mb-4"><?= h($title) ?></h1>
@@ -22,30 +27,52 @@
         <div class="list-group">
             <?php foreach ($logs as $logGroup): ?>
                 <div class="list-group-item">
-                    <div class="mb-2">
-                        <div class="fw-bold">
-                            <a href="/log/view?file=<?= rawurlencode($logGroup['base_file']) ?>#bottom">
-                                <?= h($logGroup['base_file']) ?>
+                    <div class="mb-2 d-flex justify-content-between align-items-start gap-3">
+                        <div>
+                            <div class="fw-bold">
+                                <a href="/log/view?file=<?= rawurlencode($logGroup['base_file']) ?>#bottom">
+                                    <?= h($logGroup['base_file']) ?>
+                                </a>
+                            </div>
+                            <div class="text-muted small">
+                                <?= __('Size') ?>: <?= number_format((int) $logGroup['size'], 0, '.', ' ') ?> B
+                                |
+                                <?= __('Modified') ?>: <?= !empty($logGroup['mtime']) ? date('d.m.Y H:i:s', (int) $logGroup['mtime']) : '-' ?>
+                            </div>
+                        </div>
+                        <?php if (can_del(Module::MOD_LOGS)) : ?>
+                            <a
+                                href="/log/delete?file=<?= rawurlencode($logGroup['base_file']) ?>"
+                                class="btn btn-sm btn-outline-danger me-1"
+                                onclick="return confirm('<?= __('Are you sure?') ?>');"
+                                title="<?= __('Delete') . CR . __('Удаление лог-файла'); ?>">
+                                <i class="bi bi-x-circle"></i>
                             </a>
-                        </div>
-                        <div class="text-muted small">
-                            <?= __('Size') ?>: <?= number_format((int) $logGroup['size'], 0, '.', ' ') ?> B
-                            |
-                            <?= __('Modified') ?>: <?= !empty($logGroup['mtime']) ? date('d.m.Y H:i:s', (int) $logGroup['mtime']) : '-' ?>
-                        </div>
+                        <?php endif; ?>
                     </div>
 
                     <?php if (!empty($logGroup['archives'])): ?>
                         <ul class="mb-0">
                             <?php foreach ($logGroup['archives'] as $archive): ?>
-                                <li>
-                                    <a href="/log/view?file=<?= rawurlencode($archive['file_name']) ?>#bottom">
-                                        <?= h($archive['file_name']) ?>
-                                    </a>
-                                    <span class="text-muted small">
-                                        | <?= __('Size') ?>: <?= number_format((int) $archive['size'], 0, '.', ' ') ?> B
-                                        | <?= __('Modified') ?>: <?= !empty($archive['mtime']) ? date('d.m.Y H:i:s', (int) $archive['mtime']) : '-' ?>
-                                    </span>
+                                <li class="d-flex justify-content-between align-items-start gap-3">
+                                    <div>
+                                        <a href="/log/view?file=<?= rawurlencode($archive['file_name']) ?>#bottom">
+                                            <?= h($archive['file_name']) ?>
+                                        </a>
+                                        <span class="text-muted small">
+                                            | <?= __('Size') ?>: <?= number_format((int) $archive['size'], 0, '.', ' ') ?> B
+                                            | <?= __('Modified') ?>: <?= !empty($archive['mtime']) ? date('d.m.Y H:i:s', (int) $archive['mtime']) : '-' ?>
+                                        </span>
+                                    </div>
+                                    <?php if (can_del(Module::MOD_LOGS)) : ?>
+                                        <a
+                                            href="/log/delete?file=<?= rawurlencode($archive['file_name']) ?>"
+                                            class="btn btn-sm btn-outline-danger me-1"
+                                            onclick="return confirm('<?= __('Are you sure?') ?>');"
+                                            title="<?= __('Delete') . CR . __('Удаление лог-файла'); ?>">
+                                            <i class="bi bi-x-circle"></i>
+                                        </a>
+                                    <?php endif; ?>
                                 </li>
                             <?php endforeach; ?>
                         </ul>

@@ -126,7 +126,10 @@ class ErrorHandler {
             }
             if (self::DUMP__TO_LOG_FILE) {
                 $msg =  ($prefix ? $prefix . ": " : "")
-                        . "DUMP: \n".var_dump_ret($dump)."\n====\n";
+                        . "_SERVER: \n"
+                        . print_r($_SERVER, true) . "\n"
+                        . "DUMP: \n"
+                        . var_dump_ret($dump)."\n====\n";
 //                $log->error($msg);
                 error_log(message: "[" . date('Y-m-d H:i:s') . "] " . $msg, message_type: 3, destination: DIR_LOG.'/'.self::LOG_FILENAME);
             }

@@ -67,14 +67,9 @@ define('MODEL_SUFFIX',          'Model');
  * Проверка запрещённого хоста
  */
 
+include DIR_CONFIG . '/denied.php';
+
 $DENIED_ADDRESS = false;
-$DENIED_ADDRESSES = [
-    '65.49.0.0/17', // 760 Mission Court, Fremont, CA, US
-    '173.249.0.0/18', // Amsterdam, NL
-    // '0.0.0.0/0',
-    // '192.168.1.100',
-    // '10.0.0.0/8',
-];
 
 $remoteAddress = $_SERVER['REMOTE_ADDR'] ?? '';
 
@@ -83,7 +78,7 @@ if (!filter_var($remoteAddress, FILTER_VALIDATE_IP)) {
     error_log(
         message: date('Y-m-d H:i:s') . ' | IP DENIED: INVALID OR HIDDEN IP: ' . ($remoteAddress ?: 'UNKNOWN') . "\n",
         message_type: 3,
-        destination: DIR_LOG . '/ip_denied.log'
+        destination: DIR_LOG . '/ip_denieded.log'
     );
     die;
 }
@@ -100,7 +95,7 @@ if (filter_var($remoteAddress, FILTER_VALIDATE_IP)) {
         error_log(
             message: date('Y-m-d H:i:s') . ' | IP DENIED: ' . $remoteAddress . "\n",
             message_type: 3,
-            destination: DIR_LOG . '/ip_denied.log'
+            destination: DIR_LOG . '/ip_denieded.log'
         );
         die;
     }
@@ -118,14 +113,6 @@ if (filter_var($remoteAddress, FILTER_VALIDATE_IP)) {
  */
 
 $ALLOWED_ADDRESS = false;
-$ALLOWED_ADDRESSES = [
-    "0.0.0.0/0",
-    '176.36.12.167',
-    '176.105.102.234',
-    //'176.105.102.234/29',
-    //'213.111.124.217/29',
-    '95.158.32.243',
-];
 
 if (filter_var($remoteAddress, FILTER_VALIDATE_IP)) {
     foreach ($ALLOWED_ADDRESSES as $cidr) {

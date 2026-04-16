@@ -958,14 +958,13 @@ function clear_float(string $str): string {
 
 
 function var_dump_ret($mixed = null) {
-  ob_start();
-  var_dump($mixed);
-  $content = ob_get_contents();
-  ob_end_clean();
-  return $content;
+    ob_start();
+//  var_dump($mixed);
+    print_r($mixed);
+    $content = ob_get_contents();
+    ob_end_clean();
+    return $content;
 }
-
-
 
 function redirect_to(string $host = URL_HOST, string $path = "/") {
 //    echo "<META HTTP-EQUIV=\"REFRESH\" CONTENT=\"0;URL=". $_SERVER['REQUEST_SCHEME']."://".$_SERVER['SERVER_NAME'].":".$_SERVER['SERVER_PORT']."".$path."\">";
