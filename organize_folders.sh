@@ -81,6 +81,7 @@ EXEC_SCRIPTS=(
     "scripts/sms_sender.sh"
     "scripts/rotate_log.sh"
     "codex.run.sh"
+    "scripts/parse_log_attack.sh"
 )
 
 for f in "${EXEC_SCRIPTS[@]}"; do

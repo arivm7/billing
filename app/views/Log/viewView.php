@@ -17,8 +17,8 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1 class="display-6 mb-0"><?= h($file_name) ?></h1>
         <div class="d-flex gap-2">
-            <a href="/log" class="btn btn-outline-secondary mx-1"><?= __('Back to list | Вернуться к списку | Назад до списку') ?></a>
-            <a href="#bottom" class="btn btn-outline-secondary ms-1"><?= __('Down | Вниз | Вниз') ?></a>
+            <a href="/log" class="btn btn-outline-secondary mx-1"><?= __('Back to list') ?></a>
+            <a href="#bottom" class="btn btn-outline-secondary ms-1"><?= __('Down') ?></a>
         </div>
     </div>
 
@@ -29,7 +29,7 @@
     </div>
 
     <div id="bottom" class="d-flex justify-content-end mt-3">
-        <a href="/log" class="btn btn-outline-secondary mx-1"><?= __('Back to list | Вернуться к списку | Назад до списку') ?></a>
-        <a href="#top" class="btn btn-outline-secondary ms-1"><?= __('Up | Вверх | Вгору') ?></a>
+        <a href="/log" class="btn btn-outline-secondary mx-1"><?= __('Back to list') ?></a>
+        <a href="#top" class="btn btn-outline-secondary ms-1"><?= __('Up') ?></a>
     </div>
 </div>

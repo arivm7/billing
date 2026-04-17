@@ -196,7 +196,7 @@ class Lang {
      */
     public static function get(string $key, mixed $param = null, string|null $default = null):string {
         if (!isset(self::$lang_data[$key])) {
-            switch (ErrorHandler::DEBUG && App::$app->get_config('lang_strong_file_existence')) {
+            switch (ErrorHandler::ERROR_TO_LOG_FILE && App::$app->get_config('lang_strong_file_existence')) {
                 case 0:
                     break;
                 case 1:

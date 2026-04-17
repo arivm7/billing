@@ -206,17 +206,17 @@ class LogController extends AppBaseController {
     public function indexAction(): void {
 
         if (!App::isAuth()) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in'));
             redirect(Auth::URI_LOGIN);
         }
 
         if (!can_use(Module::MOD_LOGS)) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights'));
             redirect();
         }
 
 
-        $title = __('List of log files | Список лог-файлов | Список лог-файлів');
+        $title = __('List of log files');
         $logs = self::groupLogFiles(self::getListFiles());
 
         $this->setVariables([
@@ -233,12 +233,12 @@ class LogController extends AppBaseController {
     public function viewAction(): void {
 
         if (!App::isAuth()) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in'));
             redirect(Auth::URI_LOGIN);
         }
 
         if (!can_use(Module::MOD_LOGS)) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights'));
             redirect();
         }
 
@@ -254,7 +254,7 @@ class LogController extends AppBaseController {
             redirect();
         }
 
-        $title = __('Viewing the log file | Просмотр лог-файла | Перегляд лог-файлу') . ' :: ' . $fileName;
+        $title = __('Viewing the log file') . ' :: ' . $fileName;
 
         $this->setVariables([
             'title' => $title,
@@ -271,12 +271,12 @@ class LogController extends AppBaseController {
     public function deleteAction(): void {
 
         if (!App::isAuth()) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in'));
             redirect(Auth::URI_LOGIN);
         }
 
         if (!can_del(Module::MOD_LOGS)) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights to delete | Нет прав на удаление | Немає прав на видалення'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights to delete'));
             redirect();
         }
 
@@ -284,14 +284,14 @@ class LogController extends AppBaseController {
         $fullPath = self::resolveLogFilePath($fileName);
 
         if ($fullPath === null) {
-            MsgQueue::msg(MsgType::ERROR, __('Log file not found | Лог-файл не найден | Лог-файл не знайдено'));
+            MsgQueue::msg(MsgType::ERROR, __('Log file not found'));
             redirect('/log');
         }
 
         if (@unlink($fullPath)) {
-            MsgQueue::msg(MsgType::SUCCESS, __('Log file deleted | Лог-файл удалён | Лог-файл видалено') . ': ' . $fileName);
+            MsgQueue::msg(MsgType::SUCCESS, __('Log file deleted') . ': ' . $fileName);
         } else {
-            MsgQueue::msg(MsgType::ERROR, __('Failed to delete log file | Ошибка удаления лог-файла | Помилка видалення лог-файлу') . ': ' . $fileName);
+            MsgQueue::msg(MsgType::ERROR, __('Failed to delete log file') . ': ' . $fileName);
         }
 
         redirect('/log');

@@ -22,7 +22,7 @@ use config\tables\Module;
     <h1 class="display-6 mb-4"><?= h($title) ?></h1>
 
     <?php if (empty($logs)): ?>
-        <div class="alert alert-info"><?= __('Log files not found | Файлы журналов не найдены | Файли журналів не знайдено'); ?></div>
+        <div class="alert alert-info"><?= __('Log files not found'); ?></div>
     <?php else: ?>
         <div class="list-group">
             <?php foreach ($logs as $logGroup): ?>
@@ -40,12 +40,13 @@ use config\tables\Module;
                                 <?= __('Modified') ?>: <?= !empty($logGroup['mtime']) ? date('d.m.Y H:i:s', (int) $logGroup['mtime']) : '-' ?>
                             </div>
                         </div>
+
                         <?php if (can_del(Module::MOD_LOGS)) : ?>
                             <a
                                 href="/log/delete?file=<?= rawurlencode($logGroup['base_file']) ?>"
                                 class="btn btn-sm btn-outline-danger me-1"
                                 onclick="return confirm('<?= __('Are you sure?') ?>');"
-                                title="<?= __('Delete') . CR . __('Удаление лог-файла'); ?>">
+                                title="<?= __('Delete') . CR . __('Log file deletion'); ?>">
                                 <i class="bi bi-x-circle"></i>
                             </a>
                         <?php endif; ?>
@@ -64,12 +65,13 @@ use config\tables\Module;
                                             | <?= __('Modified') ?>: <?= !empty($archive['mtime']) ? date('d.m.Y H:i:s', (int) $archive['mtime']) : '-' ?>
                                         </span>
                                     </div>
+
                                     <?php if (can_del(Module::MOD_LOGS)) : ?>
                                         <a
                                             href="/log/delete?file=<?= rawurlencode($archive['file_name']) ?>"
                                             class="btn btn-sm btn-outline-danger me-1"
-                                            onclick="return confirm('<?= __('Are you sure?') ?>');"
-                                            title="<?= __('Delete') . CR . __('Удаление лог-файла'); ?>">
+                                            onclick="return confirm('<?= __('Are you sure') ?>');"
+                                            title="<?= __('Delete') . CR . __('Log file deletion'); ?>">
                                             <i class="bi bi-x-circle"></i>
                                         </a>
                                     <?php endif; ?>

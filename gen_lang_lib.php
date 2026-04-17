@@ -150,7 +150,14 @@ function extractFunctionsBalanced(string $code): array {
     $offset = 0;
     $len = strlen($code);
 
-    while (preg_match('/function\s+([a-zA-Z0-9_]+)\s*\([^)]*\)\s*\{/', $code, $m, PREG_OFFSET_CAPTURE, $offset)) {
+    while (preg_match(
+        '/(?:public|protected|private)?\s*(?:static\s+)?function\s+([a-zA-Z0-9_]+)\s*\([^)]*\)\s*(?::\s*[^{]+)?\s*\{/',
+        $code,
+        $m,
+        PREG_OFFSET_CAPTURE,
+        $offset
+        )) 
+    {
         $name = $m[1][0];
         $posStart = $m[0][1];
         $braceStart = strpos($code, '{', $posStart);

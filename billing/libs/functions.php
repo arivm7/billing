@@ -1712,12 +1712,13 @@ function can_use(int|array|null $module): bool {
  * @return bool
  */
 function ip_in_range(string $ip, string $cidr): bool {
+    
     // если маски нет → сравниваем напрямую
     if (strpos($cidr, '/') === false) {
         return $ip === $cidr;
     }
 
-    list($subnet, $mask) = explode('/', $cidr, 2);
+    [$subnet, $mask] = explode('/', $cidr, 2);
 
     /*
      * переводит IP в бинарное представление (packed in_addr):
@@ -1726,6 +1727,7 @@ function ip_in_range(string $ip, string $cidr): bool {
      */
     $ip_bin     = inet_pton($ip);
     $subnet_bin = inet_pton($subnet);
+    
     /*
      * Проверяем, что оба адреса корректные
      */
@@ -1733,9 +1735,19 @@ function ip_in_range(string $ip, string $cidr): bool {
         return false; // некорректный IP
     }
 
+    // ВАЖНО: одинаковый тип IP
+    if (strlen($ip_bin) !== strlen($subnet_bin)) {
+        return false;
+    }    
+    
     $mask = (int)$mask;
     $len  = strlen($ip_bin); // 4 байта IPv4 или 16 байт IPv6
 
+    // проверка маски
+    if ($mask < 0 || $mask > ($len * 8)) {
+        return false;
+    }    
+    
     /*
      * $bytes – количество полных байт, которые входят в маску,
      * $bits – сколько оставшихся бит нужно проверить в следующем байте.
@@ -1764,9 +1776,12 @@ function ip_in_range(string $ip, string $cidr): bool {
      * Побитово сравниваем остаток бит в этом байте.
      * Если не совпадает → IP не входит в диапазон.
      */
-    if ($bits > 0) {
-        $maskByte = chr(((0xFF00 >> $bits) & 0xFF));
-        if (($ip_bin[$bytes] & $maskByte) !== ($subnet_bin[$bytes] & $maskByte)) {
+    if ($bits > 0 && $bytes < $len) {
+        $ipByte     = ord($ip_bin[$bytes]);
+        $subnetByte = ord($subnet_bin[$bytes]);
+        $maskByte   = (0xFF << (8 - $bits)) & 0xFF;
+
+        if (($ipByte & $maskByte) !== ($subnetByte & $maskByte)) {
             return false;
         }
     }

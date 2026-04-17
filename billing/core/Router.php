@@ -144,14 +144,17 @@ class Router {
 
                     $controllerObj->getView();
                 } else {
+                    SecurityAttackGuard::registerAttack($_SERVER['REMOTE_ADDR'] ?? '', SecurityAttackGuard::EVENT_TYPE_SCAN);
                     self::logHackAttempt();
                     throw new \Exception("Действие [<b>$controllerPathClass::$action</b>] отсутствует", 404);
                 }
             } else {
+                SecurityAttackGuard::registerAttack($_SERVER['REMOTE_ADDR'] ?? '', SecurityAttackGuard::EVENT_TYPE_SCAN);
                 self::logHackAttempt();
                 throw new \Exception("Контроллер [<b>$controllerPathClass</b>] не найден.", 404);
             }
         } else {
+            SecurityAttackGuard::registerAttack($_SERVER['REMOTE_ADDR'] ?? '', SecurityAttackGuard::EVENT_TYPE_SCAN);
             self::logHackAttempt();
             throw new \Exception("[{$urlPath}] Не верный адрес. Страница не найдена. \n" 
 //                        . print_r($_SERVER, true) . "\n"

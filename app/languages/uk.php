@@ -19,6 +19,10 @@
 return [
 
     'Rilan'                 => 'Рілан-мережа',
+
+    'Zabbix'                => 'Zabbix',
+    'Monitoring system'     => 'Система моніторингу',
+
     'Admin portal'          => 'Адміністративний портал',
     'To Home'               => 'На головну',
     'Personal account'      => 'Особистий кабінет абонента',

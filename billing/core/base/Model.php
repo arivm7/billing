@@ -560,7 +560,7 @@ abstract class Model {
      * @param string $field_id -- имя ID поля
      * @return bool
      */
-    function update_row_by_id(string $table, array $row, string $field_id = self::F_ID): bool {
+    function update_row_by_id(string $table, array $row, string $field_id = self::F_ID, bool $update_modified = true): bool {
         if (!$this->validate_id(table_name: $table, field_id: $field_id, id_value: $row[$field_id])) {
             self::add_error_info("No Valid {$table}[{$row[$field_id]}]");
             return false;
@@ -581,10 +581,12 @@ abstract class Model {
             else                     { $update_items[] = "`$key`=" . $this->quote($value) . ""; }
         }
         $sql = "UPDATE `{$table}` SET "
-                . implode(", ", $update_items)
-                . ", "
-                . "`" . self::F_MODIFIED_DATE . "`='" . time() . "', "
-                . "`" . self::F_MODIFIED_UID . "`='" . (isset($_SESSION[User::SESSION_USER_REC]) ? $_SESSION[User::SESSION_USER_REC][User::F_ID] : User::UID_BILLING)."' "
+                . implode(", ", $update_items) . " "
+                . ($update_modified 
+                        ?   ", "
+                            . "`" . self::F_MODIFIED_DATE . "`='" . time() . "', "
+                            . "`" . self::F_MODIFIED_UID . "`='" . (isset($_SESSION[User::SESSION_USER_REC]) ? $_SESSION[User::SESSION_USER_REC][User::F_ID] : User::UID_BILLING)."' "
+                        :   "")
                 . "WHERE `{$field_id}`={$row[$field_id]}";
         return $this->execute($sql);
     }

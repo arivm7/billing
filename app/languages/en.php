@@ -19,6 +19,10 @@
 return [
 
     'Rilan'                 => 'Rilan-network',
+
+    'Zabbix'                => 'Zabbix',
+    'Monitoring system'     => 'Monitoring system',
+
     'Admin portal'          => 'Administrative portal',
     'To Home'               => 'Home',
     'Personal account'      => 'Subscriber\'s personal account',

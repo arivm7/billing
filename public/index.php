@@ -19,7 +19,9 @@
 $timeStart = \microtime(true);
 
 use billing\core\Router;
+use billing\core\SecurityAttackGuard;
 use billing\core\Timers;
+use billing\core\App;
 
 require '../config/dirs.php';
 require DIR_CONFIG . '/ini.php';
@@ -74,12 +76,8 @@ $DENIED_ADDRESS = false;
 $remoteAddress = $_SERVER['REMOTE_ADDR'] ?? '';
 
 if (!filter_var($remoteAddress, FILTER_VALIDATE_IP)) {
-    echo 'Доступ запрещён. Обратитесь к мастеру участка. Лог записан.';
-    error_log(
-        message: date('Y-m-d H:i:s') . ' | IP DENIED: INVALID OR HIDDEN IP: ' . ($remoteAddress ?: 'UNKNOWN') . "\n",
-        message_type: 3,
-        destination: DIR_LOG . '/ip_denieded.log'
-    );
+    SecurityAttackGuard::logDeniedRequest($remoteAddress ?: 'UNKNOWN', 'INVALID OR HIDDEN IP');
+    echo 'Доступ запрещён. Обратитесь к мастеру участка.';
     die;
 }
 
@@ -91,12 +89,8 @@ if (filter_var($remoteAddress, FILTER_VALIDATE_IP)) {
         }
     }
     if ($DENIED_ADDRESS) {
-        echo 'Доступ запрещён. Обратитесь к мастеру участка. Лог записан.';
-        error_log(
-            message: date('Y-m-d H:i:s') . ' | IP DENIED: ' . $remoteAddress . "\n",
-            message_type: 3,
-            destination: DIR_LOG . '/ip_denieded.log'
-        );
+        SecurityAttackGuard::logDeniedRequest($remoteAddress, 'BLOCKED BY STATIC DENY LIST');
+        echo 'Доступ запрещён. Обратитесь к мастеру участка.';
         die;
     }
 }
@@ -146,7 +140,8 @@ unset($timeStart);
 /**
  *  Инициализация Реестра App::$app
  */
-new billing\core\App;
+new App;
+SecurityAttackGuard::enforceRequestAccess($_SERVER['REMOTE_ADDR'] ?? '');
 
 
 // Свои правила
