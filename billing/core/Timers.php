@@ -14,7 +14,7 @@
 namespace billing\core;
 
 /**
- * Description of Timers.php
+ * Класс-помощник для регистрации времени на определённых этапах выполнения скрипта
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */

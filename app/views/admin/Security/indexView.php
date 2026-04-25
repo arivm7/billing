@@ -45,6 +45,7 @@ use config\tables\Module;
                     <table class="table table-striped table-hover mb-0">
                         <thead>
                             <tr>
+                                <th class="text-secondary">No</th>
                                 <th>IP</th>
                                 <th><?= __('Type') ?></th>
                                 <th><?= __('Blocked at') ?></th>
@@ -60,8 +61,10 @@ use config\tables\Module;
                                     </td>
                                 </tr>
                             <?php else: ?>
+                                <?php $orderNo = 0; ?>
                                 <?php foreach ($blocked_ips as $blockedIp): ?>
                                     <tr>
+                                        <td class="text-secondary"><?= ++$orderNo ?></td>
                                         <td><?= h($blockedIp['ip']) ?></td>
                                         <td><?= h($blockedIp['event_type_title'] ?? ('#' . $blockedIp['event_type_id'])) ?></td>
                                         <td><?= h($blockedIp['blocked_at_fmt']) ?></td>
@@ -91,6 +94,7 @@ use config\tables\Module;
                     <table class="table table-striped table-hover mb-0">
                         <thead>
                             <tr>
+                                <th class="text-secondary">No</th>
                                 <th>IP</th>
                                 <th><?= __('Type') ?></th>
                                 <th><?= __('Start date') ?></th>
@@ -106,8 +110,10 @@ use config\tables\Module;
                                     </td>
                                 </tr>
                             <?php else: ?>
+                                <?php $orderNo = 0; ?>
                                 <?php foreach ($attack_events as $attackEvent): ?>
                                     <tr>
+                                        <td class="text-secondary"><?= ++$orderNo ?></td>
                                         <td><?= h($attackEvent['ip']) ?></td>
                                         <td><?= h($attackEvent['event_type_title'] ?? ('#' . $attackEvent['event_type_id'])) ?></td>
                                         <td><?= h($attackEvent['date_attack_fmt']) ?></td>
@@ -137,6 +143,7 @@ use config\tables\Module;
                     <table class="table table-striped table-hover mb-0">
                         <thead>
                             <tr>
+                                <th class="text-secondary">No</th>
                                 <th>ID</th>
                                 <th><?= __('Title') ?></th>
                                 <th><?= __('Threshold') ?></th>
@@ -147,8 +154,10 @@ use config\tables\Module;
                             </tr>
                         </thead>
                         <tbody>
+                            <?php $orderNo = 0; ?>
                             <?php foreach ($attack_types as $attackType): ?>
                                 <tr>
+                                    <td class="text-secondary"><?= ++$orderNo ?></td>
                                     <td><?= (int) $attackType['id'] ?></td>
                                     <td><?= h($attackType['title']) ?></td>
                                     <td><?= (int) $attackType['threshold_count'] ?></td>

@@ -1,0 +1,54 @@
+<?php
+/**
+ *  Project : my.ri.net.ua
+ *  File    : ip_acl.php
+ *  Path    : config/ip_acl.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 16 Apr 2026 02:01:21
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2026 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
+
+/**
+ * Списки разрёшенных и заблокированных сетей
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
+
+
+
+/**
+ * Подсети, которым разрешён доступ без проверки по deny/allow спискам.
+ * Например: офисные сети и абонентские диапазоны.
+ */
+$ALWAYS_ALLOWED_SUBNETS = [
+    // '192.168.10.0/24',
+    // '10.20.0.0/16',
+];
+
+
+
+/**
+ * При сипользовании этого списка разрешены только сети, 
+ * перечисленные в этом списке, все другие -- блокируются.
+ * Для режима внутреннего тестирования
+ */
+$ONLY_THIS_ADDRESSES = [
+    '0.0.0.0/0',
+];
+
+
+
+/**
+ * Постоянно заблокированиее сети.
+ * Сети из этого списка блокируются всегда.
+ * Вписывать только вкрайнем случае. 
+ */
+$DENIED_FOREVER_ADDRESSES = [
+//    '65.49.0.0/17',     // 760 Mission Court, Fremont, CA, US
+//    '173.249.0.0/18',   // Amsterdam, NL
+//    '81.29.142.0/24',   // Russia, Saint-Petersburg
+];
+

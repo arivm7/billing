@@ -65,24 +65,97 @@ define('MODEL_SUFFIX',          'Model');
 
 
 /**
+ * Автозагручик Composer'а
+ */
+require __DIR__ . '/../vendor/autoload.php';
+
+
+
+Timers::setTimeStart($timeStart);
+unset($timeStart);
+
+
+
+/**
  * -----------------------------------------------------------------
  * Проверка запрещённого хоста
  */
 
-include DIR_CONFIG . '/denied.php';
+require DIR_CONFIG . '/ip_acl.php';
+
+$ALWAYS_ALLOWED_SUBNETS = is_array($ALWAYS_ALLOWED_SUBNETS ?? null) ? $ALWAYS_ALLOWED_SUBNETS : [];
+$ONLY_THIS_ADDRESSES = is_array($ONLY_THIS_ADDRESSES ?? null) ? $ONLY_THIS_ADDRESSES : [];
+$DENIED_FOREVER_ADDRESSES = is_array($DENIED_FOREVER_ADDRESSES ?? null) ? $DENIED_FOREVER_ADDRESSES : [];
 
 $DENIED_ADDRESS = false;
+$TRUSTED_SUBNET_ADDRESS = false;
 
 $remoteAddress = $_SERVER['REMOTE_ADDR'] ?? '';
 
+/**
+ * Проверяем, чтобю адрес был валидным
+ */
 if (!filter_var($remoteAddress, FILTER_VALIDATE_IP)) {
     SecurityAttackGuard::logDeniedRequest($remoteAddress ?: 'UNKNOWN', 'INVALID OR HIDDEN IP');
-    echo 'Доступ запрещён. Обратитесь к мастеру участка.';
+    echo  "<pre>"
+            . "EN: IP invalid or hidden. Contact the ISP manager.\n"
+            . "UK: IP помилковий або прихований. Зверніться до майстра ділянки.\n"
+            . "RU: IP не верен или скрыт. Обратитесь к мастеру участка.\n"
+        . '</pre>';
     die;
 }
 
+
+
+/**
+ * Проверяем является ли адрес доверенным
+ */
 if (filter_var($remoteAddress, FILTER_VALIDATE_IP)) {
-    foreach ($DENIED_ADDRESSES as $cidr) {
+    foreach ($ALWAYS_ALLOWED_SUBNETS as $cidr) {
+        if (ip_in_range(ip: $remoteAddress, cidr: $cidr)) {
+            $TRUSTED_SUBNET_ADDRESS = true; // доверенный
+            break;
+        }
+    }
+}
+
+
+
+/**
+ * Проверяем только если адрес НЕ доверенный
+ */
+if  (!$TRUSTED_SUBNET_ADDRESS) {
+
+    /**
+     * Проверка запроса из разрешённой сети
+     * Если адрес не в разрешённой сети -- блокируем.
+     */
+
+    $ALLOWED_ADDRESS = false;
+
+    foreach ($ONLY_THIS_ADDRESSES as $cidr) {
+        if (ip_in_range(ip: $remoteAddress, cidr: $cidr)) {
+            $ALLOWED_ADDRESS = true;
+            break;
+        }
+    }
+    if (!$ALLOWED_ADDRESS) {
+        echo  "<pre>"
+                . "$remoteAddress\n"
+                . "EN: Request not from allowed networks. Contact the ISP manager.\n"
+                . "UK: Запит не з дозволених мереж. Зверніться до майстра ділянки.\n"
+                . "RU: Запрос не из разрешённых сетей. Обратитесь к мастеру участка.\n"
+            . '</pre>';
+        die;
+    }
+
+
+
+    /**
+     * Проверяем постоянные запреты
+     */
+
+    foreach ($DENIED_FOREVER_ADDRESSES as $cidr) {
         if (ip_in_range(ip: $remoteAddress, cidr: $cidr)) {
             $DENIED_ADDRESS = true;
             break;
@@ -90,58 +163,47 @@ if (filter_var($remoteAddress, FILTER_VALIDATE_IP)) {
     }
     if ($DENIED_ADDRESS) {
         SecurityAttackGuard::logDeniedRequest($remoteAddress, 'BLOCKED BY STATIC DENY LIST');
-        echo 'Доступ запрещён. Обратитесь к мастеру участка.';
+        echo  "<pre>"
+                . "EN: Request from a restricted network. Contact the ISP manager.\n"
+                . "UK: Запит із заборонених мереж. Зверніться до майстра ділянки.\n"
+                . "RU: Запрос из запрещённой сети. Обратитесь к мастеру участка.\n"
+            . '</pre>';
         die;
     }
-}
 
-/*
- * -----------------------------------------------------------------
+}
+    
+
+
+/**
+ * Защита от сканеров
  */
+if (!$TRUSTED_SUBNET_ADDRESS) {
+    SecurityAttackGuard::enforceRequestAccess($remoteAddress);
+}
 
 
 
 /**
- * -----------------------------------------------------------------
- * Проверка разрешённого хоста
+ * Очищаем по завершению статической и динамической проверки.
  */
-
-$ALLOWED_ADDRESS = false;
-
-if (filter_var($remoteAddress, FILTER_VALIDATE_IP)) {
-    foreach ($ALLOWED_ADDRESSES as $cidr) {
-        if (ip_in_range(ip: $remoteAddress, cidr: $cidr)) {
-            $ALLOWED_ADDRESS = true;
-            break;
-        }
-    }
-    if (!$ALLOWED_ADDRESS) {
-        echo $remoteAddress . ' - Не разрешённый IP';
-        die;
-    }
-}
-
-unset($DENIED_ADDRESSES, $ALLOWED_ADDRESSES, $DENIED_ADDRESS, $ALLOWED_ADDRESS, $remoteAddress);
-
-/*
- * -----------------------------------------------------------------
- */
+unset(
+    $DENIED_FOREVER_ADDRESSES,
+    $ONLY_THIS_ADDRESSES,
+    $ALWAYS_ALLOWED_SUBNETS,
+    $DENIED_ADDRESS,
+    $ALLOWED_ADDRESS,
+    $TRUSTED_SUBNET_ADDRESS,
+    $remoteAddress
+);
 
 
-
-/**
- * Автозагручик Composer'а
- */
-require __DIR__ . '/../vendor/autoload.php';
-
-Timers::setTimeStart($timeStart);
-unset($timeStart);
 
 /**
  *  Инициализация Реестра App::$app
  */
 new App;
-SecurityAttackGuard::enforceRequestAccess($_SERVER['REMOTE_ADDR'] ?? '');
+
 
 
 // Свои правила
