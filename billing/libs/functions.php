@@ -340,11 +340,11 @@ function is_odd($i) {
 
 
 
-function isAuth() {
-//     /** @var \billing\core\base\Auth $AUTH */
-    global $AUTH;
-    return $AUTH->user_id != $AUTH::NO_AUTH;
-}
+//function isAuth() {
+////     /** @var \billing\core\base\Auth $AUTH */
+//    global $AUTH;
+//    return $AUTH->user_id != $AUTH::NO_AUTH;
+//}
 
 
 
@@ -828,6 +828,20 @@ function get_http_script(bool $full_url = true): string {
 }
 
 
+
+/**
+ * Собирает полный URL текущего HTTP-запроса из данных сервера ($_SERVER) и возвращает его в виде строки.
+ * Функция возвращает: [scheme]://[host][request_uri]
+ * например: https://example.com/admin/security?id=10
+ * @return string
+ */
+function get_full_request_url(): string {
+    $requestUri = $_SERVER['REQUEST_URI'] ?? '';
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? ($_SERVER['SERVER_NAME'] ?? 'UNKNOWN_HOST');
+
+    return $requestUri !== '' ? $scheme . '://' . $host . $requestUri : 'UNKNOWN_URL';
+}
 
 
 

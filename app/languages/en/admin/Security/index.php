@@ -27,6 +27,7 @@ return [
     'Attack events' => 'Attack events',
     'Attack types' => 'Attack types',
     'Type' => 'Type',
+    'Trigger counts' => 'Trigger counts',
     'Blocked at' => 'Blocked at',
     'Expires at' => 'Expires at',
     'Actions' => 'Actions',

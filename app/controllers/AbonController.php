@@ -213,6 +213,7 @@ class AbonController extends AppBaseController {
     function indexAction() {
         if (!App::isAuth()) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
+            self::log_unauthorize();
             redirect(Auth::URI_LOGIN);
         }
 
@@ -353,6 +354,7 @@ class AbonController extends AppBaseController {
     function lastAction() {
         if (!App::isAuth()) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
+            self::log_unauthorize();
             redirect(Auth::URI_LOGIN);
         }
 
@@ -1306,6 +1308,7 @@ class AbonController extends AppBaseController {
     function editAction() {
         if (!App::isAuth()) {
             MsgQueue::msg(MsgType::ERROR,__('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
+            self::log_unauthorize();
             redirect(Auth::URI_LOGIN);
         }
 
@@ -1504,6 +1507,7 @@ class AbonController extends AppBaseController {
     function restupdateAction() {
         if (!App::isAuth()) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
+            self::log_unauthorize();
             redirect(Auth::URI_LOGIN);
         }
 

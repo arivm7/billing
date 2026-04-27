@@ -446,6 +446,7 @@ class InvoiceController extends AppBaseController
 
         if (!App::isAuth()) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
+            self::log_unauthorize();
             redirect(Auth::URI_LOGIN);
         }
 
@@ -513,6 +514,7 @@ class InvoiceController extends AppBaseController
 
         // if (!App::isAuth()) {
         //     MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
+        //     self::log_unauthorize();
         //     redirect(Auth::URI_LOGIN);
         // }
 
@@ -631,6 +633,7 @@ class InvoiceController extends AppBaseController
 
         if (!App::isAuth()) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
+            self::log_unauthorize();
             redirect(Auth::URI_LOGIN);
         }
 
@@ -753,6 +756,7 @@ class InvoiceController extends AppBaseController
 
         if (!App::isAuth()) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
+            self::log_unauthorize();
             redirect(Auth::URI_LOGIN);
         }
 

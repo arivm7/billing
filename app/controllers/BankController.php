@@ -70,6 +70,7 @@ class BankController extends AppBaseController
 
         if (!App::isAuth()) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
+            self::log_unauthorize();
             redirect('/');
         }
 
@@ -411,7 +412,10 @@ class BankController extends AppBaseController
 
     function indexAction() {
 
-        if (!App::isAuth()) { redirect('/'); }
+        if (!App::isAuth()) { 
+            self::log_unauthorize();
+            redirect('/'); 
+        }
 
         if (!can_add(Module::MOD_PAYMENTS)) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));

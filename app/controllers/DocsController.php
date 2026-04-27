@@ -42,6 +42,7 @@ class DocsController extends AppBaseController {
     public function indexAction() {
 
         if (!App::isAuth()) {
+            self::log_unauthorize();
             redirect(Auth::URI_LOGIN);
         }
 

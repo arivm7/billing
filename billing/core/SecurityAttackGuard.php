@@ -44,6 +44,7 @@ class SecurityAttackGuard {
         }
 
         if (self::isBlocked($ip, $eventTypeId)) {
+            self::incrementBlockedIpTriggerCount($ip, $eventTypeId);
             self::logDeniedRequest($ip, 'BLOCKED BY SECURITY_ATTACK_GUARD');
             self::denyRequest('Доступ запрещён. Обратитесь к мастеру участка.');
         }
@@ -114,7 +115,7 @@ class SecurityAttackGuard {
 
     public static function logDeniedRequest(string $ip, string $reason): void {
         error_log(
-            message: date('Y-m-d H:i:s') . ' | ' . $ip . ' | ' . $reason . ' | ' . self::getFullRequestUrl() . PHP_EOL,
+            message: date('Y-m-d H:i:s') . ' | ' . sprintf('%-15s', $ip) . ' | ' . $reason . ' | ' . self::getFullRequestUrl() . PHP_EOL,
             message_type: 3,
             destination: DIR_LOG . '/' . self::LOG_FILENAME
         );
@@ -158,7 +159,7 @@ class SecurityAttackGuard {
 
         if (empty($row)) {
             error_log(
-                message: date('Y-m-d H:i:s') . ' | UNKNOWN EVENT TYPE ID: ' . $eventTypeId . ' | ' . self::getFullRequestUrl() . PHP_EOL,
+                message: date('Y-m-d H:i:s') . ' | ' . sprintf('%-15s', $_SERVER['REMOTE_ADDR'] ?: 'UNKNOWN') . ' | UNKNOWN EVENT TYPE ID: ' . $eventTypeId . ' | ' . self::getFullRequestUrl() . PHP_EOL,
                 message_type: 3,
                 destination: DIR_LOG . '/' . self::PROGRAMMING_ERROR_LOG
             );
@@ -228,6 +229,16 @@ class SecurityAttackGuard {
                     `expires_at` = VALUES(`expires_at`)";
 
         return self::db()->execute($sql, [$ip, $eventTypeId, $now, $expiresAt]);
+    }
+
+
+    protected static function incrementBlockedIpTriggerCount(string $ip, int $eventTypeId): bool {
+        $sql = "UPDATE `security_blocked_ip`
+                SET `trigger_counts` = COALESCE(`trigger_counts`, 0) + 1
+                WHERE `ip` = ?
+                  AND `event_type_id` = ?";
+
+        return self::db()->execute($sql, [$ip, $eventTypeId]);
     }
 
 

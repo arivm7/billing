@@ -207,6 +207,7 @@ class LogController extends AppBaseController {
 
         if (!App::isAuth()) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in'));
+            self::log_unauthorize();
             redirect(Auth::URI_LOGIN);
         }
 
@@ -234,6 +235,7 @@ class LogController extends AppBaseController {
 
         if (!App::isAuth()) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in'));
+            self::log_unauthorize();
             redirect(Auth::URI_LOGIN);
         }
 
@@ -272,6 +274,7 @@ class LogController extends AppBaseController {
 
         if (!App::isAuth()) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in'));
+            self::log_unauthorize();
             redirect(Auth::URI_LOGIN);
         }
 

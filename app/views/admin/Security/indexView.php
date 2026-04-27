@@ -48,6 +48,7 @@ use config\tables\Module;
                                 <th class="text-secondary">No</th>
                                 <th>IP</th>
                                 <th><?= __('Type') ?></th>
+                                <th class="text-center"><?= __('Trigger counts') ?></th>
                                 <th><?= __('Blocked at') ?></th>
                                 <th><?= __('Expires at') ?></th>
                                 <th class="text-end"><?= __('Actions') ?></th>
@@ -67,6 +68,7 @@ use config\tables\Module;
                                         <td class="text-secondary"><?= ++$orderNo ?></td>
                                         <td><?= h($blockedIp['ip']) ?></td>
                                         <td><?= h($blockedIp['event_type_title'] ?? ('#' . $blockedIp['event_type_id'])) ?></td>
+                                        <td class="text-center"><?= (int) $blockedIp['trigger_counts'] ?></td>
                                         <td><?= h($blockedIp['blocked_at_fmt']) ?></td>
                                         <td><?= h($blockedIp['expires_at_fmt']) ?></td>
                                         <td class="text-end text-nowrap">

@@ -14,6 +14,7 @@
 namespace billing\core;
 
 use billing\core\Timers;
+use app\controllers\AppBaseController;
 
 /**
  * Description of Router.php
@@ -54,11 +55,12 @@ class Router {
         $host = $_SERVER['HTTP_HOST'] ?? ($_SERVER['SERVER_NAME'] ?? 'UNKNOWN_HOST');
         $fullUrl = $requestUri !== '' ? $scheme . '://' . $host . $requestUri : 'UNKNOWN_URL';
 
-        error_log(
-            message: date('Y-m-d H:i:s') . ' | ' . $remoteIp . ' | ' . $fullUrl . PHP_EOL,
-            message_type: 3,
-            destination: DIR_LOG . '/' . App::get_config('log_hackers_attack')
-        );
+        AppBaseController::log(log_filename: App::get_config('log_hackers_attack'), log_url: 1);
+        //        error_log(
+        //            message: date('Y-m-d H:i:s') . ' | ' . $remoteIp . ' | ' . $fullUrl . PHP_EOL,
+        //            message_type: 3,
+        //            destination: DIR_LOG . '/' . App::get_config('log_hackers_attack')
+        //        );
     }
 
 

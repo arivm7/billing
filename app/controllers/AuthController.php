@@ -20,6 +20,7 @@ use config\Auth;
 use config\tables\User;
 use config\SessionFields;
 use billing\core\base\View;
+use billing\core\App;
 
 /**
  * Description of AuthController.php
@@ -38,6 +39,11 @@ class AuthController extends AppBaseController{
         View::setMeta(title: __('Registering a new user'));
         $this->setVariables([]);
 
+        // 
+        // отключена, 
+        // поскольку это система обслуживания абонентов,
+        // а не публичный портал
+        // 
         // if (!empty($_POST[User::POST_REC])) {
         //     $userModel = new AuthModel();
         //     $postData = $_POST[User::POST_REC];
@@ -62,7 +68,8 @@ class AuthController extends AppBaseController{
 
 
     /**
-     * Авторизация
+     * Авторизация 
+     * с помощью ввода логина и пароля
      * @return void
      */
     function loginAction() {
@@ -72,10 +79,17 @@ class AuthController extends AppBaseController{
             $postData = $_POST[User::POST_REC];
             $userModel->setAttributes($postData);
             if ($userModel->login()) {
-                MsgQueue::msg(MsgType::SUCCESS_AUTO, __('You have successfully logged in'));
+                MsgQueue::msg( MsgType::SUCCESS_AUTO, __('You have successfully logged in'));
+                self::log(
+                        msg: 'SUCCESS' . ' | ' . sprintf('%-8s', $postData[User::F_LOGIN]) . ' | ' . get_full_request_url(), 
+                        log_filename: App::get_config('auth_log_file'));
                 redirect('/');
             } else {
                 MsgQueue::msg(MsgType::ERROR_AUTO, __('Authorization error'));
+                self::log(
+                        msg: 'ERROR  ' . ' | ' . sprintf('%-8s', $postData[User::F_LOGIN]) . ' | ' . get_full_request_url(), 
+                        log_filename: App::get_config('auth_log_file'));
+                // . print_r($postData, true) . PHP_EOL,
                 redirect();
             }
         }
@@ -87,6 +101,9 @@ class AuthController extends AppBaseController{
 
 
     function logoutAction() {
+        self::log(
+                msg: 'LOGOUT ' . ' | ' . sprintf('%-8s', App::get_user()[User::F_LOGIN]) . ' | ' . get_full_request_url(), 
+                log_filename: App::get_config('auth_log_file'));
         AuthModel::session_clear();
         redirect(Auth::URI_LOGIN);
     }

@@ -127,6 +127,7 @@ class NoticeController extends AppBaseController
          */
         if (!App::isAuth()) {   
             MsgQueue::msg(MsgType::ERROR, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
+            self::log_unauthorize();
             redirect('/');
         }
 
@@ -213,6 +214,7 @@ class NoticeController extends AppBaseController
          */
         if (!App::isAuth()) {
             MsgQueue::msg(MsgType::ERROR, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
+            self::log_unauthorize();
             redirect('/');
         }
 

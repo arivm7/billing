@@ -60,11 +60,12 @@ class SearchController extends AppBaseController {
         // debug($_POST, '$_POST');
         // debug($_REQUEST, '$_REQUEST');
 
-        if  (
-                !App::isAuth() ||
-                !can_use(Module::MOD_SEARCH)
-            ) 
-        {
+        if  (!App::isAuth()) {
+            self::log_unauthorize();
+            redirect('/');
+        }
+
+        if  (!can_use(Module::MOD_SEARCH)) {
             redirect('/');
         }
 

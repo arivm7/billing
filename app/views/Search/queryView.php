@@ -48,7 +48,7 @@ require_once DIR_LIBS . '/functions.php'
                 <?php $pager = $row['pager']; include DIR_INC . '/pager.php'; ?>
             <?php else: ?>
                 <?php if (count($row['found']) < $row['count']) : ?>
-                    <a href="?t=<?=$row[Search::F_TABLE];?>&q=<?=$query;?>" class="btn btn-outline-success btn-sm"><?=__('Смотреть полный список');?> >>></a>
+                <a href="?t=<?=$row[Search::F_TABLE];?>&q=<?= urlencode($query); ?>" class="btn btn-outline-success btn-sm"><?=__('Смотреть полный список');?> >>></a>
                 <?php endif; ?>
             <?php endif; ?>
         <?php endif; ?>

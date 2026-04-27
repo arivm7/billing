@@ -38,6 +38,7 @@ class SecurityController extends AdminBaseController {
     private function requireCanUse(): void {
         if (!App::isAuth()) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in'));
+            self::log_unauthorize();
             redirect(Auth::URI_LOGIN);
         }
 
@@ -142,6 +143,7 @@ class SecurityController extends AdminBaseController {
             $blockedIp['expires_at_fmt'] = self::formatTimestamp(
                 $blockedIp['expires_at'] === null ? null : (int) $blockedIp['expires_at']
             );
+            $blockedIp['trigger_counts'] = (int) ($blockedIp['trigger_counts'] ?? 0);
         }
         unset($blockedIp);
 

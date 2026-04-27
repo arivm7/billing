@@ -352,6 +352,7 @@ class UserController extends AppBaseController {
 
         if (!App::isAuth()) {
             MsgQueue::msg(MsgType::ERROR,__('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
+            self::log_unauthorize();
             redirect(Auth::URI_LOGIN);
         }
 
@@ -421,6 +422,7 @@ class UserController extends AppBaseController {
     function editAction() { 
         if (!App::isAuth()) {
             MsgQueue::msg(MsgType::ERROR,__('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
+            self::log_unauthorize();
             redirect(Auth::URI_LOGIN);
         }
 

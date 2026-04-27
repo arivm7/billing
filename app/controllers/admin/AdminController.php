@@ -146,6 +146,7 @@ class AdminController extends AdminBaseController {
     public function menuEditAction() {
 
         if (!App::isAuth()) {
+            self::log_unauthorize();
             redirect('/');
         }
 

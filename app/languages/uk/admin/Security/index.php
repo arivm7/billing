@@ -27,6 +27,7 @@ return [
     'Attack events' => 'Події атаки',
     'Attack types' => 'Типи атак',
     'Type' => 'Тип',
+    'Trigger counts' => 'Кількість блокувань',
     'Blocked at' => 'Заблоковано о',
     'Expires at' => 'Термін дії закінчується о',
     'Actions' => 'Дії',

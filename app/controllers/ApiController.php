@@ -430,6 +430,7 @@ class ApiController extends AppBaseController {
         // debug($this->route, '$this->route', die:1);
 
         if (!App::isAuth()) {
+            self::log_unauthorize();
             redirect('/');
         }
 
