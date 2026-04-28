@@ -385,6 +385,14 @@ $config = [
     'auth_log_file' => 'auth.log',
     
     
+    
+    /**
+     * Блок прав доступа
+     */
+    
+    'rights_log_file' => 'rights.log',
+    
+    
 
 ];
 

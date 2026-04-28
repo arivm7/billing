@@ -32,6 +32,7 @@ $num = 0;
 
 if (!can_use(Module::MOD_TP)) {
     MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
+    self::log_no_rights();
     redirect();
 }
 ?>

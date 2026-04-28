@@ -219,6 +219,7 @@ class AbonController extends AppBaseController {
 
         if (!can_use(Module::MOD_ABON)) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('У вас нет прав для работы с абонентами'));
+            self::log_no_rights();
             redirect();
         }
 
@@ -360,6 +361,7 @@ class AbonController extends AppBaseController {
 
         if (!can_use(Module::MOD_ABON)) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('У вас нет прав для работы с абонентами'));
+            self::log_no_rights();
             redirect();
         }
 
@@ -508,6 +510,7 @@ class AbonController extends AppBaseController {
 
     //     if (!can_use(Module::MOD_ABON)) {
     //         MsgQueue::msg(MsgType::ERROR, __('You do not have permission to work with subscribers | У вас нет прав для работы с абонентами | У вас немає прав для роботи з абонентами'));
+    //         self::log_no_rights();
     //         redirect();
     //     }
 
@@ -1314,6 +1317,7 @@ class AbonController extends AppBaseController {
 
         if (!can_edit([Module::MOD_ABON])) {
             MsgQueue::msg(MsgType::ERROR,__('No rights | Нет прав | Немає прав'));
+            self::log_no_rights();
             redirect();
         }
 
@@ -1344,9 +1348,10 @@ class AbonController extends AppBaseController {
         // debug($_POST, '_POST:');
         // debug($this->route, '$this->route:');
 
-        if (!App::$auth->isAuth)
+        if (!App::isAuth())
         {
             MsgQueue::msg(MsgType::ERROR, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
+            self::log_unauthorize();
             redirect(Auth::URI_LOGIN);
         }
 
@@ -1355,8 +1360,8 @@ class AbonController extends AppBaseController {
          */
         if (!can_use(Module::MOD_ABON))
         {
-            // !!! Возможно это надо это писать в логи и сообщать
             MsgQueue::msg(MsgType::ERROR, __('No rights | Нет прав | Немає прав'));
+            self::log_no_rights();
             redirect();
         }
 
@@ -1513,6 +1518,7 @@ class AbonController extends AppBaseController {
 
         if (!can_use(Module::MOD_ABON)) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
+            self::log_no_rights();
             redirect();
         }
 

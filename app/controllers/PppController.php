@@ -109,11 +109,13 @@ class PppController extends AppBaseController{
 
         if (!App::$auth->isAuth) {
             MsgQueue::msg(MsgType::ERROR, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
+            self::log_unauthorize();
             redirect('/');
         }
 
         if (!can_use([Module::MOD_PPP]))  {
             MsgQueue::msg(MsgType::ERROR, __('У Вас нет прав для этого модуля'));
+            self::log_no_rights();
             redirect();
         }
 
@@ -137,11 +139,13 @@ class PppController extends AppBaseController{
         
         if (!App::$auth->isAuth) {
             MsgQueue::msg(MsgType::ERROR, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
+            self::log_unauthorize();
             redirect('/');
         }
 
         if (!can_use([Module::MOD_PPP]))  {
             MsgQueue::msg(MsgType::ERROR, __('У Вас нет прав для этого модуля'));
+            self::log_no_rights();
             redirect();
         }
 

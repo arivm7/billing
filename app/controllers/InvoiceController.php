@@ -451,7 +451,8 @@ class InvoiceController extends AppBaseController
         }
 
         if (!can_view(Module::MOD_INVOICES)) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав')); // !!! регистрировать
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав')); 
+            self::log_no_rights();
             redirect();
         }
 
@@ -520,6 +521,7 @@ class InvoiceController extends AppBaseController
 
         // if (!can_view(Module::MOD_INVOICES)) {
         //     MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав')); // !!! регистрировать
+        //     self::log_no_rights();
         //     redirect();
         // }
 
@@ -638,7 +640,8 @@ class InvoiceController extends AppBaseController
         }
 
         if (!can_edit(Module::MOD_INVOICES)) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав')); // !!! регистрировать
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
+            self::log_no_rights();
             redirect();
         }
 
@@ -761,7 +764,8 @@ class InvoiceController extends AppBaseController
         }
 
         if (!can_use([Module::MOD_INVOICES, Module::MOD_MY_INVOICES])) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав')); // !!! регистрировать
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
+            self::log_no_rights();
             redirect();
         }
 

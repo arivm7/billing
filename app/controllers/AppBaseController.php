@@ -77,9 +77,16 @@ class AppBaseController extends Controller{
             );
     }
 
+    
 
     public static function log_unauthorize() {
         self::log(msg: 'ERROR   | -unauth- | ' . get_full_request_url(), log_filename: App::get_config('auth_log_file'));
+    }
+
+
+    
+    public static function log_no_rights() {
+        self::log(msg: 'ERROR  | no rights | ' . get_full_request_url(), log_filename: App::get_config('rights_log_file'));
     }
     
     

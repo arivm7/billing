@@ -36,7 +36,7 @@ class ConciliationController extends AbonController {
     
     function indexAction() {
 
-        if (!App::$auth->isAuth) { redirect(); }
+        if (!App::isAuth()) { self::log_unauthorize(); redirect(); }
 
         $model = new AbonModel();
 
@@ -65,6 +65,7 @@ class ConciliationController extends AbonController {
              */
             if (!can_view(Module::MOD_MY_CONCILIATION)) {
                 MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
+                self::log_no_rights();
                 redirect();
             }
         } else {
@@ -73,6 +74,7 @@ class ConciliationController extends AbonController {
              */
             if (!can_view(Module::MOD_CONCILIATION)) {
                 MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
+                self::log_no_rights();
                 redirect();
             }
         }
@@ -92,7 +94,7 @@ class ConciliationController extends AbonController {
 
     function intervalAction(){
 
-        if (!App::$auth->isAuth) { redirect(); }
+        if (!App::isAuth()) { self::log_unauthorize(); redirect(); }
 
         $model = new AbonModel();
 
@@ -124,6 +126,7 @@ class ConciliationController extends AbonController {
              */
             if (!can_view(Module::MOD_MY_CONCILIATION)) {
                 MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
+                self::log_no_rights();
                 redirect();
             }
         } else {
@@ -132,6 +135,7 @@ class ConciliationController extends AbonController {
              */
             if (!can_view(Module::MOD_CONCILIATION)) {
                 MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
+                self::log_no_rights();
                 redirect();
             }
         }
@@ -158,6 +162,7 @@ class ConciliationController extends AbonController {
         if (is_numeric($this->route[F_ALIAS])) {
             if (!App::$auth->isAuth) {
                 MsgQueue::msg(MsgType::ERROR, __('Для данного действия требуется авторизация'));
+                self::log_unauthorize();
                 redirect('/');
             }
             $user = $model->get_user_by_abon_id((int)$this->route[F_ALIAS]);

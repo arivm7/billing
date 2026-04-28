@@ -44,9 +44,10 @@ enum PAStatus: int  {
     case PAUSE_TODAY    = 0b00100000;
     case PAUSE          = 0b00010000;
     case CLOSED         = 0b00001000;
-    case INACTIVE       = self::PAUSE->value | self::PAUSE_TODAY->value;
-    case ACTIVE         = self::FUTURE->value | self::CURRENT->value;
-    case ACTIVE_TODAY   = self::FUTURE->value | self::CURRENT->value | self::PAUSE_TODAY->value;
+    case INACTIVE       = self::PAUSE->value                                             | self::PAUSE_TODAY->value;
+    case ACTIVE         =                     self::CURRENT->value | self::FUTURE->value;
+ // case ACTIVE_NOW     =                     self::CURRENT->value                       | self::PAUSE_TODAY->value;
+    case ACTIVE_TODAY   =                     self::CURRENT->value | self::FUTURE->value | self::PAUSE_TODAY->value;
 }
 
 

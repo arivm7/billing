@@ -68,10 +68,12 @@ class TpController extends AppBaseController {
                     ]);
             } else {
                 MsgQueue::msg(MsgType::ERROR, __('Недостаточно прав.'));
+                self::log_no_rights();
                 redirect();
             }
         } else {
             MsgQueue::msg(MsgType::ERROR, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
+            self::log_unauthorize();
             redirect();
         }
     }
@@ -114,10 +116,12 @@ class TpController extends AppBaseController {
                 }
             } else {
                 MsgQueue::msg(MsgType::ERROR, __('Недостаточно прав.'));
+                self::log_no_rights();
                 redirect();
             }
         } else {
             MsgQueue::msg(MsgType::ERROR, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
+            self::log_unauthorize();
             redirect();
         }
     }
@@ -160,10 +164,12 @@ class TpController extends AppBaseController {
                 }
             } else {
                 MsgQueue::msg(MsgType::ERROR, __('Недостаточно прав.'));
+                self::log_no_rights();
                 redirect();
             }
         } else {
             MsgQueue::msg(MsgType::ERROR, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
+            self::log_unauthorize();
             redirect();
         }
     }

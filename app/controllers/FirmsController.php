@@ -32,7 +32,7 @@ class FirmsController extends AppBaseController {
 
     public function indexAction(): void {
 
-        if (!can_use(Module::MOD_FIRM)) { redirect(); }
+        if (!can_use(Module::MOD_FIRM)) { self::log_no_rights(); redirect(); }
 
         $model = new AbonModel();
 
@@ -58,7 +58,7 @@ class FirmsController extends AppBaseController {
 
     public function employeesAction(): void {
 
-        if (!can_use(Module::MOD_FIRM)) { redirect(); }
+        if (!can_use(Module::MOD_FIRM)) { self::log_no_rights(); redirect(); }
         
 
 

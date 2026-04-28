@@ -151,6 +151,7 @@ class AdminController extends AdminBaseController {
         }
 
         if (!can_use(Module::MOD_ADMIN_MENU)) {
+            self::log_no_rights();
             redirect('/');
         }
 

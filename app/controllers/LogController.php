@@ -213,6 +213,7 @@ class LogController extends AppBaseController {
 
         if (!can_use(Module::MOD_LOGS)) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights'));
+            self::log_no_rights();
             redirect();
         }
 
@@ -241,6 +242,7 @@ class LogController extends AppBaseController {
 
         if (!can_use(Module::MOD_LOGS)) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights'));
+            self::log_no_rights();
             redirect();
         }
 
@@ -280,6 +282,7 @@ class LogController extends AppBaseController {
 
         if (!can_del(Module::MOD_LOGS)) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights to delete'));
+            self::log_no_rights();
             redirect();
         }
 

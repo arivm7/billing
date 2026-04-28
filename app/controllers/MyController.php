@@ -47,8 +47,8 @@ class MyController extends AppBaseController  {
 
     function indexAction() {
 
-        if (!App::$auth->isAuth) {
-            redirect(Auth::URI_LOGIN);
+        if (!App::$auth->isAuth) { 
+            redirect(Auth::URI_LOGIN); 
         }
 
         $my = $_SESSION[User::SESSION_USER_REC];

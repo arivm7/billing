@@ -51,11 +51,13 @@ class PaymentsController extends AppBaseController {
 
         if (!App::$auth->isAuth) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in'));
+            self::log_unauthorize();
             redirect('/');
         }
 
         if (!can_del([Module::MOD_PAYMENTS]))  {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights'));
+            self::log_no_rights();
             redirect();
         }
 
@@ -427,6 +429,7 @@ class PaymentsController extends AppBaseController {
              */
             if (!can_add([Module::MOD_PAYMENTS]))  {
                 MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
+                self::log_no_rights();
                 redirect();
             }
             
@@ -445,6 +448,7 @@ class PaymentsController extends AppBaseController {
              */
             if (!can_edit([Module::MOD_PAYMENTS]))  {
                 MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
+                self::log_no_rights();
                 redirect();
             }
 
@@ -469,6 +473,7 @@ class PaymentsController extends AppBaseController {
 
         if (!App::$auth->isAuth) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in'));
+            self::log_unauthorize();
             redirect('/');
         }
 
@@ -500,6 +505,7 @@ class PaymentsController extends AppBaseController {
             }
             if (!can_edit([Module::MOD_PAYMENTS]))  {
                 MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights'));
+                self::log_no_rights();
                 redirect();
             }
             $pay = $model->get_pay($pay_id);
@@ -511,6 +517,7 @@ class PaymentsController extends AppBaseController {
              */
             if (!can_add([Module::MOD_PAYMENTS]))  {
                 MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights'));
+                self::log_no_rights();
                 redirect();
             }
             $my_ppp_list = $model->get_ppp_my(1, PppType::TYPE_AGENT);
@@ -549,10 +556,12 @@ class PaymentsController extends AppBaseController {
 
         if (!App::$auth->isAuth) {
             MsgQueue::msg(MsgType::ERROR, __('Please log in'));
+            self::log_unauthorize();
             redirect();
         }
         if (!can_view([Module::MOD_MY_PAYMENTS, Module::MOD_PAYMENTS]))  {
             MsgQueue::msg(MsgType::ERROR, __('You have no rights for this module'));
+            self::log_no_rights();
             redirect();
         }
         $model = new AbonModel();
@@ -575,6 +584,7 @@ class PaymentsController extends AppBaseController {
 
         if (!App::$auth->isAuth) {
             MsgQueue::msg(MsgType::ERROR, __('Please log in'));
+            self::log_unauthorize();
             redirect();
         }
 
@@ -637,11 +647,13 @@ class PaymentsController extends AppBaseController {
 
         if (!App::$auth->isAuth) {
             MsgQueue::msg(MsgType::ERROR, __('Please log in'));
+            self::log_unauthorize();
             redirect();
         }
 
         if (!can_use(Module::MOD_PAYMENTS)) {
             MsgQueue::msg(MsgType::ERROR, __('You have no rights for this module'));
+            self::log_no_rights();
             redirect();
         }
         
@@ -696,11 +708,13 @@ class PaymentsController extends AppBaseController {
 
         if (!App::$auth->isAuth) {
             MsgQueue::msg(MsgType::ERROR, __('Please log in'));
+            self::log_unauthorize();
             redirect();
         }
 
         if (!can_use(Module::MOD_PAYMENTS)) {
             MsgQueue::msg(MsgType::ERROR, __('You have no rights for this module'));
+            self::log_no_rights();
             redirect();
         }
         
@@ -832,11 +846,13 @@ class PaymentsController extends AppBaseController {
 
         if (!App::$auth->isAuth) {
             MsgQueue::msg(MsgType::ERROR, __('Please log in'));
+            self::log_unauthorize();
             redirect();
         }
 
         if (!can_use(Module::MOD_PAYMENTS)) {
             MsgQueue::msg(MsgType::ERROR, __('You have no rights for this module'));
+            self::log_no_rights();
             redirect();
         }
         

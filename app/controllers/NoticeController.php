@@ -136,6 +136,7 @@ class NoticeController extends AppBaseController
          */
         if (!can_view(Module::MOD_NOTICE)) {   
             MsgQueue::msg(MsgType::ERROR, __('No rights | Нет прав | Немає прав'));
+            self::log_no_rights();
             redirect();
         }
 
@@ -223,6 +224,7 @@ class NoticeController extends AppBaseController
          */
         if (!can_view(Module::MOD_NOTICE)) {
             MsgQueue::msg(MsgType::ERROR, __('No rights | Нет прав | Немає прав'));
+            self::log_no_rights();
             redirect();
         }
 

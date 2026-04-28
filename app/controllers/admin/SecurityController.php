@@ -44,6 +44,7 @@ class SecurityController extends AdminBaseController {
 
         if (!can_use(Module::MOD_SECURITY)) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights'));
+            self::log_no_rights();
             redirect();
         }
     }
@@ -55,6 +56,7 @@ class SecurityController extends AdminBaseController {
 
         if (!can_view(Module::MOD_SECURITY)) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights to view'));
+            self::log_no_rights();
             redirect();
         }
     }
@@ -66,6 +68,7 @@ class SecurityController extends AdminBaseController {
 
         if (!can_edit(Module::MOD_SECURITY)) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights to edit'));
+            self::log_no_rights();
             redirect(self::URI_INDEX);
         }
     }
@@ -77,6 +80,7 @@ class SecurityController extends AdminBaseController {
 
         if (!can_del(Module::MOD_SECURITY)) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights to delete'));
+            self::log_no_rights();
             redirect(self::URI_INDEX);
         }
     }

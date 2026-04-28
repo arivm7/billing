@@ -244,6 +244,115 @@ class AbonModel extends UserModel {
 
 
 
+    /**
+     * Обновляет стоимости начислений ПФ 
+     * и активные абонплаты для всех ПФ указанного абонента
+     * (PA::F_COST_VALUE, PA::F_PPMA_VALUE, PA::F_PPDA_VALUE).
+     * Остатки для указанного абонента 
+     * (AbonRest::F_SUM_COST, AbonRest::F_SUM_PPMA, AbonRest::F_SUM_PPDA)
+     * @param int|string $abon_id
+     * @param bool $msg_info -- Если true, то выводит сообщения в очередь сообщений.
+     * @return bool
+     */
+    function recalc_abon(int|string $abon_id, bool $msg_info = true): bool {
+        $result = true;
+        if  (
+                ($abon_id === 0 ) /* AbonRest::ALIAS_FOR_ALL => 0 для int совместимости */
+                ||
+                $this->validate_id(Abon::TABLE, $abon_id, Abon::F_ID)
+            ) 
+        {
+
+            /**
+             * Обновление стоимосьти ПФ
+             */
+            if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("COST") . ': ' . __("Обновляем стоимость начисления в прайсовых фрагментах") . " [".$abon_id."]..."); }
+            if ($this->update_prices_cost_all($abon_id, $msg_info)) {
+                if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("COST") . ': ' . __("Успешно.")); }
+            } else {
+                if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("COST") . ': ' . __("Ошибка")); }
+                if ($msg_info ) { MsgQueue::msg(MsgType::ERROR, $this->errorInfo()); }
+                $result = false;
+            }
+
+            /**
+             * Обновление активных абонплат
+             */
+            if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("PA") . ': ' . __('Обновляем активные абонплаты прайсовых фрагментов') . " [".$abon_id."]..."); }
+            if ($this->update_prices_active_all($abon_id)) {
+                if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("PA") . ': ' . __("Успешно.")); }
+            } else {
+                if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("PA") . ': ' . __("Ошибка")); }
+                if ($msg_info ) { MsgQueue::msg(MsgType::ERROR, $this->errorInfo()); }
+                $result = false;
+            }
+
+            /**
+             * Обновление остатков
+             */
+            if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("REST") . ': ' . __('Обновляем активные остатки') . " [".$abon_id."]..."); }
+            if ($this->update_abon_rest_all($abon_id)) {
+                if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("REST") . ': ' . __("Успешно.")); }
+            } else {
+                if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("REST") . ': ' . __("Ошибка")); }
+                if ($msg_info ) { MsgQueue::msg(MsgType::ERROR, $this->errorInfo()); }
+                $result = false;
+            }
+            
+        } else {
+            if ($msg_info ) { MsgQueue::msg(MsgType::ERROR, 'RECALC: ' . __("Нет такого абонента") . " [".$abon_id."]"); }
+            $result = false;
+        }
+        return $result;
+    }
+
+
+
+    function set_abon_pause(int $abon_id): string {
+        $pa_list = $this->get_pa_by_abon_id($abon_id, active: 1);
+        $ok      = false;
+        $first   = true;
+        $log_str = "";
+        foreach ($pa_list as $pa) {
+            $pa[PA::F_DATE_START_STR] = date('%Y-%m-%d', $pa[PA::F_DATE_START]);
+            $pa[PA::F_DATE_END_STR] = date('%Y-%m-%d', $pa[PA::F_DATE_END]);
+            $tp = $this->get_tp($pa[PA::F_TP_ID]);
+            if  (
+                    (get_price_apply_age($pa) === PAStatus::CURRENT) &&
+                    ($tp[TP::F_STATUS]     == 1) &&
+                    ($tp[TP::F_DELETED]    == 0) &&
+                    ($tp[TP::F_IS_MANAGED] == 1)
+                )
+            {
+                if($first) {
+                    $ok = true; $first = false;
+                } else {
+                    $log_str .= "\n";
+                }
+                $log_str .= "|          | "
+                    . "[tp_id]=>".$pa['net_router_id'].", "
+                    . ($tp[TP::F_STATUS]     == 1 ? "A" : "-" )
+                    . ($tp[TP::F_DELETED]    == 1 ? "X" : "-" )
+                    . ($tp[TP::F_IS_MANAGED] == 1 ? "M" : "-" ).", "
+                    . "[pa_id]=>".$pa[PA::F_ID].", "
+                    . "[net_ip]=>".$pa[PA::F_NET_IP].", "
+                    . "[start]=>".$pa[PA::F_DATE_START_STR].", "
+                    . "[end]=>".$pa[PA::F_DATE_END_STR]."; ==> ";
+
+                $log_enable = '';
+                if ($ok) {
+                    if (PaController::enable(pa: $pa, ena: 0, log: $log_enable) === false) {
+                        $ok = false;
+                    }
+                }
+                $log_str .= ($ok ? "Oк" : "ОШИБКА") . "\n" . $log_enable . "\n";
+            }
+        }
+        return $log_str;
+    }
+
+
+
     function get_tp_list_with_abon(int $abon_id, int|null $closed = null): array|null {
         if (!$this->validate_id(table_name: Abon::TABLE, field_id: Abon::F_ID, id_value: $abon_id)) { return null; }
         $sql = "SELECT "
@@ -1502,70 +1611,6 @@ class AbonModel extends UserModel {
         if (is_null($abon_id) || $abon_id == 0 || !$this->validate_id(Abon::TABLE, $abon_id)) { return $abon_id; }
         $c = $this->get_html_chek_payer(aid: $abon_id);
         return "<nobr>" . a(href: Abon::URI_VIEW . "/{$abon_id}", text: "{$abon_id}", title: $this->get_abon_address($abon_id), target: "_blank") . "&nbsp;{$c}</nobr>";
-    }
-
-
-
-    /**
-     * Обновляет стоимости начислений ПФ 
-     * и активные абонплаты для всех ПФ указанного абонента
-     * (PA::F_COST_VALUE, PA::F_PPMA_VALUE, PA::F_PPDA_VALUE).
-     * Остатки для указанного абонента 
-     * (AbonRest::F_SUM_COST, AbonRest::F_SUM_PPMA, AbonRest::F_SUM_PPDA)
-     * @param int|string $abon_id
-     * @param bool $msg_info -- Если true, то выводит сообщения в очередь сообщений.
-     * @return bool
-     */
-    function recalc_abon(int|string $abon_id, bool $msg_info = true): bool {
-        $result = true;
-        if  (
-                ($abon_id === 0 ) /* AbonRest::ALIAS_FOR_ALL => 0 для int совместимости */
-                ||
-                $this->validate_id(Abon::TABLE, $abon_id, Abon::F_ID)
-            ) 
-        {
-
-            /**
-             * Обновление стоимосьти ПФ
-             */
-            if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("COST") . ': ' . __("Обновляем стоимость начисления в прайсовых фрагментах") . " [".$abon_id."]..."); }
-            if ($this->update_prices_cost_all($abon_id, $msg_info)) {
-                if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("COST") . ': ' . __("Успешно.")); }
-            } else {
-                if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("COST") . ': ' . __("Ошибка")); }
-                if ($msg_info ) { MsgQueue::msg(MsgType::ERROR, $this->errorInfo()); }
-                $result = false;
-            }
-
-            /**
-             * Обновление активных абонплат
-             */
-            if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("PA") . ': ' . __('Обновляем активные абонплаты прайсовых фрагментов') . " [".$abon_id."]..."); }
-            if ($this->update_prices_active_all($abon_id)) {
-                if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("PA") . ': ' . __("Успешно.")); }
-            } else {
-                if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("PA") . ': ' . __("Ошибка")); }
-                if ($msg_info ) { MsgQueue::msg(MsgType::ERROR, $this->errorInfo()); }
-                $result = false;
-            }
-
-            /**
-             * Обновление остатков
-             */
-            if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("REST") . ': ' . __('Обновляем активные остатки') . " [".$abon_id."]..."); }
-            if ($this->update_abon_rest_all($abon_id)) {
-                if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("REST") . ': ' . __("Успешно.")); }
-            } else {
-                if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("REST") . ': ' . __("Ошибка")); }
-                if ($msg_info ) { MsgQueue::msg(MsgType::ERROR, $this->errorInfo()); }
-                $result = false;
-            }
-            
-        } else {
-            if ($msg_info ) { MsgQueue::msg(MsgType::ERROR, 'RECALC: ' . __("Нет такого абонента") . " [".$abon_id."]"); }
-            $result = false;
-        }
-        return $result;
     }
 
 

@@ -129,8 +129,8 @@ class DocsController extends AppBaseController {
      */
     public function untemplate(string $template): string {
         $model = new DocsModel();
-        if (App::$auth->isAuth) {
-            $my = $_SESSION[User::SESSION_USER_REC];
+        if (App::isAuth()) {
+            $my = App::get_user();
             $my[Abon::TABLE] = $model->get_abons_by_uid($my[User::F_ID]);
 
             $abon_data = [];
@@ -225,11 +225,13 @@ class DocsController extends AppBaseController {
 
         if (!App::$auth->isAuth) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('Please log in'));
+            self::log_unauthorize();
             redirect(Auth::URI_LOGIN);
         }
 
         if (!can_edit(Module::MOD_DOCS)) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('You do not have permission for this action'));
+            self::log_no_rights();
             redirect();
         }
 

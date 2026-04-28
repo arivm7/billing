@@ -76,6 +76,7 @@ class BankController extends AppBaseController
 
         if (!can_add(Module::MOD_PAYMENTS)) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
+            self::log_no_rights();
             redirect();
         }
 
@@ -419,6 +420,7 @@ class BankController extends AppBaseController
 
         if (!can_add(Module::MOD_PAYMENTS)) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
+            self::log_no_rights();
             redirect();
         }
 

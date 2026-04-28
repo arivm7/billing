@@ -552,6 +552,7 @@ class ApiController extends AppBaseController {
                      */
                     if (!can_edit(Module::MOD_PA)) {
                         MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
+                        self::log_no_rights();
                         redirect();
                     }
 

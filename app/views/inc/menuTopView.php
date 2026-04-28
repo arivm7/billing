@@ -31,7 +31,7 @@ use config\Icons;
 
 Lang::load_inc(__FILE__);
 if (App::$auth->isAuth) {
-    $user = $_SESSION[User::SESSION_USER_REC];
+    $user = App::get_user();
 }
 $path=strtolower('/' . ($this->route[F_PREFIX] ? $this->route[F_PREFIX] . '/' : "") . $this->route[F_CONTROLLER] . '/' . $this->route[F_ACTION]);
 ?>

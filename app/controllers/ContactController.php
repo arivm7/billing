@@ -16,6 +16,7 @@ namespace app\controllers;
 
 
 use app\models\AbonModel;
+use config\Auth;
 use billing\core\App;
 use billing\core\base\Lang;
 use billing\core\MsgQueue;
@@ -104,10 +105,14 @@ class ContactController extends AppBaseController {
 
     function addAction() {
 
+        if (!App::isAuth()) {
+            self::log_unauthorize();
+            redirect(Auth::URI_LOGIN);
+        }
+            
         if  (
                 isset($_POST[Contacts::POST_REC]) &&
-                is_array($_POST[Contacts::POST_REC]) &&
-                App::$auth->isAuth
+                is_array($_POST[Contacts::POST_REC])
             )
         {
             $model = new AbonModel();
@@ -117,7 +122,7 @@ class ContactController extends AppBaseController {
                         /**
                          * Текущий пользователь владелец записи
                          */
-                        $_SESSION[User::SESSION_USER_REC][User::F_ID] == $rec[Contacts::F_USER_ID] &&
+                        App::get_user_id() == $rec[Contacts::F_USER_ID] &&
                         /**
                          * Имеет право на добавление
                          */
@@ -163,6 +168,8 @@ class ContactController extends AppBaseController {
                         MsgQueue::msg(MsgType::ERROR, $model->errorInfo());
                     }
                 }
+            } else {
+                self::log_no_rights();
             }
         }
         /**
@@ -174,10 +181,15 @@ class ContactController extends AppBaseController {
 
 
     function editAction() {
+        
+        if (!App::isAuth()) {
+            self::log_unauthorize();
+            redirect(Auth::URI_LOGIN);
+        }
+        
         if  (
                 isset($_POST[Contacts::POST_REC]) &&
-                is_array($_POST[Contacts::POST_REC]) &&
-                App::$auth->isAuth
+                is_array($_POST[Contacts::POST_REC])
             )
         {
             $model = new AbonModel();
@@ -187,7 +199,7 @@ class ContactController extends AppBaseController {
                         /**
                          * Текущий пользователь владелец записи
                          */
-                        $_SESSION[User::SESSION_USER_REC][User::F_ID] == $model->get_contact_owner($contact_id) &&
+                        App::get_user_id() == $model->get_contact_owner($contact_id) &&
                         /**
                          * Имеет право на редактирование
                          */
@@ -222,6 +234,8 @@ class ContactController extends AppBaseController {
                         MsgQueue::msg(MsgType::ERROR, $model->errorInfo());
                     }
                 }
+            } else {
+                self::log_no_rights();
             }
         }
         redirect();
@@ -231,10 +245,14 @@ class ContactController extends AppBaseController {
 
     function visibleAction() {
 
+        if (!App::isAuth()) {
+            self::log_unauthorize();
+            redirect(Auth::URI_LOGIN);
+        }
+        
         if  (
                 isset($_GET[Contacts::F_GET_VISIBLE]) &&
-                is_numeric($_GET[Contacts::F_GET_VISIBLE]) &&
-                App::$auth->isAuth
+                is_numeric($_GET[Contacts::F_GET_VISIBLE])
             )
         {
             $model = new AbonModel();
@@ -244,7 +262,7 @@ class ContactController extends AppBaseController {
                         /**
                          * Текущий пользователь владелец записи
                          */
-                        $_SESSION[User::SESSION_USER_REC][User::F_ID] == $model->get_contact_owner($contact_id) &&
+                        App::get_user_id() == $model->get_contact_owner($contact_id) &&
                         /**
                          * Имеет право на редактирование
                          */
@@ -270,6 +288,8 @@ class ContactController extends AppBaseController {
                     MsgQueue::msg(MsgType::ERROR, __('Error entering data into the database | Ошибка внесения данных в базу'));
                     MsgQueue::msg(MsgType::ERROR, $model->errorInfo());
                 }
+            } else {
+                self::log_no_rights();
             }
         }
         redirect();
@@ -279,42 +299,44 @@ class ContactController extends AppBaseController {
 
     function delAction() {
 
+        if (!App::isAuth()) {
+            self::log_unauthorize();
+            redirect(Auth::URI_LOGIN);
+        }
+        
+        $model = new AbonModel();
+        $contact_id = (int)$this->route[F_ALIAS];
         if  (
-                App::$auth->isAuth
+                (
+                    /**
+                     * Текущий пользователь владелец записи
+                     */
+                    App::get_user_id() == $model->get_contact_owner($contact_id) &&
+                    /**
+                     * Имеет право на редактирование
+                     */
+                    can_del([Module::MOD_MY_CONTACTS])
+                ) ||
+                (
+                    /**
+                     * Это сторонний пользователь
+                     * Должен иметь право на редактировани в этом модуле
+                     */
+                    can_del([Module::MOD_CONTACTS])
+                )
             )
         {
-            $model = new AbonModel();
-            $contact_id = (int)$this->route[F_ALIAS];
-            if  (
-                    (
-                        /**
-                         * Текущий пользователь владелец записи
-                         */
-                        $_SESSION[User::SESSION_USER_REC][User::F_ID] == $model->get_contact_owner($contact_id) &&
-                        /**
-                         * Имеет право на редактирование
-                         */
-                        can_del([Module::MOD_MY_CONTACTS])
-                    ) ||
-                    (
-                        /**
-                         * Это сторонний пользователь
-                         * Должен иметь право на редактировани в этом модуле
-                         */
-                        can_del([Module::MOD_CONTACTS])
-                    )
-                )
-            {
-                /**
-                 * Имеет право на редактирование
-                 */
-                if ($model->delete_rows_by_field(table: Contacts::TABLE, field_id: Contacts::F_ID, value_id: $contact_id)) {
-                    MsgQueue::msg(MsgType::SUCCESS_AUTO, __('The entry was deleted successfully | Запись удалена успешно'));
-                } else {
-                    MsgQueue::msg(MsgType::ERROR, __('Error deleting data | Ошибка удаления данных'));
-                    MsgQueue::msg(MsgType::ERROR, $model->errorInfo());
-                }
+            /**
+             * Имеет право на редактирование
+             */
+            if ($model->delete_rows_by_field(table: Contacts::TABLE, field_id: Contacts::F_ID, value_id: $contact_id)) {
+                MsgQueue::msg(MsgType::SUCCESS_AUTO, __('The entry was deleted successfully | Запись удалена успешно'));
+            } else {
+                MsgQueue::msg(MsgType::ERROR, __('Error deleting data | Ошибка удаления данных'));
+                MsgQueue::msg(MsgType::ERROR, $model->errorInfo());
             }
+        } else {
+            self::log_no_rights();
         }
         redirect();
     }
