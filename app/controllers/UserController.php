@@ -165,15 +165,14 @@ class UserController extends AppBaseController {
         $v->rule('optional', User::F_EMAIL_MAIN);
         /**
          * Как оно работает
-         * часть	        описание
-         * ^ / $	        начало и конец строки
-         * (?:[^<>]+<)?	    необязательная часть до угловой скобки, например: Ирина<
-         * [A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}	-- сам email-адрес
-         * (?:>)?	        необязательная закрывающая >
-         * i	            делает проверку без учёта регистра
+         * часть	                                описание
+         * ^ / $	                                начало и конец строки
+         * (?:(?:[^<>,]+<)?email(?:>)?)	                один email, с необязательным именем: Ирина<mail@example.com>
+         * (?:\s*,\s*(?:(?:[^<>,]+<)?email(?:>)?))*     дополнительные email через запятую
+         * i	                                        делает проверку без учёта регистра
          */
-        $v->rule('regex', User::F_EMAIL_MAIN, '/^(?:[^<>]+<)?[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}(?:>)?$/i')
-            ->message('Неверный формат e-mail');
+        $v->rule('regex', User::F_EMAIL_MAIN, '/^(?:(?:[^<>,]+<)?[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}(?:>)?)(?:\s*,\s*(?:(?:[^<>,]+<)?[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}(?:>)?))*$/i')
+            ->message(__('Неверный формат адреса эл. почты'));
 
 
         /**
@@ -358,6 +357,7 @@ class UserController extends AppBaseController {
 
         if (!can_edit([Module::MOD_MY_USER_CARD, Module::MOD_USER_CARD])) {
             MsgQueue::msg(MsgType::ERROR,__('No rights | Нет прав | Немає прав'));
+            self::log_no_rights();
             redirect();
         }
 
@@ -428,6 +428,7 @@ class UserController extends AppBaseController {
 
         if (!can_edit([Module::MOD_MY_USER_CARD, Module::MOD_USER_CARD])) {
             MsgQueue::msg(MsgType::ERROR,__('No rights | Нет прав | Немає прав'));
+            self::log_no_rights();
             redirect();
         }
 
