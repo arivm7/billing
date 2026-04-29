@@ -312,7 +312,7 @@ class AbonModel extends UserModel {
         $pa_list = $this->get_pa_by_abon_id($abon_id, active: 1);
         $ok      = false;
         $first   = true;
-        $log_str = "";
+        $log_str = "Постановка на паузу прайсовых фрагментов для абонента [".$abon_id."]...\n";
         foreach ($pa_list as $pa) {
             $pa[PA::F_DATE_START_STR] = date('%Y-%m-%d', $pa[PA::F_DATE_START]);
             $pa[PA::F_DATE_END_STR] = date('%Y-%m-%d', $pa[PA::F_DATE_END]);
@@ -347,6 +347,9 @@ class AbonModel extends UserModel {
                 }
                 $log_str .= ($ok ? "Oк" : "ОШИБКА") . "\n" . $log_enable . "\n";
             }
+        }
+        if ($first) {
+            $log_str .= "Нет активных прайсов на управляемых ТП. Действий нет.\n";
         }
         return $log_str;
     }

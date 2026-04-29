@@ -375,7 +375,7 @@ class PaController extends AppBaseController {
 
 
 
-    public static function enable(int|null $pa_id = null, array|null $pa = null, bool|int $ena = 1, int|bool $force = 0): int|false {
+    public static function enable(int|null $pa_id = null, array|null $pa = null, bool|int $ena = 1, int|bool $force = 0, string &$log = ''): int|false {
 
         $ena = ($ena ? true : false);
         $force = ($force ? true : false);
@@ -392,14 +392,20 @@ class PaController extends AppBaseController {
          */
         if ($tp[TP::F_STATUS] && $tp[TP::F_IS_MANAGED]) {
             if (($mik = Api::tp_connector(tp: $tp)) === false) {
-                MsgQueue::msg(MsgType::ERROR_AUTO, "Не удалось подключиться к ТП");
+                $s = "Не удалось подключиться к ТП";
+                MsgQueue::msg(MsgType::ERROR, $s);
+                $log .= 'ERROR: ' . $s;
                 return false;
             }
             if (!Api::set_mik_abon_ip($mik, $pa[PA::F_NET_IP], $ena, true)) {
-                MsgQueue::msg(MsgType::ERROR_AUTO, "Не удалось установить услугу на микротике. Изменение в базе отменено.");
+                $s = "Не удалось установить услугу на микротике. Изменение в базе отменено.";
+                MsgQueue::msg(MsgType::ERROR, $s);
+                $log .= 'ERROR: ' . $s;
                 return false;
             }
-            MsgQueue::msg(MsgType::SUCCESS_AUTO, "Услуга установлена на микротике");
+            $s = "Услуга на микротике " . ($ena ? "включена" : "выключена");
+            MsgQueue::msg(MsgType::SUCCESS_AUTO, $s);
+            $log .= 'SUCCESS: ' . $s . "\n";
         }
 
         if ($ena) {
@@ -416,10 +422,14 @@ class PaController extends AppBaseController {
                  * Создаём копию и открываем клонированный ПФ
                  */
                 if (($pa_new_id = self::clone(pa: $pa)) === false) {
-                    MsgQueue::msg(MsgType::ERROR_AUTO, "Не удалось клонировать ПФ для открытия");
+                    $s = "Не удалось клонировать ПФ для открытия";
+                    MsgQueue::msg(MsgType::ERROR, $s);
+                    $log .= 'ERROR: ' . $s;
                     return false;
                 }
-                MsgQueue::msg(MsgType::SUCCESS_AUTO, "ПФ на паузе давно. Клонирован");
+                $s = "ПФ на паузе давно. Клонирован";
+                MsgQueue::msg(MsgType::SUCCESS_AUTO, $s);
+                $log .= 'SUCCESS: ' . $s . "\n";
                 /**
                  * Запись для обновления в базе
                  */
@@ -433,7 +443,9 @@ class PaController extends AppBaseController {
                  * Закрыт недавно
                  * Просто открываем ПФ
                  */
-                MsgQueue::msg(MsgType::SUCCESS_AUTO, "ПФ на паузе недавно (или force). Открываем");
+                $s = "ПФ на паузе недавно (или force). Открываем";
+                MsgQueue::msg(MsgType::SUCCESS_AUTO, $s);
+                $log .= 'SUCCESS: ' . $s . "\n";
                 /**
                  * Запись для обновления в базе
                  */
@@ -457,10 +469,14 @@ class PaController extends AppBaseController {
          * Внесение параметра услуги в базу
          */
         if ($model->update_row_by_id(PA::TABLE, $pa_rec, PA::F_ID)) {
-            MsgQueue::msg(MsgType::SUCCESS_AUTO, "Услуга установлена");
+            $s = "Услуга в биллинге " . ($ena ? "включена" : "выключена");
+            MsgQueue::msg(MsgType::SUCCESS_AUTO, $s);
+            $log .= 'SUCCESS: ' . $s;
             return $pa_rec[PA::F_ID];
         } else {
-            MsgQueue::msg(MsgType::SUCCESS_AUTO, "Ошибка установки параметров услуги в базе. Требуется проверка.");
+            $s = "Ошибка установки параметров услуги в базе. Требуется проверка.";
+            MsgQueue::msg(MsgType::ERROR, $s);
+            $log .= 'ERROR: ' . $s;
             return false;
         }
     }
@@ -506,6 +522,7 @@ class PaController extends AppBaseController {
          */
         if (!can_edit(Module::MOD_PA)) {   
             MsgQueue::msg(MsgType::ERROR, __('No rights | Нет прав | Немає прав'));
+            self::log_no_rights();
             redirect();
         }
 
