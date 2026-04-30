@@ -187,6 +187,34 @@ class Lang {
 
 
     /**
+     * Формирует из строки "A | B | C" → массив ['en'=>A,'ru'=>B,'uk'=>C]
+     * "A | B" → вернёт исходную строку
+     * "A | B | C | D" → вернёт исходную строку
+     * Возвращает строку текущего языка.
+     * 
+     * @param string $text
+     * @return string
+     */
+    public static function parse_i18n_string(string $text): string
+    {
+        $parts = array_map('trim', explode('|', $text));
+
+        // ожидаем строго 3 языка
+        if (count($parts) !== 3) {
+            return $text;
+        }
+
+        $translates = [
+            Lang::C_EN => trim($parts[0]),
+            Lang::C_RU => trim($parts[1]),
+            Lang::C_UK => trim($parts[2]),
+        ];
+        
+        return $translates[Lang::code()];
+    }    
+    
+
+    /**
      * Возвращает значение строки перевода из массива по ключу
      * Текущая реализация через sprintf()
      * @param string $key -- ключ для поиска и возврата значения из словаря
@@ -212,7 +240,13 @@ class Lang {
                     break;
             }
         }
-        $str =  (isset(self::$lang_data[$key]) ? self::$lang_data[$key] : ($default ? $default : $key));
+        $str =  (
+                    isset(self::$lang_data[$key]) 
+                    ? self::$lang_data[$key] 
+                    : ($default 
+                        ? $default 
+                        : self::parse_i18n_string($key))
+                );
         if ($param) {
             return sprintf($str, $param);
         }

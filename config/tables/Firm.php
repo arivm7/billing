@@ -21,6 +21,10 @@ namespace config\tables;
 class Firm {
 
     public const URI_INDEX      = '/firms';
+    public const URI_EDIT       = '/firms/edit';
+    public const URI_SAVE       = '/firms/saveFirm';
+    public const URI_EMPLOYEE_SAVE = '/firms/saveEmployee';
+    public const URI_EMPLOYEE_DELETE = '/firms/deleteEmployee';
     public const URI_STATUS     = '/firms/status'; // для изменения состояния флагов F_HAS_*
 
 
@@ -40,6 +44,7 @@ class Firm {
     public const TABLE          = 'firm_list';
 
     public const F_ID                   = 'id';                       // ID предприятия
+    public const F_OWNER_ID             = 'owner_id';                // ID владельца записи предприятия
     public const F_HAS_ACTIVE           = 'has_active';              // Предприятие активно (участвует в выписке)
     public const F_HAS_DELETE           = 'has_delete';              // Предприятие считается удалённым
     public const F_HAS_AGENT            = 'has_agent';               // Предприятие-агент (наше)

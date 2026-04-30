@@ -48,6 +48,7 @@ class Employees
 
     public const F_USER_ID        = 'user_id';        // ID пользователя
     public const F_FIRM_ID        = 'firm_id';        // ID предприятия
+    public const F_JOB_TITLE      = 'job_title';      // Должность
     public const F_CREATION_UID   = 'creation_uid';   // Кто создал запись
     public const F_CREATION_DATE  = 'creation_date';  // Дата создания записи
 
@@ -81,4 +82,3 @@ class Employees
 
 
 }
-

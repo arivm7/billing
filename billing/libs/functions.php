@@ -2259,7 +2259,8 @@ function detect_invoker(): string {
  * @param int $count_rows_max
  * @return int
  */
-function get_count_rows_for_textarea(string $text, int $count_rows_min=0, int $count_rows_max=0): int {
+function get_count_rows_for_textarea(?string $text, int $count_rows_min=0, int $count_rows_max=0): int {
+    $text = $text ?? '';
     if ($count_rows_min < 1) { $count_rows_min = App::get_config('textarea_rows_min'); }
     if ($count_rows_max < 1) { $count_rows_max = App::get_config('textarea_rows_max'); }
     $count_lines_cr = (empty($text) ? 0 : substr_count($text, "\n") + 1);

@@ -1,10 +1,25 @@
 <?php
-//echo "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />";
+/**
+ *  Project : my.ri.net.ua
+ *  File    : auto_off.php
+ *  Path    : scripts/auto_off.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 29 Apr 2026 22:23:47
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2026 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
+
+/**
+ * Description of auto_off.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
 
 const APP_NAME = "RI-BILLING";
 
 use app\models\AbonModel;
-use billing\core\base\Model;
 use config\tables\Abon;
 use config\tables\AbonRest;
 
