@@ -682,10 +682,12 @@ class EmailController extends AppBaseController  {
                             ))
                         {
                             MsgQueue::msg(MsgType::SUCCESS, 
-                                    (boolval($rec[User::TABLE][User::F_EMAIL_SEND_HTML]) ? "HTML" : "TEXT") . ' | ' 
+                                    '<span class="font-monospace">'
+                                    . (boolval($rec[User::TABLE][User::F_EMAIL_SEND_HTML]) ? "HTML" : "TEXT") . ' | ' 
                                     . (boolval($rec[User::TABLE][User::F_EMAIL_SEND_PDF])  ? "PDF"  : "---")  . ' | ' 
                                     . 'Успешно: '
-                                    . "{$subject}");
+                                    . "{$subject}")
+                                    . '</span>';
                             /**
                              * Регистрируем в базе
                              */

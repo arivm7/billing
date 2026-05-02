@@ -100,3 +100,15 @@ function compare_abons(array $a, array $b): int {
     if ($ar[AbonRest::F_PREPAYED] < $br[AbonRest::F_PREPAYED]) { return -1; }
     return 0; 
 }
+
+
+function remove_quotes($text): string {
+    // 1. Декодируем HTML-сущности
+    $decoded = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+    // 2. Убираем кавычки
+    $clean = str_replace(['"', "'"], '', $decoded);
+
+    return $clean;
+    
+}

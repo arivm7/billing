@@ -385,11 +385,12 @@ class NoticeController extends AppBaseController
 
 
 
+            /**
+             * Данные есть. 
+             * Формируем список записей для уведомлений
+             */
             if ($rows) {
 
-                /**
-                 * Формируем список записей для уведомлений
-                 */
                 foreach ($rows as $row) {
                     $row[AbonRest::TABLE] = $model->get_abon_rest($row['abon_id']);
                     if  (
@@ -405,6 +406,7 @@ class NoticeController extends AppBaseController
                             )
                         )
                     {
+                        $row['address'] = remove_quotes($row['address']);
                         $row['last_sms'] = $model->get_notify_last($row['abon_id'], Notify::TYPE_SMS);
                         $row['last_pay'] = $model->get_payment_last($row['abon_id']);
                         $row['do_send'] = 0;
