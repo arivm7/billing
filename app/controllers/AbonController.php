@@ -224,7 +224,7 @@ class AbonController extends AppBaseController {
         }
 
         $model = new AbonModel();
-
+        
         /**
          * Фильтры параметра запроса списка абонентов
          */

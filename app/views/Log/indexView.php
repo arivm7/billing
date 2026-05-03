@@ -30,7 +30,7 @@ use config\tables\Module;
                     <div class="mb-2 d-flex justify-content-between align-items-start gap-3">
                         <div>
                             <div class="fw-bold">
-                                <a href="/log/view?file=<?= rawurlencode($logGroup['base_file']) ?>#bottom">
+                                <a href="/log/view?file=<?= rawurlencode($logGroup['base_file']) ?><?= ($logGroup['size'] > 10240 ? "#bottom" : "" ) ?>">
                                     <?= h($logGroup['base_file']) ?>
                                 </a>
                             </div>

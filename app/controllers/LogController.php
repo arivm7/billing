@@ -21,6 +21,10 @@ use billing\core\MsgQueue;
 use billing\core\MsgType;
 use config\Auth;
 use config\tables\Module;
+use app\models\AbonModel;
+use config\tables\Abon;
+
+
 
 /**
  * Контроллер просмотра лог-файлов приложения.
@@ -174,6 +178,7 @@ class LogController extends AppBaseController {
     }
 
 
+    
     /**
      * Возвращает полный путь к лог-файлу внутри DIR_LOG или null.
      */
@@ -201,6 +206,73 @@ class LogController extends AppBaseController {
 
         return $fileRealPath;
     }
+    
+    
+
+    /**
+     * Заменяет номера договоров в строке на ссылки
+     *
+     * @param string $line
+     * @param object $model должен иметь метод validate_abon(int $id): bool
+     * @return string
+     */
+    public static function replace_abon_links(string $line, $word_vidider = ' '): string {
+
+        $model = new AbonModel;
+        
+        if (empty($line)) { return $line; }
+
+        $words = explode($word_vidider, $line);
+        
+        $min_digit = App::get_config('port_min_digits');
+        $max_digit = App::get_config('port_max_digits');
+
+        foreach ($words as &$word) {
+
+            // только цифры
+            if (!preg_match('/^\d{'.$min_digit.','.$max_digit.'}$/', $word)) {
+                continue;
+            }
+
+            $abon_id = (int)$word;
+
+            // проверка валидности договора
+            if (!$model->validate_abon($abon_id)) {
+                continue;
+            }
+
+            // замена на ссылку
+            $word = sprintf(
+                '<a href="'.Abon::URI_VIEW.'/%s" target="_blank" title="%s">%s</a>',
+                $abon_id,
+                h(__abon($abon_id, field: Abon::F_ADDRESS)),
+                $abon_id
+            );
+        }
+
+        unset($word);
+
+        return implode($word_vidider, $words);
+    }    
+
+    
+    
+    public static function highlite_text($text): string {
+        return str_replace(
+                [
+                    '| <', 
+                    '| «', 
+                    '|&nbsp;<',
+                    '|&nbsp;«',
+                ], 
+                [
+                    '| <span class="text-primary">«</span>', 
+                    '| <span class="text-primary">«</span>', 
+                    '|&nbsp;<span class="text-primary">«</span>',
+                    '|&nbsp;<span class="text-primary">«</span>',
+                ], $text);
+    }
+
 
 
     public function indexAction(): void {
@@ -253,10 +325,36 @@ class LogController extends AppBaseController {
             redirect();
         }
 
-        $content = file_get_contents($fullPath);
-        if ($content === false) {
+        
+        $count_lines = 0;
+        $content = '';
+
+        $fh = fopen($fullPath, 'r');
+        if ($fh === false) {
             redirect();
         }
+
+        while (($line = fgets($fh)) !== false) {
+            $count_lines++;
+
+            // тут позже можно вставлять HTML-обогащение
+            // например: замена договоров на ссылки
+            $line = str_replace(' ', '&nbsp;', $line);
+            if (!preg_match('/^errors\.log(\.\d+)?$/', $fileName)) {
+                $line = self::highlite_text($line);
+                $line = self::replace_abon_links($line, '&nbsp;');
+            }
+            
+            $content .= $line . '<br>';
+        }
+
+        fclose($fh);        
+        
+        
+//        $content = file_get_contents($fullPath);
+//        if ($content === false) {
+//            redirect();
+//        }
 
         $title = __('Viewing the log file') . ' :: ' . $fileName;
 
@@ -264,6 +362,7 @@ class LogController extends AppBaseController {
             'title' => $title,
             'file_name' => $fileName,
             'content' => $content,
+            'count_lines' => $count_lines,
         ]);
 
         View::setMeta(

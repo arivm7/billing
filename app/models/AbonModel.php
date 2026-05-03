@@ -2340,5 +2340,9 @@ class AbonModel extends UserModel {
     }
 
 
-
+    function validate_abon(?int $abon_id): bool {
+        if (empty($abon_id)) { return false; }
+        return $this->validate_id(Abon::TABLE, $abon_id, Abon::F_ID);
+    }
+    
 }

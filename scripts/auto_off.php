@@ -90,7 +90,7 @@ if ($alist) {
         //
 
         if(iconv_strlen($abon[Abon::F_ADDRESS], "UTF-8") > $max_width_str) {
-            $abon[Abon::F_ADDRESS] = "<".mb_substr($abon[Abon::F_ADDRESS], -($max_width_str-1), $max_width_str-1);
+            $abon[Abon::F_ADDRESS] = "«".mb_substr($abon[Abon::F_ADDRESS], -($max_width_str-1), $max_width_str-1);
         } else {
             while (iconv_strlen($abon[Abon::F_ADDRESS], "UTF-8") < $max_width_str) {
                 $abon[Abon::F_ADDRESS] .= " ";
