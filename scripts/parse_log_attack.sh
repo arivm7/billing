@@ -195,7 +195,18 @@ END {
 TMP_IPS=$(mktemp)
 TMP_DATA=$(mktemp)
 
-awk -F'|' '{gsub(/ /, "", $2); print $2}' "$LOG_FILE" | sort -u > "$TMP_IPS"
+
+
+#
+#   Extract IPs
+#
+
+# ... | 123.123.123.123 | ...
+# awk -F'|' '{gsub(/ /, "", $2); print $2}' "$LOG_FILE" | sort -u > "$TMP_IPS"
+# ищем ip в любом месте строки
+grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' "$LOG_FILE" | sort -u > "$TMP_IPS"
+
+
 
 while read -r IP; do
 echo "Processing $IP..." >&2

@@ -22,6 +22,7 @@ const APP_NAME = "RI-BILLING";
 use app\models\AbonModel;
 use config\tables\Abon;
 use config\tables\AbonRest;
+use billing\core\base\Controller;
 
 require __DIR__    . '/../config/dirs.php';
 require DIR_CONFIG . '/ini.php';
@@ -33,9 +34,11 @@ require DIR_LIBS   . '/functions.php';
  */
 require __DIR__    . '/../vendor/autoload.php';
 
-$model = new AbonModel();
+const LOG_ACTION = 'auto_off_actions.log';
 
 echo "AUTO_OFF | ".time()." | ".date("Y-m-d G:i:s")."\n";
+
+$model = new AbonModel();
 
 // Имитируем авторизацию от пользователя billling
 // $UID = 11;  // billng
@@ -78,6 +81,14 @@ if ($alist) {
     . "|----------|-" .  str_repeat("-", $max_width_str)             . "-|------------|-----------|----------|-------|-----------|---------|----------|\n";
     for ($i = 0; $i < $count_AID; $i++) {
         $abon = &$alist[$i];
+
+        if (!$model->update_abon_rest_all($abon[Abon::F_ABON_ID])) {
+            $msg = 'REST: Ошибка обновления остатков для абонента ' . $abon[Abon::F_ID];
+            echo "{$msg}\n";
+            $errors = $model->errorInfo();
+            if ($errors) { print_r($errors); }
+        }
+        
         $rest = $model->get_abon_rest($abon[Abon::F_ABON_ID]);
         //
         // очистка
@@ -90,7 +101,7 @@ if ($alist) {
         //
 
         if(iconv_strlen($abon[Abon::F_ADDRESS], "UTF-8") > $max_width_str) {
-            $abon[Abon::F_ADDRESS] = "«".mb_substr($abon[Abon::F_ADDRESS], -($max_width_str-1), $max_width_str-1);
+            $abon[Abon::F_ADDRESS] = "<".mb_substr($abon[Abon::F_ADDRESS], -($max_width_str-1), $max_width_str-1); // «
         } else {
             while (iconv_strlen($abon[Abon::F_ADDRESS], "UTF-8") < $max_width_str) {
                 $abon[Abon::F_ADDRESS] .= " ";
@@ -98,6 +109,7 @@ if ($alist) {
         }
 
         if (round($rest[AbonRest::F_SUM_PP01A] * 100) > 0) {
+            $action_msg = '';
             $s  = "| ".sprintf("%8d", $abon[Abon::F_ABON_ID])." | "
                     . sprintf("%-".($max_width_str)."s", $abon[Abon::F_ADDRESS])." | "
                     . "".sprintf("%10.2f", $cost=$rest[AbonRest::F_SUM_COST])." | "
@@ -118,7 +130,7 @@ if ($alist) {
                                                             ?   "|          | Режим ожидания платежа ".$abon[Abon::F_DUTY_WAIT_DAYS]." дней"
                                                             :   "|          | ОШИБКА: изменение количества дней ожидания платежа не удалось"
                                                         )
-                                                    :   $model->set_abon_pause($abon[Abon::F_ABON_ID])
+                                                    :   ($action_msg = $model->set_abon_pause($abon[Abon::F_ABON_ID]))
                                                 )
                                     . "\n|          |"
                                 :   "         |"
@@ -126,6 +138,7 @@ if ($alist) {
                             . "";
             //echo str_replace(" ", "&nbsp;", $s)."\n";
             echo $s."\n";
+            if (!empty($action_msg)) { Controller::log(msg: "".sprintf("%8d", $abon[Abon::F_ABON_ID])." | " . $action_msg, eol_cr: 1, log_filename: LOG_ACTION, log_url: 0, log_ip: 0); }
             flush();
         } else { 
             $s  = "| ".sprintf("%8d", $abon['abon_id'])." | "
