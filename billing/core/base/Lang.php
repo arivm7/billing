@@ -74,7 +74,7 @@ class Lang {
                         break;
                     case 1:
                         error_log(
-                            message: "Route: [" . implode("/", $route) . "] :: Lang: [". self::code() . "] :: Lang File not found: [{$lang_layout_file}]\n",
+                            message: "Route: [" . implode("/", $route) . "] | Lang: [". self::code() . "] | Lang File not found: [{$lang_layout_file}]\n",
                             message_type: 3,
                             destination: DIR_LOG . '/' . self::LOG_FILE,
                         );
@@ -98,7 +98,7 @@ class Lang {
                         break;
                     case 1:
                         error_log(
-                            message: "Route: [" . implode("/", $route) . "] :: Lang: [". self::code() . "] :: Lang File not found: [{$lang_controller_file}]\n",
+                            message: "Route: [" . implode("/", $route) . "] | Lang: [". self::code() . "] | Lang File not found: [{$lang_controller_file}]\n",
                             message_type: 3,
                             destination: DIR_LOG . '/' . self::LOG_FILE,
                         );
@@ -122,7 +122,7 @@ class Lang {
                         break;
                     case 1:
                         error_log(
-                            message: "Route: [" . implode("/", $route) . "] :: Lang: [". self::code() . "] :: Lang File not found: [{$lang_view_file}]\n",
+                            message: "Route: [" . implode("/", $route) . "] | Lang: [". self::code() . "] | Lang File not found: [{$lang_view_file}]\n",
                             message_type: 3,
                             destination: DIR_LOG . '/' . self::LOG_FILE,
                         );
@@ -172,19 +172,31 @@ class Lang {
                     break;
                 case 1:
                     error_log(
-                        message: "Route: [" . array_key_first($_GET) . "] :: Lang: [". self::code() . "] :: Lang File not found: [{$lang_inc_file}]\n",
+                        message: "Route: [" . array_key_first($_GET) . "] | Lang: [". self::code() . "] | Lang File not found: [{$lang_inc_file}]\n",
                         message_type: 3,
                         destination: DIR_LOG . '/' . self::LOG_FILE,
                     );
                     break;
                 case 2:
                 default:
-                    throw new Exception("Не найден языковой файл Формы-Включения | Language file for Include not found: '{$lang_inc_file}'");
+                    throw new Exception("Language file for Include not found | Не найден языковой файл Формы-Включения: '{$lang_inc_file}'");
             }
         }
     }
 
 
+    /**
+     * Проверяет является ли строка "A | B | C"
+     * @param string $text
+     * @return bool
+     */
+    public static function is_i18n_string(string $text): bool
+    {
+        // ожидаем строго 3 языка
+        return (count(explode('|', $text)) === 3);
+    }
+
+    
 
     /**
      * Формирует из строки "A | B | C" → массив ['en'=>A,'ru'=>B,'uk'=>C]
@@ -223,29 +235,29 @@ class Lang {
      * @return string
      */
     public static function get(string $key, mixed $param = null, string|null $default = null):string {
-        if (!isset(self::$lang_data[$key])) {
+        if (!isset(self::$lang_data[$key]) && !self::is_i18n_string($key)) {
             switch (ErrorHandler::ERROR_TO_LOG_FILE && App::$app->get_config('lang_strong_file_existence')) {
                 case 0:
                     break;
                 case 1:
                     error_log(
-                        message: "Route: [" . array_key_first($_GET) . "] :: Lang: [". self::code() . "] :: Unknown Lang Key: [{$key}]\n",
+                        message: "Route: [" . array_key_first($_GET) . "] | Lang: [". self::code() . "] | Unknown Lang Key: [{$key}]\n",
                         message_type: 3,
                         destination: DIR_LOG . '/' . self::LOG_FILE,
                     );
                     break;
                 case 2:
                 default:
-                 // throw new Exception("Не найден языковой ключ | Language key not found: '{$key}'");
+                    // throw new Exception("Не найден языковой ключ | Language key not found: '{$key}'");
                     break;
             }
         }
         $str =  (
                     isset(self::$lang_data[$key]) 
                     ? self::$lang_data[$key] 
-                    : ($default 
-                        ? $default 
-                        : self::parse_i18n_string($key))
+                    : (self::is_i18n_string($key)
+                        ? self::parse_i18n_string($key)
+                        : ($default ? $default : $key))
                 );
         if ($param) {
             return sprintf($str, $param);

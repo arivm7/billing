@@ -51,9 +51,9 @@ class UserController extends AppBaseController {
          */
         if (!preg_match('/'.App::get_config('login_content').'/u', $user[User::F_LOGIN])) {
             MsgQueue::msg(MsgType::ERROR, [
-                __("Логин должен начинаться с буквы, содержать %s символов, включающих: латиница, цифры, символы '-', '_', '.'", 
-                    App::get_config('login_length_min')."–".App::get_config('login_length_max')),
-                __("Если не уверены, то оставьте логин равным номеру договора"),
+                __("The changed login must begin with a letter and contain %s characters | Изменённый логин должен начинаться с буквы, содержать %s символов | Змінений логін повинен починатися з літери, містити %s символів", App::get_config('login_length_min')."–".App::get_config('login_length_max')) . ', '
+                    . __("including: Latin alphabet, numbers, symbols | включающих: латиница, цифры, символы | включають: латиниця, цифри, символи") . " '-', '_', '.'",
+                __("If you are not sure, then leave the login equal to the contract number | Если не уверены, то оставьте логин равным номеру договора | Якщо не впевнені, то залиште логін рівним номеру договору"),
             ]);
             return false;
         }
@@ -92,7 +92,7 @@ class UserController extends AppBaseController {
         Validator::addRule('telegram_valid', function ($field, $value, array $params, array $fields) {
             if (empty($value)) {return \true;} // необязательное поле
             return isTelegram($value);
-        }, __('должно быть телефоном, username или ссылкой на Telegram'));
+        }, __('Must be a phone number, username or Telegram link | Должен быть номером телефона, username или ссылкой на Telegram | Має бути номером телефону, username або посиланням на Telegram'));
 
         /**
          * Viber обычно не имеет веб-версии, поэтому остаётся проверка: телефон или username
@@ -100,7 +100,7 @@ class UserController extends AppBaseController {
         Validator::addRule('viber_valid', function ($field, $value, $params, $fields) {
             if (empty($value)) {return \true;} // необязательное поле
             return isPhone($value) || isUsername($value);
-        }, __('должно быть телефоном или username'));
+        }, __('Must be a phone number or username | Должен быть номером телефона или username | Має бути номером телефону або username'));
 
         /**
          * Jabber
@@ -108,18 +108,18 @@ class UserController extends AppBaseController {
         Validator::addRule('jabber', function ($field, $value, $params, $fields) {
             if (empty($value)) {return \true;} // необязательное поле
             return isJabberFull($value);
-        }, __('должно быть корректным Jabber/XMPP адресом'));
+        }, __('Must be a valid Jabber/XMPP address | Должен быть корректным Jabber/XMPP адресом | Повинен бути коректною Jabber/XMPP адресою'));
 
         $v = new Validator($data);
 
         $v->labels([
-            User::F_LOGIN            => __('Логин'),
-            User::F_FORM_PASS        => __('Новый пароль'),
-            User::F_FORM_PASS2       => __('Подтверждение нового пароля'),
-            User::F_NAME_SHORT       => __('Отображаемое имя'),
-            User::F_EMAIL_MAIN       => __('Эл. почта'),
-            User::F_PHONE_MAIN       => __('Телефон'),
-            User::F_ADDRESS_INVOICE  => __('Почтовый адрес'),
+            User::F_LOGIN            => __('Login | Логин | Логін'),
+            User::F_FORM_PASS        => __('New Password | Новый пароль | Новий пароль'),
+            User::F_FORM_PASS2       => __('Confirming a new password | Подтверждение нового пароля | Підтвердження нового пароля'),
+            User::F_NAME_SHORT       => __('Display name | Отображаемое имя | Ім\'я, що відображається'),
+            User::F_EMAIL_MAIN       => __('Email  | Эл. почта | Ел. пошта'),
+            User::F_PHONE_MAIN       => __('Telephone | Телефон | Телефон'),
+            User::F_ADDRESS_INVOICE  => __('Postal address | Почтовый адрес | Поштова адреса'),
         ]);
 
         // --- ОБЯЗАТЕЛЬНЫЕ ПОЛЯ ---
@@ -137,15 +137,15 @@ class UserController extends AppBaseController {
         // --- ПАРОЛЬ ---
         if (!empty($data[User::F_FORM_PASS])) {
             $v->rule('lengthMin', User::F_FORM_PASS, App::get_config('pass_length_min'))
-              ->message(__('Пароль должен содержать не менее $s символов', App::get_config('pass_length_min')));
+              ->message(__('The password must contain at least %s characters | Пароль должен содержать не менее %s символов | Пароль повинен містити щонайменше %s символів', App::get_config('pass_length_min')));
             $v->rule('equals', User::F_FORM_PASS2, User::F_FORM_PASS)
-              ->message(__('Пароли не совпадают'));
+              ->message(__('Passwords are not the same | Пароли не одинаковые | Паролі не однакові'));
         }
 
         // --- ТЕЛЕФОН ---
         if (!empty($data[User::F_PHONE_MAIN])) {
             $v->rule('regex', User::F_PHONE_MAIN, '/^[0-9+\-\(\)\s]+$/')
-              ->message('Телефон может содержать только цифры, +, -, (), и пробелы');
+              ->message('Phone can only contain numbers, spaces and symbols | Телефон может содержать только цифры, пробелы и символы | Телефон може містити лише цифри, пробіли та символи') . ' +, -, ()';
         }
 
         // --- ОТОБРАЖАЕМОЕ ИМЯ ---
@@ -172,7 +172,7 @@ class UserController extends AppBaseController {
          * i	                                        делает проверку без учёта регистра
          */
         $v->rule('regex', User::F_EMAIL_MAIN, '/^(?:(?:[^<>,]+<)?[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}(?:>)?)(?:\s*,\s*(?:(?:[^<>,]+<)?[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}(?:>)?))*$/i')
-            ->message(__('Неверный формат адреса эл. почты'));
+            ->message(__('Invalid email address format.  | Неверный формат адреса эл. почты | Неправильний формат адреси ел. пошти'));
 
 
         /**
@@ -285,7 +285,7 @@ class UserController extends AppBaseController {
                 User::F_ID => $data[User::F_ID],
                 User::F_PASS_HASH => Model::get_hash_pass($new_pass),
             ];
-            MsgQueue::msg(MsgType::INFO_AUTO, __('Начальный пароль успешно сгенерирован'));
+            MsgQueue::msg(MsgType::INFO_AUTO, __('Initial password successfully generated | Начальный пароль успешно сгенерирован | Початковий пароль успішно згенеровано'));
         } else {
             if  (
                     !empty($data[User::F_FORM_PASS]) &&
@@ -442,13 +442,13 @@ class UserController extends AppBaseController {
             $user = $model->get_user(intval($this->route[F_ALIAS]));
             $abon_list = $model->get_abons($user[User::F_ID]);
             $abon_list_addresses = array_column($abon_list, Abon::F_ADDRESS, Abon::F_ID);
-            View::setMeta(__('Редактирование карточки пользователя'));
+            View::setMeta(__('Editing a user card | Редактирование карточки пользователя | Редагування картки користувача'));
             $this->setVariables([
                 'address' => implode(" | ", $abon_list_addresses),
                 'user'=> $user,
             ]);
         } else {    
-            MsgQueue::msg(MsgType::ERROR, __('ID не верен или не указан'));
+            MsgQueue::msg(MsgType::ERROR, __('ID is incorrect or not specified | ID не верен или не указан | ID не вірний або не вказаний'));
             redirect();
         }
     }

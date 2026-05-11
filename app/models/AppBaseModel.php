@@ -99,23 +99,6 @@ class AppBaseModel extends Model
     }
 
 
-    /**
-     * Кэш-таблица для function get_tp(int $id)
-     */
-    private static array $CASHE_TP_LIST = [];
-
-
-
-    function get_tp(int $id): array {
-        if (!array_key_exists($id, self::$CASHE_TP_LIST)) {
-            self::$CASHE_TP_LIST[$id] = $this->get_row_by_id(TP::TABLE, $id, TP::F_ID);
-            $this->normalize_tp(self::$CASHE_TP_LIST[$id]);
-        }
-        return self::$CASHE_TP_LIST[$id];
-    }
-
-
-
     function get_id_vector(string $sql) {
         return $this->query(sql: $sql, fetchVector: 0);
     }
@@ -185,121 +168,6 @@ class AppBaseModel extends Model
         throw new \Exception("Не указан user_id, или не удалось его получить, и не указан id_list.");
     }
 
-
-    function normalize_tp(array &$tp): void {
-        $tp[TP::F_MIK_PORT]     = (int)$tp[TP::F_MIK_PORT];     // просто переделыание в int. После исправления базы убрать !!!
-        $tp[TP::F_MIK_PORT_SSL] = (int)$tp[TP::F_MIK_PORT_SSL]; // просто переделыание в int. После исправления базы убрать !!!
-        $tp[TP::F_MIK_FTP_PORT] = (int)$tp[TP::F_MIK_FTP_PORT]; // просто переделыание в int. После исправления базы убрать !!!
-        $tp[TP::F_RANG_TITLE]   = ($tp[TP::F_RANG_ID] > 0 ? $this->get_row_by_id("tp_rangs", $tp["rang_id"])["title"] : "");
-
-        $template = [];
-        if (!empty($tp[TP::F_IP]) && validate_ip($tp[TP::F_IP])) {
-            $template[TP::TEMPLATE_IP] = $tp[TP::F_IP];
-        }
-
-        foreach (TP::TEMPLATES_FIELDS as $field => $value) {
-            if (!empty($tp[$field])) { // array_key_exists($field, $tp)
-                $tp[$value] = untemplate($tp[$field], $template);
-            } else {
-                $tp[$value] = '';
-            }
-        }
-        if (
-                !empty($tp[TP::F_UPLINK_ID]) && 
-                $this->validate_id(TP::TABLE, $tp[TP::F_UPLINK_ID], TP::F_ID)
-            ) 
-        {
-            $tp[TP::F_UPLINK] = $this->get_tp($tp[TP::F_UPLINK_ID]);
-            $tp[TP::F_UPLINK_TITLE] = $tp[TP::F_UPLINK][TP::F_TITLE];
-        } else {
-            $tp[TP::F_UPLINK_ID] = null;
-        }
-    }
-
-
-
-    /**
-     * Возвращает спискок ТП.
-     * Все параметры передаются для формированя SQL с помощью get_sql_tp_list().
-     * @param int|null $user_id     -- Вернуть список для указанного пользователя из TSUserTp::TABLE, если не указан, то для текущего авторизованного пользователя
-     * @param array|null $id_list   -- Массив со списком нужных ТП
-     * @param int|null $status      -- NULL - все | 1 — Работает, 0 — Отключен
-     * @param int|null $deleted     -- NULL - все | 1 — ТП демонтирована, 0 — Можно вернуть в работу
-     * @param int|null $managed     -- NULL - все | 1 — Управляемая (Mik)
-     * @param int|null $rang        -- NULL - все | 1 — Абонентский узел. 2 — AP...
-     * @return array
-     */
-    function get_tp_list(
-            int|null    $user_id = null,
-            array|null  $id_list = null,
-            int|null    $status  = null,
-            int|null    $deleted = null,
-            int|null    $managed = null,
-            int|null    $rang    = null
-            ): array
-    {
-        $list = $this->get_rows_by_sql(
-            $this->get_sql_tp_list($user_id, $id_list, $status, $deleted, $managed, $rang)
-        );
-        foreach ($list as &$tp) {
-            $this->normalize_tp($tp);
-        }
-        return $list;
-    }
-
-
-
-
-    /**
-     * Возвращает список ТП привязанных к Пользователю в таблице связи ts_user_tp
-     * ТП кэшируются
-     * @param int $uid -- user_id из таблицы связи ts_user_tp
-     * @param array|null $list_tp_id
-     * @param bool|null $status     -- true | false | NULL - все
-     * @param bool|null $is_managed -- true | false | NULL - все
-     * @param bool|null $deleted    -- true | false | NULL - все
-     * @return array -- список ТП
-     * @throws \Exception
-     */
-    function get_tp_list_by_uid(int $uid, array|null $list_tp_id = null, bool|null $status = null, bool|null $is_managed = null, bool|null $deleted = null): array {
-        if (is_null($list_tp_id)) {
-            $ts_list = $this->get_rows_by_field(table: 'ts_user_tp', field_name: 'user_id', field_value: $uid);
-        } else {
-            foreach ($list_tp_id as $tp_id) {
-                if (!$this->validate_id("tp_list", $tp_id)) {
-                    throw new \Exception("Передано не верное значение tp_id:<br>function get_tps_by_uid(int $uid, array $list_tp_id=null,  bool $status=null, bool $is_managed=null, bool $deleted=null)");
-                }
-            }
-            $s = implode(",", $list_tp_id);
-            // SELECT * FROM `ts_user_tp` WHERE `user_id`=1 AND (`tp_id` IN (1,2,3,4,5,6,7));
-            $ts_list = $this->get_rows_by_where('ts_user_tp', "user_id={$uid} AND (tp_id IN ({$s}))");
-        }
-        $tp_list = array();
-        foreach ($ts_list as $ts_one) {
-            //echo "ts_one: <pre>"; print_r($ts_one); echo "</pre>";
-            if ($ts_one['tp_id'] > 0) {
-                $tp_one = $this->get_tp($ts_one['tp_id']);
-                $add = true;
-                if ($add and (!is_null($status))) {
-                    $add = ($tp_one['status'] == $status);
-                }
-                if ($add and (!is_null($is_managed))) {
-                    $add = ($tp_one['is_managed'] == $is_managed);
-                }
-                if ($add and (!is_null($deleted))) {
-                    $add = ($tp_one['deleted'] == $deleted);
-                }
-                if ($add) {
-                    $this->normalize_tp($tp_one);
-                    $tp_list[] = $tp_one;
-                }
-            }
-        }
-
-        usort($tp_list, 'compare_title');
-
-        return $tp_list;
-    }
 
     
 
@@ -475,7 +343,7 @@ class AppBaseModel extends Model
         }
         return a(   href:   TP::URI_EDIT."/{$tp[TP::F_ID]}",
                     target: TARGET_BLANK,
-                    title:  __('Редактировать ТП') . "[{$tp[TP::F_ID]}] {$tp[TP::F_TITLE]}",
+                    title:  __('Edit technical site parameters | Редактировать параметры технической площадки | Редагувати параметри технічного майданчика') . "[{$tp[TP::F_ID]}] {$tp[TP::F_TITLE]}",
                     text:   (is_null($has_img) || ($has_img === false) ? ($tp[TP::F_TITLE] ?? '') : null),
                     src:    (is_null($has_img) || ($has_img === true) ? Icons::SRC_TP_EDIT : null),
                     alt:    'EDIT',
@@ -545,7 +413,7 @@ class AppBaseModel extends Model
                     ? a(
                             href: TP::URI_COMBINE.'/'.$tp[TP::F_ID],
                             target: TARGET_BLANK,
-                            title: "TP [{$tp[TP::F_ID]}] {$tp[TP::F_TITLE]}". CR . __('Управление микротиком'),
+                            title: "TP [{$tp[TP::F_ID]}] {$tp[TP::F_TITLE]}". CR . __('Mikrotik control | Управление микротиком | Управління мікротиком'),
                             src: Icons::SRC_MIK_LOGO16,
                             alt:  '[MIK]',
                             width:  $icon_width,
@@ -554,7 +422,7 @@ class AppBaseModel extends Model
                         ? get_html_img(
                             src: Icons::SRC_MIK_LOGO16_GRAY,
                             alt: '[MIK]',
-                            title: "TP [{$tp[TP::F_ID]}] {$tp[TP::F_TITLE]}". CR . __('Не управляемая микротиком'),
+                            title: "TP [{$tp[TP::F_ID]}] {$tp[TP::F_TITLE]}". CR . __('Not controlled by Mikrotik | Не управляемая микротиком | Не керована мікротиком'),
                             width: $icon_width,
                             height: $icon_height)
                         : "")

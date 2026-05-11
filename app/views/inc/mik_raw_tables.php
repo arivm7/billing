@@ -90,9 +90,9 @@ $mik_addr_list = $mik_rec['addr_list'];
                     <td><span class="text-secondary" title="Адрес отключён"><?=$item['address'];?></span></td>
                     <?php endif; ?>
                     <td><?=$item['comment'];?></td>
-                    <td><?=$item[Mik::LIST_CREATION_TIME];?></td>
-                    <td><?=$item[Mik::LIST_TIMEOUT] ?? '';?></td>
-                    <td><?=$item[Mik::LIST_DYNAMIC];?></td>
+                    <td><?=$item[Mik::F_LIST_CREATION_TIME];?></td>
+                    <td><?=$item[Mik::F_LIST_TIMEOUT] ?? '';?></td>
+                    <td><?=$item[Mik::F_LIST_DYNAMIC];?></td>
                 </tr>
             <?php endforeach; ?>
             </table>

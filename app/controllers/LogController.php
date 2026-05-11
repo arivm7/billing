@@ -210,6 +210,42 @@ class LogController extends AppBaseController {
     
 
     /**
+     * Заменяет IP-адреса в строке на ссылки whois.com
+     *
+     * IPv4 и IPv6 поддерживаются.
+     *
+     * Пример:
+     *   8.8.8.8
+     * →
+     *   <a href="https://www.whois.com/whois/8.8.8.8" target="_blank">8.8.8.8</a>
+     *
+     * @param string $text
+     * @return string
+     */
+    public static function replace_ip_to_whois_links(string $text): string {
+
+        return preg_replace_callback(
+            '/(?<![a-fA-F0-9:.])((?:\d{1,3}\.){3}\d{1,3}|(?:[a-fA-F0-9]{0,4}:){2,7}[a-fA-F0-9]{0,4})(?![a-fA-F0-9:.])/',
+            static function(array $m): string {
+
+                $ip = $m[1];
+
+                // дополнительная проверка корректности IP
+                if (!filter_var($ip, FILTER_VALIDATE_IP)) {
+                    return $ip;
+                }
+
+                $url = 'https://www.whois.com/whois/' . rawurlencode($ip);
+
+                return '<a href="' . h($url) . '" target="_blank" rel="noopener noreferrer">'
+                    . h($ip)
+                    . '</a>';
+            },
+            $text
+        );
+    }    
+    
+    /**
      * Заменяет номера договоров в строке на ссылки
      *
      * @param string $line
@@ -343,6 +379,7 @@ class LogController extends AppBaseController {
             if (!preg_match('/^errors\.log(\.\d+)?$/', $fileName)) {
                 $line = self::highlite_text($line);
                 $line = self::replace_abon_links($line, '&nbsp;');
+                $line = self::replace_ip_to_whois_links($line);
             }
             
             $content .= $line . '<br>';

@@ -75,15 +75,16 @@ $model = new AbonModel();
 */
 if ($model->update_abon_rest_all()) {
     $msg = 'REST обновление выполнено успешно';
-    $log->info($msg, [$model->errorInfo()]);
+    $errors = $model->errorInfo();
+    $log->info($msg, [$errors]);
     echo "{$msg}\n";
-    print_r($model->errorInfo());
+    print_r($errors);
 } else {
     $msg = 'REST Ошибка обновления';
-    $log->error($msg, [$model->errorInfo()]);
-    echo "{$msg}\n";
-    print_r($model->errorInfo());
     $errors = $model->errorInfo();
+    $log->error($msg, [$errors]);
+    echo "{$msg}\n";
+    print_r($errors);
     foreach ($errors as $key => $err) {
         $msg = "[{$key}] {$err}";
         $log->error($msg);

@@ -108,35 +108,35 @@ class AbonController extends AppBaseController {
 
         // <!-- Форма "Сверка платежей" -->
         if (can_view([Module::MOD_MY_CONCILIATION, Module::MOD_CONCILIATION])) {
-            $conciliation_url = "<a href='".Conciliation::URI_INTERVALS."/". $data[Abon::F_ID] ."' class='btn btn-outline-info btn-sm me-1 mb-1' title='". __('Reconciliation') ."'>"."<img src='".Icons::SRC_GUH_REPORT."' alt='' width='18' height='18'>"."</a>";
+            $conciliation_url = "<a href='".Conciliation::URI_INTERVALS."/". $data[Abon::F_ID] ."' class='btn btn-outline-info btn-sm me-1 mb-1' title='". __('Reconciliation | Акт сверки платежей и услуг | Акт зведення платежів та послуг') ."'>"."<img src='".Icons::SRC_GUH_REPORT."' alt='' width='18' height='18'>"."</a>";
         } else {
             $conciliation_url = "";
         }
 
         // <!-- Список платежей -->
         if (can_view([Module::MOD_MY_PAYMENTS, Module::MOD_PAYMENTS])) {
-            $payments_url = "<a href='".Pay::URI_LIST."/". $data[Abon::F_ID] ."' class='btn btn-outline-info btn-sm me-1 mb-1' target='_blank' title='". __('Платежі') ."' ><span class='fw-bold'>₴₴</span></a>";
+            $payments_url = "<a href='".Pay::URI_LIST."/". $data[Abon::F_ID] ."' class='btn btn-outline-info btn-sm me-1 mb-1' target='_blank' title='". __('Payments | Платежі | Платежі') ."' ><span class='fw-bold'>₴₴</span></a>";
         } else {
             $payments_url = "";
         }
 
         // <!-- Внесение платежа -->
         if (can_add([Module::MOD_PAYMENTS])) {
-            $add_payment_url = "<a href='".Pay::URI_FORM."?".Abon::F_GET_ID."=".$data[Abon::F_ID]."' class='btn btn-outline-info btn-sm me-1 mb-1' target='_blank' title='". __('Внести платіж') ."'><span class='fw-bold'>+₴</span></a>";
+            $add_payment_url = "<a href='".Pay::URI_FORM."?".Abon::F_GET_ID."=".$data[Abon::F_ID]."' class='btn btn-outline-info btn-sm me-1 mb-1' target='_blank' title='". __('Make a payment | Внести платіж | Внести платіж') ."'><span class='fw-bold'>+₴</span></a>";
         } else {
             $add_payment_url = "";
         }
 
         // <!-- Информационные уведомления -->
         if (can_add([Module::MOD_NOTICE])) {
-            $notify_url = "<a href='".Notify::URI_INFO."/".$data[Abon::F_ID]."' class='btn btn-outline-info btn-sm me-1 mb-1' target='_blank' title='".__('Информационные СМС')."'><span class='fw-bold'>SMS</span></a>";
+            $notify_url = "<a href='".Notify::URI_INFO."/".$data[Abon::F_ID]."' class='btn btn-outline-info btn-sm me-1 mb-1' target='_blank' title='".__('Informational SMS | Информационные СМС | Інформаційні СМС')."'><span class='fw-bold'>SMS</span></a>";
         } else {
             $notify_url = "";
         }
 
         // <!-- СФ -->
         if (can_use([Module::MOD_INVOICES])) {
-            $invoices_url = "<a href='".Invoice::URI_LIST."/".$data[Abon::F_ID]."' class='btn btn-outline-info btn-sm me-1 mb-1' target='_blank' title='".__('Счета-фактуры, Акты')."'><span class='fw-bold'>СФ</span></a>";
+            $invoices_url = "<a href='".Invoice::URI_LIST."/".$data[Abon::F_ID]."' class='btn btn-outline-info btn-sm me-1 mb-1' target='_blank' title='".__('Invoices, Acts | Счета-фактуры, Акты | Рахунки-фактури, Акти')."'><span class='fw-bold'>СФ</span></a>";
         } else {
             $invoices_url = "";
         }
@@ -164,7 +164,7 @@ class AbonController extends AppBaseController {
             $html .= "&nbsp;";
             $html .= $model->url_tp_form(tp: $tp, has_img: true);
             $html .= "&nbsp;";
-            $html .= "<a href=?".make_get_params(['tp'=>$tp[TP::F_ID]])." title='Показать абонентов только по этой ТП '>{$tp[TP::F_TITLE]}</a>";
+            $html .= "<a href=?".make_get_params(['tp'=>$tp[TP::F_ID]])." title='".__('Show subscribers only for this technical platform | Показать абонентов только по этой ТП | Показати абонентів лише за цією ТП')." '>{$tp[TP::F_TITLE]}</a>";
             $html .= "<br>";
         }
         $html = rtrim($html, "<br>");
@@ -218,7 +218,7 @@ class AbonController extends AppBaseController {
         }
 
         if (!can_use(Module::MOD_ABON)) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('У вас нет прав для работы с абонентами'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('You do not have permission to work with subscribers | У вас нет прав для работы с абонентами | У вас немає прав для роботи з абонентами'));
             self::log_no_rights();
             redirect();
         }
@@ -293,7 +293,7 @@ class AbonController extends AppBaseController {
 
             $tp_col_title = ($filters['tp'] === 0
                 ? "Все ТП"
-                : "<nobr>" . $tp_list[0][TP::F_TITLE] . " | <a href='?".make_get_params(['tp'=>0])."' title='Убрать фильтр'>[X]</a></nobr>"
+                : "<nobr>" . $tp_list[0][TP::F_TITLE] . " | <a href='?".make_get_params(['tp'=>0])."' title='".__('Remove filter | Убрать фильтр | Прибрати фільтр')."'>[X]</a></nobr>"
             );
 
             $rest_title = 
@@ -302,8 +302,11 @@ class AbonController extends AppBaseController {
                     . "<a href='?".make_get_params(['payer'=>($filters['is_payer'] == 1 ? "0" : "1")])."' "
                         . "title='"
                             . ( $filters['is_payer'] == 1 
-                                ? "Показаны включённые абоненты, ".CR."и абоненты на паузе. ".CR."Нажмите, чтобы показать отключённых абонентов" 
-                                : "Показаны отключённые абоненты, ".CR."Нажмите, чтобы показать включённых абонентов"
+                                ? __('Showing enabled subscribers | Показаны включённые абоненты | Показано включені абоненти') . ", " . CR 
+                                    . __('and subscribers are on pause | и абоненты на паузе | та абоненти на паузі') . ". " . CR 
+                                    . __('Click to show disconnected subscribers | Нажмите, чтобы показать отключённых абонентов | Натисніть, щоб показати вимкнених абонентів')
+                                : __('Disconnected subscribers are shown | Показаны отключённые абоненты | Показані вимкнені абоненти') . ", " . CR 
+                                    . __('Click to show enabled subscribers | Нажмите, чтобы показать включённых абонентов | Натисніть, щоб показати увімкнених абонентів')
                               )."'"
                         . ">"
                     . "<img src='".($filters['is_payer'] == 1 ? Icons::SRC_ABON_OK : Icons::SRC_ABON_OFF)."' height='22px'></a>"
@@ -360,7 +363,7 @@ class AbonController extends AppBaseController {
         }
 
         if (!can_use(Module::MOD_ABON)) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('У вас нет прав для работы с абонентами'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('You do not have permission to work with subscribers | У вас нет прав для работы с абонентами | У вас немає прав для роботи з абонентами'));
             self::log_no_rights();
             redirect();
         }
@@ -448,8 +451,11 @@ class AbonController extends AppBaseController {
                     . "<a href='?".make_get_params(['payer'=>($filters['is_payer'] == 1 ? "0" : "1")])."' "
                         . "title='"
                             . ( $filters['is_payer'] == 1 
-                                ? "Показаны включённые абоненты, ".CR."и абоненты на паузе. ".CR."Нажмите, чтобы показать отключённых абонентов" 
-                                : "Показаны отключённые абоненты, ".CR."Нажмите, чтобы показать включённых абонентов"
+                                ? __('Showing enabled subscribers | Показаны включённые абоненты | Показано включені абоненти') . ", " . CR 
+                                    . __('and subscribers are on pause | и абоненты на паузе | та абоненти на паузі') . ". " . CR 
+                                    . __('Click to show disconnected subscribers | Нажмите, чтобы показать отключённых абонентов | Натисніть, щоб показати вимкнених абонентів')
+                                : __('Disconnected subscribers are shown | Показаны отключённые абоненты | Показані вимкнені абоненти') . ", " . CR 
+                                    . __('Click to show enabled subscribers | Нажмите, чтобы показать включённых абонентов | Натисніть, щоб показати увімкнених абонентів')
                               )."'"
                         . ">"
                     . "<img src='".($filters['is_payer'] == 1 ? Icons::SRC_ABON_OK : Icons::SRC_ABON_OFF)."' height='22px'></a>"
@@ -484,7 +490,7 @@ class AbonController extends AppBaseController {
 
         $this->view = 'index';
 
-        $title = __("Список абонентов по последним действиям с услугами: активация и пауза");
+        $title = __("List of subscribers by recent service actions: activation and pause | Список абонентов по последним действиям с услугами: активация и пауза | Список абонентів з останніх дій з послугами: активація та пауза");
         $this->setVariables([
             'title' => $title,
             'pager' => $pager,
@@ -1330,13 +1336,13 @@ class AbonController extends AppBaseController {
         {
             $abon = $model->get_row_by_id(Abon::TABLE, intval($this->route[F_ALIAS]), Abon::F_ID);
             $user = $model->get_user($abon[Abon::F_USER_ID]);
-            View::setMeta(__('Редактирование карточки пользователя'));
+            View::setMeta(__('Editing a user card | Редактирование карточки пользователя | Редагування картки користувача'));
             $this->setVariables([
                 'user'=> $user,
                 'abon'=> $abon,
             ]);
         } else {    
-            MsgQueue::msg(MsgType::ERROR, __('ID не верен или не указан'));
+            MsgQueue::msg(MsgType::ERROR, __('The ID is incorrect or not specified | ID не верен или не указан | ID не вірний або не вказаний'));
             redirect();
         }
     }
@@ -1427,7 +1433,7 @@ class AbonController extends AppBaseController {
             else
             {
                 // !!! Возможно это надо это писать в логи и сообщать
-                MsgQueue::msg(MsgType::ERROR, '?UID/?AID ' . __('Не указаны или не верны'));
+                MsgQueue::msg(MsgType::ERROR, '?UID/?AID ' . __('Not specified or incorrect | Не указаны или не верны | Не вказані чи не вірні'));
                 redirect();
             }
         }
@@ -1497,12 +1503,12 @@ class AbonController extends AppBaseController {
         $this->view = '../My/index';
 
         View::setMeta(
-                title: __('Форма данных абонента'),
-                descr: __('Форма просмотра и редактирования данных абонента, и всего, что связано с абонентом: пользователя, прайсов, контактов, СМС')
+                title: __('Subscriber\'s data form | Форма данных абонента |  Форма данных абонента'),
+                descr: __('A form for viewing and editing subscriber data, and everything related to the subscriber: user, price lists, contacts, SMS | Форма просмотра и редактирования данных абонента, и всего, что связано с абонентом: пользователя, прайсов, контактов, СМС | Форма перегляду та редагування даних абонента, та всього, що пов\'язано з абонентом: користувача, прайсів, контактів, СМС')
             );
 
         $this->setVariables([
-            'title'=> __('Карта Пользователя') . ' [' . $user[User::F_ID].']',
+            'title'=> __('User Card | Карта Пользователя | Карта Користувача') . ' [' . $user[User::F_ID].']',
             'user' => $user,
             'for_abon_id' => $for_abon_id,
         ]);
@@ -1530,7 +1536,7 @@ class AbonController extends AppBaseController {
                 !$model->validate_id(table_name: Abon::TABLE, field_id: Abon::F_ID, id_value: (int)$this->route[F_ALIAS])
             ) 
         {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('ID не верен'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('ID is incorrect | ID не верен | ID не вірний'));
             redirect();
         }
 
@@ -1544,10 +1550,10 @@ class AbonController extends AppBaseController {
 
 
         if ($model->recalc_abon($abon_id, $msg_info)) {
-            MsgQueue::msg(MsgType::INFO_AUTO, __('Данные успешно обновлены'));
+            MsgQueue::msg(MsgType::INFO_AUTO, __('Data updated successfully | Данные успешно обновлены | Дані успішно оновлено'));
             redirect();
         } else {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Ошибка обновления данных'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Data update error | Ошибка обновления данных | Помилка оновлення даних'));
             redirect();
         }
 

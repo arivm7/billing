@@ -862,7 +862,7 @@ class Bank
                                 . (can_edit(Module::MOD_PAYMENTS) 
                                     ?   '<a href="'.Pay::URI_FORM.'/'.$found_rec[Bank::F_FOUND_PAY][Pay::F_ID].'" '
                                             . 'class="btn btn-sm btn-outline-info align-items-center fs-8 py-0 px-2 ms-3" '
-                                            . 'title="' . __('Редактировать платеж') . '" '
+                                            . 'title="' . __('Edit payment | Редактировать платеж | Редагувати платіж') . '" '
                                             . 'target="_blank">'
                                             . '<span class="fw-bold">₴</span>'
                                             . '</a>'
@@ -886,7 +886,7 @@ class Bank
                             ?   (
                                     $found_rec[Bank::F_FOUND_PAY][$field] > 0
                                         ?   url_abon_form($found_rec[Bank::F_FOUND_PAY][$field])
-                                        :   '<span title="'.__('Не распределённый платёж').'" class="text-bg-danger py-1 px-4">'.url_abon_form($found_rec[Bank::F_FOUND_PAY][$field]).'<span>'
+                                        :   '<span title="'.__('Undistributed payment | Не распределённый платёж | Не розподілений платіж').'" class="text-bg-danger py-1 px-4">'.url_abon_form($found_rec[Bank::F_FOUND_PAY][$field]).'<span>'
                                 )
 
                             :   '<div class="row g-0 py-1 align-items-center w-100">'
@@ -903,7 +903,7 @@ class Bank
                                         . (can_use([Module::MOD_ABON]) && !empty($found_rec[Bank::F_FOUND_ABON][Abon::F_ID])
                                             ?   '<a href="'.Abon::URI_VIEW.'/'.$found_rec[Bank::F_FOUND_ABON][Abon::F_ID].'" '
                                                     . 'class="btn btn-outline-info align-items-center fs-6 py-1 px-2 ms-2" '
-                                                    . 'title="' . __('Перейти в карточку Абонента') . CR . $found_rec[Bank::F_FOUND_ABON][Abon::F_ADDRESS] . '" '
+                                                    . 'title="' . __('Go to the Subscriber card | Перейти в карточку Абонента | Перейти до картки Абонента') . CR . $found_rec[Bank::F_FOUND_ABON][Abon::F_ADDRESS] . '" '
                                                     . 'target="_blank">'
                                                     . '<span class="fw-bold">🅐</span></a><!-- ⒶⒶⒶ -->'
                                             :   '')
@@ -927,7 +927,7 @@ class Bank
                                                                 Pay::F_DESCRIPTION => $pay_rec[Pay::F_DESCRIPTION],
                                                             ]) . '" '
                                                     . 'class="btn btn-outline-info align-items-center fs-6 px-2 py-1 ms-2" '
-                                                    . 'title="' . __('Поиск одного платежа среди платежей, уже внесённых в биллинг') . '" '
+                                                    . 'title="' . __('Search for a single payment among payments already entered into billing | Поиск одного платежа среди платежей, уже внесённых в биллинг | Пошук одного платежу серед платежів, уже внесених до білінгу') . '" '
                                                     . 'target="_blank">'
                                                     . '<span class="fw-bold">?1₴</span>'
                                                     . '</a>'
@@ -942,7 +942,7 @@ class Bank
                                                                 Pay::F_DESCRIPTION => $pay_rec[Pay::F_DESCRIPTION],
                                                             ]) . '" '
                                                     . 'class="btn btn-outline-info align-items-center fs-6 px-2 py-1 ms-2" '
-                                                    . 'title="' . __('Поиск списка платежей среди платежей, уже внесённых в биллинг') . '" '
+                                                    . 'title="' . __('Search for a list of payments among payments already entered into the billing system | Поиск списка платежей среди платежей, уже внесённых в биллинг | Пошук списку платежів серед платежів, уже внесених до білінгу') . '" '
                                                     . 'target="_blank">'
                                                     . '<span class="fw-bold">?₴₴</span>'
                                                     . '</a>'

@@ -52,7 +52,7 @@ $tp = $model->get_tp($item[PA::F_TP_ID]);
                                 <?php if (can_edit(Module::MOD_PA)) : ?>
                                     <!-- Кнопка редактирования ПФ -->
                                     <a href="<?=PA::URI_EDIT;?>/<?=$item[PA::F_ID];?>" class="btn btn-outline-info btn-sm">
-                                        <i class="bi bi-pencil-square"></i> <?= __('Редактировать'); ?>
+                                        <i class="bi bi-pencil-square"></i> <?= __('Edit | Редактировать | Редагувати'); ?>
                                     </a>
                                 <?php endif; ?>
                                 <?php if (can_view(Module::MOD_PA)) : ?>
@@ -65,7 +65,7 @@ $tp = $model->get_tp($item[PA::F_TP_ID]);
                                             . $item[PA::F_NET_NAME];
                                     ?>
                                     <button class="btn btn-outline-info btn-sm p-1 copy-btn" data-text="<?= h(html_to_text($text)) ?>">
-                                        <img src="<?= Icons::SRC_ICON_CLIPBOARD ?>" title="<?= __('Скопировать Описание прайсового фрагмента в системный буфер обмена clipboard') ?>" alt="[copy]" height="22">
+                                        <img src="<?= Icons::SRC_ICON_CLIPBOARD ?>" title="<?= __('Copy the description of the price fragment to the system clipboard | Скопировать Описание прайсового фрагмента в системный буфер обмена clipboard | Копіювати Опис прайсового фрагмента у системний буфер обміну clipboard') ?>" alt="[copy]" height="22">
                                     </button>
                                 <?php endif; ?>
                             </div>
@@ -87,26 +87,26 @@ $tp = $model->get_tp($item[PA::F_TP_ID]);
                                     <td class="text-end">
                                         <span class="text font-monospace">
                                             <?php if ($item[PA::F_CLOSED]) : ?>
-                                                <span class='badge bg-secondary' title='<?=__('Период начисления полностью закрыт');?>'>[x]</span>
+                                                <span class='badge bg-secondary' title='<?=__('The accrual period is completely closed | Период начисления полностью закрыт | Період нарахування повністю закритий');?>'>[x]</span>
                                             <?php else : ?>
-                                                <span class='badge bg-success' title='<?=__('Начисление активно или на паузе');?>'>[ ]</span>
+                                                <span class='badge bg-success' title='<?=__('Accrual is active or paused | Начисление активно или на паузе | Нарахування активне або на паузі');?>'>[ ]</span>
                                             <?php endif; ?>
                                         </span>
                                     </td>
                                 </tr>
                                 <?php if (can_use(Module::MOD_PA)) : ?>
                                     <tr>
-                                        <td><?= __('Начисление'); ?>:</td>
+                                        <td><?= __('Accrual | Начисление | Нарахування'); ?>:</td>
                                         <td><?= number_format($item[PA::F_COST_VALUE], 2, ',', ' ') . ' грн' ?></td>
                                     </tr>
                                 <?php endif; ?>
                                 <?php if (__pa_age($item) == \PAStatus::CURRENT) : ?>
                                     <tr>
-                                        <td><?= __('Абонплата'); ?>:</td>
+                                        <td><?= __('Subscription fee | Абонплата | Абонплата'); ?>:</td>
                                         <td>
-                                            <?= ($item[PA::F_PPMA_VALUE] ? number_format($item[PA::F_PPMA_VALUE], 2, ',', ' ') . " " . __('грн/мес') : ''); ?>
-                                            <?= ($item[PA::F_PPDA_VALUE] ? number_format($item[PA::F_PPDA_VALUE], 2, ',', ' ') . " " . __('грн/сут')
-                                                . '<span class=\'text-secondary\'> | ' . number_format($item[PA::F_PPDA_VALUE] * 30, 2, ',', ' ') . " " . __('грн/30дней') . '</span>' : ''); ?>
+                                            <?= ($item[PA::F_PPMA_VALUE] ? number_format($item[PA::F_PPMA_VALUE], 2, ',', ' ') . " " . __('UAH/month | грн/мес | грн/місяць') : ''); ?>
+                                            <?= ($item[PA::F_PPDA_VALUE] ? number_format($item[PA::F_PPDA_VALUE], 2, ',', ' ') . " " . __('UAH/day | грн/сут | грн/добу')
+                                                . '<span class=\'text-secondary\'> | ' . number_format($item[PA::F_PPDA_VALUE] * 30, 2, ',', ' ') . " " . __('UAH/30 days | грн/30дней | грн/30 днів') . '</span>' : ''); ?>
                                         </td>
                                     </tr>
                                     <?php if ($item[PA::F_NET_IP_SERVICE]) : ?>
@@ -116,13 +116,13 @@ $tp = $model->get_tp($item[PA::F_TP_ID]);
                                             </tr>
                                         <?php endif; ?>
                                         <tr>
-                                            <td><?= __('IP'); ?>:</td><td><?= h($item[PA::F_NET_IP]) ?></td>
+                                            <td><?= __('IP | IP | IP'); ?>:</td><td><?= h($item[PA::F_NET_IP]) ?></td>
                                         </tr>
                                         <tr>
-                                            <td><?= __('Mask'); ?>:</td><td><?= h($item[PA::F_NET_MASK]) ?></td>
+                                            <td><?= __('Mask | Маска | Маска'); ?>:</td><td><?= h($item[PA::F_NET_MASK]) ?></td>
                                         </tr>
                                         <tr>
-                                            <td><?= __('Gateway'); ?>:</td><td><?= h($item[PA::F_NET_GATEWAY]) ?></td>
+                                            <td><?= __('Gateway | Шлюз | Шлюз'); ?>:</td><td><?= h($item[PA::F_NET_GATEWAY]) ?></td>
                                         </tr>
                                         <tr>
                                             <td>DNS 1:</td><td><?= h($item[PA::F_NET_DNS1]) ?></td>
@@ -131,11 +131,11 @@ $tp = $model->get_tp($item[PA::F_TP_ID]);
                                             <td>DNS 2:</td><td><?= h($item[PA::F_NET_DNS2]) ?></td>
                                         </tr>
                                         <tr>
-                                            <td><?= __('MAC-адрес'); ?>:</td><td><?= h($item[PA::F_NET_MAC]) ?></td>
+                                            <td><?= __('MAC-address | MAC-адрес | MAC-адреса'); ?>:</td><td><?= h($item[PA::F_NET_MAC]) ?></td>
                                         </tr>
                                         <?php if ($item[PA::F_NET_ON_ABON_IP]) : ?>
                                             <tr>
-                                                <td><?= __('IP на оборудовании абонента'); ?>:</td>
+                                                <td><?= __('IP on the subscriber\'s equipment | IP на оборудовании абонента | IP на обладнанні абонента'); ?>:</td>
                                                 <td><?= h($item[PA::F_NET_ON_ABON_IP]) ?> / <?= h($item[PA::F_NET_ON_ABON_MASK]); ?> / <?= h($item[PA::F_NET_ON_ABON_GATE]); ?></td>
                                             </tr>
                                         <?php endif; ?>
@@ -161,7 +161,7 @@ $tp = $model->get_tp($item[PA::F_TP_ID]);
                     <?php if (!$item[PA::F_CLOSED] && __pa_age($item)->value < PAStatus::FUTURE->value) : ?>
                         <a href="<?= Api::URI_CMD; ?>?<?=Api::F_CMD;?>=<?=Api::CMD_PA_CLOSE;?>&<?=Api::F_PA_ID;?>=<?= $item[PA::F_ID]; ?>&<?=Api::F_ABON_OFF_ON_TP;?>=0"
                             class="btn btn-outline-info btn-sm"
-                            onclick="return confirm('<?=__('Вы точно хотите остановить услугу и закрыть прайсовый фрагмент?');?>')">&#9209; <?= __('Закрыть прайс'); ?>
+                            onclick="return confirm('<?=__('Are you sure you want to stop the service and close the price list section? | Вы точно хотите остановить услугу и закрыть прайсовый фрагмент | Ви точно хочете зупинити послугу та закрити прайсовий фрагмент');?>'?)">&#9209; <?= __('Close price | Закрыть прайс | Закрити прайс'); ?>
                         </a>
                     <?php endif; ?>
                     <?php if (!$item[PA::F_CLOSED]) : ?>

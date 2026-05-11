@@ -172,13 +172,13 @@ class Api {
     public static function remake_table_lists(array $address_list): array {
 
         uasort($address_list, function($a, $b) {
-            $cmp = strcasecmp($a[Mik::LIST_LIST], $b[Mik::LIST_LIST]);
+            $cmp = strcasecmp($a[Mik::F_LIST_LIST], $b[Mik::F_LIST_LIST]);
             if ($cmp === 0) {
-                $cmp = strcasecmp($a[Mik::LIST_ADDRESS], $b[Mik::LIST_ADDRESS]);
+                $cmp = strcasecmp($a[Mik::F_LIST_ADDRESS], $b[Mik::F_LIST_ADDRESS]);
                 if ($cmp === 0) {
-                    $cmp = strcasecmp($a[Mik::LIST_COMMENT] ?? '', $b[Mik::LIST_COMMENT] ?? '');
+                    $cmp = strcasecmp($a[Mik::F_LIST_COMMENT] ?? '', $b[Mik::F_LIST_COMMENT] ?? '');
                     if ($cmp === 0) {
-                        $cmp = strcasecmp($a[Mik::LIST_DISABLED], $b[Mik::LIST_DISABLED]);
+                        $cmp = strcasecmp($a[Mik::F_LIST_DISABLED], $b[Mik::F_LIST_DISABLED]);
                     }
                 }
             }
@@ -187,7 +187,7 @@ class Api {
 
         $a = [];
         foreach ($address_list as $row) {
-            $a[$row[Mik::LIST_LIST]][] = $row;
+            $a[$row[Mik::F_LIST_LIST]][] = $row;
         }
         return $a;
     }
@@ -307,10 +307,10 @@ class Api {
         $records = array();
         foreach ($mik_list as $row) {
             if (
-                    ($row[Mik::LIST_ADDRESS] == $ip)
-                    && (is_null($list)     ? true : ($list     == $row[Mik::LIST_LIST]))
-                    && (is_null($dynamic)  ? true : ($dynamic  == $row[Mik::LIST_DYNAMIC]))
-                    && (is_null($disabled) ? true : ($disabled == $row[Mik::LIST_DISABLED]))
+                    ($row[Mik::F_LIST_ADDRESS] == $ip)
+                    && (is_null($list)     ? true : ($list     == $row[Mik::F_LIST_LIST]))
+                    && (is_null($dynamic)  ? true : ($dynamic  == $row[Mik::F_LIST_DYNAMIC]))
+                    && (is_null($disabled) ? true : ($disabled == $row[Mik::F_LIST_DISABLED]))
                )
             {
                 $records[] = $row;
@@ -376,10 +376,10 @@ class Api {
         $records = array();
         foreach ($mik_list as $row) {
             if (
-                    (Api::get_aid_from_str($row[Mik::LIST_COMMENT]) == $abon_id) &&
-                    (is_null($list)     ? true : ($list     == $row[Mik::LIST_LIST])) && 
-                    (is_null($dynamic)  ? true : ($dynamic  == $row[Mik::LIST_DYNAMIC])) && 
-                    (is_null($disabled) ? true : ($disabled == $row[Mik::LIST_DISABLED]))
+                    (Api::get_aid_from_str($row[Mik::F_LIST_COMMENT]) == $abon_id) &&
+                    (is_null($list)     ? true : ($list     == $row[Mik::F_LIST_LIST])) && 
+                    (is_null($dynamic)  ? true : ($dynamic  == $row[Mik::F_LIST_DYNAMIC])) && 
+                    (is_null($disabled) ? true : ($disabled == $row[Mik::F_LIST_DISABLED]))
                )
             {
                 $records[] = $row;
@@ -400,7 +400,7 @@ class Api {
      * @return string
      */
     public static function get_status_ip_from_abon_rec(array $address_rec): string {
-        return  (is_ip_net($address_rec[Mik::LIST_ADDRESS])
+        return  (is_ip_net($address_rec[Mik::F_LIST_ADDRESS])
                     ? get_html_check_img(has_enabled_rec($address_rec), title_true: "IP-Сеть в таблице ABON включена", title_false: "IP-Сеть в таблице ABON выключена", img_true: '/img/icon_mik_abon_net_on.svg', img_false: '/img/icon_mik_abon_net_off.svg')
                     : get_html_check_img(has_enabled_rec($address_rec), title_true: "IP в таблице ABON включён", title_false: "IP в таблице ABON выключён", img_true: '/img/icon_mik_abon_ip_on.svg', img_false: '/img/icon_mik_abon_ip_off.svg')
                 );

@@ -50,31 +50,31 @@ require_once DIR_LIBS . '/form_functions.php';
         <div class="card-header">
             <div class='d-flex justify-content-between align-items-center'>
                 <div>
-                    <?= __('Абонент') ?>: <strong><?= $abon[Abon::F_ID]; ?></strong>
+                    <?= __('Subscriber | Абонент | Абонент') ?>: <strong><?= $abon[Abon::F_ID]; ?></strong>
                 </div>
                 <div>
                     <!-- Информационные уведомления -->
                     <?php if (can_add([Module::MOD_NOTICE])) : ?>
                         <a href="<?=Notify::URI_INFO;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-1" target="_self" 
-                            title="<?= __('List of Information messages'); ?>"
-                            ><span class="fw-bold">SMS</span> <?= __('Informers'); ?></a>
+                            title="<?= __('List of Information messages | Список информационных сообщений | Список інформаційних повідомлень'); ?>"
+                            ><span class="fw-bold">SMS</span> <?= __('Informers | Информеры | Інформатори'); ?></a>
                     <?php endif; ?>
                     <!-- Вернуться в карточку абонента -->
                     <?php if (can_use([Module::MOD_ABON])) : ?>
-                        <a href="<?=Abon::URI_VIEW;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-1" target="_self"><span class="fw-bold">🅐</span> <?= __('Картка'); ?></a> <!-- ⒶⒶⒶ -->
+                        <a href="<?=Abon::URI_VIEW;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-1" target="_self"><span class="fw-bold">🅐</span> <?= __('Subscriber card | Карточка абонента | Картка абонента'); ?></a> <!-- ⒶⒶⒶ -->
                     <?php else: ?>
-                        <a href="/my" class="btn btn-outline-info btn-sm" target="_self"><span class="fw-bold">🅐</span> <?= __('Картка'); ?></a> <!-- ⒶⒶ🅐Ⓐ(A) -->
+                        <a href="/my" class="btn btn-outline-info btn-sm" target="_self"><span class="fw-bold">🅐</span> <?= __('Subscriber card | Карточка абонента | Картка абонента'); ?></a> <!-- ⒶⒶ🅐Ⓐ(A) -->
                     <?php endif; ?>
                 </div>
             </div>
         </div>
         <div class="card-body">
             <p class="mb-1">
-                <span class="text-secondary"><?= __('Имя') ?>:</span>
+                <span class="text-secondary"><?= __('Name | Имя | Ім\'я') ?>:</span>
                 <?= h($user[User::F_NAME_FULL]); ?>
             </p>
             <p class="mb-1">
-                <span class="text-secondary"><?= __('Адрес') ?>:</span>
+                <span class="text-secondary"><?= __('Address | Адрес | Адреса') ?>:</span>
                 <?= h($abon[Abon::F_ADDRESS]); ?>
             </p>
         </div>
@@ -99,7 +99,7 @@ require_once DIR_LIBS . '/form_functions.php';
         ); ?>
     <?php else : ?>
         <div class="alert alert-info" role="alert">
-            <?= __('Уведомления не найдены'); ?>
+            <?= __('No notifications found | Уведомления не найдены | Повідомлення не знайдені'); ?>
         </div>
     <?php endif; ?>
 

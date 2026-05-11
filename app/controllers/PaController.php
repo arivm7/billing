@@ -78,7 +78,7 @@ class PaController extends AppBaseController {
                 . (($data[PA::F_NET_IP_SERVICE] == 1) && !empty($data[PA::F_NET_IP])
                     ? ' | ' . $data[PA::F_NET_IP].'/'.\ip_mask_to_prefix($data[PA::F_NET_MASK]).'/.'.ip_get_last_octet($data[PA::F_NET_GATEWAY])
                     : '');
-            MsgQueue::msg(MsgType::WARN, __('F_NET_NAME был пуст. Установлен в F_ABON_ID и парметры подключения. Проверьте правильность.'));
+            MsgQueue::msg(MsgType::WARN, __('F_NET_NAME was empty. Set to F_ABON_ID and connection parameters. Check for correctness | F_NET_NAME был пуст. Установлен в F_ABON_ID и параметры подключения. Проверьте правильность | F_NET_NAME був порожній. Встановлено в F_ABON_ID та параметри підключення. Перевірте правильність') .'.');
         }
 
         /**
@@ -89,11 +89,11 @@ class PaController extends AppBaseController {
         {
             if (empty($data[PA::F_DATE_END_STR])) {
                 $data[PA::F_DATE_END_STR] = date('Y-m-d');
-                MsgQueue::msg(MsgType::WARN, __('Дата закрытия ПФ была пустой. Установлена в сегодняшнюю. Проверьте правильность.'));
+                MsgQueue::msg(MsgType::WARN, __('The PF closing date was empty. Installed today. Check for correctness | Дата закрытия ПФ была пустой. Установлена в сегодняшнюю. Проверьте правильность | Дата закриття ПФ була порожньою. Встановлено у сьогоднішню. Перевірте правильність') . '.');
             }
             if ($data[PA::F_NET_IP_SERVICE] == 1) {
                 $data[PA::F_NET_IP_SERVICE] = 0;
-                MsgQueue::msg(MsgType::WARN, __('Флаг [IP_SERVICE] принудительно отключён в связи с закрытием прайсового фрагмента. Проверьте правильность.'));
+                MsgQueue::msg(MsgType::WARN, __('The [IP_SERVICE] flag is forcibly disabled due to the closing of the price fragment. Check for correctness | Флаг [IP_SERVICE] принудительно отключён в связи с закрытием прайсового фрагмента. Проверьте правильность | Флаг [IP_SERVICE] примусово вимкнено у зв\'язку із закриттям прайсового фрагмента. Перевірте правильність') . '.');
             }
         }
 
@@ -162,7 +162,7 @@ class PaController extends AppBaseController {
             PA::F_ABON_ID,
             PA::F_NET_NAME,
             PA::F_DATE_START,
-        ])->message('{field} — обязательное поле.');
+        ])->message('{field} — '.__('required field | обязательное поле | обов\'язкове поле').'.');
 
         $v->rule('integer', [
             PA::F_ABON_ID,
@@ -174,7 +174,7 @@ class PaController extends AppBaseController {
 
         if ($data[PA::F_NET_IP_SERVICE]) {
             $v->rule('ip', [PA::F_NET_IP, PA::F_NET_ON_ABON_IP, PA::F_NET_GATEWAY])
-                ->message('Поле {field} должно содержать корректный IP-адрес.');
+                ->message('{field} -- '.__('The field must contain a valid IP address | Поле должно содержать корректный IP-адрес | Поле має містити коректну IP-адресу').'.');
         }
 
         // $v->rule('boolean', [PA::F_CLOSED, PA::F_NET_IP_SERVICE, PA::F_NET_IP_TRUSTED]);
@@ -276,7 +276,7 @@ class PaController extends AppBaseController {
          */
         $pa = $model->get_pa($pa_id); 
         if (empty($pa)) {
-            MsgQueue::msg(MsgType::ERROR, "Не найден ПФ с ID: $pa_id");
+            MsgQueue::msg(MsgType::ERROR, __('Price fragment with ID not found | Не найден прайсовый фрагмент с ID | Не знайдено прайсового фрагмента з ID') . ": $pa_id");
             MsgQueue::msg(MsgType::ERROR, $model->errorInfo());
             return false;
         }
@@ -294,11 +294,11 @@ class PaController extends AppBaseController {
          */
         $on_date_start = strtotime($on_date_str);
         if ($on_date_start === false) {
-            MsgQueue::msg(MsgType::ERROR, "Не верный формат даты: $on_date_str");
+            MsgQueue::msg(MsgType::ERROR, __('Invalid date format | Не верный формат даты | Неправильний формат дати') . ": $on_date_str");
             return false;
         }
         if ($on_date_start <= $pa[PA::F_DATE_START]) {
-            MsgQueue::msg(MsgType::ERROR, "Дата переключения должна быть больше даты начала текущего ПФ");
+            MsgQueue::msg(MsgType::ERROR, __('The switch date must be greater than the start date of the current price fragment | Дата переключения должна быть больше даты начала текущего прайсового фрагмента | Дата перемикання повинна бути більше дати початку поточного прайсового фрагмента'));
             return false;
         }
 
@@ -307,7 +307,7 @@ class PaController extends AppBaseController {
          */
         $on_date_end = $on_date_start - 60*60*24; // минус один день
         if ($on_date_end <= $pa[PA::F_DATE_START]) {
-            MsgQueue::msg(MsgType::ERROR, "Дата закрытия текущего ПФ должна быть больше даты открытия текущего ПФ");
+            MsgQueue::msg(MsgType::ERROR, __('The closing date of the current price fragment must be greater than the opening date of the current price fragment | Дата закрытия текущего прайсового фрагмента должна быть больше даты открытия текущего прайсового фрагмента | Дата закриття поточного прайсового фрагмента має бути більшою за дати відкриття поточного прайсового фрагменту'));
             return false;
         }
 
@@ -345,7 +345,7 @@ class PaController extends AppBaseController {
         $pa[PA::F_MODIFIED_DATE] = time();
         $pa_new_id = $model->insert_row(PA::TABLE, $pa);
         if ($pa_new_id === false) {
-            MsgQueue::msg(MsgType::ERROR, "Ошибка создания нового ПФ");
+            MsgQueue::msg(MsgType::ERROR, __('Error creating a new price fragment | Ошибка создания нового прайсового фрагмента | Помилка створення нового прайсового фрагменту'));
             MsgQueue::msg(MsgType::ERROR, $model->errorInfo());
             return false;
         }
@@ -489,12 +489,12 @@ class PaController extends AppBaseController {
             if ($model->delete_rows_by_field(PA::TABLE, PA::F_ID, $pa_id)) {
                 $ret = true;
             } else {
-                MsgQueue::msg(MsgType::ERROR_AUTO, __('Ошибка удаления ПФ'));
+                MsgQueue::msg(MsgType::ERROR_AUTO, __('Error deleting price fragment | Ошибка удаления прайсового фрагмента | Помилка видалення прайсового фрагменту'));
                 MsgQueue::msg(MsgType::ERROR_AUTO, $model->errorInfo());
                 $ret = false;
             }
         } else {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('ID ПФ не верен'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Price fragment ID is not correct | ID прайсового фрагмента не верен | ID прайсового фрагмента не вірний'));
             $ret = false;
         }
         return $ret;
@@ -553,7 +553,7 @@ class PaController extends AppBaseController {
                      * Данные есть. Вносить в базу
                      */
                     if ($model->update_row_by_id(PA::TABLE, $data, PA::F_ID)) {
-                        MsgQueue::msg(MsgType::SUCCESS_AUTO, __("Данные внесены"));
+                        MsgQueue::msg(MsgType::SUCCESS_AUTO, __("Data entered | Данные внесены | Дані внесені"));
                         
                         if (self::need_recalc_cost($data)) {
                             /**
@@ -569,7 +569,7 @@ class PaController extends AppBaseController {
                     /**
                      * Данных нет. Просто сообщить
                      */
-                    MsgQueue::msg(MsgType::INFO_AUTO, __("нет изменений в данных"));
+                    MsgQueue::msg(MsgType::INFO_AUTO, __("no data changes | нет изменений в данных | немає змін у даних"));
                 }
 
             }
@@ -582,7 +582,7 @@ class PaController extends AppBaseController {
         $pa_id = intval($this->route[F_ALIAS]);
 
         if (!$model->validate_id(PA::TABLE, $pa_id, PA::F_ID)) {   
-            MsgQueue::msg(MsgType::ERROR, __('Не верный ID'));
+            MsgQueue::msg(MsgType::ERROR, __('Invalid ID | Не верный ID | Не вірний ID'));
             redirect();
         }
 
@@ -638,7 +638,7 @@ class PaController extends AppBaseController {
         $abon = $model->get_abon($pa[PA::F_ABON_ID]);
         $user = $model->get_user($abon[Abon::F_USER_ID]);
 
-        View::setMeta(title: __('Редактирование прайсового фрагмента'));
+        View::setMeta(title: __('Editing a price fragment | Редактирование прайсового фрагмента | Редагування прайсового фрагменту'));
         $this->setVariables([
             'user'=> $user,
             'abon'=> $abon,
@@ -658,7 +658,7 @@ class PaController extends AppBaseController {
         $model = new AbonModel();
 
         if (!$model->validate_id(PA::TABLE, $pa_id, PA::F_ID)) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Не верный ID ПФ'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Invalid price fragment ID | Не верный ID прайсового фрагмента | Не вірний ID прайсового фрагмента'));
             return false;
         }
 
@@ -673,13 +673,13 @@ class PaController extends AppBaseController {
             if ((__pa_age($pa) == PAStatus::ACTIVE_TODAY) && $tp[TP::F_STATUS] && $tp[TP::F_IS_MANAGED]) {
                 $ip = $pa[PA::F_NET_IP];
                 if (Api::set_mik_abon_ip(Api::tp_connector(tp: $tp), $ip, false, true)) {
-                    MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Отключение услуги выполнени успешно'));
+                    MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Disabling the service completed successfully | Отключение услуги выполнени успешно | Відключення послуги виконано успішно'));
                     if (Api::$errors) {
                         MsgQueue::msg(MsgType::SUCCESS_AUTO, Api::$errors);
                     }
                 
                 } else {
-                    MsgQueue::msg(MsgType::ERROR, __('Ошибка отключения IP адреса на ТП'));
+                    MsgQueue::msg(MsgType::ERROR, __('Error disabling the IP address on the technical site | Ошибка отключения IP адреса на технической площадке | Помилка відключення IP адреси на технічному майданчику'));
                     if (Api::$errors) {
                         MsgQueue::msg(MsgType::ERROR, Api::$errors);
                         $rez = false;
@@ -694,7 +694,7 @@ class PaController extends AppBaseController {
         $pa[PA::F_CLOSED] = 1;
         if (empty($pa[PA::F_DATE_END])) {
             $pa[PA::F_DATE_END] = today();
-            MsgQueue::msg(MsgType::WARN, __('Дата закрытия ПФ была пустой. Установлена в сегодняшнюю. Проверьте правильность.'));
+            MsgQueue::msg(MsgType::WARN, __('The PF closing date was empty. Installed today. Check for correctness | Дата закрытия ПФ была пустой. Установлена в сегодняшнюю. Проверьте правильность | Дата закриття ПФ була порожньою. Встановлено у сьогоднішню. Перевірте правильність') . '.');
         }
 
         /**
@@ -702,17 +702,17 @@ class PaController extends AppBaseController {
          */
         if ($pa[PA::F_NET_IP_SERVICE] == 1) {
             $pa[PA::F_NET_IP_SERVICE] = 0;
-            MsgQueue::msg(MsgType::WARN, __('Флаг [IP_SERVICE] принудительно отключён в связи с закрытием прайсового фрагмента. Проверьте правильность.'));
+            MsgQueue::msg(MsgType::WARN, __('The [IP_SERVICE] flag is forcibly disabled due to the closing of the price fragment. Check for correctness | Флаг [IP_SERVICE] принудительно отключён в связи с закрытием прайсового фрагмента. Проверьте правильность | Прапор [IP_SERVICE] примусово вимкнено у зв\'язку із закриттям прайсового фрагмента. Перевірте правильність') . '.');
         }
 
         if ($model->update_row_by_id(PA::TABLE, $pa, PA::F_ID)) {
-            MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Данные в базе обновлены успешно'));
+            MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Data in the database was updated successfully | Данные в базе обновлены успешно | Дані в базі оновлено успішно'));
             /**
              * Пересчёт остатков и начислений по абоненту
              */
             $model->recalc_abon($pa[PA::F_ABON_ID]);
         } else {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Ошибка обновления данных в базе'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Error updating data in the database | Ошибка обновления данных в базе | Помилка оновлення даних у базі'));
             MsgQueue::msg(MsgType::ERROR_AUTO, $model->errorInfo());
             $rez = false;
         }        

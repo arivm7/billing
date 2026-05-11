@@ -109,13 +109,17 @@ if (!filter_var($remoteAddress, FILTER_VALIDATE_IP)) {
 
 /**
  * Проверяем является ли адрес доверенным
+ * В "доверенные" включаем ip адреса технических площадок, чтобы не блокировать абонентов
  */
-if (filter_var($remoteAddress, FILTER_VALIDATE_IP)) {
-    foreach ($ALWAYS_ALLOWED_SUBNETS as $cidr) {
-        if (ip_in_range(ip: $remoteAddress, cidr: $cidr)) {
-            $TRUSTED_SUBNET_ADDRESS = true; // доверенный
-            break;
-        }
+$model= new \billing\core\base\Model();
+$tp_ip_list = array_column(
+        $model->get_rows_by_sql("SELECT `ip` FROM `tp_list` WHERE `status` = 1 AND `is_managed` = 1 AND `ip` IS NOT NULL AND `ip` <> '' GROUP BY `ip`"), 
+        'ip');
+$ALWAYS_ALLOWED_SUBNETS = array_merge($ALWAYS_ALLOWED_SUBNETS, $tp_ip_list);
+foreach ($ALWAYS_ALLOWED_SUBNETS as $cidr) {
+    if (ip_in_range(ip: $remoteAddress, cidr: $cidr)) {
+        $TRUSTED_SUBNET_ADDRESS = true; // доверенный
+        break;
     }
 }
 
@@ -188,9 +192,11 @@ if (!$TRUSTED_SUBNET_ADDRESS) {
  * Очищаем по завершению статической и динамической проверки.
  */
 unset(
+    $model,
+    $tp_ip_list,
+    $ALWAYS_ALLOWED_SUBNETS,
     $DENIED_FOREVER_ADDRESSES,
     $ONLY_THIS_ADDRESSES,
-    $ALWAYS_ALLOWED_SUBNETS,
     $DENIED_ADDRESS,
     $ALLOWED_ADDRESS,
     $TRUSTED_SUBNET_ADDRESS,

@@ -13,6 +13,8 @@
 
 
 
+use config\tables\Module;
+
 /**
  * Данные переданные из контроллера
  * 
@@ -33,6 +35,15 @@
         <div class="d-flex gap-2">
             <a href="/log" class="btn btn-outline-secondary mx-1"><?= __('Back to list') ?></a>
             <a href="#bottom" class="btn btn-outline-secondary ms-1"><?= __('Down') ?></a>
+            <?php if (can_del(Module::MOD_LOGS)) : ?>
+                <a
+                    href="/log/delete?file=<?= rawurlencode($file_name) ?>"
+                    class="btn btn-outline-danger ms-1"
+                    onclick="return confirm('<?= __('Confirm deletion of the log file | Подтвердите удаление log-файла | Підтвердьте видалення log-файлу') ?>');"
+                    title="<?= __('Delete | Удалить | Видалити') . CR . __('Delete this log file | Удалить этот лог-файл | Видалити цей лог-файл'); ?>">
+                    <i class="bi bi-x-circle"></i>
+                </a>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -50,6 +61,15 @@
         <div class="d-flex gap-2">
             <a href="/log" class="btn btn-outline-secondary mx-1"><?= __('Back to list') ?></a>
             <a href="#top" class="btn btn-outline-secondary ms-1"><?= __('Up') ?></a>
+            <?php if (can_del(Module::MOD_LOGS)) : ?>
+                <a
+                    href="/log/delete?file=<?= rawurlencode($file_name) ?>"
+                    class="btn btn-outline-danger ms-1"
+                    onclick="return confirm('<?= __('Confirm deletion of the log file | Подтвердите удаление log-файла | Підтвердьте видалення log-файлу') ?>');"
+                    title="<?= __('Delete | Удалить | Видалити') . CR . __('Delete this log file | Удалить этот лог-файл | Видалити цей лог-файл'); ?>">
+                    <i class="bi bi-x-circle"></i>
+                </a>
+            <?php endif; ?>
         </div>
     </div>
     

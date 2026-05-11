@@ -630,14 +630,14 @@ function url_sms(string $phone_numbers): string {
 function url_email(string $email, ?string $text = null, ?string $src = null, ?string $attributes = null): string {
     $subj  = rawurlencode(__('Rilan'));
     $body  = rawurlencode(
-                  __('Здравствуйте')
+                  __('Hello | Здравствуйте | Доброго дня')
                 . "\n\n\n\n----\n"
-                . __('С уважением,')
+                . __('Sincerely | С уважением | З повагою,')
                 . __('Rilan')
              );
     $cc    = '';
     $bcc   = '';
-    $title = __('Написать письмо');
+    $title = __('Write a letter | Написать письмо | Написати лист');
     return "<a href=\"mailto:{$email}?subject={$subj}&body={$body}&cc={$cc}&bcc={$bcc}\" title='{$title}' {$attributes}>"
             . ($src ? get_html_img(src: Icons::SRC_ICON_EMAIL) : "")
             . ($text ? h($text) : "")
@@ -676,7 +676,7 @@ function url_email_form(
     if (empty($body_text) && empty($body_html) ) {
         $body_html  = rawurlencode(App::get_config('email_body_html_template'));
     }
-    $title = __('Написать уведомление через встроенную форму');
+    $title = __('Write a notification using the built-in form | Написать уведомление через встроенную форму | Надіслати повідомлення через вбудовану форму');
     return "<a "
             . "href=\"" 
                 . Email::URI_FORM 
@@ -784,7 +784,7 @@ function url_email_subform(
         $buttonContent .= h($text);
     }
     if (empty($buttonContent)) {
-        $buttonContent = __('Написать письмо');
+        $buttonContent = __('Write a letter | Написать письмо | Написати лист');
     }
     
     // Если передан form_id — возвращаем только поля и кнопку
@@ -1263,7 +1263,7 @@ function msg_to_session(string|array|null $msg = null, int $status = MSG_HAS_ERR
             $_SESSION[SessionFields::SUCCESS] = $msg;
             break;
         default:
-            throw new Exception(__('Не известный статус сообщения') . ': [' . $status . ']');
+            throw new Exception(__('Unknown message status | Не известный статус сообщения | Не відомий статус повідомлення') . ': [' . $status . ']');
          // break;
     }
 
@@ -1385,22 +1385,22 @@ function get_abon_warn_status(array|null $rest, array $abon): DutyWarn {
 function get_description_by_warn(DutyWarn $status): string {
     switch ($status) {
         case DutyWarn::NA:
-            return __("Статус не понятен, этого не должно быть.");
+            return __("The status is unclear, this shouldn't happen. | Статус не понятен, этого не должно быть | Статус не зрозумілий, цього не повинно бути");
             // break;
         case DutyWarn::ON_PAUSE:
-            return __("Услуга на паузе.");
+            return __("Service on pause | Услуга на паузе | Послуга призупинена");
             // break;
         case DutyWarn::NORMAL:
-            return __("Оплата есть. Услуга подключена.");
+            return __("Payment has been received. The service has been activated | Оплата есть. Услуга подключена | Оплата є. Послуга підключена");
             // break;
         case DutyWarn::WARN:
-            return __("Требуется оплата. %s Услуга подключена", CR);
+            return __("Payment required. %s Service connected | Требуется оплата. %s Услуга подключена | Потрібна оплата. %s Послуга підключена", CR);
             // break;
         case DutyWarn::NEED_OFF:
-            return __("Оплаты давно нет, нужно отключать. %s Услуга подключена", CR);
+            return __("There hasn't been any payment for a long time, I need to disconnect it. %s The service is connected | Оплаты давно нет, нужно отключать. %s Услуга подключена | Оплати давно немає, потрібно вимикати. %s Послуга підключена", CR);
             // break;
         case DutyWarn::INFO:
-            return __("INFO. %s Услуга подключена", CR);
+            return __("INFO. %s Service connected | INFO. %s Услуга подключена | INFO. %s Послуга підключена", CR);
             // break;
         default:
             return "";

@@ -55,7 +55,7 @@ $can_my    = ($user[User::F_ID] == App::get_user_id() && can_view(Module::MOD_MY
         <div class="card-header">
             <h3 class="fs-5" >
                 <?php if ($can_admin) : ?>
-                <span class="text-secondary small"><span title="<?= __('ID Уведомления') ?>"><?=h($notify[Notify::F_ID]);?></span> | <span title="<?= __('ID Типа уведомления') ?>"><?= $notify[Notify::F_TYPE_ID] ?></span> | </span>
+                <span class="text-secondary small"><span title="<?= __('Notification ID | ID Уведомления | ID сповіщення') ?>"><?=h($notify[Notify::F_ID]);?></span> | <span title="<?= __('Notification type ID | ID Типа уведомления | ID типу сповіщення') ?>"><?= $notify[Notify::F_TYPE_ID] ?></span> | </span>
                 <?php endif; ?>
                 <?= h($type_descr) ?>
             </h3>
@@ -72,7 +72,7 @@ $can_my    = ($user[User::F_ID] == App::get_user_id() && can_view(Module::MOD_MY
 
                 <?php if (!empty($notify[Notify::F_SUBJECT])) : ?>
                 <tr>
-                    <th class="p-3 text-nowrap" style="width: 30%;"><?= __('Subject');?></th>
+                    <th class="p-3 text-nowrap" style="width: 30%;"><?= __('Subject of the letter | Тема письма | Тема листа');?></th>
                     <td class="p-3" style="word-wrap: break-word; overflow-wrap: break-word;"><?= h($notify[Notify::F_SUBJECT]) ?></td>
                 </tr>
                 <?php endif; ?>
@@ -89,15 +89,15 @@ $can_my    = ($user[User::F_ID] == App::get_user_id() && can_view(Module::MOD_MY
 
                 <?php if ($can_admin) : ?>
                 <tr>
-                    <th class="p-3 text-nowrap" style="width: 30%;"><?= __('Record ID');?></th>
+                    <th class="p-3 text-nowrap" style="width: 30%;"><?= __('Record ID | ID записи | ID запису');?></th>
                     <td class="p-3" style="word-wrap: break-word; overflow-wrap: break-word;"><?= h($notify[Notify::F_ID]) ?></td>
                 </tr>
                 <tr>
-                    <th class="p-3 text-nowrap" style="width: 30%;"><?= __('Send method');?></th>
+                    <th class="p-3 text-nowrap" style="width: 30%;"><?= __('Send method | Метод отправки | Метод відправлення');?></th>
                     <td class="p-3" style="word-wrap: break-word; overflow-wrap: break-word;"><?= h($notify[Notify::F_METHOD]) ?></td>
                 </tr>
                 <tr>
-                    <th class="p-3 text-nowrap" style="width: 30%;"><?= __('Sender User ID');?></th>
+                    <th class="p-3 text-nowrap" style="width: 30%;"><?= __('Sender User ID | ID отправителя | ID відправника');?></th>
                     <td class="p-3" style="word-wrap: break-word; overflow-wrap: break-word;"><?= h($notify[Notify::F_SENDER_ID]) ?></td>
                 </tr>
                 <?php endif; ?>

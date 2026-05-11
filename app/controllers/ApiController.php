@@ -131,8 +131,8 @@ class ApiController extends AppBaseController {
                             foreach ($ip_on_mik_abon_list as $ip_abon_rec) {
                                 $t[] = [
                                     'ip_stat'   =>  Api::get_status_ip_from_abon_rec($ip_abon_rec),
-                                    'ip'        =>  paint($ip_abon_rec[Mik::LIST_ADDRESS], color: (has_enabled_rec($ip_abon_rec) ? GREEN : GRAY), face: 'monospace'),
-                                    'comment'   =>  get_str_cut($ip_abon_rec[Mik::LIST_COMMENT]),
+                                    'ip'        =>  paint($ip_abon_rec[Mik::F_LIST_ADDRESS], color: (has_enabled_rec($ip_abon_rec) ? GREEN : GRAY), face: 'monospace'),
+                                    'comment'   =>  get_str_cut($ip_abon_rec[Mik::F_LIST_COMMENT]),
                                     'act'       =>  "<a href=/api_run.php"
                                                     . "?cmd=set_price_apply_net_ip"
                                                     . "&prices_apply_id=".$pa_one[PA::F_ID]

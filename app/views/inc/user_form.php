@@ -117,7 +117,7 @@ $form_data_fn = function(string $field) use ($form_data, $user): int|float|strin
 
                 <div class="col-4 d-flex align-items-center">
                     <?php if (can_edit(Module::MOD_USER_CARD)): ?>
-                        <a class="btn btn-sm btn-outline-warning" href="<?= Api::URI_CMD ?>?<?= Api::F_CMD ?>=<?= Api::CMD_PASS_DEF ?>&<?= Api::F_UID ?>=<?=$form_data_fn(User::F_ID);?>" target="_self" title="<?= __('Сгенерировать и установить начальный пароль') ?>"><?= __('Def Pass') ?></a>
+                        <a class="btn btn-sm btn-outline-warning" href="<?= Api::URI_CMD ?>?<?= Api::F_CMD ?>=<?= Api::CMD_PASS_DEF ?>&<?= Api::F_UID ?>=<?=$form_data_fn(User::F_ID);?>" target="_self" title="<?= __('Generate and set initial password | Сгенерировать и установить начальный пароль | Згенерувати та встановити початковий пароль') ?>"><?= __('Default password | Пароль по умолчанию | Пароль за умовчанням') ?></a>
                     <?php else: ?>
                         :::
                     <?php endif; ?>
@@ -146,7 +146,7 @@ $form_data_fn = function(string $field) use ($form_data, $user): int|float|strin
             <?php if (can_edit(Module::MOD_USER_CARD)): ?>
                 <!-- Отчество -->
                 <div class="row mb-3">
-                    <label for="<?=User::F_SURNAME;?>" class="col-2 col-form-label hover-pointer"><?=__('Отчество');?></label>
+                    <label for="<?=User::F_SURNAME;?>" class="col-2 col-form-label hover-pointer"><?=__('Surname | Отчество | По-батькові');?></label>
                     <div class="col-6">
                         <input type="text" class="form-control" id="<?=User::F_SURNAME;?>" name="<?=User::POST_REC;?>[<?=User::F_SURNAME;?>]" value="<?=h($form_data_fn(User::F_SURNAME));?>">
                     </div>
@@ -155,7 +155,7 @@ $form_data_fn = function(string $field) use ($form_data, $user): int|float|strin
 
                 <!-- Фамилия -->
                 <div class="row mb-3">
-                    <label for="<?=User::F_FAMILY;?>" class="col-2 col-form-label hover-pointer"><?=__('Фамилия');?></label>
+                    <label for="<?=User::F_FAMILY;?>" class="col-2 col-form-label hover-pointer"><?=__('Surname | Фамилия | Прізвище');?></label>
                     <div class="col-6">
                         <input type="text" class="form-control" id="<?=User::F_FAMILY;?>" name="<?=User::POST_REC;?>[<?=User::F_FAMILY;?>]" value="<?=h($form_data_fn(User::F_FAMILY));?>">
                     </div>
@@ -166,7 +166,7 @@ $form_data_fn = function(string $field) use ($form_data, $user): int|float|strin
             <!-- Описание. Служебное поле -->
             <?php if (can_edit(Module::MOD_USER_CARD)): ?>
                 <div class="row mb-3">
-                    <label for="user_description hover-pointer" class="col-2 col-form-label"><?=__('Описание (служебное)');?></label>
+                    <label for="user_description hover-pointer" class="col-2 col-form-label"><?=__('Description (official) | Описание (служебное) | Опис (службове)');?></label>
                     <div class="col-6">
                         <textarea class="form-control" id="user_description" name="<?= User::POST_REC;?>[<?=User::F_DESCRIPTION;?>]" rows="<?=get_count_rows_for_textarea($form_data_fn(User::F_DESCRIPTION));?>"><?= h($form_data_fn(User::F_DESCRIPTION));?></textarea>
                     </div>
@@ -210,7 +210,7 @@ $form_data_fn = function(string $field) use ($form_data, $user): int|float|strin
                             </label>
                         </div>
 
-                        <div class="form-check m-0" title="<?=__('Отправлять письмо в html формате');?>">
+                        <div class="form-check m-0" title="<?=__('Send a letter in html format | Отправлять письмо в html формате | Надсилати лист у html форматі');?>">
                             <input class="form-check-input hover-pointer"
                                 type="checkbox"
                                 id="user_do_send_html"
@@ -218,11 +218,11 @@ $form_data_fn = function(string $field) use ($form_data, $user): int|float|strin
                                 value="1"
                                 <?= $form_data_fn(User::F_EMAIL_SEND_HTML) ? 'checked' : ''; ?>>
                             <label class="form-check-label hover-pointer small" for="user_do_send_html">
-                                <?= __('HTML'); ?>
+                                HTML
                             </label>
                         </div>
 
-                        <div class="form-check m-0" title="<?=__('Отправлять документы как вложение в формате pdf-файла');?>">
+                        <div class="form-check m-0" title="<?=__('Send documents as attachments in pdf file format | Отправлять документы как вложение в формате pdf-файла | Надсилати документи як вкладення у форматі PDF-файлу');?>">
                             <input class="form-check-input hover-pointer"
                                 type="checkbox"
                                 id="user_do_send_pdf"
@@ -230,7 +230,7 @@ $form_data_fn = function(string $field) use ($form_data, $user): int|float|strin
                                 value="1"
                                 <?= $form_data_fn(User::F_EMAIL_SEND_PDF) ? 'checked' : ''; ?>>
                             <label class="form-check-label hover-pointer small" for="user_do_send_pdf">
-                                <?= __('PDF'); ?>
+                                PDF
                             </label>
                         </div>
 
@@ -327,9 +327,9 @@ $form_data_fn = function(string $field) use ($form_data, $user): int|float|strin
         <div class="card-footer text-center">
             <button type="submit" class="btn btn-primary px-4"><?= __('Save'); ?></button>
             <?php if ($form_data_fn(User::F_ID) == App::get_user_id()) : ?>
-                <a href="/my" class="btn btn-secondary px-4"><?= __('Вернуться'); ?></a>
+                <a href="/my" class="btn btn-secondary px-4"><?= __('Return | Вернуться | Повернутись'); ?></a>
             <?php else : ?>
-                <a href="<?=Abon::URI_VIEW;?>/<?=$form_data_fn(User::F_ID);?>" class="btn btn-secondary px-4"><?= __('Вернуться'); ?></a>
+                <a href="<?=Abon::URI_VIEW;?>/<?=$form_data_fn(User::F_ID);?>" class="btn btn-secondary px-4"><?= __('Return | Вернуться | Повернутись'); ?></a>
             <?php endif; ?>
         </div>
         </form>

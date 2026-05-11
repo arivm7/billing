@@ -93,7 +93,7 @@ Lang::load_inc(__FILE__);
                     type="number"
                     name="<?=Pay::POST_REC;?>[<?=AbonRest::F_AMOUNT;?>]"
                     class="form-control text-end"
-                    placeholder="<?=__('Payment amount (recommended by %s)', number_format($rest[AbonRest::F_AMOUNT], 2, '.', ' '));?>"
+                    placeholder="<?=__('Payment amount (recommended by %s) | Сумма платежа (рекомендуется %s) | Сума платежу (рекомендована %s)', number_format($rest[AbonRest::F_AMOUNT], 2, '.', ' '));?>"
                     value="<?=h($rest[AbonRest::F_AMOUNT]);?>"
                     min="<?=App::get_config('bank_payment_min');?>"
                     step="0.01"
@@ -102,7 +102,7 @@ Lang::load_inc(__FILE__);
                 >
                 <span class="input-group-text"><?=__('UAH');?>.</span>
                 <div class="invalid-feedback text-start">
-                    <?=__('Enter the correct amount (a number of %s or more)', App::get_config('bank_payment_min'));?>
+                    <?=__('Enter the correct amount (a number of %s or more) | Введите правильную сумму (число %s или более) | Введіть правильну суму (число %s або більше)', App::get_config('bank_payment_min'));?>
                 </div>
             </div>
         </div>

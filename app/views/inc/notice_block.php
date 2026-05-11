@@ -42,15 +42,15 @@ $html_text = ($first_line_attr
     </div>
     <div class="text-secondary text-end">
         <button class="btn btn-outline-primary btn-sm p-1 copy-btn" data-text='<?= $notice_text; ?>'>
-            <img src="<?= Icons::SRC_ICON_CLIPBOARD; ?>" title="<?= __('Скопировать в clipboard') ?>" alt="[copy]" height="30rem">
+            <img src="<?= Icons::SRC_ICON_CLIPBOARD; ?>" title="<?= __('Copy to clipboard | Скопировать в clipboard | Скопіювати у clipboard') ?>" alt="[copy]" height="30rem">
         </button><br>
-        <label><span class="text-secondary">Регистрировать СМС: </span>
+        <label><span class="text-secondary"><?=__('Register SMS | Регистрировать СМС | Зареєструвати СМС')?>: </span>
         <input class="form-check-input" form="f1" name="<?=Notify::POST_REC;?>[msg][<?= $sms_print_num; ?>][register]" value="1" type="checkbox" /></label>
         <input form="f1" name="<?=Notify::POST_REC;?>[msg][<?= $sms_print_num; ?>][text]" type="hidden" value="<?= h($notice_text); ?>" />
     </div>
 </fieldset>
 <?php $sms_info = get_sms_info_rec($notice_text); ?>
 <div class='text-secondary'>
-    Количество символов: <?= $sms_info['len']; ?>. Всего СМС: <?= $sms_info['count_sms']; ?> (<?= $sms_info['full_sms']; ?> полных и <?= $sms_info['char_in_last_sms']; ?><span class="fs-7">/<?= $sms_info['chars1sms']; ?></span> символов в последнем)
+    <?=_('Number of characters | Количество символов | Кількість символів')?>: <?= $sms_info['len']; ?>. <?=_('Total SMS | Всего СМС | Усього СМС')?>: <?= $sms_info['count_sms']; ?> (<?= $sms_info['full_sms']; ?> <?=_('full and | полных и | повних та')?> <?= $sms_info['char_in_last_sms']; ?><span class="fs-7">/<?= $sms_info['chars1sms']; ?></span> <?=_('characters in the last | символов в последнем | символів в останньому')?>)
 </div>
 <br>

@@ -314,8 +314,8 @@ class AbonModel extends UserModel {
         $first   = true;
         $log_str = "Постановка на паузу прайсовых фрагментов для абонента [".$abon_id."]...\n";
         foreach ($pa_list as $pa) {
-            $pa[PA::F_DATE_START_STR] = date('%Y-%m-%d', $pa[PA::F_DATE_START]);
-            $pa[PA::F_DATE_END_STR] = date('%Y-%m-%d', $pa[PA::F_DATE_END]);
+            $pa[PA::F_DATE_START_STR] = date('Y-m-d', $pa[PA::F_DATE_START]);
+            $pa[PA::F_DATE_END_STR] = date('Y-m-d', $pa[PA::F_DATE_END]);
             $tp = $this->get_tp($pa[PA::F_TP_ID]);
             if  (
                     (get_price_apply_age($pa) === PAStatus::CURRENT) &&
@@ -329,7 +329,7 @@ class AbonModel extends UserModel {
                 } else {
                     $log_str .= "\n";
                 }
-                $log_str .= "|          | "
+                $log_str .= ""
                     . "[tp_id]=>".$pa['net_router_id'].", "
                     . ($tp[TP::F_STATUS]     == 1 ? "A" : "-" )
                     . ($tp[TP::F_DELETED]    == 1 ? "X" : "-" )
@@ -1410,6 +1410,7 @@ class AbonModel extends UserModel {
 
 
     function get_abon_rest(int $abon_id, int $today = NA): array|null {
+        if ($today == NA) { $today = time(); }
         $rest = $this->get_row_by_id(AbonRest::TABLE, $abon_id, AbonRest::F_ABON_ID);
         if ($rest) { 
             update_rest_fields($rest, $today);

@@ -65,11 +65,11 @@ $mik_resource = $mik_rec['resourse'];
     <thead>
         <tr>
             <th colspan="5">
-                <?=$mik_resource[Mik::RES_PLATFORM];?>,
-                <span class="text-success"><?=$mik_resource[Mik::RES_BOARD_NAME];?></span>,
-                <?=$mik_resource[Mik::RES_ARCHITECTURE_NAME];?> |
-                CPU: <span class="text-primary"><?=$mik_resource[Mik::RES_CPU];?></span> x<span class="text-success"><?=$mik_resource[Mik::RES_CPU_COUNT];?></span>, <span class="text-success"><?=$mik_resource[Mik::RES_CPU_FREQUENCY];?></span>MHz |
-                OS: <font class="text-primary"><?=$mik_resource[Mik::RES_VERSION];?></font> | Factory: <span class="text-success"><?=$mik_resource[Mik::RES_FACTORY_SOFTWARE] ?? "N/A";?></span>
+                <?=$mik_resource[Mik::F_RES_PLATFORM];?>,
+                <span class="text-success"><?=$mik_resource[Mik::F_RES_BOARD_NAME];?></span>,
+                <?=$mik_resource[Mik::F_RES_ARCHITECTURE_NAME];?> |
+                CPU: <span class="text-primary"><?=$mik_resource[Mik::F_RES_CPU_NAME];?></span> x<span class="text-success"><?=$mik_resource[Mik::F_RES_CPU_COUNT];?></span>, <span class="text-success"><?=$mik_resource[Mik::F_RES_CPU_FREQUENCY];?></span>MHz |
+                OS: <font class="text-primary"><?=$mik_resource[Mik::F_RES_VERSION];?></font> | Factory: <span class="text-success"><?=$mik_resource[Mik::F_RES_FACTORY_SOFTWARE] ?? "N/A";?></span>
             </th>
         </tr>
         <tr>
@@ -82,10 +82,10 @@ $mik_resource = $mik_rec['resourse'];
     </thead>
     <tbody>
         <tr>
-            <td><?=$mik_resource[Mik::RES_UPTIME];?></td>
+            <td><?=$mik_resource[Mik::F_RES_UPTIME];?></td>
             <td><?=number_format(floatval($mik_resource['free-memory'])/1024/1024, 2, ".", " ")." / "
                     . number_format(floatval($mik_resource['total-memory'])/1024/1024, 2, ".", " ");?></td>
-            <td><?=$mik_resource[Mik::RES_CPU_LOAD];?> %</td>
+            <td><?=$mik_resource[Mik::F_RES_CPU_LOAD];?> %</td>
             <td><?=number_format(floatval($mik_resource['free-hdd-space'])/1024/1024, 2, ".", " ")." / "
                     . number_format(floatval($mik_resource['total-hdd-space'])/1024/1024, 2, ".", " ");?></td>
             <td><?=(isset($mik_resource['bad-blocks'])

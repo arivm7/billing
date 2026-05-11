@@ -23,6 +23,8 @@ use billing\core\base\Lang;
 class TP {
 
     const URI_INDEX                = '/tp';
+    const URI_ADD                  = '/tp/add';
+    const URI_CREATE               = '/tp/create';
     const URI_EDIT                 = '/tp/edit';
     const URI_SAVE                 = '/tp/save';
     const URI_DELETE               = '/tp/delete';

@@ -45,14 +45,14 @@ require_once DIR_LIBS . '/form_functions.php';
             <div>
                 <!-- Список платежей -->
                 <?php if (can_view([Module::MOD_MY_PAYMENTS, Module::MOD_PAYMENTS])) : ?>
-                    <a href="<?=Pay::URI_LIST;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-1" target="_self" title="<?= __('Full list of subscriber payments'); ?>">
-                        <span class="fw-bold">₴₴</span> <?= __('Payments'); ?></a>
+                    <a href="<?=Pay::URI_LIST;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-1" target="_self" title="<?= __('Full list of subscriber payments | Полный список абонентских платежей | Повний список абонентських платежів'); ?>">
+                        <span class="fw-bold">₴₴</span> <?= __('Payments | Платежи | Платежі'); ?></a>
                 <?php endif; ?>
                 <!-- Вернуться в карточку абонента -->
                 <?php if (can_use([Module::MOD_ABON])) : ?>
-                    <a href="<?=Abon::URI_VIEW;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm" target="_self"><span class="fw-bold">🅐</span> <?= __('Картка'); ?></a> <!-- ⒶⒶⒶ -->
+                    <a href="<?=Abon::URI_VIEW;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm" target="_self"><span class="fw-bold">🅐</span> <?= __('Subscriber card | Карта абонента | Карта абонента'); ?></a> <!-- ⒶⒶⒶ -->
                 <?php else: ?>
-                    <a href="/my" class="btn btn-outline-info btn-sm" target="_self"><span class="fw-bold">🅐</span> <?= __('Картка'); ?></a> <!-- ⒶⒶ🅐Ⓐ(A) -->
+                    <a href="/my" class="btn btn-outline-info btn-sm" target="_self"><span class="fw-bold">🅐</span> <?= __('Subscriber card | Карта абонента | Карта абонента'); ?></a> <!-- ⒶⒶ🅐Ⓐ(A) -->
                 <?php endif; ?>
             </div>
         </div>

@@ -86,7 +86,7 @@ class ConciliationController extends AbonController {
             'user' => $user,
         ]);
 
-        View::setMeta(title: __('Запрос на Акт сверки платежей'));
+        View::setMeta(title: __('Request for Payment Reconciliation Report | Запрос на Акт сверки платежей | Запит на Акт звірки платежів'));
 
     }
 
@@ -108,11 +108,11 @@ class ConciliationController extends AbonController {
                 /**
                  * Ошибочный abon_id
                  */
-                MsgQueue::msg(MsgType::ERROR_AUTO, __('Не верный ID'));
+                MsgQueue::msg(MsgType::ERROR_AUTO, __('ID is not correct | ID не верный | ID не вірний'));
                 redirect();
             }
         } else {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Не укащан ID'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('ID not specified | ID не указан | ID не вказано'));
             redirect();
         }
 
@@ -148,7 +148,7 @@ class ConciliationController extends AbonController {
             'abon' => $abon,
         ]);
 
-        View::setMeta(title: __('Выбор интервала Акта сверки платежей'));
+        View::setMeta(title: __('Selecting the payment reconciliation report interval | Выбор интервала Акта сверки платежей | Вибір інтервалу Акту звіряння платежів'));
 
     }
 
@@ -161,13 +161,13 @@ class ConciliationController extends AbonController {
         $user = array();
         if (is_numeric($this->route[F_ALIAS])) {
             if (!App::$auth->isAuth) {
-                MsgQueue::msg(MsgType::ERROR, __('Для данного действия требуется авторизация'));
+                MsgQueue::msg(MsgType::ERROR, __('This action requires authorization | Для данного действия требуется авторизация | Для цієї дії потрібна авторизація'));
                 self::log_unauthorize();
                 redirect('/');
             }
             $user = $model->get_user_by_abon_id((int)$this->route[F_ALIAS]);
             if ($_SESSION[User::SESSION_USER_REC][User::F_ID] != $user[User::F_ID]) {
-                MsgQueue::msg(MsgType::ERROR, __('Вы запрашиваете чужой документ'));
+                MsgQueue::msg(MsgType::ERROR, __('You are requesting someone else\'s document | Вы запрашиваете чужой документ | Ви запитуєте чужий документ'));
                 redirect('/');
             }
             $abon = $model->get_abon((int)$this->route[F_ALIAS]);
@@ -265,7 +265,7 @@ class ConciliationController extends AbonController {
         // Упаковка таблицы по месяцам
         //
         if (!$events) {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Событий нет'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('No events | Событий нет | Події немає'));
             redirect();
         }
         $months         = array();
@@ -339,7 +339,7 @@ class ConciliationController extends AbonController {
 
 
 
-        View::setMeta(title: __('Акт звіряння розрахунків по договору %s', $A[Abon::F_ID]) . ' ' . __('за період') . ' ' . date("d.m.Y", $date1) . ' - ' . date("d.m.Y", $today));
+        View::setMeta(title: __('Reconciliation report of payments and services under the contract %s | Акт сверки платежей и услуг по договору %s | Акт звіряння платежів та послуг за договором %s', $A[Abon::F_ID]) . ' ' . __('for the period | за период | за період') . ' ' . date("d.m.Y", $date1) . ' - ' . date("d.m.Y", $today));
 
 
 //        debug($this->layout, '$this->layout');

@@ -59,20 +59,20 @@ foreach ($list_send as $a) {
         <span>
             <a href="<?= Email::URI_LIST ?>?<?= Notify::F_TODAY ?>=<?= mktime(hour: 0, minute: 0, second: 0, month: month($today)-1, day: 1, year: year($today)); ?>" 
                 target="_self"
-                title="<?= __('Сформировать список для предыдущего мексяца') ?>"
-                ><?= __('На предыдущий месяц') ?></a>
+                title="<?= __('Generate a list for the previous month | Сформировать список для предыдущего мексяца | Сформувати список для попереднього мексиканця') ?>"
+                ><?= __('For the previous month | На предыдущий месяц | На попередній місяць') ?></a>
         </span>&nbsp;&nbsp;&nbsp;&nbsp;
         <span>Список для месяца: <span class="badge text-bg-info fs-6"><?= date('m.Y', $today) ?></span> <span class="text-secondary"><?= (date('mY', $today) == date('mY') ? " Текущий" : "") ?></span></span>&nbsp;&nbsp;&nbsp;&nbsp;
         <span>
             <a href="<?= Email::URI_LIST ?>?<?= Notify::F_TODAY ?>=<?= mktime(hour: 0, minute: 0, second: 0, month: month($today)+1, day: 1, year: year($today)); ?>" 
                 target="_self"
-                title="<?= __('Сформировать список для следующего мексяца') ?>"
-                ><?= __('На следующий месяц') ?></a>
+                title="<?= __('Create a list for next month | Сформировать список для следующего мексяца | Сформувати список для наступного мексиця') ?>"
+                ><?= __('Next month | На следующий месяц | Наступного місяця') ?></a>
         </span>&nbsp;&nbsp;&nbsp;&nbsp;
         <hr>
         <span><label class="hover-pointer">Автоматически создавать счета <input type=checkbox name='<?= Email::REC ?>[<?= Email::F_AUTOCREATE_INV ?>]' value='1' <?= ($autocreate_invoice ? "checked" : "") ?>></label></span>&nbsp;&nbsp;&nbsp;&nbsp;
-        <button type="submit" class="btn btn-primary px-3" name='<?= Email::REC ?>[<?= Email::F_DO_SEND ?>]' value="1" ><?= __('Отправить отмеченным абонентам') ?></button>&nbsp;&nbsp;&nbsp;&nbsp;
-        <span title="<?= __('Очистити поле для відправки реальним отримувачам') ?>"><?= __('Тестовая отправка') ?>: <input type=text name='<?= Email::REC ?>[<?= Email::F_TO_TEST ?>]' value='<?= $to_test_send ?>'></span>&nbsp;&nbsp;&nbsp;&nbsp;
+        <button type="submit" class="btn btn-primary px-3" name='<?= Email::REC ?>[<?= Email::F_DO_SEND ?>]' value="1" ><?= __('Send to tagged subscribers | Отправить отмеченным абонентам | Надіслати зазначеним абонентам') ?></button>&nbsp;&nbsp;&nbsp;&nbsp;
+        <span title="<?= __('Clear the field to send to real recipients | Очистите поле для отправки реальным получателям. | Очистити поле для відправки реальним отримувачам') ?>"><?= __('Test sending | Тестовая отправка | Тестове відправлення') ?>: <input type=text name='<?= Email::REC ?>[<?= Email::F_TO_TEST ?>]' value='<?= $to_test_send ?>'></span>&nbsp;&nbsp;&nbsp;&nbsp;
     </div>
     <hr>
 
@@ -283,7 +283,7 @@ foreach ($list_send as $a) {
                             <?php foreach ($a[Invoice::TABLE] as $invoice): ?>
                                 <a class="btn btn-sm btn-outline-success m-1 ps-1 pe-2 py-1" 
                                     href="<?= Invoice::URI_EDIT ?>/<?= $invoice[Invoice::F_ID] ?>" 
-                                    title="<?= __('Редактировать выписанный счёт') ?>"
+                                    title="<?= __('Edit an issued invoice | Редактировать выписанный счёт | Редагувати виписаний рахунок') ?>"
                                     target="_blank"><img src="<?= Icons::SRC_ICON_INV_ACT_SHTAMP ?>" alt="INVOICE" height="28pt">&nbsp;<?= $invoice[Invoice::F_INV_NO] ?> | <?= $invoice[Invoice::F_INV_DATE_STR] ?> | <?= $invoice[Invoice::F_COST_ALL] ?> грн</a><br>
                             <?php endforeach ?>
                         <?php endif; ?>
@@ -303,9 +303,9 @@ foreach ($list_send as $a) {
                             ?>
                             <a class="btn btn-sm btn-outline-warning m-1 ps-1 pe-2 py-1"
                                 href="<?= Invoice::URI_EDIT ?>?<?= $query ?>"
-                                title="<?= __('Создание нового счёта за услуги на текущий месяц'); ?>"
+                                title="<?= __('Creating a new invoice for services for the current month | Создание нового счёта за услуги на текущий месяц | Створення нового рахунку за послуги на поточний місяць'); ?>"
                                 target="_blank"
-                                ><img src="<?= Icons::SRC_ICON_INV_ACT_SHTAMP ?>" alt="INVOICE" height="28pt"> <?= __('Создать счёт') ?></a>
+                                ><img src="<?= Icons::SRC_ICON_INV_ACT_SHTAMP ?>" alt="INVOICE" height="28pt"> <?= __('Create an account | Создать счёт | Створити рахунок') ?></a>
 
                             <?= url_email_subform(
                                 form_id:  $subform_id_prefix . $a[Abon::TABLE][Abon::F_ID],
@@ -313,11 +313,11 @@ foreach ($list_send as $a) {
                                 subject: EmailController::make_email_subject($a['agents'], $a[Abon::TABLE]), 
                                 body_html: EmailController::make_email_body($a['agents'], $a[Abon::TABLE], $a[Invoice::TABLE]), 
                                 src: Icons::SRC_ICON_EMAIL2, 
-                                text:  __('Написать письмо'),
+                                text:  __('Write a letter | Написать письмо | Написати лист'),
                                 height:"28pt", 
                                 target: '_blank',
                                 attributes: 'class="btn btn-sm btn-outline-warning m-1 ps-1 pe-2 py-1"',
-                                title: __('Написать уведомление через встроенную форму'),
+                                title: __('Write a notification using the built-in form | Написать уведомление через встроенную форму | Надіслати повідомлення через вбудовану форму'),
                                 register: 1,
                                 abon_id: $a[Abon::TABLE][Abon::F_ID],
                                 ); ?>

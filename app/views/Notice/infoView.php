@@ -77,12 +77,12 @@ $sms_print_num = 0;
         <div>
             <!-- Все уведомления -->
             <a href="<?=Notify::URI_LIST;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-1" target="_self" 
-                title="<?= __('Полный список уведомлений'); ?>"
-                ><span class="fw-bold">Inf</span> <?= __('Список'); ?></a>
+                title="<?= __('Full notifications list | Полный список уведомлений | Повний список сповіщень'); ?>"
+                ><span class="fw-bold">Inf</span> <?= __('List | Список | Перелік'); ?></a>
             <!-- Вернуться в карточку абонента -->
             <a href="<?=Abon::URI_VIEW;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-1" target="_self"
-                title="<?= __('Перейти в карточку абонента'); ?>"
-                ><span class="fw-bold">🅐</span> <?= __('Картка'); ?></a> <!-- ⒶⒶⒶ -->
+                title="<?= __('Go to subscriber card | Перейти в карточку абонента | Перейти до картки абонента'); ?>"
+                ><span class="fw-bold">🅐</span> <?= __('Card | Карта | Картка'); ?></a> <!-- ⒶⒶⒶ -->
         </div>
     </div>
    

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: localhost:3306
--- Время создания: Апр 29 2026 г., 20:31
+-- Время создания: Май 10 2026 г., 19:47
 -- Версия сервера: 8.0.44
 -- Версия PHP: 8.2.30
 
@@ -143,7 +143,7 @@ INSERT INTO `adm_menu` (`id`, `parent_id`, `module_id`, `anon_visible`, `visible
 (25, 22, NULL, 0, 1, 10, 'Документы', 'Документы', 'Документы', 'Редактор документов', 'Редактор документов', 'Редактор документов', '/docs', 0, NULL, NULL, NULL, NULL),
 (26, 22, NULL, 0, 1, 20, 'Файлы', 'Файлы', 'Файлы', 'Управление публичными и личными файлами, документами, изображениями', 'Управление публичными и личными файлами, документами, изображениями', 'Управление публичными и личными файлами, документами, изображениями', '/files', 0, NULL, NULL, NULL, NULL),
 (27, 19, 29, 0, 1, 10, 'Список ТП', 'Перелік ТП', 'TP List', '', '', '', '/tp', 0, NULL, NULL, 1, 1760911701),
-(28, 19, 31, 0, 1, 20, 'Предприятия', 'Підприємства', 'Firms', '', '', '', '/firms', 0, NULL, NULL, 1, 1760911769),
+(28, 2, 31, 0, 1, 200, 'Предприятия', 'Підприємства', 'Firms', '', '', '', '/firms', 0, NULL, NULL, 1, 1777518253),
 (29, 33, 43, 0, 1, 30, 'Список ППП', 'Перелік ППП', 'POP List', '', '', '', '/ppp?active=1', 0, NULL, NULL, 1, 1771768185),
 (30, 2, 0, 0, 1, 20, 'Последние подключенные', 'Останні підключені', 'Last connected', 'Список абонентов. Вверху последние подключенные ', 'Перелік абонентів. Вгорі останні підключені', 'The list of subscribers. At the top are the last connected ones', '/abon/last', 0, NULL, NULL, 1, 1765397016),
 (31, 0, 37, 0, 1, 120, ':: Уведомления', ':: Сповіщення', ':: Notices', '', '', '', '', 0, NULL, NULL, 1, 1765396835),
@@ -1168,6 +1168,79 @@ INSERT INTO `devices_types` (`id`, `title`, `description`, `icon`, `creation_dat
 -- --------------------------------------------------------
 
 --
+-- Структура таблицы `dev_acl_list`
+--
+
+DROP TABLE IF EXISTS `dev_acl_list`;
+CREATE TABLE `dev_acl_list` (
+  `id` int UNSIGNED NOT NULL,
+  `acl_table_id` int UNSIGNED NOT NULL COMMENT 'ID ACL-таблицы из dev_acl_tables',
+  `tp_id` int UNSIGNED DEFAULT NULL COMMENT 'ID техплощадки; NULL = глобальная запись для всех устройств',
+  `address` varchar(64) NOT NULL COMMENT 'IP-адрес или подсеть CIDR',
+  `comment` varchar(255) DEFAULT NULL COMMENT 'Комментарий к записи',
+  `is_enabled` tinyint(1) NOT NULL DEFAULT '1' COMMENT '1 = запись включена, 0 = выключена',
+  `creation_uid` int UNSIGNED DEFAULT NULL COMMENT 'Кто создал запись',
+  `creation_date` int UNSIGNED DEFAULT NULL COMMENT 'Дата создания записи',
+  `modified_uid` int UNSIGNED DEFAULT NULL COMMENT 'Кто изменил запись',
+  `modified_date` int UNSIGNED DEFAULT NULL COMMENT 'Дата изменения записи'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='ACL-записи устройств: IP и подсети по таблицам и техплощадкам';
+
+--
+-- ССЫЛКИ ТАБЛИЦЫ `dev_acl_list`:
+--   `acl_table_id`
+--       `dev_acl_tables` -> `id`
+--   `tp_id`
+--       `tp_list` -> `id`
+--   `creation_uid`
+--       `users` -> `id`
+--   `modified_uid`
+--       `users` -> `id`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `dev_acl_tables`
+--
+
+DROP TABLE IF EXISTS `dev_acl_tables`;
+CREATE TABLE `dev_acl_tables` (
+  `id` int UNSIGNED NOT NULL,
+  `name` varchar(64) NOT NULL COMMENT 'Уникальное имя ACL-таблицы: ABON, TRUSTED, OFFICE',
+  `description` varchar(255) DEFAULT NULL COMMENT 'Описание назначения таблицы',
+  `creation_uid` int UNSIGNED DEFAULT NULL COMMENT 'Кто создал запись',
+  `creation_date` int UNSIGNED DEFAULT NULL COMMENT 'Дата создания записи',
+  `modified_uid` int UNSIGNED DEFAULT NULL COMMENT 'Кто изменил запись',
+  `modified_date` int UNSIGNED DEFAULT NULL COMMENT 'Дата изменения записи'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='Справочник ACL-таблиц устройств';
+
+--
+-- ССЫЛКИ ТАБЛИЦЫ `dev_acl_tables`:
+--   `creation_uid`
+--       `users` -> `id`
+--   `modified_uid`
+--       `users` -> `id`
+--
+
+--
+-- Очистить таблицу перед добавлением данных `dev_acl_tables`
+--
+
+TRUNCATE TABLE `dev_acl_tables`;
+--
+-- Дамп данных таблицы `dev_acl_tables`
+--
+
+INSERT INTO `dev_acl_tables` (`id`, `name`, `description`, `creation_uid`, `creation_date`, `modified_uid`, `modified_date`) VALUES
+(1, 'ABON', 'Адреса и сети устройств абонентов, а также служебных устройств', 1, 1778430625, NULL, NULL),
+(2, 'DNS', 'Адреса разрешённых DNS-серверов', 1, 1778430625, NULL, NULL),
+(3, 'HACKERS', 'Адреса и сети, с которых была обнаружена сетевая атака; используются для блокировки доступа к устройствам, не\r\n  влияют на абонентский трафик', 1, 1778430625, NULL, NULL),
+(4, 'SERVICES', 'Адреса и сети доверенных сервисных устройств; доступ абонентов к ним должен сохраняться даже при отключённом\r\n  интернете', 1, 1778430625, NULL, NULL),
+(5, 'TRUSTED', 'Адреса устройств, для которых не выполняется проверка на сетевые атаки', 1, 1778430625, NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
 -- Структура таблицы `documents`
 --
 
@@ -1770,7 +1843,7 @@ TRUNCATE TABLE `security_attack_types`;
 --
 
 INSERT INTO `security_attack_types` (`id`, `title`, `threshold_count`, `analytical_interval`, `blocking_time`, `description`) VALUES
-(1, 'Сканування URL', 2, 3600, 2592000, 'Все не верные url запросы, которые регистрируются как ошибки в роутере: 404, отсутствие контроллера, отсутствие action');
+(1, 'Сканування URL', 3, 3600, 2592000, 'Все не верные url запросы, которые регистрируются как ошибки в роутере: 404, отсутствие контроллера, отсутствие action');
 
 -- --------------------------------------------------------
 
@@ -2345,6 +2418,27 @@ ALTER TABLE `devices_types`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Индексы таблицы `dev_acl_list`
+--
+ALTER TABLE `dev_acl_list`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `id` (`id`,`acl_table_id`,`tp_id`),
+  ADD KEY `idx_dev_acl_list_acl_table_id` (`acl_table_id`),
+  ADD KEY `idx_dev_acl_list_tp_id` (`tp_id`),
+  ADD KEY `idx_dev_acl_list_enabled` (`is_enabled`),
+  ADD KEY `idx_dev_acl_list_creation_uid` (`creation_uid`),
+  ADD KEY `idx_dev_acl_list_modified_uid` (`modified_uid`);
+
+--
+-- Индексы таблицы `dev_acl_tables`
+--
+ALTER TABLE `dev_acl_tables`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uniq_dev_acl_tables_name` (`name`),
+  ADD KEY `idx_dev_acl_tables_creation_uid` (`creation_uid`),
+  ADD KEY `idx_dev_acl_tables_modified_uid` (`modified_uid`);
+
+--
 -- Индексы таблицы `documents`
 --
 ALTER TABLE `documents`
@@ -2678,6 +2772,18 @@ ALTER TABLE `devices_types`
   MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
+-- AUTO_INCREMENT для таблицы `dev_acl_list`
+--
+ALTER TABLE `dev_acl_list`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT для таблицы `dev_acl_tables`
+--
+ALTER TABLE `dev_acl_tables`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
 -- AUTO_INCREMENT для таблицы `documents`
 --
 ALTER TABLE `documents`
@@ -2880,6 +2986,22 @@ ALTER TABLE `adr_regions`
 ALTER TABLE `devices_list`
   ADD CONSTRAINT `devices_list_ibfk_1` FOREIGN KEY (`tp_id`) REFERENCES `tp_list` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   ADD CONSTRAINT `devices_list_ibfk_2` FOREIGN KEY (`type_id`) REFERENCES `devices_types` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+--
+-- Ограничения внешнего ключа таблицы `dev_acl_list`
+--
+ALTER TABLE `dev_acl_list`
+  ADD CONSTRAINT `dev_acl_list_ibfk_1` FOREIGN KEY (`acl_table_id`) REFERENCES `dev_acl_tables` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  ADD CONSTRAINT `dev_acl_list_ibfk_2` FOREIGN KEY (`tp_id`) REFERENCES `tp_list` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  ADD CONSTRAINT `dev_acl_list_ibfk_3` FOREIGN KEY (`creation_uid`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  ADD CONSTRAINT `dev_acl_list_ibfk_4` FOREIGN KEY (`modified_uid`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+--
+-- Ограничения внешнего ключа таблицы `dev_acl_tables`
+--
+ALTER TABLE `dev_acl_tables`
+  ADD CONSTRAINT `dev_acl_tables_ibfk_1` FOREIGN KEY (`creation_uid`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  ADD CONSTRAINT `dev_acl_tables_ibfk_2` FOREIGN KEY (`modified_uid`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 --
 -- Ограничения внешнего ключа таблицы `firm_list`
@@ -3092,6 +3214,20 @@ USE `phpmyadmin`;
 
 --
 -- Метаданные для таблицы devices_types
+--
+-- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
+-- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
+-- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
+
+--
+-- Метаданные для таблицы dev_acl_list
+--
+-- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
+-- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;
+-- Ошибка считывания данных таблицы phpmyadmin.pma__tracking: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__tracking&#039;
+
+--
+-- Метаданные для таблицы dev_acl_tables
 --
 -- Ошибка считывания данных таблицы phpmyadmin.pma__column_info: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__column_info&#039;
 -- Ошибка считывания данных таблицы phpmyadmin.pma__table_uiprefs: #1142 - Команда SELECT запрещена пользователю &#039;billing&#039;@&#039;localhost&#039; для таблицы &#039;pma__table_uiprefs&#039;

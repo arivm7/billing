@@ -142,7 +142,7 @@ $rest[AbonRest::F_SUM_PP30A] ??= 0;
                     <?php endif; ?>
                     <!-- Кнопка Обновления остатков -->
                     <?php if (can_view(Module::MOD_ABON)) : ?>
-                        <a href="<?=Abon::URI_REST_UPDATE;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-0" target="_self" title="<?= __('Обновить данные по этому абоненту'); ?>" ><?= __('Обновить остатки'); ?></a>
+                        <a href="<?=Abon::URI_REST_UPDATE;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-0" target="_self" title="<?= __('Update data for this subscriber | Обновить данные по этому абоненту | Оновити дані щодо цього абонента'); ?>" ><?= __('Update balances | Обновить остатки | Оновити залишки'); ?></a>
                     <?php endif; ?>
                 </div>
             </div>
@@ -182,24 +182,24 @@ $rest[AbonRest::F_SUM_PP30A] ??= 0;
                 <?php if ($abon[Abon::F_IS_PAYER]): ?>
                 <!-- Остаток на лицевом счете -->
                 <tr>
-                    <td><strong><?=__('Balance');?>:</strong></td>
+                    <td><strong><?=__('Balance | Остаток | Залишок');?>:</strong></td>
                     <td><span <?=$abon_attr;?> 
-                        title='<?=__('Остаток на лицевом счету.') . CR . '----' . CR . get_description_by_warn($dutyWarn);?>'><?=number_format($rest[AbonRest::F_REST] ?? 0, 2, ",", " ");?></span></td>
+                        title='<?=__('Balance on the personal account | Остаток на лицевом счету | Залишок на особовому рахунку') . CR . '----' . CR . get_description_by_warn($dutyWarn);?>'><?=number_format($rest[AbonRest::F_REST] ?? 0, 2, ",", " ");?></span></td>
                 </tr>
                 <!-- Количество предоплаченных дней -->
                 <tr>
-                    <td><strong><?=__('Prepaid days');?>:</strong></td>
+                    <td><strong><?=__('Prepaid days | Предоплаченные дни | Сплачені дні');?>:</strong></td>
                     <td>
-                        <span class='text-secondary' title='<?=__('Количество предоплаченных дней');?>' ><?=$prepayed_html;?></span>
+                        <span class='text-secondary' title='<?=__('Number of prepaid days | Количество предоплаченных дней | Кількість передплачених днів');?>' ><?=$prepayed_html;?></span>
                     </td>
                 </tr>
                 <!-- Сумарная абонплата за месяц -->
                 <tr>
-                    <td><strong><?=__('Текущая абонплата');?>:</strong></td>
+                    <td><strong><?=__('Current subscription fee | Текущая абонплата | Поточна абонплата');?>:</strong></td>
                     <td>
                         <span 
                             <?=($rest[AbonRest::F_SUM_PP30A] ? "" : "class='text-secondary'");?> 
-                            title='<?=__('Сумарная абонплата за месяц, включает подневную и помесячную абонплату');?>' >
+                            title='<?=__('Total monthly subscription fee, includes daily and monthly subscription fees | Сумарная абонплата за месяц, включает подневную и помесячную абонплату | Сумарна абонплата за місяць, включає в денну та місячну абонплату');?>' >
                             <?=number_format(
                                 $rest[AbonRest::F_SUM_PP30A],
                                 (abs($rest[AbonRest::F_SUM_PP30A]) < 1 
@@ -208,7 +208,7 @@ $rest[AbonRest::F_SUM_PP30A] ??= 0;
                                                 ? 2 
                                                 : 0)),
                                 ",",
-                                " ");?> <span class="text-secondary"><?=__('грн/30 дней');?></span>
+                                " ");?> <span class="text-secondary"><?=__('UAH/30 days | грн/30 дней | грн/30 днів');?></span>
                         </span>
                     </td>
                 </tr>

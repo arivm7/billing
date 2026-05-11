@@ -59,7 +59,7 @@ class InvoiceController extends AppBaseController
             ) 
         {
             $rez = false;
-            MsgQueue::msg(MsgType::ERROR, __('F_ABON_ID error'));
+            MsgQueue::msg(MsgType::ERROR, __('F_ABON_ID error | F_ABON_ID ошибка | F_ABON_ID помилка'));
         }
 
         if  (
@@ -68,7 +68,7 @@ class InvoiceController extends AppBaseController
             ) 
         {
             $rez = false;
-            MsgQueue::msg(MsgType::ERROR, __('F_FIRM_AGENT_ID error'));
+            MsgQueue::msg(MsgType::ERROR, __('F_FIRM_AGENT_ID error | F_FIRM_AGENT_ID ошибка | F_FIRM_AGENT_ID помилка'));
         }
 
         if  (
@@ -77,7 +77,7 @@ class InvoiceController extends AppBaseController
             ) 
         {
             $rez = false;
-            MsgQueue::msg(MsgType::ERROR, __('F_FIRM_CONTRAGENT_ID error'));
+            MsgQueue::msg(MsgType::ERROR, __('F_FIRM_CONTRAGENT_ID error | F_FIRM_CONTRAGENT_ID ошибка | F_FIRM_CONTRAGENT_ID помилка'));
         }
 
         return $rez;
@@ -464,7 +464,7 @@ class InvoiceController extends AppBaseController
                 !$model->validate_id(Invoice::TABLE, intval($this->route[F_ALIAS]), Invoice::F_ID)
             ) 
         {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('ID счёта не указан или не верен'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Invoice ID is missing or invalid | ID счёта не указан или не верен | ID рахунку не вказаний або невірний'));
             redirect();
         }
 
@@ -533,7 +533,7 @@ class InvoiceController extends AppBaseController
                 !$model->validate_id(Invoice::TABLE, intval($this->route[F_ALIAS]), Invoice::F_ID)
             ) 
         {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('ID счёта не указан или не верен'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Invoice ID is missing or invalid | ID счёта не указан или не верен | ID рахунку не вказаний або невірний'));
             redirect();
         }
 
@@ -657,7 +657,7 @@ class InvoiceController extends AppBaseController
             $this->normalize($invoice);
             // debug($invoice, '$invoice', die:1);
             if (!$model->validate_id(Abon::TABLE, $invoice[Invoice::F_ABON_ID] ?? 0, Abon::F_ID)) {
-                MsgQueue::msg(MsgType::ERROR, __('При создании нового счёта нужно обязательно указать правильный ID абонента.'));
+                MsgQueue::msg(MsgType::ERROR, __('When creating a new invoice, you must specify a valid subscriber ID | При создании нового счёта нужно обязательно указать правильный ID абонента | При створенні нового рахунку потрібно обовʼязково вказати правильний ID абонента'));
                 redirect();
 
             }
@@ -697,14 +697,14 @@ class InvoiceController extends AppBaseController
                                 MsgQueue::msg(MsgType::ERROR, $model->errorInfo());
                                 redirect();
                             } else {
-                                MsgQueue::msg(MsgType::SUCCESS_AUTO, __("Счёт сформирован и добавлен в базу"));
+                                MsgQueue::msg(MsgType::SUCCESS_AUTO, __("Invoice has been generated and added to the database | Счёт сформирован и добавлен в базу | Рахунок сформовано та додано до бази"));
                                 redirect(Invoice::URI_EDIT . '/' . $invoice_id);
                             }
                         }
                         else
                         {
                             if ($model->update_row_by_id(Invoice::TABLE, $data, Invoice::F_ID)) {
-                                MsgQueue::msg(MsgType::SUCCESS_AUTO, __("Данные внесены"));
+                                MsgQueue::msg(MsgType::SUCCESS_AUTO, __("Data saved | Данные внесены | Дані внесено"));
                             } else {
                                 MsgQueue::msg(MsgType::ERROR, $model->errorInfo());
                             }
@@ -714,7 +714,7 @@ class InvoiceController extends AppBaseController
                         /**
                          * Данных нет. Просто сообщить
                          */
-                        MsgQueue::msg(MsgType::INFO_AUTO, __("нет изменений в данных"));
+                        MsgQueue::msg(MsgType::INFO_AUTO, __("No data changes | Нет изменений в данных | Немає змін у даних"));
                     }
                 }
             }
@@ -734,7 +734,7 @@ class InvoiceController extends AppBaseController
         // debug($agent_list, '$agent_list');
         // debug($contragent_list, '$contragent_list');
 
-        $title = empty($invoice[Invoice::F_ID]) ? __('Создание нового Счёта-фактуры, Акта') : __('Редактирование Счёта-фактуры, Акта');
+        $title = empty($invoice[Invoice::F_ID]) ? __('Creating a new invoice and act | Создание нового Счёта-фактуры, Акта | Створення нового Рахунку-фактури, Акту') : __('Editing invoice and act | Редактирование Счёта-фактуры, Акта | Редагування Рахунку-фактури, Акту');
         View::setMeta($title);
         $this->setVariables([
             'title'           => $title,
@@ -777,7 +777,7 @@ class InvoiceController extends AppBaseController
                 !$model->validate_id(Abon::TABLE, intval($this->route[F_ALIAS]), Abon::F_ID)
             ) 
         {
-            MsgQueue::msg(MsgType::ERROR_AUTO, __('Абон ID не указан'));
+            MsgQueue::msg(MsgType::ERROR_AUTO, __('Subscriber ID is not specified | ID абонента не указан | ID абонента не вказаний'));
             redirect();
         }
 
@@ -798,7 +798,7 @@ class InvoiceController extends AppBaseController
         $invoices = $pager->get_rows();
         // debug($invoices, '$invoices');
 
-        $title = __('Список Счетов, Актов');
+        $title = __('Invoices and acts list | Список Счетов, Актов | Список Рахунків, Актів');
         View::setMeta($title);
         $this->setVariables([
             'title'           => $title,

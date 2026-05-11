@@ -65,7 +65,7 @@ $count_lines_comment = get_count_rows_for_textarea($comment);
     <div class="card mb-4 w-100 min-w-700">
 
         <div class="card-header">
-            <h3><?= __('Редактирование записи абонента: ') ?><?=$form_data_fn(Abon::F_ID)?></h3>
+            <h3><?= __('Editing a subscriber record | Редактирование записи абонента | Редагування запису абонента') ?>: <?=$form_data_fn(Abon::F_ID)?></h3>
             <h5><span class="text-secondary"><span title="User ID"><?= $user[User::F_ID] ?></span> :: <span title="User Name"><?= $user[User::F_NAME_SHORT] ?></span> :: </span><span title="Abon Address"><?= h($form_data_fn(Abon::F_ADDRESS)); ?></h5>
         </div>
         <form action="<?=Abon::URI_UPDATE;?>/<?=$form_data_fn(Abon::F_ID);?>" method="post">
@@ -74,7 +74,7 @@ $count_lines_comment = get_count_rows_for_textarea($comment);
 
                 <div class="mb-3 row">
                     <!-- ID пользователя -->
-                    <label for="abon_user_id" class="col-sm-3 col-form-label"><?=__('ID пользователя');?></label>
+                    <label for="abon_user_id" class="col-sm-3 col-form-label"><?=__('User ID | ID пользователя | ID користувача');?></label>
                     <div class="col-sm-3">
                         <input type="number" class="form-control text-center" id="abon_user_id" name='<?=Abon::POST_REC;?>[<?=Abon::F_USER_ID;?>]' value='<?=intval($form_data_fn(Abon::F_USER_ID));?>' required>
                     </div>
@@ -82,7 +82,7 @@ $count_lines_comment = get_count_rows_for_textarea($comment);
 
                 <!-- Адрес подключения -->
                 <div class="mb-3 row">
-                    <label for="abon_address" class="col-sm-3 col-form-label"><?=__('Адрес подключения');?></label>
+                    <label for="abon_address" class="col-sm-3 col-form-label"><?=__('Connection address | Адрес подключения | Адреса підключення');?></label>
                     <div class="col-sm-9">
                         <textarea class="form-control" id="abon_address" rows="<?=$count_lines_addr;?>" name="<?= Abon::POST_REC;?>[<?= Abon::F_ADDRESS;?>]"><?=$address;?></textarea>
                     </div>
@@ -90,7 +90,7 @@ $count_lines_comment = get_count_rows_for_textarea($comment);
 
                 <!-- Координаты (Google Maps) -->
                 <div class="mb-3 row">
-                    <label for="abon_coord_gmap" class="col-sm-3 col-form-label">Координаты (Google Maps)</label>
+                    <label for="abon_coord_gmap" class="col-sm-3 col-form-label"><?= __('Coordinates (Google Maps) | Координаты (Google Maps) | Координати (Google Maps)') ?></label>
                     <div class="col-sm-9">
                         <input type="text" class="form-control text-center text-secondary" id="abon_coord_gmap" name="<?= Abon::POST_REC;?>[<?= Abon::F_COORD_GMAP;?>]" value="<?=($form_data_fn(Abon::F_COORD_GMAP) ? h($form_data_fn(Abon::F_COORD_GMAP)) : "");?>">
                     </div>
@@ -98,7 +98,7 @@ $count_lines_comment = get_count_rows_for_textarea($comment);
 
                 <div class="mb-3 row">
                     <!-- Дата подключения -->
-                    <label for="abon_date_join" class="col-sm-3 col-form-label">Дата подключения</label>
+                    <label for="abon_date_join" class="col-sm-3 col-form-label"><?= __('Connection date | Дата подключения | Дата підключення') ?></label>
                     <div class="col-sm-3">
                         <input type="date" class="form-control w-auto" id="abon_date_join" name="<?= Abon::POST_REC;?>[<?= Abon::F_DATE_JOIN;?>]" value="<?= $form_data_fn(Abon::F_DATE_JOIN) ? date('Y-m-d', $form_data_fn(Abon::F_DATE_JOIN)) : ''; ?>">
                     </div>
@@ -106,13 +106,13 @@ $count_lines_comment = get_count_rows_for_textarea($comment);
                     <div class="col-sm-3"></div>
                     <div class="col-sm-3 text-nowrap">
                         <input type="checkbox" class="form-check-input align-middle" id="abon_is_payer" name="<?= Abon::POST_REC;?>[<?= Abon::F_IS_PAYER;?>]" value="1" <?= $form_data_fn(Abon::F_IS_PAYER) ? 'checked' : '';?>>
-                        <label for="abon_is_payer" class="col-form-label align-middle text-start">Плательщик</label>
+                        <label for="abon_is_payer" class="col-form-label align-middle text-start"><?=__('Payer | Плательщик | Платник')?></label>
                     </div>
                 </div>
 
                 <!-- Примечания -->
                 <div class="mb-3 row">
-                    <label for="abon_comments" class="col-sm-3 col-form-label">Примечания</label>
+                    <label for="abon_comments" class="col-sm-3 col-form-label"><?=__('Notes | Примечания | Примітки')?><br>(<?=__('Service field | Служебное поле | Службове поле')?>)</label>
                     <div class="col-sm-9">
                         <textarea class="form-control" id="abon_comments" rows="<?=$count_lines_comment;?>" name="<?= Abon::POST_REC;?>[<?= Abon::F_COMMENTS;?>]"><?=$comment;?></textarea>
                     </div>
@@ -122,36 +122,36 @@ $count_lines_comment = get_count_rows_for_textarea($comment);
                 <div class="row mb-3 text-center text-secondary fs-7 border-1">
                     <div class="col-5 col-sm-5">
                         <div class="form-label">&nbsp;</div>
-                        <span class="form-control form-control-sm text-end border-0 text-secondary">Границы обслуживания</span>
+                        <span class="form-control form-control-sm text-end border-0 text-secondary"><?=__('Service Boundaries | Границы обслуживания | Межі обслуговування')?></span>
                     </div>
                     <!-- Каждая колонка — метка + поле -->
                     <div class="col-4 col-sm-2" title="<?=Abon::DESCRIPTIONS[Abon::F_DUTY_MAX_WARN][Lang::code()];?>">
-                        <label for="abon_duty_max_warn" class="form-label">Предупреждение</label>
+                        <label for="abon_duty_max_warn" class="form-label"><?=__('Warning | Предупреждение | Попередження')?></label>
                         <input type="number" class="form-control form-control-sm text-center text-secondary" id="abon_duty_max_warn" name="<?= Abon::POST_REC;?>[<?= Abon::F_DUTY_MAX_WARN;?>]" value="<?= h($form_data_fn(Abon::F_DUTY_MAX_WARN));?>">
                     </div>
                     <div class="col-4 col-sm-2" title="<?=Abon::DESCRIPTIONS[Abon::F_DUTY_MAX_OFF][Lang::code()];?>">
-                        <label for="abon_duty_max_off" class="form-label">Отключение</label>
+                        <label for="abon_duty_max_off" class="form-label"><?=__('Shutdown | Отключение | Відключення')?></label>
                         <input type="number" class="form-control form-control-sm text-center text-secondary" id="abon_duty_max_off" name="<?= Abon::POST_REC;?>[<?= Abon::F_DUTY_MAX_OFF;?>]" value="<?= h($form_data_fn(Abon::F_DUTY_MAX_OFF));?>">
                     </div>
                     <div class="col-2 col-sm-1" title="<?=Abon::DESCRIPTIONS[Abon::F_DUTY_AUTO_OFF][Lang::code()];?>">
-                        <label for="abon_duty_auto_off" class="form-label">Откл.</label>
+                        <label for="abon_duty_auto_off" class="form-label"><?=__('Off | Откл. | Вимик.')?></label>
                         <div class="d-flex justify-content-center align-items-center mt-1">
                             <input type="checkbox" class="form-check-input" id="abon_duty_auto_off" name="<?= Abon::POST_REC;?>[<?= Abon::F_DUTY_AUTO_OFF;?>]" value="1" <?= $form_data_fn(Abon::F_DUTY_AUTO_OFF) ? 'checked' : '';?>>
                         </div>
                     </div>
                     <div class="col-4 col-sm-2" title="<?=Abon::DESCRIPTIONS[Abon::F_DUTY_WAIT_DAYS][Lang::code()];?>">
-                        <label for="abon_duty_wait_days" class="form-label">Ожидание</label>
+                        <label for="abon_duty_wait_days" class="form-label"><?=__('Expectation | Ожидание | Очікування')?></label>
                         <input type="number" class="form-control form-control-sm text-center text-secondary" id="abon_duty_wait_days" name="<?= Abon::POST_REC;?>[<?= Abon::F_DUTY_WAIT_DAYS;?>]" value="<?= h($form_data_fn(Abon::F_DUTY_WAIT_DAYS));?>">
                     </div>
                 </div>
             </div>
 
             <div class="card-footer text-center">
-                <button type="submit" class="btn btn-primary px-4"><?= __('Save'); ?></button>
+                <button type="submit" class="btn btn-primary px-4"><?= __('Save | Сохранить | Зберегти'); ?></button>
                 <?php if ($form_data_fn(Abon::F_USER_ID) == App::get_user_id()) : ?>
-                    <a href="/my" class="btn btn-secondary px-4"><?= __('Вернуться'); ?></a>
+                    <a href="/my" class="btn btn-secondary px-4"><?= __('Return | Вернуться | Повернутись'); ?></a>
                 <?php else : ?>
-                    <a href="<?=Abon::URI_VIEW;?>/<?=$form_data_fn(Abon::F_USER_ID);?>" class="btn btn-secondary px-4"><?= __('Вернуться'); ?></a>
+                    <a href="<?=Abon::URI_VIEW;?>/<?=$form_data_fn(Abon::F_USER_ID);?>" class="btn btn-secondary px-4"><?= __('Return | Вернуться | Повернутись'); ?></a>
                 <?php endif; ?>
             </div>
 

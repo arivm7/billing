@@ -131,7 +131,7 @@ class ErrorHandler {
                         . "DUMP: \n"
                         . var_dump_ret($dump)."\n====\n";
 //                $log->error($msg);
-                error_log(message: "[" . date('Y-m-d H:i:s') . "] " . $msg, message_type: 3, destination: DIR_LOG.'/'.self::LOG_FILENAME);
+                error_log(message: "\n[" . date('Y-m-d H:i:s') . "] " . $msg, message_type: 3, destination: DIR_LOG.'/'.self::LOG_FILENAME);
             }
         }
     }

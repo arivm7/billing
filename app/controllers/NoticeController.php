@@ -27,15 +27,11 @@ use billing\core\base\View;
 use billing\core\MsgQueue;
 use billing\core\MsgType;
 use billing\core\Pagination;
-use config\Notice;
 use config\tables\Abon;
 use config\tables\AbonRest;
 use config\tables\Module;
 use config\tables\Notify;
-use config\tables\PA;
 use config\tables\Pay;
-use config\tables\Ppp;
-use config\tables\TP;
 use config\tables\User;
 
 
@@ -144,7 +140,7 @@ class NoticeController extends AppBaseController
 
         $abon_id = $this->route[F_ALIAS] ?? 0;
         if (!$model->validate_id(Abon::TABLE, $abon_id, Abon::F_ID)) {
-            MsgQueue::msg(MsgType::ERROR, __('ID абонента не верен'));
+            MsgQueue::msg(MsgType::ERROR, __('Subscriber ID is not correct | ID абонента не верен | ID абонента не вірний'));
             redirect();
         }
 
@@ -157,7 +153,7 @@ class NoticeController extends AppBaseController
         if (isset($_POST[Notify::POST_REC]) && is_array($_POST[Notify::POST_REC])) {
             $post_rec = $_POST[Notify::POST_REC];
             if ($abon_id !=  $_POST[Notify::POST_REC][Notify::F_ABON_ID]) {
-                MsgQueue::msg(MsgType::ERROR_AUTO, __('Не верные данные')); // !!! нужно логировать. Возможно вмешательство
+                MsgQueue::msg(MsgType::ERROR_AUTO, __('Incorrect data | Не верные данные | Неправильні дані')); // !!! нужно логировать. Возможно вмешательство
                 redirect();
             }
             foreach ($post_rec['msg'] as $notice_rec) {
@@ -171,9 +167,9 @@ class NoticeController extends AppBaseController
                     Notify::F_TEXT => $notice_rec['text'],
                 ];
                 if (Notify::save($notice)) {
-                    MsgQueue::msg(MsgType::SUCCESS, __('Сообщение зарегистрировано'));
+                    MsgQueue::msg(MsgType::SUCCESS, __('Message registered | Сообщение зарегистрировано | Повідомлення зареєстровано'));
                 } else {
-                    MsgQueue::msg(MsgType::ERROR, __('Ошибка регистрации сообщения') . ': ' . $model->errorInfo());
+                    MsgQueue::msg(MsgType::ERROR, __('Message registration error | Ошибка регистрации сообщения | Помилка реєстрації повідомлення') . ': ' . $model->errorInfo());
                 }
                 redirect();
             }
@@ -190,7 +186,7 @@ class NoticeController extends AppBaseController
         // debug($rest, '$rest');
         // debug($ppp_list, '$ppp_list');
 
-        $title = __('Информация для отправки абоненту') . ' ' . $abon[Abon::F_ID];
+        $title = __('Information to be sent to the subscriber | Информация для отправки абоненту | Інформація для надсилання абоненту') . ' ' . $abon[Abon::F_ID];
         View::setMeta($title);
         $this->setVariables([
             'title' => $title,
@@ -232,7 +228,7 @@ class NoticeController extends AppBaseController
 
         $abon_id = $this->route[F_ALIAS] ?? 0;
         if (!$model->validate_id(Abon::TABLE, $abon_id, Abon::F_ID)) {
-            MsgQueue::msg(MsgType::ERROR, __('ID абонента не верен'));
+            MsgQueue::msg(MsgType::ERROR, __('Subscriber ID is not correct | ID абонента не верен | ID абонента не вірний'));
             redirect();
         }
 
@@ -252,7 +248,7 @@ class NoticeController extends AppBaseController
          */
         $notice_list = $pager->get_rows();
 
-        $title = __('Уведомления абонента') . ' ' . $abon[Abon::F_ID];
+        $title = __('Subscriber notifications | Уведомления абонента | Повідомлення абонента') . ' ' . $abon[Abon::F_ID];
         View::setMeta($title);
         $this->setVariables([
             'title' => $title,
@@ -381,7 +377,7 @@ class NoticeController extends AppBaseController
                         )";
             // echo "SQL: ".$sql."<br />";
             $rows = $model->get_rows_by_sql($sql);
-            MsgQueue::msg(MsgType::INFO, __("Всего получено строк") . ": ".count($rows).".");
+            MsgQueue::msg(MsgType::INFO, __("Total lines received | Всего получено строк | Усього отримано рядків") . ": ".count($rows).".");
 
 
 
@@ -441,7 +437,7 @@ class NoticeController extends AppBaseController
                         }
                     }
                 }
-                MsgQueue::msg(MsgType::INFO, __("Отсортировано строк") . ": $count. Ок");
+                MsgQueue::msg(MsgType::INFO, __("Rows sorted | Отсортировано строк | Відсортовано рядків") . ": $count. Ок");
 
 
                 $COUNT_SELECTED = 0;
@@ -498,14 +494,14 @@ class NoticeController extends AppBaseController
                     if ($line['do_send']) { $COUNT_SELECTED++; }
 
                 }
-                MsgQueue::msg(MsgType::INFO, __("Отмечено для отправки уведомлений") . ": ".$COUNT_SELECTED);
+                MsgQueue::msg(MsgType::INFO, __("Marked for sending notifications | Отмечено для отправки уведомлений | Відмічено для надсилання повідомлень") . ": ".$COUNT_SELECTED);
 
             }
 
         }
 
 
-        $title = __('Генерация скрипта СМС-рассылки');
+        $title = __('Generating an SMS script | Генерация скрипта СМС-рассылки | Генерація скрипту СМС-розсилки');
         View::setMeta($title);
         $this->setVariables([
             'title' => $title,
@@ -522,7 +518,6 @@ class NoticeController extends AppBaseController
         ]);
 
     }
-
 
 
 

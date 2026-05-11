@@ -47,7 +47,7 @@ use config\tables\User;
 
                     <div class='d-flex justify-content-between align-items-center'>
                         <div>
-                            <h3 class="fs-4"><?= $title ?> <span class="text-secondary">[<?= __('AID') ?> <?= num_len($abon[Abon::F_ID], 6) ?>]</span></h3>
+                            <h3 class="fs-4"><?= $title ?> <span class="text-secondary">[AID <?= num_len($abon[Abon::F_ID], 6) ?>]</span></h3>
                             <h5 class="text-secondary fs-6">
                                 <span title="User ID"><?= num_len($user[User::F_ID], 6); ?></span> :: 
                                 <span title="User Name"><?= h($user[User::F_NAME_SHORT]); ?></span>
@@ -58,7 +58,7 @@ use config\tables\User;
                             </h5>
                         </div>
                         <div>
-                            <a href="<?=Abon::URI_VIEW;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm" target="_self" title="<?= __('Перейти к карточке абонента'); ?>"><span class="fw-bold">🅐</span> <?= __('Картка'); ?></a> <!-- ⒶⒶ🅐Ⓐ(A) -->
+                            <a href="<?=Abon::URI_VIEW;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm" target="_self" title="<?= __('Go to subscriber card | Перейти к карточке абонента | Перейти до картки абонента'); ?>"><span class="fw-bold">🅐</span> <?= __('Картка'); ?></a> <!-- ⒶⒶ🅐Ⓐ(A) -->
                         </div>
                     </div>
 

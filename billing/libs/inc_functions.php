@@ -92,11 +92,11 @@ function get_html_pa_status(PAStatus $status): string {
 
 function get_html_abon_ip_status(bool|null $status): string {
     if ($status === null) {
-        $html = "<img src='".Icons::SRC_ICON_MIK_OFF."' alt='[-]' height='24rem' title='Нет данных с микротика'></img>";
+        $html = "<img src='".Icons::SRC_ICON_MIK_OFF."' alt='[-]' height='24rem' title='".__('No data from Mikrotik | Нет данных с микротика | Немає даних з мікротика')."'></img>";
     } elseif ($status === true) {
-        $html = "<img src='".Icons::SRC_ICON_MIK_ABON_IP_ON."' alt='[On]' height='24rem' title='IP есть и разрешён'></img>";
+        $html = "<img src='".Icons::SRC_ICON_MIK_ABON_IP_ON."' alt='[On]' height='24rem' title='".__('IP is available and allowed | IP есть и разрешён | IP є і дозволена')."'></img>";
     } else {
-        $html = "<img src='".Icons::SRC_ICON_MIK_ABON_IP_OFF_RED."' alt='[Off]' height='24rem' title='IP есть. Запрещён'></img>";
+        $html = "<img src='".Icons::SRC_ICON_MIK_ABON_IP_OFF_RED."' alt='[Off]' height='24rem' title='".__('There is an IP. Prohibited | IP есть. Запрещён | IP є. Заборонена')."'></img>";
     }
     return $html;
 }
@@ -121,7 +121,7 @@ function get_html_btn_abon_ip_turn(int $tp_id, string $ip, bool|int $enable, str
         "", null, PHP_QUERY_RFC1738 // PHP_QUERY_RFC3986
     );
 
-    $title = ($title ?: ($enable ? __('Включение IP-адреса в таблице ABON на микротике') : __('Отключение IP-адреса в таблице ABON на микротике')));
+    $title = ($title ?: ($enable ? __('Including an IP address in the ABON table on Mikrotik | Включение IP-адреса в таблице ABON на микротике | Увімкнення IP-адреси в таблиці ABON на мікротиці') : __('Disabling an IP address in the ABON table on Mikrotik | Отключение IP-адреса в таблице ABON на микротике | Відключення IP-адреси у таблиці ABON на мікротиці')));
     $src = ($enable ? Icons::SRC_ICON_MIK_ABON_IP_TURN_ON : Icons::SRC_ICON_MIK_ABON_IP_TURN_OFF);
     $alt = ($enable ? '[On]' : '[Off]');
 
@@ -153,7 +153,7 @@ function get_html_btn_serv_ena(int|null $pa_id = null, array|null $pa = null, bo
         $pa = $model->get_pa($pa_id);
         if (empty($pa)) {
             // throw new Exception("PA ID No Valid");
-            MsgQueue::msg(MsgType::ERROR, __('Прайсовый фрагмент не верен'));
+            MsgQueue::msg(MsgType::ERROR, __('Price fragment is not correct | Прайсовый фрагмент не верен | Прайсовий фрагмент не вірний'));
             if (can_use(Module::MOD_WEB_DEBUG)) {
                 MsgQueue::msg(MsgType::ERROR, "pa_id: [{$pa_id}]");
                 if (is_array($pa)) {
@@ -172,9 +172,9 @@ function get_html_btn_serv_ena(int|null $pa_id = null, array|null $pa = null, bo
         )
     {
         // throw new Exception("PA Struct No Valid");
-        MsgQueue::msg(MsgType::ERROR, __('Ошибка структуры прайсового фрагмента'));
+        MsgQueue::msg(MsgType::ERROR, __('Price fragment structure error | Ошибка структуры прайсового фрагмента | Помилка структури прайсового фрагменту'));
         if (can_use(Module::MOD_WEB_DEBUG)) {
-            MsgQueue::msg(MsgType::ERROR, __('Проверяемые поля:'));
+            MsgQueue::msg(MsgType::ERROR, __('Validated fields | Проверяемые поля | Перевірені поля') . ':');
             MsgQueue::msg(MsgType::ERROR, PA::F_ID . ': ' . $pa[PA::F_ID]);
             MsgQueue::msg(MsgType::ERROR, PA::F_TP_ID . ': ' . $pa[PA::F_TP_ID]);
             // MsgQueue::msg(MsgType::ERROR, PA::F_NET_IP . ': ' . $pa[PA::F_NET_IP] . ' (с валидацией)');
@@ -202,20 +202,20 @@ function get_html_btn_serv_ena(int|null $pa_id = null, array|null $pa = null, bo
     $title = ($title ?: 
         ($ena 
             ?   ($force 
-                    ? __("Форсированно включить услугу:".CR
-                        . "1. Обнулить поле date_end".CR
-                        . "2. Активировать IP " . ($pa[PA::F_NET_IP] ?: "")." на микротике".CR
-                        . "Игнорирует количество дней паузы.".CR
-                        . "Использовать с осторожностью, чтобы не нарушать начисление.")
-                    : __("Отменить паузу -- снова активировать этот прайс:".CR
-                        . "1. Обнулить поле date_end".CR
-                        . "2. Активировать IP " . ($pa[PA::F_NET_IP] ?: "")." на микротике".CR
-                        . "Использовать для недавно закрытого прайса (не более ".UNPAUSED_DAYS_ENABLE." прайсовых дней), ".CR
-                        . "чтобы не нарушать начисление.")
+                    ? __('Force enable service | Форсированно включить услугу | Примусово увімкнути послугу') . ":" . CR
+                        . "1. " . __('Reset date_end field | Обнулить поле date_end | Обнулити поле date_end') . CR
+                        . "2. " . __('Activate IP [%s] on MikroTik | Активировать IP [%s] на микротике | Активувати IP [%s] на MikroTik', ($pa[PA::F_NET_IP] ?: "")) . " " . CR
+                        . __('Important | Важно | Важливо') . ": ". __('Ignores pause days count | Игнорирует количество дней паузы | Ігнорує кількість днів паузи') ."." . CR
+                        . __('Use carefully to avoid billing issues | Использовать с осторожностью, чтобы не нарушать начисление | Використовувати обережно, щоб не порушити нарахування') . "."
+                    : __("Cancel pause — reactivate this tariff: | Отменить паузу -- снова активировать этот прайс: | Скасувати паузу -- знову активувати цей тариф:".CR
+                        . "1. " . __('Reset date_end field | Обнулить поле date_end | Обнулити поле date_end') .CR
+                        . "2. " . __('Activate IP [%s] on MikroTik | Активировать IP [%s] на микротике | Активувати IP [%s] на MikroTik', ($pa[PA::F_NET_IP] ?: "")) . " " . CR
+                        . __('Use for recently closed tariff (not more than %s tariff days) | Использовать для недавно закрытого прайса (не более %s прайсовых дней) | Використовувати для нещодавно закритого тарифу (не більше %s тарифних днів)', UNPAUSED_DAYS_ENABLE) . ", " . CR
+                        . __('to avoid billing issues | чтобы не нарушать начисление | щоб не порушити нарахування') . ".")
                 )
-            : __('Поставить на паузу сейчас: '.CR
-                . '1. Закрывает текущий прайсовый фрагмент '.CR
-                . '2. отключает IP адрес на ТП, по возможности.') 
+            : __('Pause now | Поставить на паузу сейчас | Поставити на паузу зараз') . ': ' . CR
+                . '1. ' . __('Closes current tariff fragment | Закрывает текущий прайсовый фрагмент | Закриває поточний тарифний фрагмент') . CR
+                . '2. ' . __('Disables IP address on technical platform if possible | отключает IP адрес на ТП, по возможности | відключає IP адресу на ТП, по можливості') . '.'
         ));
 
     $src = ($ena ? ($force ? Icons::SRC_UNPAUSE_FORCE : Icons::SRC_UNPAUSE) : Icons::SRC_PAUSE);
@@ -243,10 +243,10 @@ function get_html_btn_clone(int|null $pa_id = null, string $title = '', string $
     );
 
     $title = ($title ?: 
-        "Клонировать этот прайс. " . CR
-        . "Создать открытый прайсовый фрагмент, активированный текущей датой " . CR
-        . "с сетевыми параметрами этого фрагмента " . CR
-        . "без изменения параметров на ТП."
+        __('Clone this tariff | Клонировать этот прайс | Клонувати цей тариф') . ". " . CR
+        . __('Create an open tariff fragment activated by current date | Создать открытый прайсовый фрагмент, активированный текущей датой | Створити відкритий тарифний фрагмент, активований поточною датою') . CR
+        . __('with network parameters of this fragment | с сетевыми параметрами этого фрагмента | з мережевими параметрами цього фрагмента') . CR
+        . __('without changing parameters on the technical platform | без изменения параметров на технической площадке | без зміни параметрів на технічному майданчику') . "."    
     );
     
     $src = Icons::SRC_CLONE;
@@ -273,15 +273,15 @@ function get_html_btn_pa_delete(int|null $pa_id = null, string $title = '', stri
     );
 
     $title = ($title ?: 
-        "Удалить этот прайсовый фрагмент. " . CR
-        . "Влияет на начисление услуги, лучше это не нажимать."
+        __('Delete this tariff fragment | Удалить этот прайсовый фрагмент | Видалити цей тарифний фрагмент') . ". " . CR
+        . __('Affects service billing. Better not press this | Влияет на начисление услуги. Лучше это не нажимать | Впливає на нарахування послуги. Краще це не натискати') . "."
     );
     
     $src = Icons::SRC_DELETE;
     $alt = '[x]';
 
     $html = "<a ".($options ?:'')." href='".Api::URI_CMD."?{$query}' title='{$title}' target='{$target}' "
-                . "onclick=\"return confirm('Подтвердите удаление прайсового фрагмента. Влияет на начисление за услуги.');\""
+                . "onclick=\"return confirm(".__('Confirm deletion of tariff fragment. Affects service billing | Подтвердите удаление прайсового фрагмента. Влияет на начисление за услуги | Підтвердіть видалення тарифного фрагмента. Впливає на нарахування за послуги').".');\""
                 . ">"
                 ."<img src='{$src}' alt='{$alt}' height='24rem'></img>"
                 . "</a>";

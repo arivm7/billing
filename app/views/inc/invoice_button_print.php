@@ -42,7 +42,7 @@ Lang::load_inc(__FILE__);
     <button type="button" class="btn btn-sm btn-outline-success me-1 px-1 py-1"
         data-bs-toggle="modal" 
         data-bs-target="#printModalForm_<?= $item[Invoice::F_ID] ?>"
-        title="<?= __('Печать Счёта/Акта разными способами') ?>">
+        title="<?= __('Printing an Invoice/Act in different ways | Печать Счёта/Акта разными способами | Друк Рахунки/Акту різними способами') ?>">
         <img src="<?= Icons::SRC_ICON_PRINT ?>" alt="Печать" height="28px">
     </button>
 
@@ -51,7 +51,7 @@ Lang::load_inc(__FILE__);
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="printModalFormLabel_<?= $item[Invoice::F_ID] ?>"><?= __('Выберите форму печати Счёта/Акта') ?> #<?= $item[Invoice::F_ID] ?></h1>
+                    <h1 class="modal-title fs-5" id="printModalFormLabel_<?= $item[Invoice::F_ID] ?>"><?= __('Select the form for printing the Invoice/Act | Выберите форму печати Счёта/Акта | Виберіть форму друку Рахунки/Акту') ?> #<?= $item[Invoice::F_ID] ?></h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">

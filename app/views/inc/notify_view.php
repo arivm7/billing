@@ -55,15 +55,15 @@ Lang::load_inc(__FILE__);
             <?php if (can_add([Module::MOD_NOTICE])) : ?>
                 <a href="<?=Notify::URI_INFO;?>/<?=$abon[Abon::F_ID];?>" 
                     class="btn btn-outline-info btn-sm me-1" target="_self" 
-                    title="<?= __('List of Information messages'); ?>"
+                    title="<?= __('List of Information messages | Список информационных сообщений | Список інформаційних повідомлень'); ?>"
                     ><span class="fw-bold">SMS</span> <?= __('Informers'); ?></a>
             <?php endif; ?>
             <!-- Все уведомления -->
             <?php if (can_add([Module::MOD_NOTICE])) : ?>
                 <a href="<?=Notify::URI_LIST;?>/<?=$abon[Abon::F_ID];?>" 
                     class="btn btn-outline-info btn-sm me-1" target="_self" 
-                    title="<?= __('Полный список уведомлений'); ?>"
-                    ><span class="fw-bold">Inf</span> <?= __('Список'); ?></a>
+                    title="<?= __('Full notifications list | Полный список уведомлений | Повний список сповіщень'); ?>"
+                    ><span class="fw-bold">Inf</span> <?= __('List | Список | Перелік'); ?></a>
             <?php endif; ?>
         </div>
         <div>

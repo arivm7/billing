@@ -46,24 +46,24 @@ Lang::load_inc(__FILE__);
 -->
 
 <!-- Печатать Счёт=1 Акт=1 Штамп=1 -->
-<a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=1&<?= Invoice::F_URI_ACT ?>=1&<?= Invoice::F_URI_SHTAMP ?>=1" class="btn btn-sm btn-outline-success me-1 my-1 px-1 py-1" title="<?= __('Показать для вывода на печать: '.CR.'Счёт, Акт и факсимиле'); ?>" target="_blank">
-    <img src="<?= Icons::SRC_ICON_INV_ACT_SHTAMP ?>" alt="Счёт-Акт с подписью" height="38px"></a>
+<a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=1&<?= Invoice::F_URI_ACT ?>=1&<?= Invoice::F_URI_SHTAMP ?>=1" class="btn btn-sm btn-outline-success me-1 my-1 px-1 py-1" title="<?= __('Show for printing | Показать для вывода на печать | Показати для виведення на друк'). ': ' . CR . __('Invoice, Act and facsimile | Счёт, Акт и факсимиле | Рахунок, Акт та факсиміле'); ?>" target="_blank">
+    <img src="<?= Icons::SRC_ICON_INV_ACT_SHTAMP ?>" alt="<?= __('Invoice with signature | Счёт-Акт с подписью | Рахунок-Акт за підписом') ?>" height="38px"></a>
     <!-- <i class="bi bi-printer"></i> -->
 <!-- Печатать Счёт=1 Акт=1 Штамп=0 -->
-<a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=1&<?= Invoice::F_URI_ACT ?>=1&<?= Invoice::F_URI_SHTAMP ?>=0" class="btn btn-sm btn-outline-success me-1 my-1 px-1 py-1" title="<?= __('Показать для вывода на печать: '.CR.'Счёт, Акт'); ?>" target="_blank">
-    <img src="<?= Icons::SRC_ICON_INV_ACT ?>" alt="Счёт-Акт" height="38px"></a>
+<a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=1&<?= Invoice::F_URI_ACT ?>=1&<?= Invoice::F_URI_SHTAMP ?>=0" class="btn btn-sm btn-outline-success me-1 my-1 px-1 py-1" title="<?= __('Show for printing | Показать для вывода на печать | Показати для виведення на друк'). ': ' . CR . __('Account, Act | Счёт, Акт | Рахунок, Акт'); ?>" target="_blank">
+    <img src="<?= Icons::SRC_ICON_INV_ACT ?>" alt="<?= __('Invoice-Act | Счёт-Акт | Рахунок-Акт') ?>" height="38px"></a>
 <!-- Печатать Счёт=1 Акт=0 Штамп=1 -->
-<a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=1&<?= Invoice::F_URI_ACT ?>=0&<?= Invoice::F_URI_SHTAMP ?>=1" class="btn btn-sm btn-outline-success me-1 my-1 px-1 py-1" title="<?= __('Показать для вывода на печать: '.CR.'Счёт с факсимиле'); ?>" target="_blank">
-    <img src="<?= Icons::SRC_ICON_INV_SHTAMP ?>" alt="Счёт с подписью" height="38px"></a>
+<a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=1&<?= Invoice::F_URI_ACT ?>=0&<?= Invoice::F_URI_SHTAMP ?>=1" class="btn btn-sm btn-outline-success me-1 my-1 px-1 py-1" title="<?= __('Show for printing | Показать для вывода на печать | Показати для виведення на друк'). ': ' . CR . __('Invoice with facsimile | Счёт с факсимиле | Рахунок з факсиміле'); ?>" target="_blank">
+    <img src="<?= Icons::SRC_ICON_INV_SHTAMP ?>" alt="<?= __('Invoice with signature | Счёт с подписью | Рахунок з підписом') ?>" height="38px"></a>
 <!-- Печатать Счёт=1 Акт=0 Штамп=0 -->
-<a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=1&<?= Invoice::F_URI_ACT ?>=0&<?= Invoice::F_URI_SHTAMP ?>=0" class="btn btn-sm btn-outline-success me-1 my-1 px-1 py-1" title="<?= __('Показать для вывода на печать: '.CR.'Счёт'); ?>" target="_blank">
-    <img src="<?= Icons::SRC_ICON_INV ?>" alt="Счёт" height="38px"></a>
+<a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=1&<?= Invoice::F_URI_ACT ?>=0&<?= Invoice::F_URI_SHTAMP ?>=0" class="btn btn-sm btn-outline-success me-1 my-1 px-1 py-1" title="<?= __('Show for printing | Показать для вывода на печать | Показати для виведення на друк'). ': ' . CR . __('Check | Счёт | Рахунок'); ?>" target="_blank">
+    <img src="<?= Icons::SRC_ICON_INV ?>" alt="<?= __('Check | Счёт | Рахунок') ?>" height="38px"></a>
 <!-- Печатать Счёт=0 Акт=1 Штамп=1 -->
-<a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=0&<?= Invoice::F_URI_ACT ?>=1&<?= Invoice::F_URI_SHTAMP ?>=1" class="btn btn-sm btn-outline-success me-1 my-1 px-1 py-1" title="<?= __('Показать для вывода на печать: '.CR.'Акт с факсимиле'); ?>" target="_blank">
-    <img src="<?= Icons::SRC_ICON_ACT_SHTAMP ?>" alt="Акт с подписью" height="38px"></a>
+<a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=0&<?= Invoice::F_URI_ACT ?>=1&<?= Invoice::F_URI_SHTAMP ?>=1" class="btn btn-sm btn-outline-success me-1 my-1 px-1 py-1" title="<?= __('Show for printing | Показать для вывода на печать | Показати для виведення на друк'). ': ' . CR . __('Act with facsimile | Акт с факсимиле | Акт із факсиміле'); ?>" target="_blank">
+    <img src="<?= Icons::SRC_ICON_ACT_SHTAMP ?>" alt="<?= __('Act with signature | Акт с подписью | Акт із підписом') ?>" height="38px"></a>
 <!-- Печатать Счёт=0 Акт=1 Штамп=0 -->
-<a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=0&<?= Invoice::F_URI_ACT ?>=1&<?= Invoice::F_URI_SHTAMP ?>=0" class="btn btn-sm btn-outline-success me-1 my-1 px-1 py-1" title="<?= __('Показать для вывода на печать: '.CR.'Акт'); ?>" target="_blank">
-    <img src="<?= Icons::SRC_ICON_ACT ?>" alt="Акт" height="38px"></a>
+<a href="<?= Invoice::URI_PRINT ?>/<?= $item[Invoice::F_ID] ?>?<?= Invoice::F_URI_INV ?>=0&<?= Invoice::F_URI_ACT ?>=1&<?= Invoice::F_URI_SHTAMP ?>=0" class="btn btn-sm btn-outline-success me-1 my-1 px-1 py-1" title="<?= __('Show for printing | Показать для вывода на печать | Показати для виведення на друк'). ': ' . CR . __('Act | Акт | Акт'); ?>" target="_blank">
+    <img src="<?= Icons::SRC_ICON_ACT ?>" alt="<?= __('Act | Акт | Акт') ?>" height="38px"></a>
 
 <!--
     Форма для выбора параметров генерации PDF
@@ -113,7 +113,7 @@ Lang::load_inc(__FILE__);
         target="_blank"
         class="btn btn-sm btn-outline-success">
             <img src="<?= Icons::SRC_ICON_PDF ?>" alt="PDF" height="38">
-            <?= __('Сгенерировать PDF. Это долго!'); ?>
+            <?= __('Generate PDF | Сгенерировать PDF | Згенерувати PDF') . '. ' . __('This is long, it will take a few seconds | Это долго, займёт несколько секунд | Це довго, займе кілька секунд') . '!'; ?>
         </a>
 
     </div>
