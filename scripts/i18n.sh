@@ -1,7 +1,26 @@
 #!/usr/bin/env bash
 
+
+#
+# Project : my.ri.net.ua
+# File    : i18n.sh
+# Path    : scripts/i18n.sh
+# Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+# Org     : RI-Network, Kiev, UK
+# Created : 20 May 2026 22:13:25
+# License : GPL v3
+# 
+# Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+#
+
+№
 # Usage:
 # ./i18n.sh en "Hello world"
+# Преводит входную строку, приводит её к виду "en | рус | укр"
+# и копирует в системный буфер обмена
+№
+
+
 
 SRC_LANG="$1"
 TEXT="$2"
@@ -10,20 +29,6 @@ if [[ -z "$SRC_LANG" || -z "$TEXT" ]]; then
     echo "Usage: $0 <en|ru|uk> \"text\""
     exit 1
 fi
-
-
-
-#
-# translate() {
-#     local source="$1"
-#     local target="$2"
-#     local text="$3"
-
-#     curl -s \
-#         "https://translate.googleapis.com/translate_a/single?client=gtx&sl=${source}&tl=${target}&dt=t&q=$(python3 -c "import urllib.parse; print(urllib.parse.quote('''$text'''))")" \
-#     | awk -F'"' '{print $2}'
-# }
-#
 
 
 

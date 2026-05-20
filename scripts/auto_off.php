@@ -20,7 +20,10 @@
 const APP_NAME = "RI-BILLING";
 
 use app\models\AbonModel;
+use app\models\AuthModel;
+use billing\core\App;
 use config\tables\Abon;
+use config\tables\User;
 use config\tables\AbonRest;
 use billing\core\base\Controller;
 
@@ -29,20 +32,31 @@ require DIR_CONFIG . '/ini.php';
 require DIR_LIBS   . '/common.php';
 require DIR_LIBS   . '/functions.php';
 
+const LOG_ACTION = 'auto_off_actions.log';
+
 /**
  * Автозагручик Composer'а
  */
 require __DIR__    . '/../vendor/autoload.php';
 
-const LOG_ACTION = 'auto_off_actions.log';
+/**
+ *  Инициализация Реестра App::$app
+ */
+new App;
 
-echo "AUTO_OFF | ".time()." | ".date("Y-m-d G:i:s")."\n";
+/**
+ * Имитируем авторизацию от пользователя billling
+ * $UID = 11;  // billng
+ */
+$token = '$2y$10$wuMWlo240T7Hi1KmChL6ceWTJT5QQPpXkgxIxo1GM1QmWpDr12bWa';
+$model = new AuthModel();
+$model->login_by_token($token);
 
+echo "\n";
+echo "AUTO_OFF | ".date("Y-m-d G:i:s")." | ".time()." | ". App::get_user_id() . ' | ' . App::get_user()[User::F_NAME_SHORT] . " \n";
+
+unset($model);
 $model = new AbonModel();
-
-// Имитируем авторизацию от пользователя billling
-// $UID = 11;  // billng
-// $_SESSION['id'] = $UID;
 
 $SQL = "SELECT
             abons.id AS abon_id,
@@ -122,16 +136,18 @@ if ($alist) {
                             ) . " | "
                     . "".sprintf("%7d", $abon[Abon::F_DUTY_MAX_OFF])." | "
                     . "".   (($rest[AbonRest::F_PREPAYED] < $abon[Abon::F_DUTY_MAX_OFF])
-                                ?   "  [".($abon[Abon::F_DUTY_WAIT_DAYS] > 0 
-                                        ?   $abon[Abon::F_DUTY_WAIT_DAYS] 
-                                        :   "x") . "]    |\n|          |\n"
-                                            .   ($abon[Abon::F_DUTY_WAIT_DAYS] > 0
-                                                    ?   ($model->set_field_value(Abon::TABLE, Abon::F_ID, $abon[Abon::F_ABON_ID], Abon::F_DUTY_WAIT_DAYS, --$abon[Abon::F_DUTY_WAIT_DAYS], false)
-                                                            ?   "|          | Режим ожидания платежа ".$abon[Abon::F_DUTY_WAIT_DAYS]." дней"
-                                                            :   "|          | ОШИБКА: изменение количества дней ожидания платежа не удалось"
-                                                        )
-                                                    :   ($action_msg = $model->set_abon_pause($abon[Abon::F_ABON_ID]))
+                                ?   ($abon[Abon::F_DUTY_WAIT_DAYS] > 0 
+                                        ?   sprintf("%8s", "[" . $abon[Abon::F_DUTY_WAIT_DAYS] . "]")
+                                        :   sprintf("%8s", "[x]")
+                                    )
+                                    . " |\n|          |\n"
+                                    .   ($abon[Abon::F_DUTY_WAIT_DAYS] > 0
+                                            ?   ($model->set_field_value(Abon::TABLE, Abon::F_ID, $abon[Abon::F_ABON_ID], Abon::F_DUTY_WAIT_DAYS, --$abon[Abon::F_DUTY_WAIT_DAYS], false)
+                                                    ?   "|          | Режим ожидания платежа ".$abon[Abon::F_DUTY_WAIT_DAYS]." дней"
+                                                    :   "|          | ОШИБКА: изменение количества дней ожидания платежа не удалось"
                                                 )
+                                            :   ($action_msg = $model->set_abon_pause($abon[Abon::F_ABON_ID]))
+                                        )
                                     . "\n|          |"
                                 :   "         |"
                             ) 

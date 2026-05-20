@@ -216,8 +216,8 @@ class LogController extends AppBaseController {
      *
      * Пример:
      *   8.8.8.8
-     * →
      *   <a href="https://www.whois.com/whois/8.8.8.8" target="_blank">8.8.8.8</a>
+     *   <a href="https://rdap.arin.net/registry/ip/8.8.8.8" target="_blank">8.8.8.8</a>
      *
      * @param string $text
      * @return string
@@ -234,8 +234,9 @@ class LogController extends AppBaseController {
                 if (!filter_var($ip, FILTER_VALIDATE_IP)) {
                     return $ip;
                 }
-
-                $url = 'https://www.whois.com/whois/' . rawurlencode($ip);
+                
+                $template_key = App::get_config('whois_template_ip');
+                $url = untemplate(App::get_config('whois_web_service'), [$template_key => $ip]);
 
                 return '<a href="' . h($url) . '" target="_blank" rel="noopener noreferrer">'
                     . h($ip)
@@ -302,9 +303,9 @@ class LogController extends AppBaseController {
                     '|&nbsp;«',
                 ], 
                 [
+                    '| <span class="text-primary">&lt;</span>', 
                     '| <span class="text-primary">«</span>', 
-                    '| <span class="text-primary">«</span>', 
-                    '|&nbsp;<span class="text-primary">«</span>',
+                    '|&nbsp;<span class="text-primary">&lt;</span>',
                     '|&nbsp;<span class="text-primary">«</span>',
                 ], $text);
     }

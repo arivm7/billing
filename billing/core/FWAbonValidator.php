@@ -1,4 +1,22 @@
 <?php
+/**
+ *  Project : my.ri.net.ua
+ *  File    : FWAbonValidator.php
+ *  Path    : billing/core/FWAbonValidator.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 20 May 2026 22:32:46
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2026 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
+
+/**
+ * Description of FWAbonValidator.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
+
 
 
 

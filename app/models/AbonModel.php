@@ -162,12 +162,12 @@ class AbonModel extends UserModel {
                         . "SET `".PA::F_COST_VALUE."`='{$cost_value}',`".PA::F_COST_DATE."`={$cost_date} "
                         . "WHERE `".PA::F_ID."`={$row[PA::F_ID]}";
                 if (!$model->execute($sql)) {
-                    $this->errors[] = __('Ошибка обновления стоимости прайсового начисления') . " [{$sql}]";
+                    $this->errors[] = __('Error updating price list price | Ошибка обновления стоимости прайсового начисления | Помилка поновлення вартості прайсового нарахування') . " [{$sql}]";
                     $ret = false;
                 }
             }
         } else {
-            $this->errors[] = __('Ошибка выборки прайсовых фрагментов, или прайсовые фрагменты не прикреплены для abon_id') . " [{$recalc_abon_id}]";
+            $this->errors[] = __('Error in selecting price fragments, or price fragments are not attached to abon_id | Ошибка выборки прайсовых фрагментов, или прайсовые фрагменты не прикреплены для abon_id | Помилка вибірки прайсових фрагментів, або прайсові фрагменти, не прикріплені для abon_id') . " [{$recalc_abon_id}]";
             $ret = false;
         }
         return $ret;
@@ -210,7 +210,7 @@ class AbonModel extends UserModel {
                 ";
 
         if (!$this->execute($sql)) {
-            $this->errors[] = __('Ошибка установки полей `PPDA_value` и `PPMA_value` для активных прайсовых фрагментов');
+            $this->errors[] = __('Error setting fields for active price fragments | Ошибка установки полей для активных прайсовых фрагментов | Помилка встановлення полів для активних прайсових фрагментів') . ' (`PPDA_value` и `PPMA_value`)';
             $ret = false;
         }
 
@@ -236,7 +236,7 @@ class AbonModel extends UserModel {
                 ";
 
         if (!$this->execute($sql)) {
-            $this->errors[] = __('Ошибка обнуления полей `PPDA_value` и `PPMA_value` для закрытых прайсовых фрагментов');
+            $this->errors[] = __('Error resetting fields for closed price fragments | Ошибка обнуления полей для закрытых прайсовых фрагментов | Помилка обнулення полів для закритих прайсових фрагментів') . ' (`PPDA_value`, `PPMA_value`)';
             $ret = false;
         }
         return $ret;
@@ -266,11 +266,11 @@ class AbonModel extends UserModel {
             /**
              * Обновление стоимосьти ПФ
              */
-            if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("COST") . ': ' . __("Обновляем стоимость начисления в прайсовых фрагментах") . " [".$abon_id."]..."); }
+            if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("COST | COST | COST") . ': ' . __("We update the accrual cost in price fragments | Обновляем стоимость начисления в прайсовых фрагментах | Оновлюємо вартість нарахування у прайсових фрагментах") . " [".$abon_id."]..."); }
             if ($this->update_prices_cost_all($abon_id, $msg_info)) {
-                if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("COST") . ': ' . __("Успешно.")); }
+                if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("COST | COST | COST") . ': ' . __("Successfully | Успешно | Успішно")); }
             } else {
-                if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("COST") . ': ' . __("Ошибка")); }
+                if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("COST | COST | COST") . ': ' . __("Error | Ошибка | Помилка")); }
                 if ($msg_info ) { MsgQueue::msg(MsgType::ERROR, $this->errorInfo()); }
                 $result = false;
             }
@@ -278,11 +278,11 @@ class AbonModel extends UserModel {
             /**
              * Обновление активных абонплат
              */
-            if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("PA") . ': ' . __('Обновляем активные абонплаты прайсовых фрагментов') . " [".$abon_id."]..."); }
+            if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("PA | PA | PA") . ': ' . __('We update active subscription fees for price fragments | Обновляем активные абонплаты прайсовых фрагментов | Оновлюємо активні абонплати прайсових фрагментів') . " [".$abon_id."]..."); }
             if ($this->update_prices_active_all($abon_id)) {
-                if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("PA") . ': ' . __("Успешно.")); }
+                if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("PA | PA | PA") . ': ' . __("Successfully | Успешно | Успішно")); }
             } else {
-                if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("PA") . ': ' . __("Ошибка")); }
+                if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("PA | PA | PA") . ': ' . __("Error | Ошибка | Помилка")); }
                 if ($msg_info ) { MsgQueue::msg(MsgType::ERROR, $this->errorInfo()); }
                 $result = false;
             }
@@ -290,17 +290,17 @@ class AbonModel extends UserModel {
             /**
              * Обновление остатков
              */
-            if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("REST") . ': ' . __('Обновляем активные остатки') . " [".$abon_id."]..."); }
+            if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("REST | REST | REST") . ': ' . __('Updating active balances | Обновляем активные остатки | Оновлюємо активні залишки') . " [".$abon_id."]..."); }
             if ($this->update_abon_rest_all($abon_id)) {
-                if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("REST") . ': ' . __("Успешно.")); }
+                if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("REST | REST | REST") . ': ' . __("Successfully | Успешно | Успішно")); }
             } else {
-                if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("REST") . ': ' . __("Ошибка")); }
+                if ($msg_info ) { MsgQueue::msg(MsgType::INFO_AUTO, __("REST | REST | REST") . ': ' . __("Error | Ошибка | Помилка")); }
                 if ($msg_info ) { MsgQueue::msg(MsgType::ERROR, $this->errorInfo()); }
                 $result = false;
             }
             
         } else {
-            if ($msg_info ) { MsgQueue::msg(MsgType::ERROR, 'RECALC: ' . __("Нет такого абонента") . " [".$abon_id."]"); }
+            if ($msg_info ) { MsgQueue::msg(MsgType::ERROR, __("RECALC | RECALC | RECALCT") . ': ' . __("No such subscriber | Нет такого абонента | Немає такого абонента") . " [".$abon_id."]"); }
             $result = false;
         }
         return $result;
@@ -319,7 +319,7 @@ class AbonModel extends UserModel {
             $tp = $this->get_tp($pa[PA::F_TP_ID]);
             if  (
                     (get_price_apply_age($pa) === PAStatus::CURRENT) &&
-                    ($tp[TP::F_STATUS]     == 1) &&
+                    ($tp[TP::F_ACTIVE]     == 1) &&
                     ($tp[TP::F_DELETED]    == 0) &&
                     ($tp[TP::F_IS_MANAGED] == 1)
                 )
@@ -331,7 +331,7 @@ class AbonModel extends UserModel {
                 }
                 $log_str .= ""
                     . "[tp_id]=>".$pa['net_router_id'].", "
-                    . ($tp[TP::F_STATUS]     == 1 ? "A" : "-" )
+                    . ($tp[TP::F_ACTIVE]     == 1 ? "A" : "-" )
                     . ($tp[TP::F_DELETED]    == 1 ? "X" : "-" )
                     . ($tp[TP::F_IS_MANAGED] == 1 ? "M" : "-" ).", "
                     . "[pa_id]=>".$pa[PA::F_ID].", "
@@ -352,31 +352,6 @@ class AbonModel extends UserModel {
             $log_str .= "Нет активных прайсов на управляемых ТП. Действий нет.\n";
         }
         return $log_str;
-    }
-
-
-
-    function get_tp_list_with_abon(int $abon_id, int|null $closed = null): array|null {
-        if (!$this->validate_id(table_name: Abon::TABLE, field_id: Abon::F_ID, id_value: $abon_id)) { return null; }
-        $sql = "SELECT "
-                . "`".PA::F_TP_ID."` "
-                . "FROM `".PA::TABLE."` "
-                . "WHERE (`".PA::F_ABON_ID."`={$abon_id}) "
-                . (!is_null($closed) ? "AND (`".PA::F_CLOSED."`={$closed}) " : "")
-                . "GROUP BY `".PA::F_TP_ID."`";
-        $tp_id_list = array_column(
-                array:  $this->get_rows_by_sql($sql),
-                column_key: PA::F_TP_ID,
-        );
-        if (empty($tp_id_list)) {
-            return [];
-        } else {
-            $list = $this->get_rows_by_where(table: TP::TABLE, where: TP::F_ID . ' IN (' . implode(',', $tp_id_list) . ') AND `'.TP::F_STATUS.'`=1');
-            foreach ($list as &$tp) {
-                $this->normalize_tp($tp);
-            }
-            return $list;
-        }
     }
 
 
@@ -1464,7 +1439,7 @@ class AbonModel extends UserModel {
                     FROM `".TP::TABLE."` 
                     WHERE 
                     `".TP::F_ID."` in (SELECT `".TSUserTp::F_TP_ID."` FROM `".TSUserTp::TABLE."` WHERE `".TSUserTp::F_USER_ID."`={$user_id})
-                    AND (`".TP::F_STATUS."`=1)
+                    AND (`".TP::F_ACTIVE."`=1)
                     GROUP BY `".TP::F_FIRM_ID."`
                 ) "
                 .(!is_null($active)         ? "AND (`".Ppp::F_ACTIVE."`=$active) "               : "")
@@ -2153,23 +2128,6 @@ class AbonModel extends UserModel {
     }
 
     
-
-    /**
-     * Возвращает TRUE если ТП управляемая, иначе FALSE
-     * @param int $tp_id
-     * @return boolean
-     */
-    function tp_has_managed(int $tp_id) {
-        if($this->validate_id("tp_list", $tp_id)) {
-            $tp = $this->get_tp($tp_id);
-            return $tp['is_managed'] == 1;
-        } else {
-            MsgQueue::msg(MsgType::ERROR_AUTO, "Ошибка. ID ТП[".$tp_id."] не верен");
-            return false;
-        }
-    }
-
-
 
     /**
      * Возвращает последнее уведомление для указанного абонента

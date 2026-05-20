@@ -116,7 +116,7 @@ $date_str = $statement[P24card::F_DATE_STR]; // date('d.m.Y H:i:s', $statement[P
             <div>
                 <button type="button" 
                     class="btn btn-outline-info btn-sm align-items-center fs-8 py-0 px-2 me-2 copy-btn" data-text="<?= json_encode($balance) ?>">
-                    <img src="<?= Icons::SRC_ICON_CLIPBOARD ?>" title="<?= __('Скопировать остаток на счету после транзакции в clipboard') ?>" alt="[copy]" height="16">
+                    <img src="<?= Icons::SRC_ICON_CLIPBOARD ?>" title="<?= __('Copy account balance after transaction to clipboard | Скопировать остаток на счету после транзакции в clipboard | Копіювати залишок на рахунку після транзакції у clipboard') ?>" alt="[copy]" height="16">
                 </button>
                 <span class="fw-bold font-monospace <?= $balance < 0 ? 'text-danger' : 'text-success' ?>"><?= sign($balance) < 0 ? "-" /* &#8722; */ :"+" ?></span><span class="text-secondary font-monospace"><?= number_format(abs($balance), 2, '.', ' ') ?> ₴</span>
             </div>

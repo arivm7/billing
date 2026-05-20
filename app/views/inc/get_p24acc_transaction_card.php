@@ -60,7 +60,7 @@ if (!isset($transaction) || empty($transaction)) {
     <div class="card-header d-flex justify-content-between align-items-center">
         <div>
             <!-- PAY ID -->
-            <small class="text-muted" title="<?= __('Дата транзакции') ?>" ><?= $transaction[P24acc::F_DATE_TIME_DAT_OD_TIM_P] ?></small><br>
+            <small class="text-muted" title="<?= __('Transaction date | Дата транзакции | Дата транзакції') ?>" ><?= $transaction[P24acc::F_DATE_TIME_DAT_OD_TIM_P] ?></small><br>
             <strong title="<?= P24acc::F_REF .'+'. P24acc::F_REFN ?>">Bank No: </strong> <?= h($transaction[P24acc::F_REF] . $transaction[P24acc::F_REFN]) ?>
         </div>
         <div class="text-end">
@@ -83,7 +83,7 @@ if (!isset($transaction) || empty($transaction)) {
             <?= P24acc::renderField(
                 label: P24acc::F_REF .'+'. P24acc::F_REFN . " Bank No",
                 value: h($transaction[P24acc::F_REF] . $transaction[P24acc::F_REFN]),
-                tooltip:  __('Уникальный номер банковской операции (F_REF + F_REFN)'),
+                tooltip:  __('Unique banking transaction number | Уникальный номер банковской операции | Унікальний номер банківської операції') . ' (F_REF + F_REFN)',
                 ) ?>
                     <?php
                     $prPr = $transaction[P24acc::F_PR_PR] ?? '';
@@ -104,19 +104,19 @@ if (!isset($transaction) || empty($transaction)) {
                 <div class="accordion-item">
                     <h2 class="accordion-header">
                         <button class="accordion-button collapsed small" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDetails<?= $transaction[P24acc::F_REF] ?>" aria-expanded="false" aria-controls="collapseDetails<?= $transaction[P24acc::F_REF] ?>">
-                            <?= __('Детали документа и данные контрагента') ?>
+                            <?= __('Document details and counterparty data | Детали документа и данные контрагента | Деталі документа та дані контрагента') ?>
                         </button>
                     </h2>
                     <div id="collapseDetails<?= $transaction[P24acc::F_REF] ?>" class="accordion-collapse collapse" data-bs-parent="#accordionDetails<?= $transaction[P24acc::F_REF] ?>">
                         <div class="accordion-body">
                             <!-- ==================== Проводка ==================== -->
                             <?= P24acc::renderField($transaction, P24acc::F_NUM_DOC,
-                                    label: __('Док.') . '/' . __('Стан'),
+                                    label: __('Doc. | Док. | Док.') . '/' . __('State | Состояние | Стан'),
                                     value: '<span title="'.P24acc::field_descr(P24acc::F_NUM_DOC).'">' . h($transaction[P24acc::F_NUM_DOC]) . '</span> | '
                                          . '<span title="'.P24acc::field_descr(P24acc::F_DOC_TYP).'">' . h($transaction[P24acc::F_DOC_TYP]) . '</span> | '
                                          . '<span title="'.P24acc::field_descr(P24acc::F_FL_REAL).'">' . h($transaction[P24acc::F_FL_REAL]) . '</span> | '
                                          . '<span title="'.$prPrDescr.'">' . html_badge($prPr, $prPr, ['r' => BADGE_SUCCESS, 't' => BADGE_WARNING, 'n' => BADGE_DANGER], bage_na: BADGE_INFO) . '</span> | ',
-                                    tooltip:  __('Номер документа и его статус')
+                                    tooltip:  __('Document number and status | Номер документа и его статус | Номер документа та його статус')
                                 ) ?>
 
                             <hr>

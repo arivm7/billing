@@ -19,6 +19,8 @@ use config\tables\DevAclTable;
 use config\tables\Employees;
 use config\tables\Firm;
 use config\tables\TP;
+use config\tables\TSUserTp;
+use config\tables\User;
 
 /**
  * Description of TpModel.php
@@ -27,6 +29,31 @@ use config\tables\TP;
  */
 class TpModel extends AppBaseModel {
 
+
+    
+    public function getMyTpByIdForWizard(int $tpId, ?int $userId = null): ?array
+    {
+        $userId = $userId ?? App::get_user_id();
+        if (
+            !$this->validate_id(User::TABLE, $userId, User::F_ID)
+            || !$this->validate_tp($tpId)
+        ) {
+            return null;
+        }
+
+        $sql = "SELECT tp.*
+                FROM `" . TSUserTp::TABLE . "` tut
+                INNER JOIN `" . TP::TABLE . "` tp
+                    ON tp.`" . TP::F_ID . "` = tut.`" . TSUserTp::F_TP_ID . "`
+                WHERE tut.`" . TSUserTp::F_USER_ID . "` = ?
+                  AND tp.`" . TP::F_ID . "` = ?
+                LIMIT 1";
+
+        return $this->findBySql($sql, [$userId, $tpId])[0] ?? null;
+    }
+
+    
+    
     public function addAclListRecord(
         int $aclTableId,
         string $address,
@@ -83,6 +110,7 @@ class TpModel extends AppBaseModel {
     }
 
 
+
     public function getTpByTitle(string $title): array|null
     {
         $sql = "SELECT *
@@ -92,6 +120,7 @@ class TpModel extends AppBaseModel {
 
         return $this->findBySql($sql, [$title])[0] ?? null;
     }
+
 
 
     public function getActiveAgentFirmById(int $firmId): array|null
@@ -106,6 +135,8 @@ class TpModel extends AppBaseModel {
         return $this->findBySql($sql, [$firmId])[0] ?? null;
     }
 
+    
+    
     public function getAclTableById(int $id): array|null
     {
         $sql = "SELECT *
@@ -117,6 +148,7 @@ class TpModel extends AppBaseModel {
     }
 
 
+    
     public function getAclListForSync(int $aclTableId, int $tpId): array
     {
         $sql = "SELECT *
@@ -128,4 +160,52 @@ class TpModel extends AppBaseModel {
         return $this->findBySql($sql, [$aclTableId, $tpId]);
     }
 
+
+
+    /**
+     * Предлагает диапазон ID для выдачи новым абонентам для техплощадки.
+     * Проверяет имеющиеся техплощадки и выбирает несколько диапазонов, не используемых на техплощадках.
+     * @return array[0] - начало и array[1] - конец выбранного диапазона
+     * @throws Exception
+     */
+    function get_tp_ranges_for_abon_id(): array {
+        $range_min = App::get_config('tp_abon_id_range_min');         //  10_000 начальный id
+        $range_max = App::get_config('tp_abon_id_range_max');         // 100_000 конечный  id
+        $range_len = App::get_config('tp_abon_id_range_len');         //     500 количество id в диапазоне
+        $count_propose = App::get_config('tp_abon_id_count_proposes'); //      20 Формируем список из такого количества свободных диапазонов
+        
+        $sql = "SELECT `".TP::F_ABON_ID_RANGE_START."` AS `r1`, `".TP::F_ABON_ID_RANGE_END."` AS `r2` FROM `".TP::TABLE."` "
+                . "WHERE `".TP::F_ABON_ID_RANGE_START."` >= $range_min ORDER BY `".TP::TABLE."`.`".TP::F_ABON_ID_RANGE_START."` ASC";
+        $tp_range = $this->get_rows_by_sql($sql);
+        if (!$tp_range) {
+            throw new Exception("Список пуст.");
+        }
+
+        $proposed = [];
+        for ($range_start = $range_min; $range_start < $range_max; $range_start+=$range_len) {
+            $r1 = $range_start+1;
+            $r2 = $range_start+$range_len-1;
+            $has_intersect = false;
+            foreach ($tp_range as $range) {
+                if (intersect_ranges($r1, $r2, $range['r1'], $range['r2'])) {
+                    $has_intersect = true;
+                    break;
+                }
+            }
+            if (!$has_intersect) {
+                // echo "Свободный диапазон: ".($r1)." - ".($r2)."<br>";
+                $proposed[] = [$r1, $r2];
+                if (count($proposed) >= $count_propose) {
+                    break;
+                }
+            }
+        }
+        // $num = random_int(0, count($proposed)-1); * Из выбранного списка случайно выбирает один и возвращает это диапазон.
+        // echo "<br>Выбранный диапазон: ".$proposed[$num][0]." - ".$proposed[$num][1]."<br>";
+        return $proposed; // [$num]
+
+    }
+    
+    
+    
 }

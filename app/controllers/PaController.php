@@ -390,7 +390,7 @@ class PaController extends AppBaseController {
         /**
          * Установка (включение/выключение) услуги на микротике
          */
-        if ($tp[TP::F_STATUS] && $tp[TP::F_IS_MANAGED]) {
+        if ($tp[TP::F_ACTIVE] && $tp[TP::F_IS_MANAGED]) {
             if (($mik = Api::tp_connector(tp: $tp)) === false) {
                 $s = "Не удалось подключиться к ТП";
                 MsgQueue::msg(MsgType::ERROR, $s);
@@ -595,7 +595,7 @@ class PaController extends AppBaseController {
         $arp = null;
         $abon_ip_on = null;
         if  (                                           // если
-                $tp[TP::F_STATUS] &&                    // ТП активна
+                $tp[TP::F_ACTIVE] &&                    // ТП активна
                 $tp[TP::F_IS_MANAGED] &&                // ТП управляемая
                 ($pa[PA::F_NET_IP_SERVICE] == 1) &&     // это IP услуга
                 !empty($pa[PA::F_NET_IP]) &&            // IP-адрес указан
@@ -631,7 +631,7 @@ class PaController extends AppBaseController {
                 index_key: Price::F_ID);
 
         $tp_list = array_column(
-                array: $model->get_my_tp_list(status: 1),
+                array: $model->get_my_tp_list(active: 1),
                 column_key: TP::F_TITLE,
                 index_key: TP::F_ID);
 
@@ -670,7 +670,7 @@ class PaController extends AppBaseController {
          * Отключить IP на микротике
          */
         if ($service_off) {
-            if ((__pa_age($pa) == PAStatus::ACTIVE_TODAY) && $tp[TP::F_STATUS] && $tp[TP::F_IS_MANAGED]) {
+            if ((__pa_age($pa) == PAStatus::ACTIVE_TODAY) && $tp[TP::F_ACTIVE] && $tp[TP::F_IS_MANAGED]) {
                 $ip = $pa[PA::F_NET_IP];
                 if (Api::set_mik_abon_ip(Api::tp_connector(tp: $tp), $ip, false, true)) {
                     MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Disabling the service completed successfully | Отключение услуги выполнени успешно | Відключення послуги виконано успішно'));

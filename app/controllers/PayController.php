@@ -257,7 +257,7 @@ class PayController extends AppBaseController
                  *      -- Из ТП выбрать обслуживаемые предприятия.
                  */
                 $firm_list_id = $model->get_rows_by_sql( 
-                    "SELECT `".TP::F_FIRM_ID."` FROM `".TP::TABLE."` WHERE (`".TP::F_ID."` in (" . implode(',', $tp_list) . ")) AND (`".TP::F_STATUS."` = 1)" 
+                    "SELECT `".TP::F_FIRM_ID."` FROM `".TP::TABLE."` WHERE (`".TP::F_ID."` in (" . implode(',', $tp_list) . ")) AND (`".TP::F_ACTIVE."` = 1)" 
                 );
 
                 if (!$firm_list_id) {

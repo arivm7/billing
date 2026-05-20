@@ -1,4 +1,22 @@
 <?php
+/**
+ *  Project : my.ri.net.ua
+ *  File    : MikrotikDevice.php
+ *  Path    : billing/core/MikrotikDevice.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 20 May 2026 22:32:46
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2026 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
+
+/**
+ * Description of MikrotikDevice.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
+
 
 
 
@@ -51,6 +69,7 @@ class MikrotikDevice extends NetworkDevice {
     
     public array $nat_rules = [];
     public array $filter_rules = [];
+    public array $ip_services = [];
     
     /**
      * Массив, содержащий массывы адресов по запрошенным адресным листам
@@ -73,17 +92,26 @@ class MikrotikDevice extends NetworkDevice {
      * @throws \Exception
      * @return false|MikroLink -- Возвращаемій объект.
      */
-    public function __construct(?int $tp_id = null, ?array $tp = null) {
+    public function __construct(?int $tp_id = null, ?array $tp = null, ?bool $ssl = null) {
         parent::__construct($tp_id, $tp);
+        
+        if (is_null($ssl)) {
+            if (!empty($this->TP[TP::F_MIK_PORT_SSL])) { 
+                $ssl = true; 
+            } else { 
+                $ssl = false; 
+            }
+        }
+        
         $connector = self::mik_connector(
                 ip:     $this->TP[TP::F_MIK_IP],
                 login:  $this->TP[TP::F_MIK_LOGIN],
                 pass:   $this->TP[TP::F_MIK_PASSWD],
-                port:   $this->TP[TP::F_MIK_PORT_SSL],
-                ssl:    true);
+                port:   ($ssl ? $this->TP[TP::F_MIK_PORT_SSL] : $this->TP[TP::F_MIK_PORT]),
+                ssl:    $ssl);
         
         if (!$connector) {
-            throw new \Exception('Ошибка подключения к Mikrotik' . ' ['.$tp[TP::F_MIK_IP].']');
+            throw new \Exception('Ошибка подключения к Mikrotik' . ' ['.$tp[TP::F_MIK_IP].']' . CR . '<pre>'. print_r(self::$errors, true) . '</pre>');
         }
         
         $this->connector = $connector;
@@ -841,7 +869,7 @@ class MikrotikDevice extends NetworkDevice {
                     'port_public'  => $r['dst-port'] ?? '',
                     'ip_local'     => $r['to-addresses'] ?? '',
                     'port_local'   => $r['to-ports'] ?? '',
-                    'enabled'      => ($r['disabled'] ?? 'true') === 'false',
+                    'enabled'      => !mikBool($r['disabled'] ?? 'true'),
                     'comment'      => $r['comment'] ?? '',
                 ];
             }
@@ -1073,31 +1101,184 @@ class MikrotikDevice extends NetworkDevice {
         return true;
     }
     
+
+
+
+    
+
+    public function get_interfaces(): array {
+        $rows = $this->connector->exec('/interface/print') ?: [];
+        return $rows;
+    }
+
+
+
     
     
     
     
+    public function get_interface_lists(?bool $dynamic = null): array {
+        $rows = $this->connector->exec('/interface/list/print') ?: [];
+        $lists = [];
+        foreach ($rows as $row) {
+            $match =
+                (is_null($dynamic) ? true : (mikBool($row['dynamic']) === $dynamic));
+            
+            if ($match) {
+                $lists[] = $row;
+            }
+        }
+        return $lists;
+    }
+
+    public function get_interface_list_members(): array {
+        $rows = $this->connector->exec('/interface/list/member/print') ?: [];
+        return $rows;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // [chain] => input
+    // [action] => drop
+    // [protocol] => tcp
+    // [dst-port] => 2000,67,68,123,3784,4784,443,161,8081,2828,1900
+    // [invalid] => false
+    // [dynamic] => false
+    // [comment] => btest (2000), dhcp (67)
+    public function get_filer_rules(
+            ?string $chain = null,
+            ?string $action = null,
+            ?string $protocol = null,
+            ?string $dstport = null,
+            ?bool   $invalid = null,
+            ?bool   $dynamic = null,
+            ?string $comment = null
+    ): array {
+        $this->ensureFilterRules();
+        if  (!empty($chain) || !empty($action) || !empty($protocol) || !empty($dstport) || !is_null($invalid) || !is_null($dynamic) || !empty($comment))
+        {
+            $rules = [];
+            foreach ($this->filter_rules as $rule) {
+                $match =
+                    (!empty($chain)    ? $rule['chain']    == $chain    : true) &&
+                    (!empty($action)   ? $rule['action']   == $action   : true) &&
+                    (!empty($protocol) ? $rule['protocol'] == $protocol : true) &&
+                    (!empty($dstport)  ? $rule['dstport']  == $dstport  : true) &&
+                    (!empty($invalid)  ? mikBool($rule['invalid']) == $invalid : true) &&
+                    (!empty($dynamic)  ? mikBool($rule['dynamic']) == $dynamic : true) &&
+                    // compare only the beginning of the comment        
+                    (!empty($comment)  ? strpos($rule['comment'], $comment) === 0 : true);                    
+                if ($match) {
+                    $rules[] = $rule;
+                }
+            }
+            return $rules;
+        }
+        else {
+            return $this->filter_rules;
+        }
+    }
+
+    
+    
+    public function get_filer_input(
+            ?string $action = null,
+            ?string $protocol = null,
+            ?string $dstport = null,
+            ?string $invalid = null,
+            ?string $dynamic = null,
+            ?string $comment = null
+    ): array 
+    {
+        // [chain] => input
+        // [action] => drop
+        // [protocol] => tcp
+        // [dst-port] => 2000,67,68,123
+        // [invalid] => false
+        // [dynamic] => false
+        // [comment] => btest (2000), dhcp (67)
+        return $this->get_filer_rules(chain: 'input', action: $action, protocol: $protocol, dstport: $dstport, invalid: $invalid, dynamic: $dynamic, comment: $comment);
+    }
+
+
+    
+    /**
+     * Возвращает .id первого найденного правила
+     * @param string $comment
+     * @return string|null
+     */
+    public function get_filter_id(string $comment): string|null {
+        $this->ensureFilterRules();
+        foreach ($this->filter_rules as $rule) {
+            $ruleComment = (string)($rule['comment'] ?? '');
+            if (str_starts_with($ruleComment, $comment)) {
+                return $rule['.id'];
+            }
+        }
+        return null;
+    }
     
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    public function get_filer_rules(): array {
-        return $this->getFilterRules();
+    public function add_filter(
+            ?string $chain = null,
+            ?string $protocol = null,
+            ?string $in_interface_ist = null,
+            ?string $dstports = null,
+            ?string $invalid = null,
+            ?string $dynamic = null,
+            ?string $action = null,
+            ?string $comment = null): bool
+    {
+        $this->connector->exec(
+                '/ip/firewall/filter/add',
+                [
+                    'chain'             => $chain, // 'input',
+                    'protocol'          => $protocol, // 'tcp',
+                    'in-interface-list' => $in_interface_ist, // 'WAN',
+                    'dst-port'          => $dstports, // '!' . implode(',', $ports),
+                    'action'            => $action, // 'drop',
+                    'comment'           => $comment, // 'ABON DROP',
+                ]);
+        
     }
 
 
 
     public function get_nat_uv(): array {
         
+    }
+
+
+
+    public function get_ip_services() {
+        $this->ensureIpServices();
+        return $this->ip_services;
     }
 
 
@@ -1115,6 +1296,215 @@ class MikrotikDevice extends NetworkDevice {
     }
 
 
+
+
+    
+    
+    public function get_ip_services_ports(): array
+    {
+        $this->ensureIpServices();
+        $ports = [];
+        foreach ($this->ip_services as $service) {
+            if (!self::is_ip_service_enabled($service)) { 
+                continue; 
+            }
+            if (!empty($service['port'])) { 
+                $ports[] = (int)$service['port']; 
+            }
+        }
+        $ports = array_values(array_unique($ports));
+        sort($ports);
+        return $ports;
+    }
+
+
+    public function get_ip_services_allowed_networks(): array
+    {
+        $this->ensureIpServices();
+        $nets = [];
+        foreach ($this->ip_services as $service) {
+
+            if (!self::is_ip_service_enabled($service)) {
+                continue;
+            }
+
+            $addr = trim($service['address'] ?? '');
+
+            // пусто = открыт всем
+            if ($addr === '') {
+                return ['0.0.0.0/0'];
+            }
+
+            foreach (explode(',', $addr) as $net) {
+                $net = trim($net);
+                if ($net !== '') {
+                    $nets[] = $net;
+                }
+            }
+        }
+
+        $nets = array_values(array_unique($nets));
+        sort($nets);
+
+        return $nets;
+    }
+
+
+    private static function is_ip_service_enabled(array $service): bool
+    {
+        // [dynamic] => false
+        if ($service['disabled'] == Mik::ON) {
+            return false;
+        }
+        
+        // [invalid] => false
+        if ($service['invalid'] == Mik::ON) {
+            return false;
+        }
+        
+        // динамическое текущее подключение
+        // [disabled] => false
+        if (($service['dynamic'] == Mik::ON) && !empty($service['connection'])) { 
+            return false;
+        }
+        return true;
+    }
+
+
+    
+    
+    
+    
+    public function get_services(): array
+    {
+        $services = $this->connector->exec('/ip/service/print') ?: [];
+        
+        $rez = array_values(array_filter(
+            $services,
+            static fn(array $service): bool =>
+                !mikBool($service['dynamic'] ?? false)
+        ));
+        
+//        debug($rez, '$rez', die: 1);
+        return $rez;
+    }        
+        
+        
+
+    
+    
+    
+    
+    
+    public function get_certificates(): array {
+        return $this->connector->exec('/certificate/print') ?: [];
+    }
+
+    public function get_certificate(string $name): array {
+        return $certs = $this->connector->exec('/certificate/print', ['?name' => $name]) ?: [];
+    }
+
+    public function del_certificate(string $id): bool {
+        
+        $result = $this->connector->exec('/certificate/remove', ['.id' => $id]);
+        
+//        debug($result, 'del_certificate: $result');
+        
+        if (isset($result['!trap'])) {
+            self::$errors[] = $result['!trap']['message'];
+            return false;
+        }
+        
+        if (isset($result['!fatal'])) {
+            self::$errors[] = $result['!fatal']['message'];
+            return false;
+        }
+
+        // if ($result === []) { 
+        //     return true; 
+        // }
+        return true;
+
+    }
+
+    public function add_certificate(
+            string $name,
+            int    $key_size = 2048,
+            string $key_usage = 'tls-server',
+            string $trusted = 'yes',
+            int    $days_valid = 1825,
+            string $country = 'UA',
+            string $state = 'UA',
+            string $locality = 'Kiev',
+            string $organization = 'RI-Network',
+            string $unit = 'Tech'): false|string
+    {
+        $result = $this->connector->exec('/certificate/add', [
+                'name' => $name,
+                'common-name' => $name,
+                'key-size' => $key_size,
+                'key-usage' => $key_usage,
+                'trusted' => $trusted,
+                'days-valid' => $days_valid,
+                'country' => $country,
+                'state' => $state,
+                'locality' => $locality,
+                'organization' => $organization,
+                'unit' => $unit,
+            ]);
+
+//        debug($result, 'add_certificate: $result');
+        
+        if (isset($result['!trap'])) {
+            self::$errors[] = $result['!trap']['message'];
+            return false;
+        }
+        
+        if (isset($result['!fatal'])) {
+            self::$errors[] = $result['!fatal']['message'];
+            return false;
+        }
+
+        return $result; // .id
+
+    }
+
+    function certificate_sign(string $name): bool {
+        try {
+            $result = $this->connector->exec('/certificate/sign', ['number' => $name]);
+        } catch (\Throwable $e) {
+            self::$errors[] = $e->getMessage();
+            return false;
+        }
+
+        if (is_array($result) && isset($result['!trap'])) {
+            self::$errors[] = $result['!trap']['message'];
+            return false;
+        }
+
+        if (is_array($result) && isset($result['!fatal'])) {
+            self::$errors[] = $result['!fatal']['message'];
+            return false;
+        }
+
+        return true;
+    }
+    
+
+    public static function is_certificate_signed(array $cert): bool
+    {
+        return
+            !empty($cert['serial-number'])
+            && !empty($cert['fingerprint'])
+            && !empty($cert['invalid-before'])
+            && !empty($cert['invalid-after']);
+    }    
+    
+    
+    
+    
+    
+    
 
 
     public function validate_filter_dns(): bool {
@@ -1181,38 +1571,59 @@ class MikrotikDevice extends NetworkDevice {
     
     
     
-    private function getNatRules(): array
+    private function getNatRules(): array {
+        $this->ensureNatRules();
+        return $this->nat_rules;
+    }    
+    
+    
+    private function ensureIpServices(): bool
+    {
+        if (empty($this->ip_services)) { 
+            $ipServices = $this->connector->exec('/ip/service/print');
+
+            if (!$ipServices) {
+                self::$errors[] = 'SERVICES пусты или не получены';
+                $this->ip_services = [];
+                return false;
+            }
+            $this->ip_services = $ipServices;
+        }
+        return true;
+    }    
+
+
+    
+    private function ensureNatRules(): bool
     {
         if (empty($this->nat_rules)) { 
             $rules = $this->connector->exec('/ip/firewall/nat/print');
 
             if (!$rules) {
                 self::$errors[] = 'NAT rules пусты или не получены';
-                return [];
+                $this->nat_rules = [];
+                return false;
             }
-            
             $this->nat_rules = $rules;
         }
-
-        return $this->nat_rules;
+        return true;
     }    
+
+
     
-    
-    
-    private function getFilterRules(): array
+    private function ensureFilterRules(): bool
     {
         if (empty($this->filter_rules)) { 
             $rules = $this->connector->exec('/ip/firewall/filter/print');
 
             if (!$rules) {
                 self::$errors[] = 'Filter rules пусты или не получены';
-                return [];
+                return false;
             }
             
             $this->filter_rules = $rules;
         }
-
-        return $this->filter_rules;
+        return true;
     }    
     
     

@@ -145,7 +145,7 @@ class UserController extends AppBaseController {
         // --- ТЕЛЕФОН ---
         if (!empty($data[User::F_PHONE_MAIN])) {
             $v->rule('regex', User::F_PHONE_MAIN, '/^[0-9+\-\(\)\s]+$/')
-              ->message('Phone can only contain numbers, spaces and symbols | Телефон может содержать только цифры, пробелы и символы | Телефон може містити лише цифри, пробіли та символи') . ' +, -, ()';
+              ->message(__('Phone can only contain numbers, spaces and symbols | Телефон может содержать только цифры, пробелы и символы | Телефон може містити лише цифри, пробіли та символи') . ' +, -, ()');
         }
 
         // --- ОТОБРАЖАЕМОЕ ИМЯ ---

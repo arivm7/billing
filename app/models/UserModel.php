@@ -13,6 +13,7 @@
 
 namespace app\models;
 
+use billing\core\App;
 use config\tables\Firm;
 use config\tables\TSUserFirm;
 use Valitron\Validator;
@@ -251,48 +252,6 @@ class UserModel extends AppBaseModel{
             return false;
         }
         // throw new \Exception("Этого не должно быть");
-    }
-
-
-
-    /**
-     * Возвращает из базы ассоциативный массив со списком ТП разрешенных текущему авторизованному пользователю.
-     * Если парамерт-фильтр установлен в null, то он не участвует в запросе и выбираются все значения.
-     * @param int|null $user_id -- если не указан, то используется ID авторизованного пользователя
-     * @param int|null $status -- 0 — Отключен/демонтирован, 1 — Работает
-     * @param int|null $deleted -- ТП физически демонтирована, её больше нет.
-     * @param int|null $is_managed -- Управляемая ТП, т.е. есть микротик и абоны почключены через таблицу АБОН
-     * @param int|null $rang_id -- Ранг узла: 1 — Абонентский узел | 2 — AP | 3 — Агрегатор AP | 4 — Bridge AP | 5 — Bridge Client | 10 — Хостинговая тех. площадка | 100 — Биллинг
-     * @param array|null $tp_list_id -- Список ID ТП для выборки/фильтрации
-     * @throws \Exception
-     * @return array
-     */
-    function get_my_tp_list(
-            ?int $user_id = null,
-            ?int $status = 1,
-            ?int $deleted = null,
-            ?int $is_managed = null,
-            ?int $rang_id = null,
-            ?array $tp_list_id = null
-        ): array
-    {
-        $my_id = (is_null($user_id) ? $_SESSION[User::SESSION_USER_REC][User::F_ID] : $user_id);
-        if (!$this->validate_id(table_name: User::TABLE, id_value: $my_id, field_id: User::F_ID)) {
-            throw new \Exception("ID[{$user_id}] No Valid");
-        }
-        $sql = "SELECT "
-                . "".TP::TABLE.".* "
-                . "FROM `".TSUserTp::TABLE."` "
-                . "LEFT JOIN ".TP::TABLE." ON ".TSUserTp::TABLE.".".TSUserTp::F_TP_ID." = ".TP::TABLE.".".TP::F_ID." "
-                . "WHERE "
-                . "(`".TSUserTp::F_USER_ID."`={$my_id}) "
-                . (!empty($tp_list_id) ? "AND (`".TSUserTp::F_TP_ID."` IN (".implode(',', $tp_list_id).")) " : "")
-                . (!is_null($status) ? "AND (`status`={$status}) " : "")
-                . (!is_null($deleted) ? "AND (`deleted`={$deleted}) " : "")
-                . (!is_null($is_managed) ? "AND (`is_managed`={$is_managed}) " : "")
-                . (!is_null($rang_id) ? "AND (`rang_id`={$rang_id}) " : "")
-                . "ORDER BY `".TP::TABLE."`.`".TP::F_TITLE."` ASC";
-        return $this->get_rows_by_sql($sql);
     }
 
 

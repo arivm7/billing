@@ -119,6 +119,13 @@ use billing\core\base\View;
             .hover-pointer {
                 cursor: pointer; /* показывает "руку" */
             }
+            
+            .form-control::placeholder {
+                color: #6c757d;
+                font-style: italic;
+                font-size: small;
+                opacity: 1;
+            }            
 
         </style>
     </head>

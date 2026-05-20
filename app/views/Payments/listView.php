@@ -58,13 +58,13 @@ $view_my = can_view(Module::MOD_MY_PAYMENTS) && $user[User::F_ID] == $user[Abon:
             <div>
                 <!-- Внесение платежа -->
                 <?php if (can_add([Module::MOD_PAYMENTS])) : ?>
-                    <a href="<?=Pay::URI_FORM;?>?<?=Abon::F_GET_ID;?>=<?=$user[Abon::REC][Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-1" target="_self"><span class="fw-bold">+₴</span> <?= __('Внести платіж'); ?></a>
+                    <a href="<?=Pay::URI_FORM;?>?<?=Abon::F_GET_ID;?>=<?=$user[Abon::REC][Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-1" target="_self"><span class="fw-bold">+₴</span> <?= __('Make a payment | Внести платёж | Внести платіж'); ?></a>
                 <?php endif; ?>
                 <!-- Вернуться в карточку абонента -->
                 <?php if (can_use([Module::MOD_ABON])) : ?>
-                    <a href="<?=Abon::URI_VIEW;?>/<?=$user[Abon::REC][Abon::F_ID];?>" class="btn btn-outline-info btn-sm" target="_self"><span class="fw-bold">🅐</span> <?= __('Картка'); ?></a> <!-- ⒶⒶⒶ -->
+                    <a href="<?=Abon::URI_VIEW;?>/<?=$user[Abon::REC][Abon::F_ID];?>" class="btn btn-outline-info btn-sm" target="_self"><span class="fw-bold">🅐</span> <?= __('Card | Карта | Картка'); ?></a> <!-- ⒶⒶⒶ -->
                 <?php else: ?>
-                    <a href="/my" class="btn btn-outline-info btn-sm" target="_self"><span class="fw-bold">🅐</span> <?= __('Картка'); ?></a> <!-- ⒶⒶ🅐Ⓐ(A) -->
+                    <a href="/my" class="btn btn-outline-info btn-sm" target="_self"><span class="fw-bold">🅐</span> <?= __('Card | Карта | Картка'); ?></a> <!-- ⒶⒶ🅐Ⓐ(A) -->
                 <?php endif; ?>
             </div>
         </div>
@@ -81,7 +81,7 @@ $view_my = can_view(Module::MOD_MY_PAYMENTS) && $user[User::F_ID] == $user[Abon:
                 <th class="text-center align-middle"><?=__('Description');?></th>
                 <th class="text-center align-middle"><?=__('Bank No');?></th>
                 <th class="text-center align-middle"><?=__('Service info about payment');?></th>
-                <th class="text-center align-middle"><?=__('Действия');?></th>
+                <th class="text-center align-middle"><?=__('Actions | Действия | Дії');?></th>
                 <?php endif; ?>
             </tr>
         </thead>
@@ -112,15 +112,15 @@ $view_my = can_view(Module::MOD_MY_PAYMENTS) && $user[User::F_ID] == $user[Abon:
                     <?php if (can_edit(Module::MOD_PAYMENTS)) : ?>
                         <a href="<?=Pay::URI_FORM;?>/<?=h($pay_one[Pay::F_ID]);?>" 
                             class="btn btn-sm btn-outline-info" 
-                            title="<?=__('Edit');?>"><img src="<?=Icons::SRC_EDIT_REC;?>" alt="[Edit]" height="22px"></a>
+                            title="<?=__('Edit | Редактировать | Редагувати');?>"><img src="<?=Icons::SRC_EDIT_REC;?>" alt="[Edit]" height="22px"></a>
                     <?php endif; ?>
                     <!-- Удаление платежа -->
                     <?php if (can_del(Module::MOD_PAYMENTS)) : ?>
                         <a href="<?=Pay::URI_DEL;?>/<?=h($pay_one[Pay::F_ID]);?>" 
                             class="btn btn-sm btn-outline-danger" 
                             onclick="return confirm(
-                                    '[X] <?=__('Удалить этот платёж') . '? | ' . __('Важно') . ': ' . __('Это влияет на рассчеты баланса'); ?>');"
-                            title="<?=__('Delete');?>"><img src="<?=Icons::SRC_ICON_TRASH;?>" alt="[Del]" height="22px"></a>
+                                    '[X] <?=__('Delete this payment | Удалить этот платёж | Видалити цей платіж') . '? | ' . __('Important | Важно | Важливо') . ': ' . __('This affects balance calculations | Это влияет на рассчеты баланса | Це впливає на розрахунки балансу'); ?>');"
+                            title="<?=__('Delete | Удалить | Видалити');?>"><img src="<?=Icons::SRC_ICON_TRASH;?>" alt="[Del]" height="22px"></a>
                     <?php endif; ?>
                 </td>
                 <?php endif; ?>

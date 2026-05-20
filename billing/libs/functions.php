@@ -2879,3 +2879,50 @@ function normal_str(string $comment, bool $rmOnlySpace = false) {
             );
 }
 
+
+
+/**
+ * Проверяет входит ли значение в указанный диапазон
+ * @param int $value -- проверяемое значение
+ * @param int $range1 -- начало диапазона, включая это число
+ * @param int $range2 -- конец диапазона, включая это число
+ * @return bool
+ */
+function in_range(int $value, int $range1, int $range2): bool {
+    return ($range1 <= $value) && ($value <= $range2);
+}
+
+
+
+/**
+ * Проверяет пересечение диапазонов чисел, включая граничные числа
+ * @param int $a1
+ * @param int $a2
+ * @param int $b1
+ * @param int $b2
+ * @return bool
+ */
+function intersect_ranges(int $a1, int $a2, int $b1, int $b2): bool {
+    return (in_range($a1, $b1, $b2)) ||
+           (in_range($a2, $b1, $b2)) ||
+           (in_range($b1, $a1, $a2)) ||
+           (in_range($b2, $a1, $a2));
+}
+
+
+
+function mikBool(mixed $value): bool
+{
+    if (is_bool($value)) {
+        return $value;
+    }
+
+    if (empty($value)) {
+        return false;
+    }
+
+    return match (strtolower(trim((string)$value))) {
+        'true', 'yes', '1', 'enabled' => true,
+        default => false,
+    };
+}

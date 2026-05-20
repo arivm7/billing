@@ -378,7 +378,7 @@ $config = [
      */
 
 
-    
+
     /**
      * Блок авторизации
      */
@@ -395,6 +395,33 @@ $config = [
     
     
 
+    /**
+     * Блок технических площадок
+     */
+    
+    'tp_log_file' => 'tp.log',
+    /**
+     * Параметры поиска и рассчёта диапазонов id номеров 
+     * для указания на ТП для выдачи новым абонентам, подключенным на этой ТП
+     */
+    'tp_abon_id_range_min' => 7_000,   // начальный номер диапазона id
+    'tp_abon_id_range_max' => 100_000, // конечный номр для выдачи id
+    'tp_abon_id_range_len' => 500,     // количество чисел в предлагаемом фрагменте
+    'tp_abon_id_count_proposes' => 20, // Ограничение количества поиска фрагментов свободных диапазонов
+
+
+
+    /**
+     * Блок работы с логами
+     * https://www.whois.com/whois/{IP}
+     * https://rdap.arin.net/registry/ip/{IP}
+     * https://search.arin.net/rdap/?query={IP}
+     * https://wq.apnic.net/static/search.html?query={IP}
+     */
+    'whois_template_ip' => '{IP}',
+    'whois_web_service' => 'https://wq.apnic.net/static/search.html?query={IP}',
+    
 ];
+
 
 return $config;

@@ -867,8 +867,6 @@ class Bank
                                             . '<span class="fw-bold">₴</span>'
                                             . '</a>'
                                     :   '')
-                                        // class="btn btn-sm btn-outline-info" 
-                                        // title="__('Edit')"><img src="Icons::SRC_EDIT_REC" alt="[Edit]" height="22px"></a>
                             :   ""
                         );
                 break;
@@ -911,7 +909,7 @@ class Bank
                                         . (can_view([Module::MOD_PAYMENTS]) && !empty($found_rec[Bank::F_FOUND_ABON][Abon::F_ID])
                                             ?   '<a href="'.Pay::URI_LIST.'/'.$found_rec[Bank::F_FOUND_ABON][Abon::F_ID].'" '
                                                     . 'class="btn btn-outline-info align-items-center fs-6 px-2 py-1 ms-2" '
-                                                    . 'title="' . __('Full list of subscriber payments') . '" '
+                                                    . 'title="' . __('Full list of subscriber payments | Полный список абонентских платежей | Повний список абонентських платежів') . '" '
                                                     . 'target="_blank">'
                                                     . '<span class="fw-bold">₴₴</span>'
                                                     . '</a>'
@@ -953,7 +951,7 @@ class Bank
                                      // . '<span class="badge text-bg-warning d-inline-flex align-items-center fs-6 py-2 px-3">'
                                             . '<label class="hover-pointer mb-0" 
                                                 for="'.Bank::POST_REC .'['.$index.']['.Pay::F_POST_SAVE.']">'
-                                                . __('Save') 
+                                                . __('Save | Внести | Внести')
                                             . '</label>'
                                             . '<input class="form-check-input hover-pointer ms-2 m-0" 
                                                 type="checkbox"
@@ -1014,7 +1012,7 @@ class Bank
                             :   '<span class="text-nowrap" title="'.Pay::field_title($field).'">'.h($pay_rec[$field]).'</span>'
                                 . '<button type="button" '
                                     . 'class="btn btn-outline-info btn-sm align-items-center fs-8 py-0 px-2 ms-3 copy-btn" data-text="'.h($pay_rec[$field]).'">'
-                                    . '<img src="'.Icons::SRC_ICON_CLIPBOARD.'" title="'.__('Скопировать Номер транзакции в clipboard').'" alt="[copy]" height="16">'
+                                    . '<img src="'.Icons::SRC_ICON_CLIPBOARD.'" title="'.__('Copy Transaction Number to clipboard | Скопировать Номер транзакции в clipboard | Копіювати Номер транзакції у clipboard').'" alt="[copy]" height="16">'
                                 . '</button>'
                                 . '<input type="hidden" name="'.Bank::POST_REC .'['.$index.'][' . $field . ']" value="' . h($pay_rec[$field]) . '"> '
                         );

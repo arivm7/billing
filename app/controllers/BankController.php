@@ -272,7 +272,7 @@ class BankController extends AppBaseController
                         break;
                     
                     default:
-                        MsgQueue::msg(MsgType::ERROR, __('Этот тип банковских карт не поддерживается') . '. ' . __('Обратитесь к програмистам'));
+                        MsgQueue::msg(MsgType::ERROR, __('This type of bank cards is not supported | Этот тип банковских карт не поддерживается | Цей тип банківських карток не підтримується') . '. ' . __('Contact the programmers | Обратитесь к програмистам | Зверніться до програмістів'));
                         redirect(); // Bank::URI_INDEX
                         break;
                 }
@@ -295,14 +295,14 @@ class BankController extends AppBaseController
                         break;
                     
                     default:
-                        MsgQueue::msg(MsgType::ERROR, __('Этот тип банковского расчётного счёта не поддерживается') . '. ' . __('Обратитесь к програмистам'));
+                        MsgQueue::msg(MsgType::ERROR, __('This type of bank account is not supported | Этот тип банковского расчётного счёта не поддерживается | Цей тип банківського розрахункового рахунку не підтримується') . '. ' . __('Contact the programmers | Обратитесь к програмистам | Зверніться до програмістів'));
                         redirect(); // Bank::URI_INDEX
                         break;
                 }
                 break;
             
             default:
-                MsgQueue::msg(MsgType::ERROR, __('Этот тип ППП не поддерживается') . '. ' . __('Обратитесь к програмистам'));
+                MsgQueue::msg(MsgType::ERROR, __('This type of payment acceptance point (PAP) is not supported | Этот тип пункта приёма платежей (ППП) не поддерживается | Цей тип пункту прийому платежів (ППП) не підтримується') . '. ' . __('Contact the programmers | Обратитесь к програмистам | Зверніться до програмістів'));
                 redirect(); // Bank::URI_INDEX
                 break;
         }
@@ -397,7 +397,7 @@ class BankController extends AppBaseController
         }
         // MsgQueue::msg(MsgType::INFO, "==== ". __("All data is collected | Все данные собраны | Всі дані зібрані") ." ====");
 
-        View::setMeta(__(' | Получение платежей | ') . $ppp[Ppp::F_TITLE]);
+        View::setMeta(' | ' . __('Receiving payments | Получение платежей | Отримання платежів') . ' | ' . $ppp[Ppp::F_TITLE]);
 
         $this->setVariables([
             'accounts'      => $accounts,   // [], Банковские карты или рассчётные счета
@@ -436,7 +436,7 @@ class BankController extends AppBaseController
             'ppp_list' => $ppp_list,
         ]);
 
-        View::setMeta(title: __('Список ППП для контроля и ручного распределения платежей'));
+        View::setMeta(title: __('List of payment acceptance points for control and manual distribution of payments | Список пунктов приёма платежей для контроля и ручного распределения платежей | Список пунктів прийому платежів для контролю та ручного розподілу платежів'));
 
     }
 

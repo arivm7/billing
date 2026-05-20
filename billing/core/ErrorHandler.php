@@ -25,13 +25,14 @@ use Monolog\Level;
  */
 class ErrorHandler {
 
-    public const DEBUG                  = 0;            // Выводить ошибки на страницу: 2 -- Exception | 1 -- Лог файл | 0 -- Prodaction
+    public const DEBUG                  = 1;            // Выводить ошибки на страницу: 2 -- Exception | 1 -- Лог файл | 0 -- Prodaction
     public const DUMP_ECHO              = 1;            // Выводить var_dump() ошибки на страницу
     public const DUMP__TO_LOG_FILE      = 1;            // Выводить var_dump() в лог-файл
     public const ERROR_TO_LOG_FILE      = 1;            // Писать ошибки в лог-файл
     public const LOG_FILENAME           = "errors.log"; // Имя лог-файла
     public const DEFAULT_RESPONSE_CODE  = 500;          // Дефолтное значение кода http-ошибки
 
+    
 
     public function __construct() {
         if (self::DEBUG) {
@@ -144,7 +145,9 @@ class ErrorHandler {
             string $errfile,
             int $errline,
             mixed $errcontext = null,
-            int $response_code = self::DEFAULT_RESPONSE_CODE) {
+            ?int $response_code = null) 
+    {
+        if (is_null($response_code)) { $response_code = self::DEFAULT_RESPONSE_CODE; } 
 
         /* errno  https://www.php.net/manual/ru/errorfunc.constants.php */
 

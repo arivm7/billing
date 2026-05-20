@@ -82,7 +82,7 @@ require_once DIR_LIBS . '/compare_functions.php';
     <div class="card-header d-flex justify-content-between align-items-center">
         <div>
             <!-- PAY ID -->
-            <small class="text-muted" title="<?= __('Дата транзакции') ?>" ><?= date('d.m.Y H:i:s', $pay_rec[Pay::F_DATE]) ?></small><br>
+            <small class="text-muted" title="<?= __('Transaction date | Дата транзакции | Дата транзакції') ?>" ><?= date('d.m.Y H:i:s', $pay_rec[Pay::F_DATE]) ?></small><br>
             <strong>Pay ID:</strong> <?= Bank::get_view_field($index, Pay::F_ID, $statement, $found_rec, $pay_rec) ?>
         </div>
         <div>
@@ -96,7 +96,7 @@ require_once DIR_LIBS . '/compare_functions.php';
 
         <div class="row g-3">
             <!-- Дата операции -->
-            <div class="col-3"><strong>Дата транзакции:</strong></div>
+            <div class="col-3"><strong><?= __('Transaction date | Дата транзакции | Дата транзакції') ?>:</strong></div>
             <div class="col-6"><span class="font-monospace"><?= Bank::get_view_field($index, Pay::F_DATE, $statement, $found_rec, $pay_rec) ?></span></div>
         </div>
 
@@ -125,7 +125,7 @@ require_once DIR_LIBS . '/compare_functions.php';
                 <?php if ($found_rec[Bank::F_FOUND_ON_BILLING]) : ?>
                     <?php if (!is_null($pay_rec[Pay::F_REST])) : ?>
                         <?php if (empty($found_rec[Bank::F_FOUND_PAY][Pay::F_REST])) : ?>
-                            | <img class="p-0 mb-1" src="<?= Icons::SRC_WARN ?>" alt="[!!!]" height="22" title="<?= __('Остаток на счету после операции не внесён') ?>">
+                            | <img class="p-0 mb-1" src="<?= Icons::SRC_WARN ?>" alt="[!!!]" height="22" title="<?= __('The account balance after the operation has not been deposited | Остаток на счету после операции не внесён | Залишок на рахунку після операції не внесено') ?>">
                         <?php else: ?>
                             <?php $warn = (
                                 (cmp_float($found_rec[Bank::F_FOUND_PAY][Pay::F_REST], $pay_rec[Pay::F_REST]) != 0)   

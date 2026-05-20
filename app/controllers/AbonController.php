@@ -122,7 +122,7 @@ class AbonController extends AppBaseController {
 
         // <!-- Внесение платежа -->
         if (can_add([Module::MOD_PAYMENTS])) {
-            $add_payment_url = "<a href='".Pay::URI_FORM."?".Abon::F_GET_ID."=".$data[Abon::F_ID]."' class='btn btn-outline-info btn-sm me-1 mb-1' target='_blank' title='". __('Make a payment | Внести платіж | Внести платіж') ."'><span class='fw-bold'>+₴</span></a>";
+            $add_payment_url = "<a href='".Pay::URI_FORM."?".Abon::F_GET_ID."=".$data[Abon::F_ID]."' class='btn btn-outline-info btn-sm me-1 mb-1' target='_blank' title='". __('Make a payment | Внести платёж | Внести платіж') ."'><span class='fw-bold'>+₴</span></a>";
         } else {
             $add_payment_url = "";
         }

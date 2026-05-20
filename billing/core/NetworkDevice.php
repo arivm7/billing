@@ -1,4 +1,22 @@
 <?php
+/**
+ *  Project : my.ri.net.ua
+ *  File    : NetworkDevice.php
+ *  Path    : billing/core/NetworkDevice.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 20 May 2026 22:32:46
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2026 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
+
+/**
+ * Description of NetworkDevice.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
+
 
 
 
@@ -47,7 +65,7 @@ abstract class NetworkDevice {
                 if (empty($tp[TP::F_MIK_IP]) || !validate_ip($tp[TP::F_MIK_IP])) {
                     throw new Exception('NetworkDevice::__construct -- не верный ip доступа к ТП');
                 }
-                if (empty($tp[TP::F_MIK_PORT_SSL])) {
+                if (empty($tp[TP::F_MIK_PORT] && empty($tp[TP::F_MIK_PORT_SSL]))) {
                     throw new Exception('NetworkDevice::__construct -- не верный порт доступа к ТП');
                 }
                 if (empty($tp[TP::F_MIK_LOGIN]) || empty($tp[TP::F_MIK_PASSWD])) {
@@ -87,17 +105,17 @@ abstract class NetworkDevice {
     abstract public function set_list_item(string $list, string $ip, int|bool $ena, string $descr): bool;
     abstract public function in_list_item(string $list, string $ip, int|bool $ena): bool;
 
-    public function get_list_abon(?string $ip = null, ?int $abon_id = null, int|bool|null $ena = null): array {
+    public function get_list_abon(?string $ip = null, int|bool|null $ena = null, ?int $abon_id = null): array {
         // !!! abon_id
         return $this->get_list_items(self::LIST_ABON, $ip, $ena);
     }
     
-    public function set_list_abon(string $ip, ?int $abon_id = null, int|bool $ena, string $descr): bool {
+    public function set_list_abon(string $ip, int|bool $ena, string $descr, ?int $abon_id = null): bool {
         // !!! abon_id
         return $this->set_list_item(self::LIST_ABON, $ip, $ena, $descr);
     }
     
-    public function in_list_abon(?string $ip, ?int $abon_id = null, int|bool|null $ena = null): bool {
+    public function in_list_abon(?string $ip, int|bool|null $ena = null, ?int $abon_id = null): bool {
         // !!! abon_id
         return $this->in_list_item(self::LIST_ABON, $ip, $ena);
     }

@@ -446,12 +446,12 @@ class ApiController extends AppBaseController {
                         $ip     = $_GET[Api::F_IP];
                         $ena    = boolval($_GET[Api::F_ENABLED]);
                         if (Api::set_mik_abon_ip(Api::tp_connector($tp_id), $ip, $ena, true)) {
-                            MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Статус установлен успешно'));
+                            MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Status set successfully | Статус установлен успешно | Статус встановлено успішно'));
                             if (Api::$errors) {
                                 MsgQueue::msg(MsgType::SUCCESS_AUTO, Api::$errors);
                             }
                         } else {
-                            MsgQueue::msg(MsgType::ERROR, __('Ошибка установления статуса IP адреса'));
+                            MsgQueue::msg(MsgType::ERROR, __('Error establishing IP address status | Ошибка установления статуса IP адреса | Помилка встановлення статусу IP-адреси'));
                             if (Api::$errors) {
                                 MsgQueue::msg(MsgType::ERROR, Api::$errors);
                             }
@@ -479,7 +479,7 @@ class ApiController extends AppBaseController {
                             /**
                              * если включаем ПФ, то установить время ожидания оплаты (из конфига).
                              */
-                            MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Устанавливаем время ожидания оплаты') . ' (' . App::get_config('pa_days_to_wait_payment') . ' ' . __('дней') . ')');
+                            MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Set the waiting time for payment | Устанавливаем время ожидания оплаты | Встановлюємо час очікування оплати') . ' (' . App::get_config('pa_days_to_wait_payment') . ' ' . __('days | дней | днів') . ')');
                             $model->set_field_value(
                                 table_name: Abon::TABLE, 
                                 field_id: Abon::F_ID, 
@@ -532,7 +532,7 @@ class ApiController extends AppBaseController {
                         if ($pa_new_id === false) {
                             redirect();
                         } else {
-                            MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Тарифный план изменён успешно'));
+                            MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Tariff plan changed successfully | Тарифный план изменён успешно | Тарифний план успішно змінено'));
                             $model = new AbonModel();
                             $pa = $model->get_pa($pa_new_id);
                             $model->recalc_abon($pa[PA::F_ABON_ID]);
@@ -573,7 +573,7 @@ class ApiController extends AppBaseController {
                         $model = new AbonModel();
                         $pa = $model->get_pa($pa_id);
                         if (PaController::delete($pa_id)) {
-                            MsgQueue::msg(MsgType::SUCCESS, __('Прайсовый фрагмент успешно удалён'));
+                            MsgQueue::msg(MsgType::SUCCESS, __('Price fragment successfully deleted | Прайсовый фрагмент успешно удалён | Прайсовий фрагмент успішно видалено'));
                             MsgQueue::msg(MsgType::INFO, $pa);
                             $model->recalc_abon($pa[PA::F_ABON_ID]);
                             redirect(Abon::URI_VIEW . '/' . $pa[PA::F_ABON_ID]);
@@ -621,7 +621,7 @@ class ApiController extends AppBaseController {
                                 value: 1,
                                 update_access_time: true);
                         } else {
-                            MsgQueue::msg(MsgType::ERROR_AUTO, __('ID счета не верен'));
+                            MsgQueue::msg(MsgType::ERROR_AUTO, __('Account ID is not correct | ID счета не верен | ID рахунку не вірний'));
                         }
                     } else {
                         MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
@@ -667,7 +667,7 @@ class ApiController extends AppBaseController {
             !preg_match('/^Bearer\s+(.+)$/', $authHeader, $m)
         ) {
             http_response_code(401);
-            echo __('Missing or invalid Authorization header | Заголовок авторизации тсутствует или недействителен') . "\n";
+            echo __('Authorization header is missing or invalid | Заголовок авторизации тсутствует или недействителен | Заголовок авторизації немає або недійсний') . "\n";
             exit(1);
         }
         $token = $m[1];
@@ -679,7 +679,8 @@ class ApiController extends AppBaseController {
          */
         if (!$model->login_by_token($token)) {
             http_response_code(403);
-            echo __('Invalid token | Недействительный токен') . "\n";
+            echo __('Invalid token | Недействительный токен | Недійсний токен') . "\n";
+            self::log_unauthorize();
             exit(1);
         }
 
@@ -701,7 +702,7 @@ class ApiController extends AppBaseController {
                     // 1. Проверка метода
                     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
                         http_response_code(405);
-                        echo __('Метод не разрешен') . "\n";
+                        echo __('Method not allowed | Метод не разрешен | Метод не дозволено') . "\n";
                         exit(1);
                     }
 
@@ -719,13 +720,13 @@ class ApiController extends AppBaseController {
                         $model = new AbonModel();
 
                         if (!$model->validate_id(Abon::TABLE, $abon_id, Abon::F_ID) ) {
-                            echo __('Номер абонента не верен') . "\n";
+                            echo __('The subscriber number is not correct | Номер абонента не верен | Номер абонента не вірний') . "\n";
                             http_response_code(400);
                             exit(1);
                         }
 
                         if (empty($text)) {
-                            echo __('Текст сообщения пуст') . "\n";
+                            echo __('Message text is empty | Текст сообщения пуст | Текст повідомлення порожній') . "\n";
                             http_response_code(400);
                             exit(1);
                         }
@@ -735,7 +736,7 @@ class ApiController extends AppBaseController {
                             $phone_num = $user[User::F_PHONE_MAIN] ?? '';
                             if (empty($phone_num)) {
                                 http_response_code(400);
-                                echo __('Номер телефона не указан') . "\n";
+                                echo __('Phone number not specified | Номер телефона не указан | Номер телефону не вказано') . "\n";
                                 exit(1);
                             }
                         }
@@ -753,17 +754,18 @@ class ApiController extends AppBaseController {
                         // debug($notice, '$notice', die: 1);
 
                         if (Notify::save($notice)) {
-                            echo __('Сообщение зарегистрировано') . "\n";
+                            echo __('Message registered | Сообщение зарегистрировано | Повідомлення зареєстровано') . "\n";
                             exit(0);
                         } else {
                             http_response_code(303);
-                            echo __('Ошибка регистрации сообщения') . ': ' . $model->errorInfo() . "\n";
+                            echo __('Message registration error | Ошибка регистрации сообщения | Помилка реєстрації повідомлення') . ': ' . $model->errorInfo() . "\n";
                             exit(1);
                         }
 
                     } else {
                         http_response_code(403);
                         echo __('No rights | Нет прав | Немає прав') . "\n";
+                        self::log_no_rights();
                         exit(1);
                     }
                     break;

@@ -93,7 +93,7 @@ class SecurityController extends AdminBaseController {
 
 
 
-    private static function formatDuration(?int $seconds): string {
+    public static function formatDuration(?int $seconds): string {
         if ($seconds === null) {
             return __('NULL (forever)');
         }

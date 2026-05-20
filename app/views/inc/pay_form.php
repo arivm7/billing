@@ -208,8 +208,8 @@ $wcol2 = 12 - $wcol1; // ширина второй колонки
                                 <a href="<?=Pay::URI_DEL;?>/<?=h($form_data_fn(Pay::F_ID));?>" 
                                     class="btn btn-sm btn-outline-danger" 
                                     onclick="return confirm(
-                                            '[X] <?=__('Удалить этот платёж') . '? | ' . __('Важно') . ': ' . __('Это влияет на рассчеты баланса'); ?>');"
-                                    title="<?=__('Удалить этот платёж');?>&#13;<?= __('Важно') . ': ' . __('Это влияет на рассчеты баланса') ?>"
+                                            '[X] <?=__('Delete this payment | Удалить этот платёж | Видалити цей платіж') . '? | ' . __('Important | Важно | Важливо') . ': ' . __('This affects balance calculations | Это влияет на рассчеты баланса | Це впливає на розрахунки балансу'); ?>');"
+                                    title="<?=__('Delete this payment | Удалить этот платёж | Видалити цей платіж');?>&#13;<?= __('Important | Важно | Важливо') . ': ' . __('This affects balance calculations | Это влияет на рассчеты баланса | Це впливає на розрахунки балансу') ?>"
                                     ><img src="<?=Icons::SRC_ICON_TRASH;?>" alt="[Del]" height="22px"></a>
                             <?php endif; ?>
                         </div>

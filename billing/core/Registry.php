@@ -178,6 +178,21 @@ class Registry {
     }
 
 
+
+    /**
+     * Добавляет в регистр данные из переданного аммоциативного массива
+     * Массив должен быть в формате [ 'key' => 'value', ... ]
+     * @param array $data
+     */
+    public function merge_config(array $data) {
+        foreach ($data as $key => $value) {
+            self::$config[$key] = $value;
+        }
+    }
+
+
+
+
     public static function printList() {
         echo "objects:<pre>";
 //        var_dump(self::$config);

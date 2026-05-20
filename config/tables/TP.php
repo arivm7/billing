@@ -14,6 +14,10 @@
 namespace config\tables;
 
 use billing\core\base\Lang;
+use billing\core\base\Controller;
+use billing\core\App;
+
+
 
 /**
  * Description of TP.php
@@ -28,6 +32,7 @@ class TP {
     const URI_EDIT                 = '/tp/edit';
     const URI_SAVE                 = '/tp/save';
     const URI_DELETE               = '/tp/delete';
+    const URI_FW_INPUT             = '/tp/fw-input';
     const URI_COMBINE              = '/api/combine';
 
     const POST_REC                 = 'tp';
@@ -40,7 +45,7 @@ class TP {
      */
 
     const F_ID                     = 'id';
-    const F_STATUS                 = 'status';                  // '0 — Отключен/демонтирован, 1 — Работает',
+    const F_ACTIVE                 = 'status';                  // '0 — Отключен, 1 — Работает',
     const F_DELETED                = 'deleted';                 // 'ТП демонтирована',
     const F_IS_MANAGED             = 'is_managed';              // 'Управляемая ТП, т.е. есть микротик и абоны почключены через таблицу АБОН',
     const F_TERRITORIAL_GROUP_ID   = 'territorial_group_id';    // 'ID территориальной группы технических площадок',
@@ -133,7 +138,7 @@ class TP {
 
 
     const DESCRIPTIONS = [
-        self::F_STATUS => [
+        self::F_ACTIVE => [
             0=> [
                 'en'=> 'Off',
                 'ru'=> 'Отключена',  
@@ -173,9 +178,9 @@ class TP {
 
 
     public static function get_status(array $tp): string {
-        return self::DESCRIPTIONS[self::F_STATUS][$tp[self::F_STATUS]][Lang::code()] 
+        return self::DESCRIPTIONS[self::F_ACTIVE][$tp[self::F_ACTIVE]][Lang::code()] 
                 . ' | ' 
-                . ($tp[self::F_STATUS] 
+                . ($tp[self::F_ACTIVE] 
                     ? self::DESCRIPTIONS[self::F_IS_MANAGED] [$tp[self::F_IS_MANAGED]] [Lang::code()] 
                     : self::DESCRIPTIONS[self::F_DELETED]    [$tp[self::F_DELETED]]    [Lang::code()])
                 ;
@@ -241,7 +246,7 @@ class TP {
     const TEMPLATE_IP = '{IP}';
 
     const TEMPLATES = [
-        self::TEMPLATE_IP,
+        self::TEMPLATE_IP => self::F_IP,
     ];
 
     const TEMPLATES_FIELDS = [
@@ -259,7 +264,33 @@ class TP {
     }
 
 
+    public static function untemplate(array &$tp): void 
+    {
+        foreach (self::TEMPLATES_FIELDS as $field => $_) {
+            
+            if  ( empty($tp[$field]) ) { continue; } // !array_key_exists($field, $tp)
+            
+            foreach (self::TEMPLATES as $template => $field_src_value) {
+                if  (
+                        array_key_exists($field_src_value, $tp) && 
+                        !is_empty($tp[$field_src_value], checkZero: false, checkFalse: false)
+                    ) 
+                {
+                    $tp[$field] = str_replace($template, $tp[$field_src_value], $tp[$field]);
+                } 
+                else 
+                {
+                    Controller::log(
+                        msg: 'ERROR: TP ['.$tp[TP::F_ID].'], поле ['.$field_src_value.'] -- пустое. Оно должно быть заполнено, поскольку используется в шаблоне',
+                        eol_cr: true,
+                        log_filename: App::get_config('tp_log_file'),
+                        log_ip: false,
+                        log_url: false);
+                }
+            }
+        }
+    }
 
-
+    
 
 }

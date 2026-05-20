@@ -18,11 +18,16 @@
  */
 
 
-/** @var array $firm */
-/** @var array $admin_owner */
-/** @var array $uplink */
-/** @var array $prices */
-/** @var array $tp */
+/**
+ * Данные из контроллера
+ *  
+ * @var array $firm
+ * @var array $admin_owner
+ * @var array $uplink
+ * @var array $prices
+ * @var array $tp
+ * @var array $ranges_proposed 
+ */
 
 use billing\core\App;
 use config\tables\Firm;
@@ -62,19 +67,52 @@ $coord_label =
     </div>
     <div>"
     . (!empty($tp[TP::F_COORD]) 
-        ? "<a href='https://www.google.com.ua/maps/place/".$tp[TP::F_COORD]."/' class='btn btn-sm btn-outline-success p-0 mb-1' title='" . __('Показать на Google Maps') . "' target='_blank'>
+        ? "<a href='https://www.google.com.ua/maps/place/".$tp[TP::F_COORD]."/' class='btn btn-sm btn-outline-success p-0 mb-1' title='" . __('Show on Google Maps | Показать на Google Maps | Показати на Google Maps') . "' target='_blank'>
             <img src='" . Icons::SRC_ICON_MAPS . "' height='22rem' alt='[A]' class='m-0 align-text-bottom'></a>"
         : ""
     )
     . "</div>
 </div>";
 
+
+/**
+ * select для выбора диапазона ID для новых абонентов
+ * Данные вставляются в поля записи $tp[TP::F_ABON_ID_RANGE_START] и $tp[TP::F_ABON_ID_RANGE_END]
+ * с помошью скрипта внизу страницы
+ */
+$proposed_html  = '<select id="range_proposed" class="form-select text-secondary">'.CR;
+if (!empty($ranges_proposed) && is_array($ranges_proposed)) {
+    $proposed_html .= '<option value="" '
+            . 'data-start="'.$tp[TP::F_ABON_ID_RANGE_START].'" '
+            . 'data-end="'.$tp[TP::F_ABON_ID_RANGE_END].'"'
+            . '>'.__('Return | Вернуть | Повернути').'</option>'.CR;
+        foreach ($ranges_proposed as $key => [$start, $end]) {
+            $n1 = str_replace(' ', '&nbsp;', sprintf('%7s', $start));
+            $n2 = str_replace(' ', '&nbsp;', sprintf('%-7s', $end));
+            $proposed_html .= '<option '
+                    . 'value="'.$key.'" '
+                    . 'data-start="'.$start.'" '
+                    . 'data-end="'.$end.'"'
+                    . '>'.CR;
+            $proposed_html .= '<span class="font-monospace">' . $n1 . ' - ' . $n2 . '</span>'.CR;
+            $proposed_html .= '</option>'.CR;
+        }
+    
+} else {
+    $proposed_html .= '<option value="" disabled>'.__('The offer list is empty | Список предложений пуст | Список пропозицій порожній').'</option>'.CR;
+}
+$proposed_html .= '</select>'.CR;
+
+//debug(h($proposed_html), '$proposed_html');
+//debug($ranges_proposed, '$ranges_proposed');
+//debug($proposed_options, '$proposed_options');
+
 // Список полей с типом и дополнительными параметрами
 $fields = [
     [TP::F_TITLE                  => ['type'=>'text',        'class'=>'fs-3', 'label'=>$title_label]],
     [TP::F_RANG_ID                => ['type'=>'select_lang', 'col_w'=>'3', 'options'=>TP::TYPES, 'label'=>'Функциональный уровень']],
     [
-        TP::F_STATUS              => ['type'=>'select',      'col_w'=>'2', 'options'=>[1=>'Работает',0=>'Отключен']],
+        TP::F_ACTIVE              => ['type'=>'select',      'col_w'=>'2', 'options'=>[1=>'Работает',0=>'Отключен']],
         TP::F_IS_MANAGED          => ['type'=>'select',      'col_w'=>'2', 'options'=>[0=>'Не управляемая',1=>'Управляемая'], 'label'=>''],
         TP::F_DELETED             => ['type'=>'select',      'col_w'=>'2', 'options'=>[0=>'Установлена',1=>'Демонтирована'], 'label'=>''],
     ],
@@ -95,7 +133,7 @@ $fields = [
     ],
     [TP::F_URL                    => ['type'=>'text',        'label'=>'URL хз...', 'title'=>'Какой-то URL. Не понятно для чего его использовать']],
     [TP::F_ADDRESS                => ['type'=>'textarea',    'rows'=>get_count_rows_for_textarea($tp[TP::F_ADDRESS] ?? 2)]],
-    [TP::F_COORD                  => ['type'=>'text',       'label'=>$coord_label, 'title'=>'Координаты TP для отображения на Google Maps. Формат: широта,долгота (например: 50.4501,30.5234)']],
+    [TP::F_COORD                  => ['type'=>'text',        'label'=>$coord_label, 'title'=>'Координаты TP для отображения на Google Maps. Формат: широта,долгота (например: 50.4501,30.5234)']],
     [
         TP::F_UPLINK_ID           => ['type'=>'number',      'col_w'=>'2'],
         TP::F_UPLINK_NAME         => ['type'=>'label',       'col_w'=>'7', 'label'=>''],
@@ -106,8 +144,11 @@ $fields = [
     [TP::F_COST_PER_M_DESCRIPTION => ['type'=>'textarea',    'rows'=>get_count_rows_for_textarea($tp[TP::F_COST_PER_M_DESCRIPTION] ?? 2)]],
     [TP::F_COST_TP_VALUE          => ['type'=>'number',      'col_w'=>'3', 'class'=>'text-end', 'step'=>'0.01']],
     [TP::F_COST_TP_DESCRIPTION    => ['type'=>'textarea',    'rows'=>get_count_rows_for_textarea($tp[TP::F_COST_TP_DESCRIPTION] ?? 2)]],
-    [TP::F_ABON_ID_RANGE_START    => ['type'=>'number',      'col_w'=>'3']],
-    [TP::F_ABON_ID_RANGE_END      => ['type'=>'number',      'col_w'=>'3']],
+    [
+        TP::F_ABON_ID_RANGE_START => ['type'=>'number',      'col_w'=>'3', 'class'=>'text-start', 'step'=>'1', 'label'=>__('Subscriber ID ranges | Диапазоны абонентских ID | Діапазони абонентських ID')],
+        TP::F_ABON_ID_RANGE_END   => ['type'=>'number',      'col_w'=>'3', 'class'=>'text-start', 'step'=>'1', 'label'=>''],
+        'RANGE_PROPOSED'          => ['type'=>'html',        'col_w'=>'3', 'options'=>$proposed_html, 'label'=>''],
+    ],
     [TP::F_MIK_IP                 => ['type'=>'text',        'col_w'=>'3']],
     [TP::F_MIK_PORT               => ['type'=>'number',      'col_w'=>'3']],
     [TP::F_MIK_PORT_SSL           => ['type'=>'number',      'col_w'=>'3']],
@@ -133,7 +174,7 @@ $fields = [
                         $label = $opt['label'] ?? str_replace('_',' ', ucfirst($name));
                         $title = $opt['title'] ?? '';
                         if (array_key_exists($name, TP::TEMPLATES_FIELDS)) {
-                            $title .= CR.'('.__('Поддерживаемые шаблоны') . ': ' . implode(', ', TP::TEMPLATES) . ' )';
+                            $title .= CR.'('.__('Поддерживаемые шаблоны') . ': ' . implode(', ', array_keys(TP::TEMPLATES)) . ' )';
                         }
                         $title = trim($title);
                     ?>
@@ -145,23 +186,31 @@ $fields = [
                             <input type="<?=$opt['type']?>"
                                 class="form-control <?=($opt['class'] ?? '');?>"
                                 name="<?=TP::POST_REC?>[<?=$name?>]"
+                                id="<?=$name?>"
                                 value="<?=$value?>"
                                 placeholder="<?=($opt['placeholder'] ?? '');?>"
                                 <?=isset($opt['step'])?"step=\"{$opt['step']}\"":''?>>
                         <?php elseif($opt['type']=='textarea'): ?>
                             <textarea class="form-control"
                                     name="<?=TP::POST_REC?>[<?=$name?>]"
+                                    id="<?=$name?>"
                                     rows="<?=$opt['rows'] ?? App::get_config('textarea_rows_min')?>"><?=$value?></textarea>
+                        <?php elseif($opt['type']=='html'): ?>
+                            <?=$opt['options']?>
                         <?php elseif($opt['type']=='label'): ?>
                             <label class="col-form-label"><?=$value?></label>
                         <?php elseif($opt['type']=='select'): ?>
-                            <select class="form-select" name="<?=TP::POST_REC?>[<?=$name?>]">
+                            <select class="form-select" 
+                                    name="<?=TP::POST_REC?>[<?=$name?>]"
+                                    id="<?=$name?>">
                                 <?php foreach($opt['options'] as $k=>$v): ?>
                                     <option value="<?=$k?>" <?=($value==$k) ? 'selected' : ''?>><?=$v?></option>
                                 <?php endforeach; ?>
                             </select>
                         <?php elseif($opt['type']=='select_lang'): ?>
-                            <select class="form-select" name="<?=TP::POST_REC?>[<?=$name?>]">
+                            <select class="form-select" 
+                                    name="<?=TP::POST_REC?>[<?=$name?>]"
+                                    name="<?=$name?>">
                                 <?php foreach($opt['options'] as $k=>$v): ?>
                                     <?php $label = $v[Lang::code()] ?? ''; ?>
                                     <option value="<?=$k?>" <?=($value==$k) ? 'selected' : ''?>><?=$label?></option>
@@ -184,3 +233,26 @@ $fields = [
         </div>
     </form>
 </div>
+
+
+
+<!--
+Скрипт вставки данных 
+из полей data-start и data-end 
+в поля $tp[TP::F_ABON_ID_RANGE_START] и $tp[TP::F_ABON_ID_RANGE_END]
+-->
+<script>
+document.getElementById('range_proposed').addEventListener('change', function () {
+
+    const option = this.options[this.selectedIndex];
+
+    const start = option.dataset.start;
+    const end   = option.dataset.end;
+
+    if (!start || !end) return;
+
+    document.getElementById('<?= TP::F_ABON_ID_RANGE_START ?>').value = start;
+    document.getElementById('<?= TP::F_ABON_ID_RANGE_END ?>').value   = end;
+});
+</script>
+

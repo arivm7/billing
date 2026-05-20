@@ -71,7 +71,7 @@ $found_rec = &$statement[Bank::F_FOUND_REC];
     <div class="card-header d-flex justify-content-between align-items-center">
         <div>
             <!-- PAY ID -->
-            <small class="text-muted" title="<?= __('Дата транзакции') ?>" ><?= date('d.m.Y H:i:s', $pay_rec[Pay::F_DATE]) ?></small><br>
+            <small class="text-muted" title="<?= __('Transaction date | Дата транзакции | Дата транзакції') ?>" ><?= date('d.m.Y H:i:s', $pay_rec[Pay::F_DATE]) ?></small><br>
             <strong>Pay ID:</strong> <?= MonoCard::get_view_field($index, Pay::F_ID, $statement) ?>
         </div>
         <div>
@@ -85,7 +85,7 @@ $found_rec = &$statement[Bank::F_FOUND_REC];
 
         <div class="row g-3">
             <!-- Дата операции -->
-            <div class="col-3"><strong>Дата транзакции:</strong></div>
+            <div class="col-3"><strong><?= __('Transaction date | Дата транзакции | Дата транзакції') ?>:</strong></div>
             <div class="col-6"><span class="font-monospace"><?= MonoCard::get_view_field($index, Pay::F_DATE, $statement) ?></span></div>
         </div>
 

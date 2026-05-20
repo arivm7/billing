@@ -24,11 +24,19 @@ class Mik {
     const ON  = 'true';
     const OFF = 'false';
 
+    const YES = 'yes';
+    const NO  = 'no';
+
+    
 
     /**
-     * Списки (таблицы)
+     * Списки (таблицы) /ip/firewall/address-list/
      */
-    const L_ABON           = 'ABON';            // [list] => ABON
+    const L_ABON                = 'ABON';
+    const L_HACKERS             = 'HACKERS';
+    const L_DNS                 = 'DNS';
+    const L_SERVICES            = 'SERVICES';
+    const L_TRUSTED             = 'TRUSTED';
 
 
 

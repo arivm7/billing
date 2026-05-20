@@ -11,6 +11,7 @@
  *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
  */
 
+use billing\core\App;
 use config\tables\Module;
 ?>
 <div class="container my-4">
@@ -66,7 +67,7 @@ use config\tables\Module;
                                 <?php foreach ($blocked_ips as $blockedIp): ?>
                                     <tr>
                                         <td class="text-secondary"><?= ++$orderNo ?></td>
-                                        <td><a href="https://www.whois.com/whois/<?= h($blockedIp['ip']) ?>" target="_blank"><?= h($blockedIp['ip']) ?></a></td>
+                                        <td><a href="<?= untemplate(App::get_config('whois_web_service'), [App::get_config('whois_template_ip') => $blockedIp['ip']]); ?>" target="_blank"><?= h($blockedIp['ip']) ?></a></td>
                                         <td><?= h($blockedIp['event_type_title'] ?? ('#' . $blockedIp['event_type_id'])) ?></td>
                                         <td class="text-center"><?= (int) $blockedIp['trigger_counts'] ?></td>
                                         <td><?= h($blockedIp['blocked_at_fmt']) ?></td>
@@ -116,7 +117,7 @@ use config\tables\Module;
                                 <?php foreach ($attack_events as $attackEvent): ?>
                                     <tr>
                                         <td class="text-secondary"><?= ++$orderNo ?></td>
-                                        <td><a href="https://www.whois.com/whois/<?= h($attackEvent['ip']) ?>" target="_blank"><?= h($attackEvent['ip']) ?></a></td>
+                                        <td><a href="<?= untemplate(App::get_config('whois_web_service'), [App::get_config('whois_template_ip') => $attackEvent['ip']]); ?>" target="_blank"><?= h($attackEvent['ip']) ?></a></td>
                                         <td><?= h($attackEvent['event_type_title'] ?? ('#' . $attackEvent['event_type_id'])) ?></td>
                                         <td><?= h($attackEvent['date_attack_fmt']) ?></td>
                                         <td><?= (int) $attackEvent['count_attacks'] ?></td>

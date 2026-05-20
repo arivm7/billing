@@ -22,6 +22,7 @@ use config\SessionFields;
 use config\tables\Ppp;
 use config\tables\User;
 use config\tables\TP;
+use config\tables\PA;
 use PDO;
 
 /**
@@ -224,18 +225,32 @@ class Model {
         return self::$CACHE_ID_BY_TABLE[$table_name][$id_value];
     }
 
+    
 
     /**
      * Обёртка для проверки валидности ППП ID
      * @param int $id
      * @return bool
      */
-    public function validate_ppp(int|null $id): bool {
+    public function validate_ppp(?int $id): bool {
         if (empty($id)) { return false; }
         return $this->validate_id(Ppp::TABLE, $id, Ppp::F_ID);
     }
 
 
+    
+    /**
+     * Обёртка для проверки валидности TP ID
+     * @param int $id
+     * @return bool
+     */
+    public function validate_tp(?int $id): bool {
+        if (empty($id)) { return false; }
+        return $this->validate_id(TP::TABLE, $id, TP::F_ID);
+    }
+
+
+    
     /**
      * Кэш-массив таблиц и строк
      * для функции get_row_by_id(string $table, int $id)
@@ -754,12 +769,20 @@ class Model {
 
 
 
-    function get_tp(int $id): array {
+    function get_tp_raw(int $id): array {
         if (!array_key_exists($id, self::$CASHE_TP_LIST)) {
             self::$CASHE_TP_LIST[$id] = $this->get_row_by_id(TP::TABLE, $id, TP::F_ID);
-            $this->normalize_tp(self::$CASHE_TP_LIST[$id]);
         }
         return self::$CASHE_TP_LIST[$id];
+    }
+
+
+    
+    function get_tp(int $id): array {
+        $tp = $this->get_tp_raw($id);
+        $this->normalize_tp($tp);
+        TP::untemplate($tp);
+        return $tp;
     }
 
 
@@ -821,6 +844,7 @@ class Model {
         );
         foreach ($list as &$tp) {
             $this->normalize_tp($tp);
+            TP::untemplate($tp);
         }
         return $list;
     }
@@ -868,16 +892,59 @@ class Model {
                     $add = ($tp_one['deleted'] == $deleted);
                 }
                 if ($add) {
-                    $this->normalize_tp($tp_one);
                     $tp_list[] = $tp_one;
                 }
             }
         }
-
+        
         usort($tp_list, 'compare_title');
 
         return $tp_list;
     }
+
+
+
+    function get_tp_list_with_abon(int $abon_id, int|null $closed = null): array|null {
+        if (!$this->validate_id(table_name: Abon::TABLE, field_id: Abon::F_ID, id_value: $abon_id)) { return null; }
+        $sql = "SELECT "
+                . "`".PA::F_TP_ID."` "
+                . "FROM `".PA::TABLE."` "
+                . "WHERE (`".PA::F_ABON_ID."`={$abon_id}) "
+                . (!is_null($closed) ? "AND (`".PA::F_CLOSED."`={$closed}) " : "")
+                . "GROUP BY `".PA::F_TP_ID."`";
+        $tp_id_list = array_column(
+                array:  $this->get_rows_by_sql($sql),
+                column_key: PA::F_TP_ID,
+        );
+        if (empty($tp_id_list)) {
+            return [];
+        } else {
+            $list = $this->get_rows_by_where(table: TP::TABLE, where: TP::F_ID . ' IN (' . implode(',', $tp_id_list) . ') AND `'.TP::F_ACTIVE.'`=1');
+            foreach ($list as &$tp) {
+                $this->normalize_tp($tp);
+                TP::untemplate($tp);
+            }
+            return $list;
+        }
+    }
+
+
+
+    /**
+     * Возвращает TRUE если ТП управляемая, иначе FALSE
+     * @param int $tp_id
+     * @return boolean
+     */
+    function tp_has_managed(int $tp_id) {
+        if($this->validate_id("tp_list", $tp_id)) {
+            $tp = $this->get_tp($tp_id);
+            return $tp['is_managed'] == 1;
+        } else {
+            MsgQueue::msg(MsgType::ERROR_AUTO, "Ошибка. ID ТП[".$tp_id."] не верен");
+            return false;
+        }
+    }
+
 
 
 }

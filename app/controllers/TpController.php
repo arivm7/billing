@@ -15,9 +15,12 @@ namespace app\controllers;
 
 use app\models\TpModel;
 use billing\core\App;
+use billing\core\FWAbonValidator;
+use billing\core\MikrotikDevice;
 use billing\core\base\View;
 use billing\core\MsgQueue;
 use billing\core\MsgType;
+use config\FwInput;
 use config\SessionFields;
 use config\tables\DevAclList;
 use config\tables\DevAclTable;
@@ -30,8 +33,6 @@ use config\tables\User;
 use DataTypes;
 use DebugView;
 use Valitron\Validator;
-use billing\core\MikrotikDevice;
-use billing\core\FWAbonValidator;
 
 /**
  * Description of TpController.php
@@ -66,13 +67,13 @@ class TpController extends AppBaseController {
                 }
 
                 View::setMeta(
-                        title: __('Список технических узлов')
+                        title: __('List of technical units | Список технических узлов | Список технічних вузлів')
                     );
                 $this->setVariables([
                         'tp_list' => $tp_list,
                     ]);
             } else {
-                MsgQueue::msg(MsgType::ERROR, __('Недостаточно прав.'));
+                MsgQueue::msg(MsgType::ERROR, __('Insufficient rights | Недостаточно прав | Недостатньо прав'));
                 self::log_no_rights();
                 redirect();
             }
@@ -93,7 +94,7 @@ class TpController extends AppBaseController {
         }
 
         if (!can_add(Module::MOD_TP)) {
-            MsgQueue::msg(MsgType::ERROR, __('Недостаточно прав.'));
+            MsgQueue::msg(MsgType::ERROR, __('Insufficient rights | Недостаточно прав | Недостатньо прав'));
             self::log_no_rights();
             redirect();
         }
@@ -117,7 +118,7 @@ class TpController extends AppBaseController {
 
         $firms = $this->db->getProviderFirmsByUserId(App::get_user_id());
 
-        View::setMeta(title: __('Добавление технической площадки'));
+        View::setMeta(title: __('Adding a technical site | Добавление технической площадки | Додавання технічного майданчика'));
         $this->setVariables([
             'tp' => $tp,
             'firms' => $firms,
@@ -133,13 +134,13 @@ class TpController extends AppBaseController {
         }
 
         if (!can_add(Module::MOD_TP)) {
-            MsgQueue::msg(MsgType::ERROR, __('Недостаточно прав.'));
+            MsgQueue::msg(MsgType::ERROR, __('Insufficient rights | Недостаточно прав | Недостатньо прав'));
             self::log_no_rights();
             redirect();
         }
 
         if (empty($_POST[TP::POST_REC]) || !is_array($_POST[TP::POST_REC])) {
-            MsgQueue::msg(MsgType::ERROR, __('Нет данных формы'));
+            MsgQueue::msg(MsgType::ERROR, __('No form data | Нет данных из формы | Немає даних із форми'));
             redirect(TP::URI_ADD);
         }
 
@@ -148,13 +149,13 @@ class TpController extends AppBaseController {
 
         $title = trim((string) ($tp[TP::F_TITLE] ?? ''));
         if ($title === '') {
-            MsgQueue::msg(MsgType::ERROR, __('Название должно быть не пустым'));
+            MsgQueue::msg(MsgType::ERROR, __('The title must not be empty | Название должно быть не пустым | Назва має бути не порожньою'));
             $_SESSION[SessionFields::FORM_DATA][TP::POST_REC] = $tp;
             redirect(TP::URI_ADD);
         }
 
         if (!empty($this->db->getTpByTitle($title))) {
-            MsgQueue::msg(MsgType::ERROR, __('Техплощадка с таким названием уже существует'));
+            MsgQueue::msg(MsgType::ERROR, __('A technical site with this name already exists | Техплощадка с таким названием уже существует | Техмайданчик з такою назвою вже існує'));
             $_SESSION[SessionFields::FORM_DATA][TP::POST_REC] = $tp;
             redirect(TP::URI_ADD);
         }
@@ -164,13 +165,13 @@ class TpController extends AppBaseController {
             !$this->db->validate_id(Firm::TABLE, $firmId, Firm::F_ID)
             || empty($this->db->getActiveAgentFirmById($firmId))
         ) {
-            MsgQueue::msg(MsgType::ERROR, __('Предприятие не найдено или недоступно для выбора'));
+            MsgQueue::msg(MsgType::ERROR, __('Business not found or not available for selection | Предприятие не найдено или недоступно для выбора | Підприємство не знайдено або недоступне для вибору'));
             $_SESSION[SessionFields::FORM_DATA][TP::POST_REC] = $tp;
             redirect(TP::URI_ADD);
         }
 
         $tp[TP::F_TITLE] = $title;
-        $tp[TP::F_STATUS] = 1;
+        $tp[TP::F_ACTIVE] = 1;
         $tp[TP::F_DELETED] = 0;
         $tp[TP::F_RANG_ID] = 2;
         $tp[TP::F_ADMIN_OWNER_ID] = App::get_user_id();
@@ -182,31 +183,31 @@ class TpController extends AppBaseController {
 
         if ((int) $tp[TP::F_IS_MANAGED] === 1) {
             if (!filter_var($tp[TP::F_IP], FILTER_VALIDATE_IP)) {
-                MsgQueue::msg(MsgType::ERROR, __('Не верный IP-адрес'));
+                MsgQueue::msg(MsgType::ERROR, __('Incorrect IP address | Не верный IP-адрес | Не вірна IP-адреса'));
                 $_SESSION[SessionFields::FORM_DATA][TP::POST_REC] = $tp;
                 redirect(TP::URI_ADD);
             }
 
             if (!filter_var($tp[TP::F_MIK_IP], FILTER_VALIDATE_IP)) {
-                MsgQueue::msg(MsgType::ERROR, __('Не верный IP-адрес MikroTik'));
+                MsgQueue::msg(MsgType::ERROR, __('MikroTik IP address is incorrect | Не верный IP-адрес MikroTik | Не вірна IP-адреса MikroTik'));
                 $_SESSION[SessionFields::FORM_DATA][TP::POST_REC] = $tp;
                 redirect(TP::URI_ADD);
             }
 
             if ((int) $tp[TP::F_MIK_PORT] < 0 || (string) (int) $tp[TP::F_MIK_PORT] !== (string) $tp[TP::F_MIK_PORT]) {
-                MsgQueue::msg(MsgType::ERROR, __('Не верный API TCP порт'));
+                MsgQueue::msg(MsgType::ERROR, __('Invalid API TCP port | Не верный API TCP порт | Невірний API TCP порт'));
                 $_SESSION[SessionFields::FORM_DATA][TP::POST_REC] = $tp;
                 redirect(TP::URI_ADD);
             }
 
             if ((int) $tp[TP::F_MIK_PORT_SSL] < 0 || (string) (int) $tp[TP::F_MIK_PORT_SSL] !== (string) $tp[TP::F_MIK_PORT_SSL]) {
-                MsgQueue::msg(MsgType::ERROR, __('Не верный API SSL порт'));
+                MsgQueue::msg(MsgType::ERROR, __('Invalid API SSL port | Не верный API SSL порт | Невірний API SSL порт'));
                 $_SESSION[SessionFields::FORM_DATA][TP::POST_REC] = $tp;
                 redirect(TP::URI_ADD);
             }
 
             if (trim((string) $tp[TP::F_MIK_LOGIN]) === '' || trim((string) $tp[TP::F_MIK_PASSWD]) === '') {
-                MsgQueue::msg(MsgType::ERROR, __('Логин и пароль MikroTik обязательны'));
+                MsgQueue::msg(MsgType::ERROR, __('MikroTik login and password are required | Логин и пароль MikroTik обязательны | Логін та пароль MikroTik обов\'язкові'));
                 $_SESSION[SessionFields::FORM_DATA][TP::POST_REC] = $tp;
                 redirect(TP::URI_ADD);
             }
@@ -215,7 +216,7 @@ class TpController extends AppBaseController {
                 $dev = new MikrotikDevice(tp: $tp);
                 MsgQueue::msg(MsgType::INFO, implode(' | ', $dev->get_description()));
             } catch (\Throwable $e) {
-                MsgQueue::msg(MsgType::ERROR, __('Нет доступа к устройству по API') . ': ' . $e->getMessage());
+                MsgQueue::msg(MsgType::ERROR, __('No access to device via API | Нет доступа к устройству по API | Немає доступу до пристрою API') . ': ' . $e->getMessage());
                 $_SESSION[SessionFields::FORM_DATA][TP::POST_REC] = $tp;
                 redirect(TP::URI_ADD);
             }
@@ -223,12 +224,12 @@ class TpController extends AppBaseController {
 
         $newId = $this->db->insert_row(TP::TABLE, $tp);
         if (!$newId) {
-            MsgQueue::msg(MsgType::ERROR, __('Не удалось создать техплощадку'));
+            MsgQueue::msg(MsgType::ERROR, __('Failed to create technical site | Не удалось создать техплощадку | Не вдалося створити техмайданчик'));
             $_SESSION[SessionFields::FORM_DATA][TP::POST_REC] = $tp;
             redirect(TP::URI_ADD);
         }
 
-        MsgQueue::msg(MsgType::SUCCESS, __('Техплощадка [%s] успешно создана', $newId));
+        MsgQueue::msg(MsgType::SUCCESS, __('Technical site [%s] successfully created | Техплощадка [%s] успешно создана | Техмайданчик [%s] успішно створений', $newId));
         
         $tpUserLink = [
             TSUserTp::F_USER_ID => App::get_user_id(),
@@ -237,12 +238,73 @@ class TpController extends AppBaseController {
         ];
 
         if ($this->db->insert_row(TSUserTp::TABLE, $tpUserLink) === false) {
-            MsgQueue::msg(MsgType::ERROR, __('Техплощадка [%s] создана, но не удалось привязать её к текущему пользователю', $newId));
+            MsgQueue::msg(MsgType::ERROR, __('The technical site [%s] was created, but it was not possible to bind it to the current user | Техплощадка [%s] создана, но не удалось привязать её к текущему пользователю | Техмайданчик [%s] створений, але не вдалося прив\'язати його до поточного користувача', $newId));
             redirect(TP::URI_EDIT . '/' . $newId);
         }
 
-        MsgQueue::msg(MsgType::SUCCESS, __('Привязка к текущему пользователю успешно создана', $newId));
+        MsgQueue::msg(MsgType::SUCCESS, __('The link to the current user has been successfully created | Привязка к текущему пользователю успешно создана | Прив\'язка до поточного користувача успішно створена', $newId));
         redirect(TP::URI_EDIT . '/' . $newId);
+    }
+
+
+    
+    /**
+     * /tp/fw-input
+     * /tp/fw-input?tp_id=123
+     * /tp/fw-input?phase=interfaces
+     */
+    function fwInputAction() {
+        
+        if (!App::$auth->isAuth) {
+            MsgQueue::msg(MsgType::ERROR, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
+            self::log_unauthorize();
+            redirect();
+        }
+
+        if (!can_edit(Module::MOD_TP)) {
+            MsgQueue::msg(MsgType::ERROR, __('Insufficient rights | Недостаточно прав | Недостатньо прав'));
+            self::log_no_rights();
+            redirect();
+        }
+
+        $phase = trim((string) ($_GET['phase'] ?? FwInput::PHASE_LOGIN));
+        if (!FwInput::isValid($phase)) {
+            $phase = FwInput::PHASE_LOGIN;
+        }
+
+        /**
+         * Подключение конфига в реестр
+         */
+        $config = require DIR_CONFIG . '/config_mik.php';
+        App::$app->merge_config($config);
+        unset($config);
+
+        $tp_id = intval(($_GET[FwInput::F_GET_TP_ID] ?? 0));
+        if ($tp_id > 0) {
+            $_POST['fw']['tp_id'] = $tp_id;
+            $this->fwInputHandlePhase($phase);
+        }
+
+        if ($phase !== FwInput::PHASE_LOGIN && empty($_SESSION[FwInput::SESSION_FIELD])) {
+            MsgQueue::msg(MsgType::WARN, __('MikroTik connection parameters have been lost | Параметры подключения к MikroTik потеряны | Параметри підключення до MikroTik втрачені'));
+            redirect(TP::URI_FW_INPUT . '?phase=' . FwInput::PHASE_LOGIN);
+        }
+        
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->fwInputHandlePhase($phase);
+            redirect(TP::URI_FW_INPUT . '?phase=' . $phase);
+        }
+
+        $data = $this->fwInputReadPhase($phase);
+
+        View::setMeta(title: __('Firewall input wizard | Мастер firewall input | Майстер firewall input'));
+        
+        $this->view = FwInput::VIEWS[$phase] ?? FwInput::VIEWS[FwInput::PHASE_LOGIN];
+        
+        $this->setVariables([
+            'phase' => $phase,
+            'data' => $data,
+        ]);
     }
 
 
@@ -255,7 +317,7 @@ class TpController extends AppBaseController {
                     $my = $_SESSION[User::SESSION_USER_REC];
                     $my_tp_list = $this->db->get_my_tp_id_list();
                     if (in_array($tp_id, $my_tp_list)) {
-                        $tp = $this->db->get_tp($tp_id);
+                        $tp = $this->db->get_tp_raw($tp_id);
                         $prices = $this->db->get_prices(tp_id: $tp_id);
                         $admin_owner = $this->db->get_user($tp[TP::F_ADMIN_OWNER_ID] ?? 0);
                         $uplink = (empty($tp[TP::F_UPLINK_ID]) ? null : $this->db->get_tp($tp[TP::F_UPLINK_ID]));
@@ -269,20 +331,21 @@ class TpController extends AppBaseController {
                                 'uplink' => $uplink,
                                 'firm' => $firm,
                                 'tp' => $tp,
+                                'ranges_proposed' => $this->db->get_tp_ranges_for_abon_id(),
                             ]);
 
-                        View::setMeta(title: __('Редактирование параметров технической площадки'));
+                        View::setMeta(title: __('Editing technical site parameters | Редактирование параметров технической площадки | Редагування параметрів технічного майданчика'));
 
                     } else {
-                        MsgQueue::msg(MsgType::ERROR, __('Чужая ТП'));
+                        MsgQueue::msg(MsgType::ERROR, __('Someone else\'s technical site | Чужая техплощадка | Чужий техмайданчик'));
                         redirect();
                     }
                 } else {
-                    MsgQueue::msg(MsgType::ERROR, __('Не указан ID ТП'));
+                    MsgQueue::msg(MsgType::ERROR, __('Technical site ID not specified | Не указан ID техплощадки | Не вказано ID техмайданчика'));
                     redirect();
                 }
             } else {
-                MsgQueue::msg(MsgType::ERROR, __('Недостаточно прав.'));
+                MsgQueue::msg(MsgType::ERROR, __('Insufficient rights | Недостаточно прав | Недостатньо прав'));
                 self::log_no_rights();
                 redirect();
             }
@@ -294,27 +357,1408 @@ class TpController extends AppBaseController {
     }
 
 
+    private function fwInputHandlePhase(string $phase): void
+    {
+        switch ($phase) {
+            case FwInput::PHASE_LOGIN:
+                $this->fwInputWizardConnect();
+                return;
+            case FwInput::PHASE_INTERFACE_LIST:
+                $this->fwInputWizardInterfaces();
+                return;
+            case FwInput::PHASE_NEIGHBORS:
+                $this->fwInputWizardNeighbor();
+                return;
+            case FwInput::PHASE_CERT:
+                $this->fwInputWizardCertificate();
+                return;
+            case FwInput::PHASE_IP_SERVICES:
+                $this->fwInputWizardServices();
+                return;
+            case FwInput::PHASE_FILTERS:
+                $this->fwInputWizardFirewall();
+                return;
+        }
+    }
+
+
+    private function fwInputReadPhase(string $phase): array
+    {
+        return match ($phase) {
+            FwInput::PHASE_LOGIN => $this->fwInputReadConnect(),
+            FwInput::PHASE_INTERFACE_LIST => $this->fwInputReadInterfaces(),
+            FwInput::PHASE_NEIGHBORS => $this->fwInputReadNeighbor(),
+            FwInput::PHASE_CERT => $this->fwInputReadCertificate(),
+            FwInput::PHASE_IP_SERVICES => $this->fwInputReadServices(),
+            FwInput::PHASE_FILTERS => $this->fwInputReadFirewall(),
+            default => [],
+        };
+    }
+
+
+    private function fwInputWizardConnect(): bool
+    {
+        unset($_SESSION[FwInput::SESSION_FIELD]);
+        
+//        debug($_POST, '$_POST', die: 1);
+        
+        $form = $_POST['fw'] ?? [];
+        if (!is_array($form) || empty($form)) {
+            MsgQueue::msg(MsgType::ERROR, __('No form data | Нет данных из формы | Немає даних із форми'));
+            return false;
+        }
+
+        $form = [
+            'tp_id' => (int) ($form['tp_id'] ?? App::get_config('fw_input_def_tp_id')),
+            'host' => trim((string) ($form['host'] ?? App::get_config('fw_input_def_host'))),
+            'port' => (int) ($form['port'] ?? App::get_config('fw_input_def_port')),
+            'ssl' => empty($form['ssl']) ? 0 : 1,
+            'login' => trim((string) ($form['login'] ?? App::get_config('fw_input_def_login'))),
+            'password' => (string) ($form['password'] ?? App::get_config('fw_input_def_password')),
+        ];
+
+        $_SESSION[SessionFields::FORM_DATA][FwInput::SESSION_FIELD] = $form;
+
+        if (!empty($form['tp_id'])) {
+            
+            if (!$this->db->validate_tp($form['tp_id'])) {
+                MsgQueue::msg(MsgType::ERROR, __('Incorrect technical site ID | Не верный ID техплощадки | Не вірний ID техмайданчика'));
+                return false;
+            }
+            
+            if (!$this->db->is_my_tp($form['tp_id'])) {
+                MsgQueue::msg(MsgType::ERROR, __('Someone else\'s technical site | Чужая техплощадка | Чужий техмайданчик'));
+                return false;
+            }
+            
+            $tp = $this->db->get_tp($form['tp_id']);
+            if (empty($tp)) {
+                MsgQueue::msg(MsgType::ERROR, __('Error reading technical site data | Ошибка чтения данных техплощадки | Помилка читання даних техмайданчика'));
+                return false;
+            }
+
+            $form['host'] = trim((string) ($tp[TP::F_MIK_IP] ?? App::get_config('fw_input_def_host')));
+            if (!empty($tp[TP::F_MIK_PORT])) {
+                $form['port'] = (int) ($tp[TP::F_MIK_PORT]);
+                $form['ssl'] = 0;
+            } elseif (!empty($tp[TP::F_MIK_PORT_SSL])) {
+                $form['port'] = (int) ($tp[TP::F_MIK_PORT_SSL]);
+                $form['ssl'] = 1;
+            } else {
+                MsgQueue::msg(MsgType::ERROR, '<span class="text-danger">'.__('Critical error in technical site parameters | Критическая ошибка в параметрах техплощадки | Критична помилка у параметрах техмайданчика').':</span> '.__('Device connection parameters are not specified | Не указаны параметры подключения к устройству | Не вказано параметри підключення до пристрою').'');
+                return false;
+            }
+            $form['login'] = trim((string) ($tp[TP::F_MIK_LOGIN] ?? App::get_config('fw_input_def_login')));
+            $form['password'] = (string) ($tp[TP::F_MIK_PASSWD] ?? App::get_config('fw_input_def_password'));
+        }
+
+        if (!validate_ip($form['host'])) {
+            MsgQueue::msg(MsgType::ERROR, __('Incorrect IP address | Не верный IP-адрес | Невірна IP-адреса'));
+            return false;
+        }
+
+        if ($form['port'] <= 0 || $form['port'] > 65535) {
+            MsgQueue::msg(MsgType::ERROR, __('Incorrect MikroTik API port | Не верный API-порт MikroTik | Невірний API-порт MikroTik') . ' ['.$form['port'].']');
+            return false;
+        }
+
+        if ($form['login'] === '' || $form['password'] === '') {
+            MsgQueue::msg(MsgType::ERROR, __('MikroTik login and password are required | Логин и пароль MikroTik обязательны | Логін та пароль MikroTik обов’язкові'));
+            return false;
+        }
+
+        $dev = new MikrotikDevice(
+                tp: [
+                        TP::F_MIK_IP        => $form['host'],
+                        TP::F_MIK_LOGIN     => $form['login'],
+                        TP::F_MIK_PASSWD    => $form['password'],
+                        TP::F_MIK_PORT      => ($form['ssl'] ? '' : $form['port']),
+                        TP::F_MIK_PORT_SSL  => ($form['ssl'] ? $form['port'] : ''),
+                    ],
+                ssl: (bool)$form['ssl']
+            );
+
+        if (!$dev) {
+            MsgQueue::msg(MsgType::ERROR, __('Error connecting to MikroTik device via API | Ошибка подключения к устройству MikroTik по API | Помилка підключення до пристрою MikroTik API'));
+            foreach (MikrotikDevice::$errors as $error) {
+                MsgQueue::msg(MsgType::ERROR, $error);
+            }
+            return false;
+        }
+
+        $descr = $dev->get_description();
+
+        if (empty($descr)) {
+            MsgQueue::msg(MsgType::ERROR, __('Connected, but failed to read device information | Подключение выполнено, но не удалось прочитать данные устройства | Підключення виконано, але не вдалося прочитати дані пристрою'));
+            return false;
+        }
+
+        
+        $_SESSION[FwInput::SESSION_FIELD] = [
+            'host' => $form['host'],
+            'port' => $form['port'],
+            'ssl' => (bool) $form['ssl'],
+            'login' => $form['login'],
+            'password' => $form['password'],
+            'tp_id' => $form['tp_id'],
+        ];
+
+        unset($_SESSION[SessionFields::FORM_DATA][FwInput::SESSION_FIELD]);
+
+        MsgQueue::msg(MsgType::SUCCESS, __('Successfully connected to the device | Успешно подключились к устройству | Успішно підключилися до пристрою'));
+        MsgQueue::msg(MsgType::SUCCESS, implode('|', $descr));
+
+        redirect(TP::URI_FW_INPUT . '?phase=' . FwInput::next(FwInput::PHASE_LOGIN));
+    }
+
+
+    private function fwInputWizardInterfaces(): void
+    {
+        $connector = $this->fwInputGetConnector();
+        if (!$connector) {
+            return;
+        }
+
+        $cfgLists = App::get_config('interface_lists');
+        $lanName = (string) ($cfgLists['lan'] ?? 'LAN');
+        $wanName = (string) ($cfgLists['wan'] ?? 'WAN');
+
+        $lists = $connector->exec('/interface/list/print');
+        $members = $connector->exec('/interface/list/member/print');
+        $interfaces = $connector->exec('/interface/print');
+
+        if (!is_array($lists) || !is_array($members) || !is_array($interfaces)) {
+            MsgQueue::msg(MsgType::ERROR, __('Failed to read interface data | Не удалось прочитать данные интерфейсов | Не вдалося прочитати дані інтерфейсів'));
+            return;
+        }
+
+        $byName = [];
+        foreach ($lists as $row) {
+            if (($row['dynamic'] ?? 'false') === 'true') {
+                continue;
+            }
+            $name = trim((string) ($row['name'] ?? ''));
+            if ($name !== '') {
+                $byName[$name] = $row;
+            }
+        }
+
+        if (!isset($byName[$lanName])) {
+            $connector->exec('/interface/list/add', ['name' => $lanName]);
+            MsgQueue::msg(MsgType::SUCCESS, __('The LAN interface list has been created | Список интерфейсов LAN создан | Список інтерфейсів LAN створено'));
+        }
+
+        if (!isset($byName[$wanName])) {
+            $connector->exec('/interface/list/add', ['name' => $wanName]);
+            MsgQueue::msg(MsgType::SUCCESS, __('The WAN interface list has been created | Список интерфейсов WAN создан | Список інтерфейсів WAN створено'));
+        }
+
+        $lists = $connector->exec('/interface/list/print');
+        $members = $connector->exec('/interface/list/member/print');
+
+        $targetLists = [$lanName, $wanName];
+        foreach ($members as $member) {
+            $listName = trim((string) ($member['list'] ?? ''));
+            if (!in_array($listName, $targetLists, true)) {
+                continue;
+            }
+            if (!empty($member['.id'])) {
+                $connector->exec('/interface/list/member/remove', ['.id' => $member['.id']]);
+            }
+        }
+
+        $assignments = $_POST['iflist'] ?? [];
+        if (!is_array($assignments)) {
+            $assignments = [];
+        }
+
+        $addedLan = 0;
+        $addedWan = 0;
+        foreach ($interfaces as $iface) {
+            $name = trim((string) ($iface['name'] ?? ''));
+            if ($name === '') {
+                continue;
+            }
+
+            $selection = trim((string) ($assignments[$name] ?? ''));
+            if ($selection !== $lanName && $selection !== $wanName) {
+                continue;
+            }
+
+            $connector->exec('/interface/list/member/add', [
+                'interface' => $name,
+                'list' => $selection,
+            ]);
+
+            if ($selection === $lanName) {
+                $addedLan++;
+            } elseif ($selection === $wanName) {
+                $addedWan++;
+            }
+        }
+
+        MsgQueue::msg(
+            MsgType::SUCCESS,
+            __('The interface lists have been updated | Списки интерфейсов обновлены | Списки інтерфейсів оновлено')
+            . ': '
+            . $lanName . '=' . $addedLan . ', '
+            . $wanName . '=' . $addedWan
+        );
+    }
+
+
+    private function fwInputWizardNeighbor(): void
+    {
+        $connector = $this->fwInputGetConnector();
+        if (!$connector) {
+            return;
+        }
+
+        $cfgLists = App::get_config('interface_lists');
+        $lanName = (string) ($cfgLists['lan'] ?? 'LAN');
+        $wanName = (string) ($cfgLists['wan'] ?? 'WAN');
+
+        $lists = $connector->exec('/interface/list/print');
+        $listNames = [];
+        foreach (($lists ?: []) as $row) {
+            if (($row['dynamic'] ?? 'false') === 'true') {
+                continue;
+            }
+            $name = trim((string) ($row['name'] ?? ''));
+            if ($name !== '') {
+                $listNames[$name] = true;
+            }
+        }
+
+        if (!isset($listNames[$lanName], $listNames[$wanName])) {
+            MsgQueue::msg(MsgType::ERROR, __('The required LAN/WAN interface lists are missing | Отсутствуют требуемые списки интерфейсов LAN/WAN | Відсутні потрібні списки інтерфейсів LAN/WAN'));
+            redirect(TP::URI_FW_INPUT . '?phase=' . FwInput::PHASE_INTERFACE_LIST);
+        }
+
+        $discoverList = trim((string) ($_POST['discover_interface_list'] ?? App::get_config('neighbor_discovery_default')));
+        $allowedValues = [$lanName, $wanName, 'all'];
+        if (!in_array($discoverList, $allowedValues, true)) {
+            MsgQueue::msg(MsgType::ERROR, __('Incorrect discover-interface-list value | Не верное значение discover-interface-list | Невірне значення discover-interface-list'));
+            return;
+        }
+
+        $connector->exec('/ip/neighbor/discovery-settings/set', [
+            'discover-interface-list' => $discoverList,
+        ]);
+
+        MsgQueue::msg(
+            MsgType::SUCCESS,
+            __('Neighbor discovery settings have been updated | Настройки neighbor discovery обновлены | Налаштування neighbor discovery оновлено')
+            . ': '
+            . $discoverList
+        );
+    }
+
+
+    private function fwInputWizardCertificate(): bool
+    {
+        $dev = $this->fwInputConnectDevice();
+        if (!$dev) {
+            return false;
+        }
+
+        $cfg = App::get_config('certificate');
+        $certName = (string) $cfg['name'];
+
+        $certs = $dev->get_certificates();
+        $services = $dev->get_services();
+        $validCertificates = $this->fwInputGetValidCertificateNames($certs, $cfg);
+        
+        $currentCert = $this->fwInputFindCertificateByName($certs, $certName);
+        $assignedServices = $this->fwInputGetServicesUsingCertificate($services, $certName);
+
+        if (!empty($validCertificates)) {
+            MsgQueue::msg(MsgType::SUCCESS, __('The certificate is already valid | Сертификат уже валиден | Сертифікат уже валідний') . ': ' . $certName);
+            return true;
+        }
+
+        if ($currentCert && !empty($assignedServices)) {
+            MsgQueue::msg(
+                MsgType::ERROR,
+                __('The certificate is assigned to services and cannot be replaced automatically | Сертификат назначен сервисам и не может быть автоматически заменён | Сертифікат призначений сервісам і не може бути автоматично замінений')
+                . ': '
+                . implode(', ', $assignedServices)
+            );
+            return false;
+        }
+
+        if ($currentCert && $this->fwInputCertificateNeedsRecreate($currentCert, $cfg)) {
+            $certId = (string) ($currentCert['.id'] ?? '');
+            if ($certId !== '') {
+                if ($dev->del_certificate($certId)) {
+                    MsgQueue::msg(MsgType::INFO, __('The existing certificate has been removed before recreation | Имеющийся сертификат удалён перед пересозданием | Наявний сертифікат видалено перед перевідтворенням') . ': ' . $certName);
+                    $currentCert = null;
+                } else {
+                    MsgQueue::msg(MsgType::ERROR, __('Failed to delete certificate | Не удалось удалить сертификат | Неможливо видалити сертифікат') . ': ' . $certName);
+                    return false;
+                }
+            }
+        }
+
+        if (!$currentCert) {
+            if ($dev->add_certificate(
+                    name: $certName, 
+                    key_size: (int) $cfg['key_size'],
+                    key_usage: (string) $cfg['key_usage'], 
+                    trusted: 'yes', 
+                    days_valid: (int) $cfg['days_valid'], 
+                    country: (string) $cfg['country'], 
+                    state: (string) $cfg['state'], 
+                    locality: (string) $cfg['locality'], 
+                    organization: (string) $cfg['organization'],
+                    unit: (string) $cfg['unit']))
+            {
+                MsgQueue::msg(MsgType::INFO, __('A new certificate has been created | Создан новый сертификат | Створено новий сертифікат') . ': ' . $certName);
+            } else {
+                MsgQueue::msg(MsgType::ERROR, __('Ошибка создания сертификата') . ': ' . $certName);
+                MsgQueue::msg(MsgType::ERROR, MikrotikDevice::$errors);
+            }
+        }
+
+        sleep((int)$cfg['pre_sign_sleep']);
+        
+        $dev->certificate_sign($certName);
+        
+        sleep((int)$cfg['verify_sleep']);
+
+        for ($i = 0; $i < (int) $cfg['sign_poll_tries']; $i++) {
+            $certs = $dev->get_certificate($certName);
+            $currentCert = $this->fwInputFindCertificateByName($certs, $certName);
+            if (($currentCert['status'] ?? '') !== 'signing') {
+                break;
+            }
+            sleep((int) $cfg['sign_poll_sleep']);
+        }
+
+        $certs = $dev->get_certificates();
+        $validCertificates = $this->fwInputGetValidCertificateNames($certs, $cfg);
+        $currentCert = $this->fwInputFindCertificateByName($certs, $certName);
+
+        if (!empty($validCertificates)) {
+            MsgQueue::msg(MsgType::SUCCESS, __('The certificate was created and signed successfully | Сертификат успешно создан и подписан | Сертифікат успішно створений і підписаний') . ': ' . $certName);
+            return true;
+        }
+
+        MsgQueue::msg(MsgType::ERROR, __('Failed to create or validate the certificate | Не удалось создать или проверить сертификат | Не вдалося створити або перевірити сертифікат') . ': ' . $certName);
+        return false;
+    }
+
+
+    private function fwInputWizardServices(): void
+    {
+        $dev = $this->fwInputConnectDevice();
+        
+        if (!$dev) {
+            return;
+        }
+
+        $certCfg = App::get_config('certificate');
+        $certName = (string) ($certCfg['name'] ?? 'cert1');
+        $certs = $dev->get_certificates();
+        $validCertificates = $this->fwInputGetValidCertificateNames($certs, $certCfg);
+        if (empty($validCertificates)) {
+            MsgQueue::msg(MsgType::ERROR, __('A valid certificate is required before configuring services | Перед настройкой сервисов требуется валидный сертификат | Перед налаштуванням сервісів потрібен валідний сертифікат'));
+            redirect(TP::URI_FW_INPUT . '?phase=' . FwInput::PHASE_CERT);
+        }
+
+        $defaults = App::get_config('services');
+        $services = $dev->get_services();
+        $form = $_POST['svc'] ?? [];
+        if (!is_array($form)) {
+            MsgQueue::msg(MsgType::ERROR, __('No form data | Нет данных из формы | Немає даних із форми'));
+            return;
+        }
+
+        $serviceRows = $this->fwInputBuildValidationServiceRows($services, $defaults, $form, $certName);
+        $validation = $this->fwInputValidateServiceRows($serviceRows);
+        if (!$validation['valid']) {
+            foreach ($validation['errors'] as $error) {
+                MsgQueue::msg(MsgType::ERROR, $error);
+            }
+            return;
+        }
+
+        foreach ($services as $service) {
+            $name = trim((string) ($service['name'] ?? ''));
+            if ($name === '') {
+                continue;
+            }
+
+            $row = $form[$name] ?? [];
+            $serviceId = (string) ($service['.id'] ?? '');
+            $port = (int) ($row['port'] ?? 0);
+            $enabled = !empty($row['ena']) ? 1 : 0;
+            $setData = [
+                '.id' => $serviceId,
+                'port' => $port,
+            ];
+
+            if (in_array($name, App::get_config('services_ssl'), true)) {
+                $selectedCert = trim((string) ($row['certificate'] ?? $validCertificates[0]));
+                if ($selectedCert === '') {
+                    $selectedCert = $validCertificates[0];
+                }
+                $setData['certificate'] = $selectedCert;
+            }
+
+            $dev->connector->exec('/ip/service/set', $setData);
+            if ($enabled) {
+                $dev->connector->exec('/ip/service/enable', ['.id' => $serviceId]);
+            } else {
+                $dev->connector->exec('/ip/service/disable', ['.id' => $serviceId]);
+            }
+        }
+
+        MsgQueue::msg(MsgType::SUCCESS, __('IP services settings have been updated | Настройки IP services обновлены | Налаштування IP services оновлено'));
+        MsgQueue::msg(MsgType::SUCCESS, '<span class="text-danger">'.__('IMPORTANT | ВАЖНО | ВАЖЛИВО').':</span> ' 
+                . __('On the next page you need to correct the list of allowed ports | На следующей странице нужно обязательно исправить список разрешённых портов | На наступній сторінці потрібно обов\'язково виправити список дозволених портів') 
+                . ': [ <span class="text-warning">FW 06 ACCEPT TCP</span> ]');
+    }
+
+
+    private function fwInputWizardFirewall(): void
+    {
+        $dev = $this->fwInputConnectDevice();
+        if (!$dev) {
+            return;
+        }
+
+        $cfgLists = App::get_config('interface_lists');
+        $lanName = (string) ($cfgLists['lan']);
+        $wanName = (string) ($cfgLists['wan']);
+
+        $lists = $dev->get_interface_lists(dynamic: false);
+        $listNames = [];
+        foreach ($lists as $row) {
+//            if (mikBool($row['dynamic'])) { continue; }
+            $name = trim((string) ($row['name'] ?? ''));
+            if ($name !== '') {
+                $listNames[$name] = true;
+            }
+        }
+
+        if (!isset($listNames[$lanName], $listNames[$wanName])) {
+            MsgQueue::msg(MsgType::ERROR, __('The required LAN/WAN interface lists are missing | Отсутствуют требуемые списки интерфейсов LAN/WAN | Відсутні потрібні списки інтерфейсів LAN/WAN'));
+            redirect(TP::URI_FW_INPUT . '?phase=' . FwInput::PHASE_INTERFACE_LIST);
+        }
+
+        $action = trim((string) ($_POST['fwf_action'] ?? ''));
+        $post = $_POST['fwf'] ?? [];
+        if (!is_array($post)) {
+            $post = [];
+        }
+
+        if ($action === 'delete') {
+            $deleted = 0;
+            foreach (($post['delete'] ?? []) as $row) {
+                $ruleId = trim((string) ($row['.id'] ?? ''));
+                if ($ruleId === '' || empty($row['checked'])) {
+                    continue;
+                }
+                $dev->connector->exec('/ip/firewall/filter/remove', ['.id' => $ruleId]);
+                $deleted++;
+            }
+            if ($deleted > 0) {
+                MsgQueue::msg(MsgType::SUCCESS, __('Firewall rules deleted | Правила firewall удалены | Правила firewall видалені') . ': ' . $deleted);
+            } else {
+                MsgQueue::msg(MsgType::INFO, __('No firewall rules selected for deletion | Не выбраны правила firewall для удаления | Не вибрані правила firewall для видалення'));
+            }
+            return;
+        }
+
+        $services = $dev->get_services();
+        // $currentRules = $dev->get_filer_input();
+        $fwCfg = App::get_config('fw_input');
+        $allowedTcpExtra = trim((string) ($post['allowed_tcp_extra'] ?? $this->fwInputConfigPortsToString($fwCfg['allowed_tcp_extra'] ?? [])));
+        $allowedUdpExtra = trim((string) ($post['allowed_udp_extra'] ?? $this->fwInputConfigPortsToString($fwCfg['allowed_udp_extra'] ?? [])));
+        $proposedRules = $this->fwInputBuildProposedRules($services, $allowedTcpExtra, $allowedUdpExtra, $wanName);
+
+        if (empty($proposedRules['meta']['tcp_ports'])) {
+            MsgQueue::msg(MsgType::ERROR, __('The resulting allowed TCP port list is empty | Итоговый список разрешённых TCP-портов пуст | Підсумковий список дозволених TCP-портів порожній'));
+            return;
+        }
+        if (empty($proposedRules['meta']['has_management_port'])) {
+            MsgQueue::msg(MsgType::ERROR, __('The allowed TCP port list must contain at least one management port | В списке разрешённых TCP-портов должен быть хотя бы один порт управления | У списку дозволених TCP-портів має бути хоча б один порт керування'));
+            return;
+        }
+
+        if ($action !== 'add') {
+            MsgQueue::msg(MsgType::INFO, __('No firewall changes were selected | Не выбрано действий для firewall | Не вибрано дій для firewall'));
+            return;
+        }
+
+        $added = 0;
+        foreach (($post['add'] ?? []) as $code => $checked) {
+            if (empty($checked)) { //  || empty($proposedRules['rules'][$code])
+                continue;
+            }
+            $rule = $proposedRules['rules'][$code];
+            
+            // Сверяет $rule с уже имеющимися правилами и ищет там похожее
+            // if ($this->fwInputHasEquivalentRule($currentRules, $rule)) {
+            //     continue;
+            // }
+            $dev->connector->exec('/ip/firewall/filter/add', $rule);
+            $added++;
+        }
+        if ($added > 0) {
+            MsgQueue::msg(MsgType::SUCCESS, __('Firewall rules added | Правила firewall добавлены | Правила firewall додані') . ': ' . $added);
+        } else {
+            MsgQueue::msg(MsgType::INFO, __('No firewall changes were selected | Не выбрано действий для firewall | Не вибрано дій для firewall'));
+        }
+    }
+
+
+    private function fwInputReadConnect(): array
+    {
+        $form = $_SESSION[SessionFields::FORM_DATA][FwInput::SESSION_FIELD] ?? [
+            'tp_id'     => App::get_config('fw_input_def_tp_id'),
+            'host'      => App::get_config('fw_input_def_host'),
+            'port'      => App::get_config('fw_input_def_port'),
+            'ssl'       => App::get_config('fw_input_def_ssl'),
+            'login'     => App::get_config('fw_input_def_login'),
+            'password'  => App::get_config('fw_input_def_password'),
+        ];
+
+        return [
+            'title' => __('Select a device or enter connection details | Выберите устройство или введите данные для подключения | Виберіть пристрій або введіть дані для підключення'),
+            'tp_list' => $this->db->get_my_tp_list(active: 1, is_managed: 1),
+            'form' => $form,
+            'session' => $_SESSION[FwInput::SESSION_FIELD] ?? [],
+        ];
+    }
+
+
+    private function fwInputReadInterfaces(): array
+    {
+        $dev = $this->fwInputConnectDevice();
+        if (!$dev) {
+            MsgQueue::msg(MsgType::ERROR, __('Unable to connect to the device | Не удаось подключиться к устройству | Не вдалося підключитися до пристрою'));
+            if (MikrotikDevice::$errors) { MsgQueue::msg(MsgType::ERROR, MikrotikDevice::$errors); }
+            redirect(TP::URI_FW_INPUT . '?'.FwInput::F_GET_PHASE.'=' . FwInput::PHASE_LOGIN);
+        }
+
+        $cfgLists = App::get_config('interface_lists');
+        $lanName = (string) ($cfgLists['lan'] ?? 'LAN');
+        $wanName = (string) ($cfgLists['wan'] ?? 'WAN');
+
+        $lists = $dev->get_interface_lists(dynamic: false);
+        $members = $dev->get_interface_list_members();
+        $interfaces = $dev->get_interfaces();
+
+        $listNames = [];
+        foreach (($lists ?: []) as $row) {
+            $name = trim((string) ($row['name'] ?? ''));
+            if ($name !== '') {
+                $listNames[$name] = true;
+            }
+        }
+
+        $membership = [];
+        foreach (($members ?: []) as $member) {
+            $ifaceName = trim((string) ($member['interface'] ?? ''));
+            $listName = trim((string) ($member['list'] ?? ''));
+            
+            if ($ifaceName === '' || $listName === '') {
+                throw new \RuntimeException(
+                        'Invalid /interface/list/member: '.__('Empty fields [interface] or [list] | Пустые поля [interface] или [list] | Порожні поля [interface] або [list]').'.<br>'. CR 
+                        .'Row:<pre>' . print_r($member, true).'</pre>'
+                );
+            }
+    
+            if (!isset($membership[$ifaceName])) {
+                $membership[$ifaceName] = [];
+            }
+            $membership[$ifaceName][$listName] = true;
+        }
+
+        $ifaceRows = [];
+        $conflicts = [];
+        foreach ($interfaces as $iface) {
+            $name = trim((string) ($iface['name'] ?? ''));
+            
+            if ($name === '') {
+                throw new \RuntimeException(
+                        __('Interface without name | Интерфейс без имени | Інтерфейс без імені').':.<br>'. CR 
+                        .'Row:<pre>' . print_r($iface, true).'</pre>'
+                );
+            }
+            
+            $inLan = !empty($membership[$name][$lanName]);
+            $inWan = !empty($membership[$name][$wanName]);
+            if ($inLan && $inWan) {
+                $conflicts[] = $name;
+            }
+
+            $selected = '--';
+            if ($inLan && !$inWan) {
+                $selected = $lanName;
+            } elseif ($inWan && !$inLan) {
+                $selected = $wanName;
+            }
+
+            $ifaceRows[] = [
+                'name' => $name,
+                'type' => (string) ($iface['type'] ?? ''),
+                'running' => (string) ($iface['running'] ?? ''),
+                'disabled' => (string) ($iface['disabled'] ?? ''),
+                'selected' => $selected,
+            ];
+        }
+
+        return [
+            'title' => $dev->get_hostname(),
+            'description' => implode('|', $dev->get_description()),
+            'session' => $_SESSION[FwInput::SESSION_FIELD] ?? [],
+            'lists' => array_keys($listNames),
+            'interfaces' => $ifaceRows,
+            'lan_name' => $lanName,
+            'wan_name' => $wanName,
+            'has_required_lists' => isset($listNames[$lanName], $listNames[$wanName]),
+            'has_conflict' => !empty($conflicts),
+            'conflicts' => $conflicts,
+        ];
+    }
+
+
+    private function fwInputGetConnector(): object|false
+    {
+        $session = $_SESSION[FwInput::SESSION_FIELD] ?? [];
+        $host = trim((string) ($session['host'] ?? ''));
+        $port = (int) ($session['port'] ?? 0);
+        $ssl = !empty($session['ssl']);
+        $login = trim((string) ($session['login'] ?? ''));
+        $password = (string) ($session['password'] ?? '');
+
+        if ($host === '' || $port <= 0 || $login === '' || $password === '') {
+            MsgQueue::msg(MsgType::ERROR, __('The MikroTik connection session is incomplete | Сессия подключения к MikroTik не полная | Сесія підключення до MikroTik не повна'));
+            redirect(TP::URI_FW_INPUT . '?'.FwInput::F_GET_PHASE.'=' . FwInput::PHASE_LOGIN);
+        }
+
+        $connector = MikrotikDevice::mik_connector(
+            ip: $host,
+            login: $login,
+            pass: $password,
+            port: $port,
+            ssl: $ssl
+        );
+
+        if (!$connector) {
+            MsgQueue::msg(MsgType::ERROR, __('No access to device via API | Нет доступа к устройству по API | Немає доступу до пристрою API'));
+            foreach (MikrotikDevice::$errors as $error) {
+                MsgQueue::msg(MsgType::ERROR, $error);
+            }
+            redirect(TP::URI_FW_INPUT . '?'.FwInput::F_GET_PHASE.'=' . FwInput::PHASE_LOGIN);
+        }
+
+        return $connector;
+    }
+
+    
+
+    private function fwInputConnectDevice(): MikrotikDevice|false
+    {
+        $session = $_SESSION[FwInput::SESSION_FIELD] ?? [];
+        
+        $host = trim((string) ($session['host'] ?? ''));
+        $ssl = !empty($session['ssl']);
+        $port = (int) ($session['port'] ?? 0);
+        $login = trim((string) ($session['login'] ?? ''));
+        $password = (string) ($session['password'] ?? '');
+        
+        if ($host === '' || $port <= 0 || $port > 65535 || $login === '' || $password === '') {
+            MsgQueue::msg(MsgType::ERROR, __('The MikroTik connection session is incomplete | Сессия подключения к MikroTik не полная | Сесія підключення до MikroTik не повна'));
+            redirect(TP::URI_FW_INPUT . '?'.FwInput::F_GET_PHASE.'=' . FwInput::PHASE_LOGIN);
+        }
+
+        $tp_rec = [
+            TP::F_MIK_IP        => $host,
+            TP::F_MIK_PORT      => ($ssl ? '' : $port),
+            TP::F_MIK_PORT_SSL  => ($ssl ? $port : ''),
+            TP::F_MIK_LOGIN     => $login,
+            TP::F_MIK_PASSWD    => $password,
+        ];
+
+        $dev = new MikrotikDevice(tp: $tp_rec, ssl: $ssl);
+
+        if (!$dev) {
+            MsgQueue::msg(MsgType::ERROR, __('No access to device via API | Нет доступа к устройству по API | Немає доступу до пристрою API'));
+            foreach (MikrotikDevice::$errors as $error) {
+                MsgQueue::msg(MsgType::ERROR, $error);
+            }
+            redirect(TP::URI_FW_INPUT . '?'.FwInput::F_GET_PHASE.'=' . FwInput::PHASE_LOGIN);
+        }
+
+        return $dev;
+    }
+
+    
+
+    private function fwInputReadNeighbor(): array
+    {
+        $dev = $this->fwInputConnectDevice();
+        if (!$dev) {
+            MsgQueue::msg(MsgType::ERROR, __('Unable to connect to the device | Не удаось подключиться к устройству | Не вдалося підключитися до пристрою'));
+            if (MikrotikDevice::$errors) { MsgQueue::msg(MsgType::ERROR, MikrotikDevice::$errors); }
+            redirect(TP::URI_FW_INPUT . '?'.FwInput::F_GET_PHASE.'=' . FwInput::PHASE_LOGIN);
+        }
+
+        $cfgLists = App::get_config('interface_lists');
+        $lanName = (string) ($cfgLists['lan'] ?? 'LAN');
+        $wanName = (string) ($cfgLists['wan'] ?? 'WAN');
+
+        $lists = $dev->get_interface_lists(dynamic: false);
+        $listNames = [];
+        foreach (($lists ?: []) as $row) {
+            $name = trim((string) ($row['name'] ?? ''));
+            if ($name !== '') {
+                $listNames[$name] = true;
+            }
+        }
+
+        $current = $dev->connector->exec('/ip/neighbor/discovery-settings/print');
+        $currentRow = is_array($current) ? ($current[array_key_first($current)] ?? []) : [];
+        $currentValue = trim((string) ($currentRow['discover-interface-list'] ?? ''));
+
+        return [
+            'title' => $dev->get_hostname(),
+            'description' => implode('|', $dev->get_description()),
+            'session' => $_SESSION[FwInput::SESSION_FIELD] ?? [],
+            'neighbor_default' => App::get_config('neighbor_discovery_default'),
+            'lan_name' => $lanName,
+            'wan_name' => $wanName,
+            'has_required_lists' => isset($listNames[$lanName], $listNames[$wanName]),
+            'current' => $currentRow,
+            'current_value' => $currentValue,
+        ];
+    }
+
+
+    private function fwInputReadCertificate(): array
+    {
+        $dev = $this->fwInputConnectDevice();
+        $cfg = App::get_config('certificate');
+        $certName = (string) ($cfg['name'] ?? 'cert1');
+        
+        if (!$dev) {
+            MsgQueue::msg(MsgType::ERROR, __('Unable to connect to the device | Не удаось подключиться к устройству | Не вдалося підключитися до пристрою'));
+            if (MikrotikDevice::$errors) { MsgQueue::msg(MsgType::ERROR, MikrotikDevice::$errors); }
+            redirect(TP::URI_FW_INPUT . '?phase=' . FwInput::PHASE_LOGIN);
+        }
+
+        $certs = $dev->get_certificates();
+        $services = $dev->get_services();
+        $currentCert = $this->fwInputFindCertificateByName($certs, $certName);
+        $validCertificates = $this->fwInputGetValidCertificateNames($certs, $cfg);
+
+        return [
+            'title' => $dev->get_hostname(),
+            'description' => implode('|', $dev->get_description()),
+            'session' => $_SESSION[FwInput::SESSION_FIELD] ?? [],
+            'certificate' => $cfg,
+            'cert_name' => $certName,
+            'certs' => $certs,
+            'current_cert' => $currentCert,
+            'is_valid' => $currentCert ? $this->fwInputIsCertificateValid($currentCert, $cfg) : false,
+            'assigned_services' => $this->fwInputGetServicesUsingCertificate($services, $certName),
+            'any_valid_cert' => !empty($validCertificates),
+            'valid_certificates' => $validCertificates,
+        ];
+    }
+
+
+    private function fwInputReadServices(): array
+    {
+        $dev = $this->fwInputConnectDevice();
+        $certCfg = App::get_config('certificate');
+        $certName = (string) ($certCfg['name']);
+        $defaults = App::get_config('services');
+
+        if (!$dev) {
+            MsgQueue::msg(MsgType::ERROR, __('Unable to connect to the device | Не удаось подключиться к устройству | Не вдалося підключитися до пристрою'));
+            if (MikrotikDevice::$errors) { MsgQueue::msg(MsgType::ERROR, MikrotikDevice::$errors); }
+            redirect(TP::URI_FW_INPUT . '?phase=' . FwInput::PHASE_LOGIN);
+        }
+
+        $certs = $dev->get_certificates();
+        $validCertificates = $this->fwInputGetValidCertificateNames($certs, $certCfg);
+
+        $services = $dev->get_services();
+        $serviceRows = [];
+        foreach ($services as $service) {
+            $name = trim((string) ($service['name'] ?? ''));
+            if ($name === '') {
+                continue;
+            }
+
+            $serviceRows[] = [
+                'id' => (string) ($service['.id'] ?? ''),
+                'name' => $name,
+                'current_port' => (string) ($service['port'] ?? ''),
+                'port' => (int) ($service['port'] ?? ($defaults[$name]['port'] ?? 0)),
+                'enabled' => (($service['disabled'] ?? 'false') !== 'true'),
+                'certificate' => trim((string) ($service['certificate'] ?? ($service['tls-certificate'] ?? ($service['certificate-name'] ?? ($validCertificates[0] ?? $certName))))),
+            ];
+        }
+        usort($serviceRows, 
+                static function (array $a, array $b): int { return strnatcmp($a['name'], $b['name']); }
+            );        
+        
+        $validation = $this->fwInputValidateServiceRows(
+            $this->fwInputBuildValidationServiceRows($services, $defaults, [], $certName)
+        );
+
+        return [
+            'title' => $dev->get_hostname(),
+            'description' => implode('|', $dev->get_description()),
+            'session' => $_SESSION[FwInput::SESSION_FIELD] ?? [],
+            'services' => $defaults,
+            'service_rows' => $serviceRows,
+            'valid_certificates' => $validCertificates,
+            'cert_required_ok' => !empty($validCertificates),
+            'cert_name' => $certName,
+            'services_valid' => $validation['valid'],
+            'services_errors' => $validation['errors'],
+        ];
+    }
+
+
+    private function fwInputReadFirewall(): array
+    {
+        $dev = $this->fwInputConnectDevice();
+        $cfgLists = App::get_config('interface_lists');
+        $wanName = (string) ($cfgLists['wan'] ?? 'WAN');
+        $fwCfg = App::get_config('fw_input');
+
+        if (!$dev) {
+            MsgQueue::msg(MsgType::ERROR, __('Unable to connect to the device | Не удаось подключиться к устройству | Не вдалося підключитися до пристрою'));
+            if (MikrotikDevice::$errors) { MsgQueue::msg(MsgType::ERROR, MikrotikDevice::$errors); }
+            redirect(TP::URI_FW_INPUT . '?'.FwInput::F_GET_PHASE.'=' . FwInput::PHASE_LOGIN);
+        }
+
+        $lists = $dev->get_interface_lists(dynamic: false);
+        $listNames = [];
+        foreach ($lists as $row) {
+            if (($row['dynamic'] ?? 'false') === 'true') {
+                continue;
+            }
+            $name = trim((string) ($row['name'] ?? ''));
+            if ($name !== '') {
+                $listNames[$name] = true;
+            }
+        }
+
+        $currentRules = $dev->get_filer_input();
+        $services = $dev->get_services();
+        $allowedTcpExtra = $this->fwInputConfigPortsToString($fwCfg['allowed_tcp_extra'] ?? []);
+        $allowedUdpExtra = $this->fwInputConfigPortsToString($fwCfg['allowed_udp_extra'] ?? []);
+        $proposed = $this->fwInputBuildProposedRules($services, $allowedTcpExtra, $allowedUdpExtra, $wanName);
+
+        return [
+            'title' => $dev->get_hostname(),
+            'description' => implode('|', $dev->get_description()),
+            'session' => $_SESSION[FwInput::SESSION_FIELD] ?? [],
+            'fw_input' => $fwCfg,
+            'current_rules' => $currentRules,
+            'proposed_rules' => $proposed['rules'],
+            'allowed_tcp_extra' => $allowedTcpExtra,
+            'allowed_udp_extra' => $allowedUdpExtra,
+            'has_required_lists' => isset($listNames[$cfgLists['lan'] ?? 'LAN'], $listNames[$wanName]),
+            'meta' => $proposed['meta'],
+        ];
+    }
+
+
+    private function fwInputFindCertificateByName(array $certs, string $name): ?array
+    {
+        foreach ($certs as $cert) {
+            if (trim((string) ($cert['name'] ?? '')) === $name) {
+                return $cert;
+            }
+        }
+        return null;
+    }
+
+
+    private function fwInputGetValidCertificateNames(array $certs, array $cfg): array
+    {
+        $valid = [];
+        foreach ($certs as $cert) {
+            if ($this->fwInputIsCertificateValid($cert, $cfg)) {
+                $name = trim((string) ($cert['name'] ?? ''));
+                if ($name !== '') {
+                    $valid[$name] = $name;
+                }
+            }
+        }
+        return array_values($valid);
+    }
+
+
+    private function fwInputGetServicesUsingCertificate(array $services, string $certName): array
+    {
+        $usedBy = [];
+        foreach ($services as $service) {
+            $serviceName = trim((string) ($service['name'] ?? ''));
+            $certValue = trim((string) ($service['certificate'] ?? ''));
+            if ($certValue === '') {
+                $certValue = trim((string) ($service['tls-certificate'] ?? ''));
+            }
+            if ($certValue === '') {
+                $certValue = trim((string) ($service['certificate-name'] ?? ''));
+            }
+            if ($serviceName !== '' && $certValue === $certName) {
+                $usedBy[] = $serviceName;
+            }
+        }
+        return $usedBy;
+    }
+
+
+    private function fwInputIsCertificateValid(array $cert, array $cfg): bool
+    {
+        // not signed
+        if (!MikrotikDevice::is_certificate_signed($cert)) 
+        {
+            MsgQueue::msg(MsgType::ERROR,  $cert['name'] . ': НЕ подписан');
+            return false;
+        }
+        
+        if (!mikBool($cert['trusted'] ?? '')) {
+            MsgQueue::msg(MsgType::ERROR, '$cert[trusted] !== true');
+            return false;
+        }
+        
+        if (mikBool($cert['invalid'] ?? '')) {
+            MsgQueue::msg(MsgType::ERROR, '$cert[invalid] === true');
+            return false;
+        }
+        
+        // отозван
+        if (mikBool($cert['revoked'] ?? '')) {
+            MsgQueue::msg(MsgType::ERROR, '$cert[revoked] === true');
+            return false;
+        }
+
+        $status = strtolower(trim((string) ($cert['status'] ?? '')));
+        if ($status === 'expired' || $status === 'signing') {
+            MsgQueue::msg(MsgType::ERROR, '$cert[status] === [' . $status . ']');
+            return false;
+        }
+
+        if (!$this->fwInputCertificateUsageMatchesConfig($cert, $cfg)) {
+            MsgQueue::msg(MsgType::ERROR, 'fwInputCertificateUsageMatchesConfig: [' . $cert['key-usage'] . '] != [' . $cfg['key_usage'] . ']');
+            return false;
+        }
+
+//        if (($cfg['country'] ?? null) !== null && trim((string) ($cert['country'] ?? '')) !== (string) $cfg['country']) {
+//            return false;
+//        }
+//        if (($cfg['state'] ?? null) !== null && trim((string) ($cert['state'] ?? '')) !== (string) $cfg['state']) {
+//            return false;
+//        }
+//        if (($cfg['locality'] ?? null) !== null && trim((string) ($cert['locality'] ?? '')) !== (string) $cfg['locality']) {
+//            return false;
+//        }
+//        if (($cfg['organization'] ?? null) !== null && trim((string) ($cert['organization'] ?? '')) !== (string) $cfg['organization']) {
+//            return false;
+//        }
+
+        return true;
+    }
+
+
+    private function fwInputCertificateNeedsRecreate(array $cert, array $cfg): bool
+    {
+        if (mikBool($cert['invalid'] ?? '')) {
+            return true;
+        }
+        
+        // отозван
+        if (mikBool($cert['revoked'] ?? '')) {
+            return true;
+        }
+        
+        if (!mikBool($cert['trusted'] ?? '')) {
+            return true;
+        }
+
+        if (!$this->fwInputCertificateUsageMatchesConfig($cert, $cfg)) {
+            return true;
+        }
+
+//        if (($cfg['country'] ?? null) !== null && trim((string) ($cert['country'] ?? '')) !== (string) $cfg['country']) {
+//            return true;
+//        }
+//        if (($cfg['state'] ?? null) !== null && trim((string) ($cert['state'] ?? '')) !== (string) $cfg['state']) {
+//            return true;
+//        }
+//        if (($cfg['locality'] ?? null) !== null && trim((string) ($cert['locality'] ?? '')) !== (string) $cfg['locality']) {
+//            return true;
+//        }
+//        if (($cfg['organization'] ?? null) !== null && trim((string) ($cert['organization'] ?? '')) !== (string) $cfg['organization']) {
+//            return true;
+//        }
+
+        return false;
+    }
+
+
+    private function fwInputCertificateUsageMatchesConfig(array $cert, array $cfg): bool
+    {
+        $actual = $this->fwInputNormalizeCsvValues((string) ($cert['key-usage'] ?? ''));
+        $expected = $this->fwInputNormalizeCsvValues((string) ($cfg['key_usage'] ?? ''));
+
+        if (empty($expected)) {
+            return true;
+        }
+
+        foreach ($expected as $item) {
+            if (!in_array($item, $actual, true)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+
+    private function fwInputNormalizeCsvValues(string $value): array
+    {
+        $parts = array_filter(array_map(
+            static fn(string $item): string => strtolower(trim($item)),
+            explode(',', $value)
+        ));
+        $parts = array_values(array_unique($parts));
+        sort($parts, SORT_STRING);
+        return $parts;
+    }
+
+
+    private function fwInputValidateServiceRows(array $serviceRows): array
+    {
+        $enabledPorts = [];
+        $hasManagementService = false;
+        $errors = [];
+        $managementServices = ['www', 'www-ssl', 'winbox', 'ssh'];
+
+        foreach ($serviceRows as $row) {
+            $serviceName = (string) $row['name'];
+            $port = (int) $row['port'];
+            $enabled = !empty($row['enabled']);
+
+            if ($port <= 0) {
+                $errors[] = __('Incorrect service port | Не верный порт сервиса | Невірний порт сервісу') . ': ' . $serviceName . ':' . $port;
+                continue;
+            }
+
+            if ($enabled) {
+                if (isset($enabledPorts[$port])) {
+//                    debug($serviceRows, '$serviceRows', die: 1);
+                    $errors[] = __('Enabled service ports must be unique | Порты включённых сервисов должны быть уникальны | Порти увімкнених сервісів мають бути унікальні') 
+                            . ':'.$port.' ' . $enabledPorts[$port] . ' - ' . $serviceName;
+                } else {
+                    $enabledPorts[$port] = $serviceName;
+                }
+
+                if (in_array($serviceName, $managementServices, true)) {
+                    $hasManagementService = true;
+                }
+            }
+        }
+
+        if (!$hasManagementService) {
+            $errors[] = __('At least one manual management service must remain enabled | Хотя бы один сервис ручного управления должен оставаться включённым | Хоча б один сервіс ручного керування має залишатися увімкненим');
+        }
+
+        return [
+            'valid' => empty($errors),
+            'errors' => array_values(array_unique($errors)),
+        ];
+    }
+
+
+    private function fwInputBuildValidationServiceRows(
+        array $services,
+        array $defaults,
+        array $form,
+        string $certName
+    ): array
+    {
+        $rows = [];
+        foreach ($services as $service) {
+            $name = trim((string) ($service['name'] ?? ''));
+            if ($name === '') {
+                continue;
+            }
+
+            if (isset($defaults[$name])) {
+                $row = $form[$name] ?? [];
+                $rows[] = [
+                    'name' => $name,
+                    'port' => (int) ($row['port'] ?? ($service['port'] ?? 0)),
+                    'enabled' => array_key_exists($name, $form)
+                        ? !empty($row['ena'])
+                        : (($service['disabled'] ?? 'false') !== 'true'),
+                    'certificate' => trim((string) ($row['certificate'] ?? $certName)),
+                ];
+                continue;
+            }
+
+            $rows[] = [
+                'name' => $name,
+                'port' => (int) ($service['port'] ?? 0),
+                'enabled' => (($service['disabled'] ?? 'false') !== 'true'),
+                'certificate' => trim((string) ($service['certificate'] ?? ($service['tls-certificate'] ?? ($service['certificate-name'] ?? $certName)))),
+            ];
+        }
+
+        return $rows;
+    }
+
+
+    private function fwInputConfigPortsToString(array|string $value): string
+    {
+        if (is_array($value)) {
+            return implode(',', array_filter(array_map('trim', array_map('strval', $value))));
+        }
+        return trim((string) $value);
+    }
+
+
+    private function fwInputParsePortSpec(string $value): array
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return [];
+        }
+
+        $items = [];
+        foreach (explode(',', $value) as $item) {
+            $item = trim($item);
+            if ($item === '') {
+                continue;
+            }
+            $items[$item] = $item;
+        }
+        return array_values($items);
+    }
+
+
+    
+    private function fwInputPlaceBefore(string $fwKey, bool $hasUdpAccept): ?string
+    {
+        $map = [
+            'fw01' => '02',
+            'fw02' => '03',
+            'fw03' => '04',
+            'fw04' => '05',
+            'fw05' => '06',
+            'fw06' => '07',
+            'fw07' => $hasUdpAccept ? '08' : '09',
+            'fw08' => '09',
+            'fw09' => null,
+        ];
+
+        $next = $map[$fwKey] ?? null;
+
+        if ($next === null) {
+            return null;
+        }
+
+        $dev = $this->fwInputConnectDevice();
+        if (!$dev) {
+            throw new Exception('Не удалось восстановить сессию подключения к устройству');
+        }
+        $id = $dev->get_filter_id('FW ' . $next);
+        return $id;
+    }    
+    
+    
+    
+    private function fwInputBuildProposedRules(array $services, string $allowedTcpExtra, string $allowedUdpExtra, string $wanName): array
+    {
+        $fwCfg = App::get_config('fw_input');
+        $enabledServicePorts = [];
+        $managementPorts = [];
+        foreach ($services as $service) {
+            if (mikBool($service['disabled'])) {
+                continue;
+            }
+            $name = trim((string) ($service['name'] ?? ''));
+            $port = trim((string) ($service['port'] ?? ''));
+            if (!empty($port)) {
+                $enabledServicePorts[$port] = $port;
+                if (in_array($name, ['www', 'www-ssl', 'winbox', 'ssh'], true)) {
+                    $managementPorts[$port] = $port;
+                }
+            }
+        }
+
+        foreach ($this->fwInputParsePortSpec($allowedTcpExtra) as $port) {
+            $enabledServicePorts[$port] = $port;
+        }
+        $tcpPorts = array_values($enabledServicePorts);
+        sort($tcpPorts, SORT_NATURAL);
+
+        $udpPorts = $this->fwInputParsePortSpec($allowedUdpExtra);
+        sort($udpPorts, SORT_NATURAL);
+
+        $tcpPortString = implode(',', $tcpPorts);
+        $udpPortString = implode(',', $udpPorts);
+        $hasManagementPort = false;
+        foreach ($managementPorts as $port) {
+            if (in_array($port, $tcpPorts, true)) {
+                $hasManagementPort = true;
+                break;
+            }
+        }
+
+        $rules = [
+            'fw01' => [
+                'chain' => 'input',
+                'action' => 'accept',
+                'connection-state' => 'established,related,untracked',
+                'comment' => 'FW 01 ACCEPT ESTABLISHED',
+            ],
+            'fw02' => [
+                'chain' => 'input',
+                'action' => 'drop',
+                'connection-state' => 'invalid',
+                'comment' => 'FW 02 DROP INVALID',
+            ],
+            'fw03' => [
+                'chain' => 'input',
+                'action' => 'drop',
+                'in-interface-list' => $wanName,
+                'src-address-list' => 'HACKERS',
+                'comment' => 'FW 03 DROP HACKERS',
+            ],
+            'fw04' => [
+                'chain' => 'input',
+                'action' => 'add-src-to-address-list',
+                'address-list' => '_ping_from_WAN',
+                'address-list-timeout' => (string) ($fwCfg['ping_timeout'] ?? '3d'),
+                'in-interface-list' => $wanName,
+                'protocol' => 'icmp',
+                'comment' => 'FW 04 REGISTER _ping_from_WAN',
+            ],
+            'fw05' => [
+                'chain' => 'input',
+                'action' => 'accept',
+                'protocol' => 'icmp',
+                'comment' => 'FW 05 ACCEPT ICMP',
+            ],
+            'fw06' => [
+                'chain' => 'input',
+                'action' => 'accept',
+                'protocol' => 'tcp',
+                'in-interface-list' => $wanName,
+                'dst-port' => $tcpPortString,
+                'comment' => 'FW 06 ACCEPT TCP',
+            ],
+            'fw07' => [
+                'chain' => 'input',
+                'action' => 'drop',
+                'protocol' => 'tcp',
+                'in-interface-list' => $wanName,
+                'comment' => 'FW 07 DROP TCP',
+            ],
+            'fw09' => [
+                'chain' => 'input',
+                'action' => 'drop',
+                'protocol' => 'udp',
+                'in-interface-list' => $wanName,
+                'comment' => 'FW 09 DROP UDP',
+            ],
+        ];
+
+        if ($udpPortString !== '') {
+            $rules['fw08'] = [
+                'chain' => 'input',
+                'action' => 'accept',
+                'protocol' => 'udp',
+                'in-interface-list' => $wanName,
+                'dst-port' => $udpPortString,
+                'comment' => 'FW 08 ACCEPT UDP',
+            ];
+        }
+
+        $hasUdpAccept = isset($rules['fw08']);
+        foreach ($rules as $fwKey => &$rule) {
+            $placeBefore = $this->fwInputPlaceBefore($fwKey, $hasUdpAccept);
+            if ($placeBefore !== null) {
+                $rule['place-before'] = $placeBefore;
+            }
+        }
+        unset($rule);
+        
+        return [
+            'rules' => $rules,
+            'meta' => [
+                'tcp_ports' => $tcpPorts,
+                'udp_ports' => $udpPorts,
+                'has_management_port' => $hasManagementPort,
+            ],
+        ];
+    }
+
+
+    private function fwInputNormalizeRuleForCompare(array $rule): array
+    {
+        return [
+            'chain' => trim((string) ($rule['chain'] ?? '')),
+            'action' => trim((string) ($rule['action'] ?? '')),
+            'protocol' => trim((string) ($rule['protocol'] ?? '')),
+            'dst-port' => trim((string) ($rule['dst-port'] ?? '')),
+            'connection-state' => trim((string) ($rule['connection-state'] ?? '')),
+            'in-interface-list' => trim((string) ($rule['in-interface-list'] ?? '')),
+            'src-address-list' => trim((string) ($rule['src-address-list'] ?? '')),
+            'address-list' => trim((string) ($rule['address-list'] ?? '')),
+            'address-list-timeout' => trim((string) ($rule['address-list-timeout'] ?? '')),
+            'disabled' => trim((string) ($rule['disabled'] ?? 'false')),
+        ];
+    }
+
+
+    private function fwInputHasEquivalentRule(array $currentRules, array $proposedRule): bool
+    {
+        $needle = $this->fwInputNormalizeRuleForCompare($proposedRule);
+        foreach ($currentRules as $rule) {
+            if ($this->fwInputNormalizeRuleForCompare($rule) === $needle) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
 
     function saveAction() {
         if (App::$auth->isAuth) {
             if (can_edit(Module::MOD_TP)) {
                 $tp_id = $this->route[F_ALIAS] ?? 0;
                 if ($tp_id) {
-                    $my = $_SESSION[User::SESSION_USER_REC];
+                    $my = App::get_user();
                     $my_tp_list = $this->db->get_my_tp_id_list();
                     if (in_array($tp_id, $my_tp_list)) {
                         $tp = $_POST[TP::POST_REC];
                         $tp[TP::F_ID] = $tp_id;
                         $this->normalize($tp);
                         if (!$this->validate($tp)) {
-                            MsgQueue::msg(MsgType::ERROR, __('Не корректные данные'));
+                            MsgQueue::msg(MsgType::ERROR, __('Incorrect data | Не корректные данные | Не коректні дані'));
                             $_SESSION[SessionFields::FORM_DATA] = $tp;
                             redirect();
                         }
 //                        debug($tp, '$tp', debug_view: DebugView::PRINTR);
 //                        debug($tp, '$tp', debug_view: DebugView::DUMP, die: 1);
                         if ($this->db->update_row_by_id(table: TP::TABLE, field_id: TP::F_ID, row: $tp)) {
-                            MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Данные успешно внесены'));
+                            MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Data entered successfully | Данные успешно внесены | Дані успішно внесені'));
                             redirect(TP::URI_EDIT . '/' . $tp_id);
                         } else {
                             MsgQueue::msg(MsgType::ERROR, $this->db->errorInfo());
@@ -322,15 +1766,15 @@ class TpController extends AppBaseController {
                             redirect(TP::URI_EDIT . '/' . $tp_id);
                         }
                     } else {
-                        MsgQueue::msg(MsgType::ERROR, __('Чужая ТП'));
+                        MsgQueue::msg(MsgType::ERROR, __('Alien technical site | Чужая техническяая площадка | Чужий технічний майданчик'));
                         redirect();
                     }
                 } else {
-                    MsgQueue::msg(MsgType::ERROR, __('Не указан ID ТП'));
+                    MsgQueue::msg(MsgType::ERROR, __('Technical site ID not specified | Не указан ID технической площадки | Не вказано ID технічного майданчика'));
                     redirect();
                 }
             } else {
-                MsgQueue::msg(MsgType::ERROR, __('Недостаточно прав.'));
+                MsgQueue::msg(MsgType::ERROR, __('Insufficient rights | Недостаточно прав | Недостатньо прав'));
                 self::log_no_rights();
                 redirect();
             }
@@ -351,27 +1795,27 @@ class TpController extends AppBaseController {
         }
 
         if (!(can_add(Module::MOD_SECURITY) && can_del(Module::MOD_SECURITY))) {
-            MsgQueue::msg(MsgType::ERROR, __('Недостаточно прав.'));
+            MsgQueue::msg(MsgType::ERROR, __('Insufficient rights | Недостаточно прав | Недостатньо прав'));
             self::log_no_rights();
             redirect();
         }
 
         $tp_id = (int) ($this->route[F_ALIAS] ?? 0);
         if (!$this->db->validate_id(TP::TABLE, $tp_id, TP::F_ID)) {
-            MsgQueue::msg(MsgType::ERROR, __('Не верный ID ТП'));
+            MsgQueue::msg(MsgType::ERROR, __('Incorrect technical site ID | Не верный ID технической площадки | Не вірний ID технічного майданчика'));
             redirect();
         }
 
         $aclTableId = (int) ($_GET['list'] ?? 0);
         if (!$this->db->validate_id(DevAclTable::TABLE, $aclTableId, DevAclTable::F_ID)) {
-            MsgQueue::msg(MsgType::ERROR, __('Не верный ID ACL-таблицы'));
+            MsgQueue::msg(MsgType::ERROR, __('Invalid ACL table ID | Не верный ID ACL-таблицы | Невірний ID ACL-таблиці'));
             redirect(TP::URI_EDIT . '/' . $tp_id);
         }
 
         $tp = $this->db->get_tp($tp_id);
         $aclTable = $this->db->getAclTableById($aclTableId);
         if (empty($aclTable)) {
-            MsgQueue::msg(MsgType::ERROR, __('ACL-таблица не найдена') . ': ' . $aclTableId);
+            MsgQueue::msg(MsgType::ERROR, __('ACL table not found | ACL-таблица не найдена | ACL-таблиця не знайдена') . ': ' . $aclTableId);
             redirect(TP::URI_EDIT . '/' . $tp_id);
         }
 
@@ -381,7 +1825,7 @@ class TpController extends AppBaseController {
         );
 
         if (empty($aclRows)) {
-            MsgQueue::msg(MsgType::INFO, __('Нет записей для синхронизации') . ': ' . $aclTable[DevAclTable::F_NAME]);
+            MsgQueue::msg(MsgType::INFO, __('No entries to sync | Нет записей для синхронизации | Немає записів для синхронізації') . ': ' . $aclTable[DevAclTable::F_NAME]);
             redirect(); // TP::URI_EDIT . '/' . $tp_id
         }
 
@@ -397,7 +1841,7 @@ class TpController extends AppBaseController {
 
         try {
             $device = new MikrotikDevice(tp: $tp);
-            MsgQueue::msg(MsgType::SUCCESS, __('Успешно подключились к устройству') . ' [' . $tp[TP::F_TITLE] . ']');
+            MsgQueue::msg(MsgType::SUCCESS, __('Successfully connected to the device | Успешно подключились к устройству | Успішно підключилися до пристрою') . ' [' . $tp[TP::F_TITLE] . ']');
             MsgQueue::msg(MsgType::SUCCESS, implode(' | ', $device->get_description()));
             $result = $device->sync_address_list_from_array(
                 rows: $syncRows,
@@ -405,15 +1849,15 @@ class TpController extends AppBaseController {
             );
 
             if ($result) {
-                MsgQueue::msg(MsgType::SUCCESS, __('ACL-таблица успешно синхронизирована') . ': ' . $aclTable[DevAclTable::F_NAME]);
+                MsgQueue::msg(MsgType::SUCCESS, __('ACL table successfully synchronized | ACL-таблица успешно синхронизирована | ACL-таблиця успішно синхронізована') . ': ' . $aclTable[DevAclTable::F_NAME]);
             } else {
-                MsgQueue::msg(MsgType::ERROR, __('Синхронизация завершилась с ошибками') . ': ' . $aclTable[DevAclTable::F_NAME]);
+                MsgQueue::msg(MsgType::ERROR, __('Synchronization completed with errors | Синхронизация завершилась с ошибками | Синхронізація завершилася з помилками') . ': ' . $aclTable[DevAclTable::F_NAME]);
                 foreach (MikrotikDevice::$errors ?? [] as $error) {
                     MsgQueue::msg(MsgType::ERROR, $error);
                 }
             }
         } catch (\Throwable $e) {
-            MsgQueue::msg(MsgType::ERROR, __('Ошибка синхронизации ACL') . ': ' . $e->getMessage());
+            MsgQueue::msg(MsgType::ERROR, __('ACL synchronization error | Ошибка синхронизации ACL | Помилка синхронізації ACL') . ': ' . $e->getMessage());
         }
 
         redirect(); // TP::URI_EDIT . '/' . $tp_id
@@ -430,20 +1874,20 @@ class TpController extends AppBaseController {
         }
 
         if (!can_del(Module::MOD_TP)) {
-            MsgQueue::msg(MsgType::ERROR, __('Недостаточно прав.'));
+            MsgQueue::msg(MsgType::ERROR, __('Insufficient rights | Недостаточно прав | Недостатньо прав'));
             self::log_no_rights();
             redirect();
         }
 
         $tp_id = (int) ($this->route[F_ALIAS] ?? 0);
         if (!$this->db->validate_id(TP::TABLE, $tp_id, TP::F_ID)) {
-            MsgQueue::msg(MsgType::ERROR, __('Не верный ID ТП'));
+            MsgQueue::msg(MsgType::ERROR, __('Incorrect technical site ID | Не верный ID технической площадки | Не вірний ID технічного майданчика'));
             redirect();
         }
 
         $my_tp_list = $this->db->get_my_tp_id_list();
         if (!in_array($tp_id, $my_tp_list)) {
-            MsgQueue::msg(MsgType::ERROR, __('Чужая ТП'));
+            MsgQueue::msg(MsgType::ERROR, __('Alien technical site | Чужая техническяая площадка | Чужий технічний майданчик'));
             redirect();
         }
 
@@ -453,7 +1897,7 @@ class TpController extends AppBaseController {
         $countPa = (int) ($this->db->query($sql, [$tp_id], fetchCell: 0) ?: 0);
 
         if ($countPa > 0) {
-            MsgQueue::msg(MsgType::ERROR, __('Удалить нельзя, поскольку есть подключённые прайсовые фрагменты'));
+            MsgQueue::msg(MsgType::ERROR, __('It cannot be deleted because there are price fragments connected | Удалить нельзя, поскольку есть подключённые прайсовые фрагменты | Видалити не можна, оскільки є підключені прайсові фрагменти'));
             redirect(TP::URI_EDIT . '/' . $tp_id);
         }
 
@@ -464,18 +1908,18 @@ class TpController extends AppBaseController {
                 "DELETE FROM `" . TSUserTp::TABLE . "` WHERE `" . TSUserTp::F_TP_ID . "` = ?",
                 [$tp_id]
             )) {
-                throw new \Exception(__('Не удалось удалить привязки пользователей к ТП'));
+                throw new \Exception(__('Failed to delete user bindings to the technical site | Не удалось удалить привязки пользователей к технической площадке | Не вдалося видалити прив\'язки користувачів до технічного майданчика'));
             }
 
             if (!$this->db->execute(
                 "DELETE FROM `" . TP::TABLE . "` WHERE `" . TP::F_ID . "` = ?",
                 [$tp_id]
             )) {
-                throw new \Exception(__('Не удалось удалить запись ТП'));
+                throw new \Exception(__('Failed to delete technical site entry | Не удалось удалить запись технической площадки | Не вдалося видалити запис технічного майданчика'));
             }
 
             $this->db->execute('COMMIT');
-            MsgQueue::msg(MsgType::SUCCESS, __('Техплощадка успешно удалена'));
+            MsgQueue::msg(MsgType::SUCCESS, __('The technical site was successfully deleted | Техплощадка успешно удалена | Техмайданчик успішно видалено'));
         } catch (\Throwable $e) {
             $this->db->execute('ROLLBACK');
             MsgQueue::msg(MsgType::ERROR, $e->getMessage());
@@ -491,7 +1935,7 @@ class TpController extends AppBaseController {
 
         $fields = [
             DataTypes::INT->name => [
-                TP::F_STATUS                => 0,
+                TP::F_ACTIVE                => 0,
                 TP::F_DELETED               => 0,
                 TP::F_IS_MANAGED            => 0,
                 TP::F_TERRITORIAL_GROUP_ID  => 0,
@@ -586,7 +2030,7 @@ class TpController extends AppBaseController {
                     break;
 
                 default:
-                    throw new \Exception('Этого не должно быть: Не верный тип даных.');
+                    throw new \Exception('This should not happen: Invalid data type | Этого не должно быть: Не верный тип даных | Цього не повинно бути: Неправильний тип даних');
                     // break;
             }
         }
@@ -643,7 +2087,7 @@ class TpController extends AppBaseController {
     function validate(array $data): bool {
         $v = new Validator($data);
         $v->labels([
-            TP::F_STATUS                 => __('Status | Статус | Статус'),
+            TP::F_ACTIVE                 => __('Status | Статус | Статус'),
             TP::F_DELETED                => __('Deleted | Удалена | Видалена'),
             TP::F_IS_MANAGED             => __('Managed | Управляемая | Керована'),
             TP::F_RANG_ID                => __('Node rank | Ранг узла | Ранг вузла'),
@@ -681,7 +2125,7 @@ class TpController extends AppBaseController {
 
         // обязательные
         $v->rule('required', [
-            TP::F_STATUS,
+            TP::F_ACTIVE,
             TP::F_DELETED,
             TP::F_IS_MANAGED,
             TP::F_TITLE,
@@ -689,7 +2133,7 @@ class TpController extends AppBaseController {
 
         // целые числа
         $v->rule('integer', [
-            TP::F_STATUS,
+            TP::F_ACTIVE,
             TP::F_DELETED,
             TP::F_IS_MANAGED,
             TP::F_RANG_ID,
@@ -729,19 +2173,19 @@ class TpController extends AppBaseController {
         // IP
         $v->rule('ip', [
             TP::F_IP,
-            TP::F_MIK_IP,
-            TP::F_MIK_FTP_IP
+//            TP::F_MIK_IP,
+//            TP::F_MIK_FTP_IP,
         ]);
 
         // URL
         $v->rule('url', [
-            TP::F_URL,
+//            TP::F_URL,
             TP::F_URL_ZABBIX,
             // TP::F_WEB_MANAGEMENT,
         ]);
 
         // статус (0/1)
-        $v->rule('in', TP::F_STATUS, [0, 1]);
+        $v->rule('in', TP::F_ACTIVE, [0, 1]);
         $v->rule('in', TP::F_DELETED, [0, 1]);
         $v->rule('in', TP::F_IS_MANAGED, [0, 1]);
 
@@ -773,11 +2217,15 @@ class TpController extends AppBaseController {
 
 
     
-    function deviceAction() {
+    function testAction() {
         
-        $model = new \billing\core\base\Model();
+//        $model = new \billing\core\base\Model();
+        $model = new \app\models\AbonModel();
         
-        $tp = $model->get_tp(29);
+
+        
+        
+        $tp = $model->get_tp(97);
         
 //        debug($tp, 'TP');
         
@@ -789,23 +2237,88 @@ class TpController extends AppBaseController {
         echo implode(' | ', $dev->get_description()) . '<hr>';
         echo implode(' | ', $dev->get_state()) . '<hr>';
 
-        $filterRules = $dev->get_filer_rules();
-        $natRules = $dev->get_nat_list();
         
-        $v = new FWAbonValidator();
-
-        $v->loadFilter($filterRules);
-        $v->loadNat($natRules);
-
-        $errors = $v->validate();
-
-        if ($errors) {
-            print_r($errors);
-
-            print_r(
-                $v->repairScript()
-            );
-        }        
+        
+        $filters = $dev->get_filer_rules();
+        debug($filters, '$filters');
+        $input = $dev->get_filer_input();
+        debug($input, '$input1');
+        $input = $dev->get_filer_input(protocol: 'tcp');
+        debug($input, '$input2');
+        $input = $dev->get_filer_input(protocol: 'udp');
+        debug($input, '$input3');
+        $ip_serv = $dev->get_ip_services();
+        debug($ip_serv, '$ip_serv');
+        $ip_ports = $dev->get_ip_services_ports();
+        debug($ip_ports, '$ip_ports');
+        $ip_nets = $dev->get_ip_services_allowed_networks();
+        debug($ip_nets, '$ip_nets');
+        $inteface_lists = $dev->get_interface_lists();
+        debug($inteface_lists, '$inteface_lists');
+        
+        
+        
+//        $rule =
+//            '/ip/firewall/filter add ' .
+//            'chain=input ' .
+//            'protocol=tcp ' .
+//            'in-interface-list=WAN ' .
+//            'dst-port=!' . implode(',', $ip_ports) . ' ' .
+//            'action=drop ' .
+//            'comment="'.$COMMENT.$VERSION.' DROP all tcp except allowed"';
+//        echo $rule;
+//        
+//        
+        $VERSION = 'v001';
+        $comment_prefix = 'FW';
+        $comment = 'INPUT_INVALID';
+        $comment = 'INPUT_DROP_TCP';
+        $comment = 'INPUT_DROP_UDP';
+        $comment = 'INPUT_DROP_SCAN';
+//
+//        
+//        add_filter(
+//                chain: 'input',
+//                protocol: 'tcp',
+//                in_interface_ist: 'WAN',
+//                dstports: '!' . implode(',', $ports),
+//                ?string $invalid = null,
+//                ?string $dynamic = null,
+//                ?string $action = null,
+//                ?string $comment = null): bool
+//        {
+//            $this->connector->exec(
+//                    '/ip/firewall/filter/add',
+//                    [
+//                        'chain'             => $chain, // 'input',
+//                        'protocol'          => $protocol, // 'tcp',
+//                        'in-interface-list' => $in_interface_ist, // 'WAN',
+//                        'dst-port'          => $dstports, // '!' . implode(',', $ports),
+//                        'action'            => $action, // 'drop',
+//                        'comment'           => $comment, // 'ABON DROP',
+//                    ]);
+//
+//        }        
+//        
+//        
+        
+//        Тестирование систем валидации.
+//        Нужно или разобраться как это работает или удалить нафиг
+//        лучше разобраться
+//        $filterRules = $dev->get_filer_rules();
+//        $natRules = $dev->get_nat_list();
+//        debug($filterRules, '$filterRules');
+//        debug($natRules, '$natRules');
+//        $v = new FWAbonValidator();
+//        $v->loadFilter($filterRules);
+//        $v->loadNat($natRules);
+//        $errors = $v->validate();
+//        if ($errors) {
+//            echo "<pre>";
+//            print_r($errors);
+//            print_r($v->repairScript());
+//            echo "</pre>";
+//        }        
         
         die();
     }

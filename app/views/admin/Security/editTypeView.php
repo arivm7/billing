@@ -10,6 +10,9 @@
  *
  *  Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
  */
+
+use app\controllers\admin\SecurityController;
+
 ?>
 <div class="container my-4">
     <h1 class="display-6 mb-4"><?= h($title) ?></h1>
@@ -31,6 +34,7 @@
             <div class="mb-3">
                 <label for="analytical_interval" class="form-label"><?= __('Analytical interval, sec.') ?></label>
                 <input type="number" min="0" class="form-control" id="analytical_interval" name="attack_type[analytical_interval]" value="<?= (int) $attack_type['analytical_interval'] ?>" required>
+                <div class="form-text"><?= SecurityController::formatDuration((int) $attack_type['analytical_interval']) ?></div>
             </div>
 
             <div class="mb-3">
