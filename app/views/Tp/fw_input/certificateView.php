@@ -20,7 +20,7 @@
 
 use config\FwInput;
 use config\tables\TP;
-use billing\core\MikrotikDevice;
+use billing\core\MikrotikDevice1;
 
 $cfg = $data['certificate'] ?? [];
 $certName = $data['cert_name'] ?? 'cert1';
@@ -90,7 +90,7 @@ include __DIR__ . '/header.php';
                 <?php foreach ($certs as $cert): ?>
                     <tr>
                         <td><?= h((string) ($cert['name'] ?? '')) ?></td>
-                        <td><?= (MikrotikDevice::is_certificate_signed($cert) ? "Yes":"No") ?></td>
+                        <td><?= (MikrotikDevice1::is_certificate_signed($cert) ? "Yes":"No") ?></td>
                         <td><?= h((string) ($cert['invalid-after'] ?? '')) ?></td>
                         <td><?= h((string) ($cert['trusted'] ?? '')) ?></td>
                         <td><?= h((string) ($cert['invalid'] ?? '')) ?></td>

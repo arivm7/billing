@@ -52,7 +52,7 @@ use config\tables\TP;
 <div class="d-flex justify-content-between align-items-center">
     <div>
         <?php if (!empty($device_title)): ?>
-            <h4 class="fs-6 text-end m-0 p-0 lh-sm"><span class="fw-semibold text-success-emphasis bg-success-subtle border border-success-subtle rounded-2 px-3 py-2"><?= $device_title ?></span></h4>
+            <h4 class="fs-6 text-end m-0 p-0 lh-sm"><?= __('Device | Устройство | Пристрій') . ': ' ?><span class="fw-semibold text-success-emphasis bg-success-subtle border border-success-subtle rounded-2 px-3 py-2"><?= $device_title ?></span></h4>
         <?php endif; ?>
     </div>
     <div>

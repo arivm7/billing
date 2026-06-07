@@ -38,9 +38,11 @@ function cmp_float(?float $a, ?float $b): int {
  * @return int
  */
 function cmp_ipv4(string|null $a, string|null $b): int {
-    if (($a == $b)) { return 0; }
+    if (($a === $b)) { return 0; }
     if (is_null($a))  { return -1; }
     if (is_null($b))  { return  1; }
+    $a = explode('/', $a, 2)[0];
+    $b = explode('/', $b, 2)[0];
     if (trim($a) == trim($b)) { return 0; }
     return ((ip2long($a) < ip2long($b)) ? -1 : 1);
 }

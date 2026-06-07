@@ -20,6 +20,7 @@ use billing\core\Api;
 use billing\core\App;
 use billing\core\MsgQueue;
 use billing\core\MsgType;
+use billing\core\MikrotikDevice;
 use config\Icons;
 use config\Mik;
 use config\tables\Abon;
@@ -881,7 +882,7 @@ class AbonModel extends UserModel {
         if ($this->validate_id(PA::TABLE, $pa_id, PA::F_ID)) {
             return $this->get_row_by_id(PA::TABLE, $pa_id, PA::F_ID);
         } else {
-            self::$errors[] = "No Valid ID [".$pa_id."]";
+            self::$errors[] = 'get_pa: ' . __('Invalid price fragment ID | Не верный ID прайсового фрагмента | Не вірний ID прайсового фрагмента') . ' [' . $pa_id . ']';
             return [];
         }
     }
@@ -1982,121 +1983,214 @@ class AbonModel extends UserModel {
 
         MsgQueue::msg(MsgType::INFO, "price_apply_auto_ON($aid):");
 
-        if($this->validate_id(Abon::TABLE, $aid)) {
-            if(!$this->price_apply_has_active($aid)) {
-                MsgQueue::msg(MsgType::INFO, "нет активных прайсов.");
-                if ($this->is_payer($aid)) {
-                    MsgQueue::msg(MsgType::INFO, "Попытка включения последних прайсов:");
+        if(!$this->validate_abon($aid)) {
+            MsgQueue::msg(MsgType::INFO, "[$aid] - " . __('Not a subscriber. No action | Не абонент. Действий нет | Чи не абонент. Дій немає'));
+            MsgQueue::msg(MsgType::INFO, __('Verification required | Требуется проверка | Потрібна перевірка'));
+            return;
+        }
+            
+        if($this->price_apply_has_active($aid)) {
+            // есть активные прайсы
+            MsgQueue::msg(MsgType::INFO, 'There are active prices. No action | Есть активные прайсы. Действий нет | Є активні прайси. Дій немає');
+            return;
+        }
+            
+        MsgQueue::msg(MsgType::INFO, __('No active prices | Нет активных прайсов | Немає активних прайсів'));
+        
+        if (!$this->is_payer($aid)) {
+            MsgQueue::msg(MsgType::INFO, "[$aid] - " . __('NOT the payer. No action | НЕ плательщик. Действий нет | НЕ платник. Дій немає'));
+            MsgQueue::msg(MsgType::INFO, __('Verification required | Требуется проверка | Потрібна перевірка'));
+            return;
+        }
+                
+        MsgQueue::msg(MsgType::INFO, __('An attempt to include the latest prices | Попытка включения последних прайсов | Спроба включення останніх прайсів') . ':');
 
-                    $pa_list = $this->get_pa_off_last_by_abon_id($aid);
+        $pa_list = $this->get_pa_off_last_by_abon_id($aid);
 
-                    if(count($pa_list) > 0) {
-                        $rest = $this->get_abon_rest($aid);
-                        $unpaused_days = App::get_config('pa_unpaused_days'); // количество дней интервала автоактивации
-                        $base_date_end = $pa_list[0][PA::F_DATE_END]; // дата отключения самого последнего прайса
-                        $between_days = get_between_days(date_only($pa_list[0][PA::F_DATE_END]), date('Y-m-d'));
+        if(count($pa_list) == 0) {
+            MsgQueue::msg(MsgType::INFO, __('There are no disabled price fragments. No action | Отключённых прайсовых фрагментов нет. Действий нет | Відключених прайсових фрагментів немає. Дій немає'));
+            return;
+        }
+        
+        $rest = $this->get_abon_rest($aid);
+        $unpaused_days = App::get_config('pa_unpaused_days'); // количество дней интервала автоактивации
+        $base_date_end = $pa_list[0][PA::F_DATE_END]; // дата отключения самого последнего прайса
+        $between_days = get_between_days(date_only($pa_list[0][PA::F_DATE_END]), date('Y-m-d'));
 
-                        /**
-                         * Проверка: не слишком ли давно отключен прайс.
-                         * Если слишком давно, то автоактивация не производится
-                         */
-                        if($between_days > App::get_config('pa_no_reactivate_days')) {
-                            MsgQueue::msg(MsgType::INFO, "Прайсовый фрагмент отключен очень давно. Автоактивация не производится.");
-                            return;
-                        }
+        /**
+         * Проверка: не слишком ли давно отключен прайс.
+         * Если слишком давно, то автоактивация не производится
+         */
+        if($between_days > App::get_config('pa_no_reactivate_days')) {
+            MsgQueue::msg(MsgType::INFO, __('The price fragment has been disabled for a very long time. Activation is not performed | Прайсовый фрагмент отключен очень давно. Активация не производится | Прайсовий фрагмент вимкнено дуже давно. Активація не провадиться'));
+            MsgQueue::msg(MsgType::INFO, __('Verification required | Требуется проверка | Потрібна перевірка'));
+            return;
+        }
 
-                        MsgQueue::msg(MsgType::INFO, "Дата отключения: ".date("Y-m-d", $base_date_end) . "; дней с отключения: ".$between_days."; интервал автоактивации: ".$unpaused_days." дней.");
+        MsgQueue::msg(MsgType::INFO, "Дата отключения: ".date("Y-m-d", $base_date_end) . "; дней с отключения: ".$between_days."; интервал автоактивации: ".$unpaused_days." дней.");
 
-                        for ($i = 0; $i < count($pa_list); $i++) {
+//        for ($i = 0; $i < count($pa_list); $i++) {
+        foreach ($pa_list as $pa_item) {
 
-                            if($base_date_end == $pa_list[$i][PA::F_DATE_END]) {
-
-                                MsgQueue::msg(MsgType::INFO, "активируем прайс");
-
-                                if ($rest[AbonRest::F_REST] > 0) {
-
-                                    MsgQueue::msg(MsgType::INFO, "Баланс положительный. Включаем прайс.");
-
-                                    /**
-                                     * Включение в биллинге
-                                     */
-
-                                    /**
-                                     * Решение о том, как включать прайс:
-                                     * 1. Если отключен недавно (в пределах unpaused_days), то просто реактивируем
-                                     * 2. Если отключен давно, то клонируем и активируем
-                                     */
-                                    if ($unpaused_days > 0 && $between_days >= 0 && $between_days < $unpaused_days) { 
-
-                                        MsgQueue::msg(MsgType::INFO, "Отключен недавно. Просто реактивируем.");
-                                        if($this->set_field_value(
-                                                table_name: PA::TABLE, 
-                                                field_id: PA::F_ID, 
-                                                value_id: $pa_list[$i][PA::F_ID], 
-                                                field: PA::F_DATE_END, 
-                                                value: null, 
-                                                update_access_time: false)) 
-                                        {
-                                            MsgQueue::msg(MsgType::INFO, "В биллинге включили.");
-                                        } else {
-                                            MsgQueue::msg(MsgType::INFO, "ОШИБКА: В биллинге не включили");
-                                            MsgQueue::msg(MsgType::ERROR, "ОШИБКА: В биллинге не включили");
-                                        }
-
-                                    } else {
-                                        MsgQueue::msg(MsgType::INFO, "Отключен давно. Клонируем и активируем.");
-                                        $pa_new_id = PaController::clone(pa: $pa_list[$i]);
-                                        if ($pa_new_id === false) {
-                                            MsgQueue::msg(MsgType::INFO, "ОШИБКА: В биллинге не клонировали и не включили");
-                                            MsgQueue::msg(MsgType::ERROR, "ОШИБКА: В биллинге не клонировали и не включили");
-                                        } else {
-                                            MsgQueue::msg(MsgType::INFO, "В биллинге клонировали и включили. Новый PA_ID: ".$pa_new_id);
-                                        }
-                                    }
-
-                                    /**
-                                     * Включение на ТП
-                                     */
-                                    if($this->tp_has_managed($pa_list[$i][PA::F_TP_ID])) {
-                                        MsgQueue::msg(MsgType::INFO, "ТП управляемая.");
-                                        if (Api::set_mik_abon_ip(Api::tp_connector($pa_list[$i][PA::F_TP_ID]), $pa_list[$i][PA::F_NET_IP], 1, true)) {
-                                            MsgQueue::msg(MsgType::INFO, "На ТП включили.");
-                                        } else {
-                                            MsgQueue::msg(MsgType::INFO, "ОШИБКА: На ТП включить не удалось");
-                                            MsgQueue::msg(MsgType::ERROR, "ОШИБКА: На ТП включить не удалось");
-                                        }
-                                        MsgQueue::msg(MsgType::INFO, "... включили.");
-                                    } else {
-                                        MsgQueue::msg(MsgType::INFO, "ТП не управляемая.");
-                                    }
-
-                                } else {
-                                    MsgQueue::msg(MsgType::INFO, "Баланс отрицательный. Прайс не включаем." );
-                                }
-
-                            } else {
-                                MsgQueue::msg(MsgType::INFO, "Дальше прайсы не активируем, поскольку дата другая.");
-                                return;
-                            }
-                        }
-                    } else {
-                        MsgQueue::msg(MsgType::INFO, "Отключённых прайсовых фрагментов нет. Действий нет.");
-                    }
-
-                } else {
-                    MsgQueue::msg(MsgType::INFO, "[$aid] - НЕ плательщик. Действий нет.");
-                    MsgQueue::msg(MsgType::INFO, "Требуется проверка.");
-                }
-
-            } else {
-                // есть активные прайсы
-                MsgQueue::msg(MsgType::INFO, "Есть активные прайсы. Действий нет.");
+            if ($base_date_end != $pa_item[PA::F_DATE_END]) {
+                MsgQueue::msg(MsgType::INFO, __('We will not activate price fragments further, since the date is different | Дальше прайсовые фрагменты не активируем, поскольку дата другая | Далі прайсові фрагменти не активуємо, оскільки інша дата'));
+                break;
             }
-        } else {
-            MsgQueue::msg(MsgType::INFO, "[$aid] - Не абонент. Действий нет.");
-            MsgQueue::msg(MsgType::INFO, "Требуется проверка.");
+
+            MsgQueue::msg(MsgType::INFO, __('Activate the price fragment | Активируем прайсовый фрагмент | Активуємо прайсовий фрагмент'));
+
+            if ($rest[AbonRest::F_REST] < 0) {
+                MsgQueue::msg(MsgType::INFO, __('The balance is negative. We do not include the price fragment | Баланс отрицательный. Прайсовый фрагмент не включаем | Баланс негативний. Прайсовий фрагмент не включаємо'));
+                continue;
+            }
+
+            MsgQueue::msg(MsgType::INFO, __('The balance is positive. Include price fragment | Баланс положительный. Включаем прайсовый фрагмент | Баланс позитивний. Включаємо прайсовий фрагмент'));
+
+            $log = '';
+
+            $result = PaController::enable(
+                pa: $pa_item,
+                ena: true,
+                force: false,
+                log: $log
+            );
+
+            if ($result === false) {
+                MsgQueue::msg(MsgType::ERROR, __('Failed to include price fragment | Не удалось включить прайсовый фрагмент | Не вдалося увімкнути прайсовий фрагмент'));
+                MsgQueue::msg(MsgType::INFO, $log);
+                continue;
+            }
+
+            MsgQueue::msg(MsgType::INFO, __('Price fragment successfully included | Прайсовый фрагмент успешно включён | Прайсовий фрагмент успішно включений') . ". PA_ID: {$result}");
+            MsgQueue::msg(MsgType::INFO, $log);
         }
     }
+
+
+
+//    /**
+//     * Автоматическое включение price_apply для абонента
+//     * @param int $aid
+//     */
+//    function price_apply_auto_ON_(int $aid) {
+//
+//        MsgQueue::msg(MsgType::INFO, "price_apply_auto_ON($aid):");
+//
+//        if($this->validate_id(Abon::TABLE, $aid)) {
+//            if(!$this->price_apply_has_active($aid)) {
+//                MsgQueue::msg(MsgType::INFO, "нет активных прайсов.");
+//                if ($this->is_payer($aid)) {
+//                    MsgQueue::msg(MsgType::INFO, "Попытка включения последних прайсов:");
+//
+//                    $pa_list = $this->get_pa_off_last_by_abon_id($aid);
+//
+//                    if(count($pa_list) > 0) {
+//                        $rest = $this->get_abon_rest($aid);
+//                        $unpaused_days = App::get_config('pa_unpaused_days'); // количество дней интервала автоактивации
+//                        $base_date_end = $pa_list[0][PA::F_DATE_END]; // дата отключения самого последнего прайса
+//                        $between_days = get_between_days(date_only($pa_list[0][PA::F_DATE_END]), date('Y-m-d'));
+//
+//                        /**
+//                         * Проверка: не слишком ли давно отключен прайс.
+//                         * Если слишком давно, то автоактивация не производится
+//                         */
+//                        if($between_days > App::get_config('pa_no_reactivate_days')) {
+//                            MsgQueue::msg(MsgType::INFO, "Прайсовый фрагмент отключен очень давно. Автоактивация не производится.");
+//                            return;
+//                        }
+//
+//                        MsgQueue::msg(MsgType::INFO, "Дата отключения: ".date("Y-m-d", $base_date_end) . "; дней с отключения: ".$between_days."; интервал автоактивации: ".$unpaused_days." дней.");
+//
+//                        for ($i = 0; $i < count($pa_list); $i++) {
+//
+//                            if($base_date_end == $pa_list[$i][PA::F_DATE_END]) {
+//
+//                                MsgQueue::msg(MsgType::INFO, "активируем прайс");
+//
+//                                if ($rest[AbonRest::F_REST] > 0) {
+//
+//                                    MsgQueue::msg(MsgType::INFO, "Баланс положительный. Включаем прайс.");
+//
+//                                    /**
+//                                     * Включение в биллинге
+//                                     */
+//
+//                                    /**
+//                                     * Решение о том, как включать прайс:
+//                                     * 1. Если отключен недавно (в пределах unpaused_days), то просто реактивируем
+//                                     * 2. Если отключен давно, то клонируем и активируем
+//                                     */
+//                                    if ($unpaused_days > 0 && $between_days >= 0 && $between_days < $unpaused_days) { 
+//
+//                                        MsgQueue::msg(MsgType::INFO, "Отключен недавно. Просто реактивируем.");
+//                                        if($this->set_field_value(
+//                                                table_name: PA::TABLE, 
+//                                                field_id: PA::F_ID, 
+//                                                value_id: $pa_list[$i][PA::F_ID], 
+//                                                field: PA::F_DATE_END, 
+//                                                value: null, 
+//                                                update_access_time: false)) 
+//                                        {
+//                                            MsgQueue::msg(MsgType::INFO, "В биллинге включили.");
+//                                        } else {
+//                                            MsgQueue::msg(MsgType::INFO, "ОШИБКА: В биллинге не включили");
+//                                            MsgQueue::msg(MsgType::ERROR, "ОШИБКА: В биллинге не включили");
+//                                        }
+//
+//                                    } else {
+//                                        MsgQueue::msg(MsgType::INFO, "Отключен давно. Клонируем и активируем.");
+//                                        $pa_new_id = PaController::clone(pa: $pa_list[$i]);
+//                                        if ($pa_new_id === false) {
+//                                            MsgQueue::msg(MsgType::INFO, "ОШИБКА: В биллинге не клонировали и не включили");
+//                                            MsgQueue::msg(MsgType::ERROR, "ОШИБКА: В биллинге не клонировали и не включили");
+//                                        } else {
+//                                            MsgQueue::msg(MsgType::INFO, "В биллинге клонировали и включили. Новый PA_ID: ".$pa_new_id);
+//                                        }
+//                                    }
+//
+//                                    /**
+//                                     * Включение на ТП
+//                                     */
+//                                    if($this->tp_has_managed($pa_list[$i][PA::F_TP_ID])) {
+//                                        MsgQueue::msg(MsgType::INFO, "ТП управляемая.");
+//                                        if (Api::set_mik_abon_ip(Api::tp_connector($pa_list[$i][PA::F_TP_ID]), $pa_list[$i][PA::F_NET_IP], 1, true)) {
+//                                            MsgQueue::msg(MsgType::INFO, "На ТП включили.");
+//                                        } else {
+//                                            MsgQueue::msg(MsgType::INFO, "ОШИБКА: На ТП включить не удалось");
+//                                            MsgQueue::msg(MsgType::ERROR, "ОШИБКА: На ТП включить не удалось");
+//                                        }
+//                                        MsgQueue::msg(MsgType::INFO, "... включили.");
+//                                    } else {
+//                                        MsgQueue::msg(MsgType::INFO, "ТП не управляемая.");
+//                                    }
+//
+//                                } else {
+//                                    MsgQueue::msg(MsgType::INFO, "Баланс отрицательный. Прайс не включаем." );
+//                                }
+//
+//                            } else {
+//                                MsgQueue::msg(MsgType::INFO, "Дальше прайсы не активируем, поскольку дата другая.");
+//                                return;
+//                            }
+//                        }
+//                    } else {
+//                        MsgQueue::msg(MsgType::INFO, "Отключённых прайсовых фрагментов нет. Действий нет.");
+//                    }
+//
+//                } else {
+//                    MsgQueue::msg(MsgType::INFO, "[$aid] - НЕ плательщик. Действий нет.");
+//                    MsgQueue::msg(MsgType::INFO, "Требуется проверка.");
+//                }
+//
+//            } else {
+//                // есть активные прайсы
+//                MsgQueue::msg(MsgType::INFO, "Есть активные прайсы. Действий нет.");
+//            }
+//        } else {
+//            MsgQueue::msg(MsgType::INFO, "[$aid] - Не абонент. Действий нет.");
+//            MsgQueue::msg(MsgType::INFO, "Требуется проверка.");
+//        }
+//    }
 
 
 
@@ -2303,5 +2397,5 @@ class AbonModel extends UserModel {
         if (empty($abon_id)) { return false; }
         return $this->validate_id(Abon::TABLE, $abon_id, Abon::F_ID);
     }
-    
+
 }

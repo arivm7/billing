@@ -44,11 +44,19 @@ class SearchController extends AppBaseController {
     }
     
 
+    private static function normalize_query(string $str): string {
+        return trim(
+            // Удаляем кавычки из запроса
+                str_replace('  ', ' ', 
+                        str_replace(['"', '\''], ' ', $str)
+                )
+            );
+    }
 
     public static function getSearchText(): string
     {
         if (self::isSearchPage() && isset($_GET[Search::F_QUERY])) {
-            return (string) $_GET[Search::F_QUERY];
+            return (string) self::normalize_query($_GET[Search::F_QUERY]);
         } 
         return '';
     }
@@ -76,7 +84,7 @@ class SearchController extends AppBaseController {
          * замена пробелов на % для использование в запросах like
          */
         if (isset($_GET[Search::F_QUERY])) {
-            $searsh_str = trim($_GET[Search::F_QUERY]);
+            $searsh_str = self::normalize_query($_GET[Search::F_QUERY]);
             if (!is_empty($searsh_str)) {
                 $searsh_str = trim(preg_replace('/\s+/', '%', $searsh_str));
             } else {

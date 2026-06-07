@@ -18,6 +18,7 @@
  */
 
 use billing\core\Api;
+use billing\core\MikrotikDevice as Dev;
 use config\Icons;
 use config\tables\Abon;
 use config\tables\PA;
@@ -42,10 +43,21 @@ require_once DIR_LIBS . '/inc_functions.php';
  * @var array $tp -- Текущая ТП к которой прикреплена услуга
  * @var array $tp_default_price -- Дефолтный прайс для ТП
  * @var bool|null $abon_ip_on -- Enable/Disable статус IP-адреса в таблице ABON
- * @var array $arp -- Запись из таблицы ARP микротика со статусом IP-адреса
+ * @var array $arp_resolve -- Записи из таблицы ARP микротика
  * @var array $prices_list -- список прайсов, только названия
  * @var array $tp_list -- список ТП, только названия
  */
+
+if (($arp_resolve[Dev::F_ARP_RESOLV_STATUS] ?? null) !== Dev::ARP_STATUS_OK_SINGLE) {
+    debug($arp_resolve, '$arp_resolve');    
+}
+
+$arp = $arp_resolve[Dev::F_ARP_RESOLV_FOUND][0];
+//$arp =  (    
+//            ($arp_resolve[Dev::F_ARP_RESOLV_STATUS] ?? null) === Dev::ARP_STATUS_OK_SINGLE 
+//            ?   $arp_resolve[Dev::F_ARP_RESOLV_FOUND][0]
+//            :   null
+//        );
 
 /**
  * Данные с предыдущего редактирования
@@ -169,8 +181,8 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
                             <!-- Статус IP-MAC из ARP-таблицы микротика -->
                             <span class="badge text-bg-info mt-3 fs-6">
                                 <?php if ($tp[TP::F_IS_MANAGED]) : ?>
-                                    <?= get_html_abon_ip_status($abon_ip_on); ?>&nbsp;
-                                    <?= ($arp ? Api::get_status_mac_from_arp_rec($arp) : __('No ARP data | Нет данных ARP | Немає даних ARP')); ?> |
+                                    <?= get_html_abon_ip_status($abon_ip_on); ?>&nbsp;|&nbsp;
+                                    <?= ($arp ? Api::get_status_mac_from_arp_rec($arp) : __('No ARP data | Нет данных ARP | Немає даних ARP')); ?>&nbsp;|&nbsp;
                                     <!-- Кнопки -->
                                     <!-- Отключить IP на микротике -->
                                     <?=get_html_btn_abon_ip_turn($item[PA::F_TP_ID], $item[PA::F_NET_IP], 0, options: 'class="btn btn-light p-1"');?>

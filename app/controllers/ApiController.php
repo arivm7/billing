@@ -23,6 +23,7 @@ use billing\core\base\View;
 use billing\core\MsgQueue;
 use billing\core\MsgType;
 use billing\core\Api;
+use billing\core\MikrotikDevice;
 use config\Icons;
 use config\Mik;
 use config\tables\Abon;
@@ -289,7 +290,7 @@ class ApiController extends AppBaseController {
         $mik_rec[Api::MIK_IDENTITY]  = Api::get_mik_identity($mik);
         $mik_rec[Api::MIK_IP_LIST]   = Api::get_tp_ip_address_list($mik);
         $mik_rec[Api::MIK_RESOURSE]  = Api::get_tp_resource($mik);
-        $mik_rec[Api::MIK_ADDR_LIST] = Api::remake_table_lists(get_aligned_table(Api::get_tp_address_list($mik)));
+        $mik_rec[Api::MIK_ADDR_LIST] = Api::group_address_list_by_list(get_aligned_table(Api::get_tp_address_list($mik)));
         $mik_rec[Api::MIK_ARP_LIST]  = get_aligned_table(Api::get_tp_arp_all($mik));
         $mik_rec[Api::MIK_GATES]     = get_aligned_table(Api::get_tp_gateways($mik));
         $mik_rec[Api::MIK_NAT]       = get_aligned_table(Api::get_tp_nat($mik));
@@ -445,17 +446,34 @@ class ApiController extends AppBaseController {
                         $tp_id  = intval($_GET[Api::F_TP_ID]);
                         $ip     = $_GET[Api::F_IP];
                         $ena    = boolval($_GET[Api::F_ENABLED]);
-                        if (Api::set_mik_abon_ip(Api::tp_connector($tp_id), $ip, $ena, true)) {
-                            MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Status set successfully | Статус установлен успешно | Статус встановлено успішно'));
-                            if (Api::$errors) {
-                                MsgQueue::msg(MsgType::SUCCESS_AUTO, Api::$errors);
-                            }
-                        } else {
+                        $dev = new MikrotikDevice(tp_id: $tp_id);
+                        $result = $dev->set_address_list_item(
+                                search: [
+                                    Mik::F_SEARCH_LIST => Mik::L_ABON,
+                                    Mik::F_SEARCH_IP => $ip,
+                                ], 
+                                update: [
+                                    Mik::F_UPDATE_ENA => $ena,
+                                ]);
+                        if ($result === null || $result === false) {
                             MsgQueue::msg(MsgType::ERROR, __('Error establishing IP address status | Ошибка установления статуса IP адреса | Помилка встановлення статусу IP-адреси'));
-                            if (Api::$errors) {
-                                MsgQueue::msg(MsgType::ERROR, Api::$errors);
-                            }
+                            MsgQueue::msg(MsgType::ERROR, MikrotikDevice::get_messages());
+                        } else {
+                            MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Status set successfully | Статус установлен успешно | Статус встановлено успішно'));
                         }
+                        
+//                        if (Api::set_mik_abon_ip(Api::tp_connector($tp_id), $ip, $ena, true)) {
+//                            MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Status set successfully | Статус установлен успешно | Статус встановлено успішно'));
+//                            if (Api::$errors) {
+//                                MsgQueue::msg(MsgType::SUCCESS_AUTO, Api::$errors);
+//                            }
+//                        } else {
+//                            MsgQueue::msg(MsgType::ERROR, __('Error establishing IP address status | Ошибка установления статуса IP адреса | Помилка встановлення статусу IP-адреси'));
+//                            if (Api::$errors) {
+//                                MsgQueue::msg(MsgType::ERROR, Api::$errors);
+//                            }
+//                        }
+                        
                     } else {
                         MsgQueue::msg(MsgType::ERROR_AUTO, __('No rights | Нет прав | Немає прав'));
                     }

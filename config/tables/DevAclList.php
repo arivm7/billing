@@ -20,7 +20,7 @@ class DevAclList {
     public const F_TP_ID = 'tp_id';
     public const F_ADDRESS = 'address';
     public const F_COMMENT = 'comment';
-    public const F_IS_ENABLED = 'is_enabled';
+    public const F_ENABLED = 'is_enabled';
     public const F_CREATION_UID = 'creation_uid';
     public const F_CREATION_DATE = 'creation_date';
     public const F_MODIFIED_UID = 'modified_uid';

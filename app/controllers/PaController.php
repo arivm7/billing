@@ -27,11 +27,13 @@ use billing\core\base\Model;
 use billing\core\base\View;
 use billing\core\MsgQueue;
 use billing\core\MsgType;
+use billing\core\MikrotikDevice;
 use config\AutoCorrect;
 use config\tables\Module;
 use config\tables\PA;
 use config\tables\Price;
 use config\tables\TP;
+use config\Mik;
 use DebugView;
 use Valitron\Validator;
 use config\SessionFields;
@@ -397,12 +399,29 @@ class PaController extends AppBaseController {
                 $log .= 'ERROR: ' . $s;
                 return false;
             }
-            if (!Api::set_mik_abon_ip($mik, $pa[PA::F_NET_IP], $ena, true)) {
+            $dev = new MikrotikDevice(tp: $tp);
+            $result = $dev->set_address_list_item(
+                    search: [
+                        Mik::F_SEARCH_LIST => Mik::L_ABON,
+                        Mik::F_SEARCH_IP => $pa[PA::F_NET_IP],
+                    ], 
+                    update: [
+                        Mik::F_UPDATE_ENA => $ena,
+                    ]);
+            if (!$result) {
                 $s = "Не удалось установить услугу на микротике. Изменение в базе отменено.";
                 MsgQueue::msg(MsgType::ERROR, $s);
                 $log .= 'ERROR: ' . $s;
                 return false;
             }
+
+//            if (!Api::set_mik_abon_ip($mik, $pa[PA::F_NET_IP], $ena, true)) {
+//                $s = "Не удалось установить услугу на микротике. Изменение в базе отменено.";
+//                MsgQueue::msg(MsgType::ERROR, $s);
+//                $log .= 'ERROR: ' . $s;
+//                return false;
+//            }
+
             $s = "Услуга на микротике " . ($ena ? "включена" : "выключена");
             MsgQueue::msg(MsgType::SUCCESS_AUTO, $s);
             $log .= 'SUCCESS: ' . $s . "\n";
@@ -586,42 +605,64 @@ class PaController extends AppBaseController {
             redirect();
         }
 
-        $pa = $model->get_row_by_id(PA::TABLE, $pa_id, PA::F_ID);
+        $pa = $model->get_pa($pa_id);
 
         $price = $model->get_price($pa[PA::F_PRICE_ID]);
         $tp = $model->get_tp($pa[PA::F_TP_ID]);
         $tp_default_price = $model->get_price($tp[TP::F_DEFAULT_PRICE_ID]);
 
-        $arp = null;
+        $arp_resolve = null;
         $abon_ip_on = null;
         if  (                                           // если
                 $tp[TP::F_ACTIVE] &&                    // ТП активна
                 $tp[TP::F_IS_MANAGED] &&                // ТП управляемая
                 ($pa[PA::F_NET_IP_SERVICE] == 1) &&     // это IP услуга
                 !empty($pa[PA::F_NET_IP]) &&            // IP-адрес указан
-                validate_ip($pa[PA::F_NET_IP])      // IP-адрес валидный
+                validate_ip($pa[PA::F_NET_IP])          // IP-адрес валидный
             ) 
         {
             /**
              * Получение данных с микротика
              * Запись из таблицы ARP микротика со статусом IP-адреса
              */
-            $mik = Api::tp_connector(tp: $tp);
-            if ($mik !== false) {
-                /**
-                 * Enable/Disable статус IP-адреса в таблице ABON
-                 */
-                $abon_ip_on = Api::get_ip_enabled_on_mik_abon($mik, $pa[PA::F_NET_IP]);
-                if ($abon_ip_on === null) {
-                    MsgQueue::msg(MsgType::ERROR, Api::get_errors());
+            try {
+                $dev = new MikrotikDevice(tp: $tp);
+//                $t = microtime(true);
+                $abon_ip_on = $dev->in_address_list_abon(ip: $pa[PA::F_NET_IP], ena: true);
+//                MsgQueue::msg(MsgType::INFO, 'TIMER: in_list_abon: ' . round(microtime(true) - $t, 3) . ' sec');
+//                $t = microtime(true);
+                $arp_resolve = $dev->resolve_arp_items(search: [ Mik::F_ARP_IP => $pa[PA::F_NET_IP], ]);
+//                MsgQueue::msg(MsgType::INFO, 'TIMER: resolve_arp_items: ' . round(microtime(true) - $t, 3) . ' sec');
+                
+            } catch (\Throwable $exc) {
+                MsgQueue::msg(MsgType::ERROR, 'PaController::editAction: ' . __('Error receiving data | Ошибка получения данных | Помилка отримання даних'));
+                MsgQueue::msg(MsgType::ERROR, '<pre>' . $exc->getTraceAsString()) . '</pre>';
+                if (MikrotikDevice::$messages) {
+                    MsgQueue::msg(MsgType::ERROR, MikrotikDevice::$messages);
                 }
-                /**
-                 * Соединение с миротиком установлено
-                 */
-                $arp = Api::get_mac_from_arp_by_ip($mik, $pa[PA::F_NET_IP], true);
-            } else {
-                MsgQueue::msg(MsgType::ERROR, Api::get_errors());
+                $arp_resolve = null;
+                $abon_ip_on = null;
             }
+
+            
+//            $mik = Api::tp_connector(tp: $tp);
+//            if ($mik !== false) {
+//                /**
+//                 * Enable/Disable статус IP-адреса в таблице ABON
+//                 */
+//                $dev = new \billing\core\MikrotikDevice1(tp: $tp);
+//                //                $abon_ip_on = Api::get_ip_enabled_on_mik_abon($mik, $pa[PA::F_NET_IP]);
+//                //                if ($abon_ip_on === null) {
+//                //                    MsgQueue::msg(MsgType::ERROR, Api::get_errors());
+//                //                }
+//                $abon_ip_on = $dev->in_list_abon(ip: $pa[PA::F_NET_IP], ena: true);
+//                /**
+//                 * Соединение с миротиком установлено
+//                 */
+//                $arp = Api::get_mac_from_arp_by_ip($mik, $pa[PA::F_NET_IP], true);
+//            } else {
+//                MsgQueue::msg(MsgType::ERROR, Api::get_errors());
+//            }
         }
 
 
@@ -647,7 +688,7 @@ class PaController extends AppBaseController {
             'tp'=> $tp,
             'tp_default_price'=> $tp_default_price,
             'abon_ip_on'=> $abon_ip_on,
-            'arp'=> $arp,
+            'arp_resolve'=> $arp_resolve,
             'prices_list'=> $prices_list,
             'tp_list'=> $tp_list,
         ]);

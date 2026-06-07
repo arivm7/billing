@@ -301,12 +301,16 @@ class LogController extends AppBaseController {
                     '| «', 
                     '|&nbsp;<',
                     '|&nbsp;«',
+                    'ERROR:',
+                    'SUCCESS:',
                 ], 
                 [
                     '| <span class="text-primary">&lt;</span>', 
                     '| <span class="text-primary">«</span>', 
                     '|&nbsp;<span class="text-primary">&lt;</span>',
                     '|&nbsp;<span class="text-primary">«</span>',
+                    '<span class="text-danger">ERROR</span>:',
+                    '<span class="text-success">SUCCESS</span>:',
                 ], $text);
     }
 

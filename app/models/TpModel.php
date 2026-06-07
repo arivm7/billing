@@ -83,7 +83,7 @@ class TpModel extends AppBaseModel {
             DevAclList::F_TP_ID => $tpId,
             DevAclList::F_ADDRESS => $address,
             DevAclList::F_COMMENT => trim($comment),
-            DevAclList::F_IS_ENABLED => $isEnabled ? 1 : 0,
+            DevAclList::F_ENABLED => $isEnabled ? 1 : 0,
             DevAclList::F_CREATION_UID => App::get_user_id(),
             DevAclList::F_CREATION_DATE => time(),
             DevAclList::F_MODIFIED_UID => App::get_user_id(),
@@ -154,7 +154,7 @@ class TpModel extends AppBaseModel {
         $sql = "SELECT *
                 FROM `" . DevAclList::TABLE . "`
                 WHERE `" . DevAclList::F_ACL_TABLE_ID . "` = ?
-                  AND `" . DevAclList::F_IS_ENABLED . "` = 1
+                  AND `" . DevAclList::F_ENABLED . "` = 1
                   AND (" . DevAclList::F_TP_ID . " IS NULL OR " . DevAclList::F_TP_ID . " = 0 OR " . DevAclList::F_TP_ID . " = ?)
                 ORDER BY `" . DevAclList::F_TP_ID . "` ASC, `" . DevAclList::F_ADDRESS . "` ASC";
         return $this->findBySql($sql, [$aclTableId, $tpId]);

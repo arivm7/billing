@@ -34,6 +34,7 @@
  * 
  */
 
+use billing\core\App;
 use config\Icons;
 use billing\core\base\Lang;
 use config\tables\Invoice;
@@ -151,7 +152,11 @@ Lang::load_inc(__FILE__);
     </tr>
     <tr>
         <td align="right" valign="top">Платник:&nbsp;</td>
-        <td align="left" valign="top" class="b"><b>&nbsp;<?= $invoice[Invoice::F_FIRM_PAYER_STR]; ?></b></td>
+        <td align="left" valign="top" class="b"><b>&nbsp;<?= $invoice[Invoice::F_FIRM_PAYER_STR] != App::get_config('inv_payer_unknown') ? $invoice[Invoice::F_FIRM_PAYER_STR] : '' ; ?></b></td>
+    </tr>
+    <tr>
+        <td align="right" valign="top">Місце складання:&nbsp;</td>
+        <td align="left" valign="top" class="b">&nbsp;м. Київ</td>
     </tr>
 </table>
 &nbsp;<br />
@@ -251,7 +256,11 @@ Lang::load_inc(__FILE__);
     </tr>
     <tr>
         <td align="left">Загальна вартість<br>наданих послуг складає:</td>
-        <td align="center" class="b"><font size="3"><nobr><b><?= num2str($invoice[Invoice::F_COST_ALL]); ?></b></nobr></font></td>
+        <td align="left" class="b"><font size="3"><nobr><b><?= num2str($invoice[Invoice::F_COST_ALL]); ?></b></nobr></font></td>
+    </tr>
+    <tr>
+        <td align="left">Місце складання:</td>
+        <td align="left" class="b"><font ><nobr>м. Київ</nobr></font></td>
     </tr>
 </table>
 <p>&nbsp;</p>

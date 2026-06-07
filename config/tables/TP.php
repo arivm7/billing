@@ -34,10 +34,14 @@ class TP {
     const URI_DELETE               = '/tp/delete';
     const URI_FW_INPUT             = '/tp/fw-input';
     const URI_COMBINE              = '/api/combine';
+    const URI_ACL_SYNC             = '/tp/aclsync';
 
     const POST_REC                 = 'tp';
 
     const TABLE                    = 'tp_list'; // Технические площадки, точки доступа
+
+    const F_GET_ACL_LIST           = 'list';
+
 
 
     /**
@@ -133,7 +137,6 @@ class TP {
     const TYPE_MONITOR      = 90;   // Мониторинг 	100 — Сервер мониторинга
     const TYPE_MON_PROXI    = 91;   // Прокси мониторинга  100 — Сервер прокси-мониторинга
     const TYPE_BILLIG       = 100;  // Биллинг 	100 — Сервер биллинга
-
 
 
 

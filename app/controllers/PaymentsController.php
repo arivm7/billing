@@ -346,7 +346,7 @@ class PaymentsController extends AppBaseController {
 
         $found_payments = [];
         if (self::pay_has_exist($data, $found_payments)) {
-            MsgQueue::msg(MsgType::ERROR, __('Такой платеж уже есть в базе'));
+            MsgQueue::msg(MsgType::ERROR, __('This payment is already in the database | Такой платеж уже есть в базе | Такий платіж вже є у базі'));
             MsgQueue::msg(MsgType::ERROR, $found_payments);
             return false;
         }

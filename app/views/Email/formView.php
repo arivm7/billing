@@ -64,7 +64,8 @@ if (empty($abon_id)) { $register = 0; }
             <label for="to" class="form-label hover-pointer"><?= __('Кому') ?></label>
             <div class="row align-items-center g-2">
                 <div class="col-12 col-md-10 col-lg-9">
-                    <input type="email" 
+                    <!-- email -->
+                    <input type="text"
                         class="form-control" 
                         id="to" 
                         name="<?= Email::REC ?>[<?= Email::F_TO ?>]" 

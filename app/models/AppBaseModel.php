@@ -75,7 +75,7 @@ class AppBaseModel extends Model
      */
     function get_price(int $id): array {
         if (!array_key_exists($id, self::$CASHE_PRICE_LIST)) {
-            self::$CASHE_PRICE_LIST[$id] = $this->get_row_by_id("prices", $id);
+            self::$CASHE_PRICE_LIST[$id] = $this->get_row_by_id(Price::TABLE, $id, Price::F_ID);
         }
         return self::$CASHE_PRICE_LIST[$id];
     }

@@ -41,8 +41,8 @@ $config = [
      * Список тем
      */
     'theme_list' => [
-            'dark'  => [ 'title' => 'Тёмная',  'code' => 'data-bs-theme="dark"',  'order' => 1 ],
-            'light' => [ 'title' => 'Светлая', 'code' => 'data-bs-theme="light"', 'order' => 0 ],
+            'dark'  => [ 'title' => 'Тёмная',  'code' => 'data-bs-theme="dark"',  'order' => 0 ],
+            'light' => [ 'title' => 'Светлая', 'code' => 'data-bs-theme="light"', 'order' => 1 ],
     ],
 
     /**
@@ -55,7 +55,7 @@ $config = [
      * Время в секундах, на которое выбирается тема
      * для сохранения в куках сайта
      */
-    'theme_timeout' => 60 * 60 * 24 * 30, // 30 дней
+    'theme_timeout' => 60 * 60 * 24 * 90, // 90 дней
 
 
 

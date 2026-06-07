@@ -251,7 +251,6 @@ $item_contragent = (!empty($contragent)
             <div class='d-flex justify-content-between align-items-center'>
                 <div class="text-start">
                     <button type="submit" class="btn btn-sm btn-primary"><?= __('Save | Сохранить | Зберегти'); ?></button>
-                    <a class="btn btn-sm btn-secondary ms-1" href="<?= Invoice::URI_LIST ?>/<?= $item[Invoice::F_ABON_ID] ?>"><?= __('Return to list | Вернуться к списку | Повернутись до списку'); ?></a>
                 </div>
                 <div class="text-end text-secondary font-monospace fs-8">
                     <?php if (!empty($item[Invoice::F_ID])): ?>

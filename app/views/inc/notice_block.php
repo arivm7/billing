@@ -51,6 +51,10 @@ $html_text = ($first_line_attr
 </fieldset>
 <?php $sms_info = get_sms_info_rec($notice_text); ?>
 <div class='text-secondary'>
-    <?=_('Number of characters | Количество символов | Кількість символів')?>: <?= $sms_info['len']; ?>. <?=_('Total SMS | Всего СМС | Усього СМС')?>: <?= $sms_info['count_sms']; ?> (<?= $sms_info['full_sms']; ?> <?=_('full and | полных и | повних та')?> <?= $sms_info['char_in_last_sms']; ?><span class="fs-7">/<?= $sms_info['chars1sms']; ?></span> <?=_('characters in the last | символов в последнем | символів в останньому')?>)
+    <?=__('Number of characters | Количество символов | Кількість символів')?>: <?= $sms_info['len']; ?>. 
+    <?=__('Total SMS | Всего СМС | Усього СМС')?>: <?= $sms_info['count_sms']; ?> 
+    (<?= $sms_info['full_sms']; ?> <?=__('full and | полных и | повних та')?> 
+    <?= $sms_info['char_in_last_sms']; ?><span class="fs-7">/<?= $sms_info['chars1sms']; ?></span> 
+    <?=__('characters in the last | символов в последнем | символів в останньому')?>)
 </div>
 <br>

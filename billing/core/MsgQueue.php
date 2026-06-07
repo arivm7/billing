@@ -35,14 +35,14 @@ class MsgQueue {
 
     public static function msg(MsgType $type, string|array $message): void
     {
-        if (empty($message)) {
+        if ( $message === '' || $message === [] ) {
             return;
         }
-
+        
         if (!isset($_SESSION[$type->value]) || !is_array($_SESSION[$type->value])) {
             $_SESSION[$type->value] = [];
         }
-
+        
         if (is_array($message)) {
             // объединяем массивы
             $_SESSION[$type->value] = array_merge($_SESSION[$type->value], $message);

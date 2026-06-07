@@ -260,7 +260,7 @@ class Lang {
                         : ($default ? $default : $key))
                 );
         if ($param) {
-            return sprintf($str, $param);
+            return \sprintf($str, $param);
         }
         return  h($str);
     }

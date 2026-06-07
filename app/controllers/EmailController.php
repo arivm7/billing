@@ -232,33 +232,34 @@ class EmailController extends AppBaseController  {
      *      каждый адрес валидируется через filter_var()
      *      пустые элементы запрещены
      *      если хотя бы один адрес невалидный → false
-     * @param string $to
+     * @param string $to_str
      * @param bool $error_to_msg_queue
      * @return bool
      */
-    public static function validate_to(string $to, bool $error_to_msg_queue = false): bool {
+    public static function validate_to(string $to_str, bool $error_to_msg_queue = false): bool {
         // Убираем пробелы по краям
-        $to = trim($to);
+        $to_str = trim($to_str);
 
-        if ($to === '') {
+        if ($to_str === '') {
             if ($error_to_msg_queue) { MsgQueue::msg(MsgType::ERROR, 'Field `TO` has empty'); }
             return false;
         }
 
+        
         // Разбиваем по запятой
-        $emails = explode(',', $to);
+        $emails = explode(',', $to_str);
 
         foreach ($emails as $email) {
             $email = trim($email);
 
-            // Запрещаем пустые элементы (например: "a@a.com, , b@b.com")
-            if ($email === '') {
-                if ($error_to_msg_queue) { MsgQueue::msg(MsgType::ERROR, 'Empty email: ' . h($email)); }
-                return false;
-            }
-
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                if ($error_to_msg_queue) { MsgQueue::msg(MsgType::ERROR, 'Error email: ' . h($email)); }
+            /**
+             * Разбираем в массив [[имя, адрес], ]
+             * в данном случае, поэлементно, чтоыб выявить ошибки элементов
+             */
+            $to = self::parse_mail_recipients($email, $error_to_msg_queue);
+            
+            
+            if (!$to) {
                 return false;
             }
         }
@@ -457,7 +458,7 @@ class EmailController extends AppBaseController  {
      * @param string $to_str -- Строка адресов, через запятую, с именами и email
      * @return array<int, array{email:string,name:string}>
      */
-    public static function parse_mail_recipients(string $to_str): array
+    public static function parse_mail_recipients(string $to_str, bool $error_to_msg_queue = false): array
     {
         $result = [];
 
@@ -471,6 +472,9 @@ class EmailController extends AppBaseController  {
 
             $part = trim($part);
             if ($part === '') {
+                if ($error_to_msg_queue) { 
+                    MsgQueue::msg(MsgType::ERROR, 'parse_mail_recipients: ' . __('Address list item is empty | Элемент списка адресов пуст | Елемент списку адрес порожній')); 
+                }
                 continue;
             }
 
@@ -488,10 +492,16 @@ class EmailController extends AppBaseController  {
             }
 
             if (!$email) {
+                if ($error_to_msg_queue) { 
+                    MsgQueue::msg(MsgType::ERROR, 'parse_mail_recipients: ' . __('Email address is empty | Адрес электроной почты пуст | Адреса електронної пошти пуста')); 
+                }
                 continue;
             }
 
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                if ($error_to_msg_queue) { 
+                    MsgQueue::msg(MsgType::ERROR, 'parse_mail_recipients: ' . __('The email address is not valid | Адрес электронной посты не валидный | Адреса електронної пости не валідна') . ' [<' . $name . '>' . $email . ']');
+                }
                 continue;
             }
 
@@ -828,7 +838,7 @@ class EmailController extends AppBaseController  {
                     ? ($_GET[Email::REC][Email::F_DO_SEND] ? 1 : 0) 
                     : 0));
 
-        $title = __('Форма отправки уведомления электнонной почтой');
+        $title = __('Email notification form | Форма отправки уведомления электнонной почтой | Форма надсилання повідомлення електронною поштою');
 
         // MsgQueue::msg(MsgType::INFO, "do_send: $do_send"); 
         // MsgQueue::msg(MsgType::INFO, "do_send: $do_send"); 

@@ -30,12 +30,13 @@ use config\tables\PA;
 use config\tables\TP;
 use config\tables\TSUserTp;
 use config\tables\User;
+use config\Mik;
 use DataTypes;
 use DebugView;
 use Valitron\Validator;
 
 /**
- * Description of TpController.php
+ * Контроллер для работы с техническими площадками
  *
  * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
@@ -467,22 +468,20 @@ class TpController extends AppBaseController {
             return false;
         }
 
-        $dev = new MikrotikDevice(
-                tp: [
-                        TP::F_MIK_IP        => $form['host'],
-                        TP::F_MIK_LOGIN     => $form['login'],
-                        TP::F_MIK_PASSWD    => $form['password'],
-                        TP::F_MIK_PORT      => ($form['ssl'] ? '' : $form['port']),
-                        TP::F_MIK_PORT_SSL  => ($form['ssl'] ? $form['port'] : ''),
-                    ],
-                ssl: (bool)$form['ssl']
-            );
-
-        if (!$dev) {
+        try {
+            $dev = new MikrotikDevice(
+                    tp: [
+                            TP::F_MIK_IP        => $form['host'],
+                            TP::F_MIK_LOGIN     => $form['login'],
+                            TP::F_MIK_PASSWD    => $form['password'],
+                            TP::F_MIK_PORT      => ($form['ssl'] ? '' : $form['port']),
+                            TP::F_MIK_PORT_SSL  => ($form['ssl'] ? $form['port'] : ''),
+                        ],
+                    ssl: (bool)$form['ssl']
+                );
+        } catch (\Throwable $exc) {
             MsgQueue::msg(MsgType::ERROR, __('Error connecting to MikroTik device via API | Ошибка подключения к устройству MikroTik по API | Помилка підключення до пристрою MikroTik API'));
-            foreach (MikrotikDevice::$errors as $error) {
-                MsgQueue::msg(MsgType::ERROR, $error);
-            }
+            MsgQueue::msg(MsgType::ERROR, $exc->getMessage());
             return false;
         }
 
@@ -523,9 +522,9 @@ class TpController extends AppBaseController {
         $lanName = (string) ($cfgLists['lan'] ?? 'LAN');
         $wanName = (string) ($cfgLists['wan'] ?? 'WAN');
 
-        $lists = $connector->exec('/interface/list/print');
-        $members = $connector->exec('/interface/list/member/print');
-        $interfaces = $connector->exec('/interface/print');
+        $lists = $connector->get_interface_lists();
+        $members = $connector->get_interface_list_members();
+        $interfaces = $connector->get_interfaces();
 
         if (!is_array($lists) || !is_array($members) || !is_array($interfaces)) {
             MsgQueue::msg(MsgType::ERROR, __('Failed to read interface data | Не удалось прочитать данные интерфейсов | Не вдалося прочитати дані інтерфейсів'));
@@ -544,17 +543,17 @@ class TpController extends AppBaseController {
         }
 
         if (!isset($byName[$lanName])) {
-            $connector->exec('/interface/list/add', ['name' => $lanName]);
+            $connector->interface_list_add($lanName);
             MsgQueue::msg(MsgType::SUCCESS, __('The LAN interface list has been created | Список интерфейсов LAN создан | Список інтерфейсів LAN створено'));
         }
 
         if (!isset($byName[$wanName])) {
-            $connector->exec('/interface/list/add', ['name' => $wanName]);
+            $connector->interface_list_add($wanName);
             MsgQueue::msg(MsgType::SUCCESS, __('The WAN interface list has been created | Список интерфейсов WAN создан | Список інтерфейсів WAN створено'));
         }
 
-        $lists = $connector->exec('/interface/list/print');
-        $members = $connector->exec('/interface/list/member/print');
+        $lists = $connector->get_interface_lists();
+        $members = $connector->get_interface_list_members();
 
         $targetLists = [$lanName, $wanName];
         foreach ($members as $member) {
@@ -563,7 +562,7 @@ class TpController extends AppBaseController {
                 continue;
             }
             if (!empty($member['.id'])) {
-                $connector->exec('/interface/list/member/remove', ['.id' => $member['.id']]);
+                $connector->interface_list_member_remove((string) $member['.id']);
             }
         }
 
@@ -585,10 +584,7 @@ class TpController extends AppBaseController {
                 continue;
             }
 
-            $connector->exec('/interface/list/member/add', [
-                'interface' => $name,
-                'list' => $selection,
-            ]);
+            $connector->interface_list_member_add($name, $selection);
 
             if ($selection === $lanName) {
                 $addedLan++;
@@ -618,7 +614,7 @@ class TpController extends AppBaseController {
         $lanName = (string) ($cfgLists['lan'] ?? 'LAN');
         $wanName = (string) ($cfgLists['wan'] ?? 'WAN');
 
-        $lists = $connector->exec('/interface/list/print');
+        $lists = $connector->get_interface_lists();
         $listNames = [];
         foreach (($lists ?: []) as $row) {
             if (($row['dynamic'] ?? 'false') === 'true') {
@@ -642,9 +638,7 @@ class TpController extends AppBaseController {
             return;
         }
 
-        $connector->exec('/ip/neighbor/discovery-settings/set', [
-            'discover-interface-list' => $discoverList,
-        ]);
+        $connector->set_neighbor_discovery_interface_list($discoverList);
 
         MsgQueue::msg(
             MsgType::SUCCESS,
@@ -716,7 +710,7 @@ class TpController extends AppBaseController {
                 MsgQueue::msg(MsgType::INFO, __('A new certificate has been created | Создан новый сертификат | Створено новий сертифікат') . ': ' . $certName);
             } else {
                 MsgQueue::msg(MsgType::ERROR, __('Ошибка создания сертификата') . ': ' . $certName);
-                MsgQueue::msg(MsgType::ERROR, MikrotikDevice::$errors);
+                MsgQueue::msg(MsgType::ERROR, MikrotikDevice::$messages);
             }
         }
 
@@ -806,11 +800,11 @@ class TpController extends AppBaseController {
                 $setData['certificate'] = $selectedCert;
             }
 
-            $dev->connector->exec('/ip/service/set', $setData);
+            $dev->ip_service_set($serviceId, $port, $setData['certificate'] ?? null);
             if ($enabled) {
-                $dev->connector->exec('/ip/service/enable', ['.id' => $serviceId]);
+                $dev->ip_service_enable($serviceId);
             } else {
-                $dev->connector->exec('/ip/service/disable', ['.id' => $serviceId]);
+                $dev->ip_service_disable($serviceId);
             }
         }
 
@@ -860,7 +854,7 @@ class TpController extends AppBaseController {
                 if ($ruleId === '' || empty($row['checked'])) {
                     continue;
                 }
-                $dev->connector->exec('/ip/firewall/filter/remove', ['.id' => $ruleId]);
+                $dev->filter_remove($ruleId);
                 $deleted++;
             }
             if ($deleted > 0) {
@@ -903,7 +897,7 @@ class TpController extends AppBaseController {
             // if ($this->fwInputHasEquivalentRule($currentRules, $rule)) {
             //     continue;
             // }
-            $dev->connector->exec('/ip/firewall/filter/add', $rule);
+            $dev->filter_add($rule);
             $added++;
         }
         if ($added > 0) {
@@ -939,7 +933,7 @@ class TpController extends AppBaseController {
         $dev = $this->fwInputConnectDevice();
         if (!$dev) {
             MsgQueue::msg(MsgType::ERROR, __('Unable to connect to the device | Не удаось подключиться к устройству | Не вдалося підключитися до пристрою'));
-            if (MikrotikDevice::$errors) { MsgQueue::msg(MsgType::ERROR, MikrotikDevice::$errors); }
+            if (MikrotikDevice::$messages) { MsgQueue::msg(MsgType::ERROR, MikrotikDevice::$messages); }
             redirect(TP::URI_FW_INPUT . '?'.FwInput::F_GET_PHASE.'=' . FwInput::PHASE_LOGIN);
         }
 
@@ -1026,37 +1020,9 @@ class TpController extends AppBaseController {
     }
 
 
-    private function fwInputGetConnector(): object|false
+    private function fwInputGetConnector(): MikrotikDevice|false
     {
-        $session = $_SESSION[FwInput::SESSION_FIELD] ?? [];
-        $host = trim((string) ($session['host'] ?? ''));
-        $port = (int) ($session['port'] ?? 0);
-        $ssl = !empty($session['ssl']);
-        $login = trim((string) ($session['login'] ?? ''));
-        $password = (string) ($session['password'] ?? '');
-
-        if ($host === '' || $port <= 0 || $login === '' || $password === '') {
-            MsgQueue::msg(MsgType::ERROR, __('The MikroTik connection session is incomplete | Сессия подключения к MikroTik не полная | Сесія підключення до MikroTik не повна'));
-            redirect(TP::URI_FW_INPUT . '?'.FwInput::F_GET_PHASE.'=' . FwInput::PHASE_LOGIN);
-        }
-
-        $connector = MikrotikDevice::mik_connector(
-            ip: $host,
-            login: $login,
-            pass: $password,
-            port: $port,
-            ssl: $ssl
-        );
-
-        if (!$connector) {
-            MsgQueue::msg(MsgType::ERROR, __('No access to device via API | Нет доступа к устройству по API | Немає доступу до пристрою API'));
-            foreach (MikrotikDevice::$errors as $error) {
-                MsgQueue::msg(MsgType::ERROR, $error);
-            }
-            redirect(TP::URI_FW_INPUT . '?'.FwInput::F_GET_PHASE.'=' . FwInput::PHASE_LOGIN);
-        }
-
-        return $connector;
+        return $this->fwInputConnectDevice();
     }
 
     
@@ -1088,7 +1054,7 @@ class TpController extends AppBaseController {
 
         if (!$dev) {
             MsgQueue::msg(MsgType::ERROR, __('No access to device via API | Нет доступа к устройству по API | Немає доступу до пристрою API'));
-            foreach (MikrotikDevice::$errors as $error) {
+            foreach (MikrotikDevice::$messages as $error) {
                 MsgQueue::msg(MsgType::ERROR, $error);
             }
             redirect(TP::URI_FW_INPUT . '?'.FwInput::F_GET_PHASE.'=' . FwInput::PHASE_LOGIN);
@@ -1104,7 +1070,7 @@ class TpController extends AppBaseController {
         $dev = $this->fwInputConnectDevice();
         if (!$dev) {
             MsgQueue::msg(MsgType::ERROR, __('Unable to connect to the device | Не удаось подключиться к устройству | Не вдалося підключитися до пристрою'));
-            if (MikrotikDevice::$errors) { MsgQueue::msg(MsgType::ERROR, MikrotikDevice::$errors); }
+            if (MikrotikDevice::$messages) { MsgQueue::msg(MsgType::ERROR, MikrotikDevice::$messages); }
             redirect(TP::URI_FW_INPUT . '?'.FwInput::F_GET_PHASE.'=' . FwInput::PHASE_LOGIN);
         }
 
@@ -1121,7 +1087,7 @@ class TpController extends AppBaseController {
             }
         }
 
-        $current = $dev->connector->exec('/ip/neighbor/discovery-settings/print');
+        $current = $dev->get_neighbor_discovery_settings();
         $currentRow = is_array($current) ? ($current[array_key_first($current)] ?? []) : [];
         $currentValue = trim((string) ($currentRow['discover-interface-list'] ?? ''));
 
@@ -1147,7 +1113,7 @@ class TpController extends AppBaseController {
         
         if (!$dev) {
             MsgQueue::msg(MsgType::ERROR, __('Unable to connect to the device | Не удаось подключиться к устройству | Не вдалося підключитися до пристрою'));
-            if (MikrotikDevice::$errors) { MsgQueue::msg(MsgType::ERROR, MikrotikDevice::$errors); }
+            if (MikrotikDevice::$messages) { MsgQueue::msg(MsgType::ERROR, MikrotikDevice::$messages); }
             redirect(TP::URI_FW_INPUT . '?phase=' . FwInput::PHASE_LOGIN);
         }
 
@@ -1181,7 +1147,7 @@ class TpController extends AppBaseController {
 
         if (!$dev) {
             MsgQueue::msg(MsgType::ERROR, __('Unable to connect to the device | Не удаось подключиться к устройству | Не вдалося підключитися до пристрою'));
-            if (MikrotikDevice::$errors) { MsgQueue::msg(MsgType::ERROR, MikrotikDevice::$errors); }
+            if (MikrotikDevice::$messages) { MsgQueue::msg(MsgType::ERROR, MikrotikDevice::$messages); }
             redirect(TP::URI_FW_INPUT . '?phase=' . FwInput::PHASE_LOGIN);
         }
 
@@ -1237,7 +1203,7 @@ class TpController extends AppBaseController {
 
         if (!$dev) {
             MsgQueue::msg(MsgType::ERROR, __('Unable to connect to the device | Не удаось подключиться к устройству | Не вдалося підключитися до пристрою'));
-            if (MikrotikDevice::$errors) { MsgQueue::msg(MsgType::ERROR, MikrotikDevice::$errors); }
+            if (MikrotikDevice::$messages) { MsgQueue::msg(MsgType::ERROR, MikrotikDevice::$messages); }
             redirect(TP::URI_FW_INPUT . '?'.FwInput::F_GET_PHASE.'=' . FwInput::PHASE_LOGIN);
         }
 
@@ -1801,12 +1767,12 @@ class TpController extends AppBaseController {
         }
 
         $tp_id = (int) ($this->route[F_ALIAS] ?? 0);
-        if (!$this->db->validate_id(TP::TABLE, $tp_id, TP::F_ID)) {
+        if (!$this->db->validate_tp($tp_id)) {
             MsgQueue::msg(MsgType::ERROR, __('Incorrect technical site ID | Не верный ID технической площадки | Не вірний ID технічного майданчика'));
             redirect();
         }
 
-        $aclTableId = (int) ($_GET['list'] ?? 0);
+        $aclTableId = (int) ($_GET[TP::F_GET_ACL_LIST] ?? 0);
         if (!$this->db->validate_id(DevAclTable::TABLE, $aclTableId, DevAclTable::F_ID)) {
             MsgQueue::msg(MsgType::ERROR, __('Invalid ACL table ID | Не верный ID ACL-таблицы | Невірний ID ACL-таблиці'));
             redirect(TP::URI_EDIT . '/' . $tp_id);
@@ -1832,10 +1798,10 @@ class TpController extends AppBaseController {
         $syncRows = [];
         foreach ($aclRows as $row) {
             $syncRows[] = [
-                'list' => $aclTable[DevAclTable::F_NAME],
-                'address' => $row[DevAclList::F_ADDRESS],
-                'comment' => $row[DevAclList::F_COMMENT] ?? '',
-                'enabled' => true,
+                Mik::F_LIST_LIST    => $aclTable[DevAclTable::F_NAME],
+                Mik::F_LIST_ADDRESS => $row[DevAclList::F_ADDRESS],
+                Mik::F_LIST_COMMENT => $row[DevAclList::F_COMMENT] ?? '',
+                Mik::F_LIST_ENABLED => $row[DevAclList::F_ENABLED] ?? true,
             ];
         }
 
@@ -1843,21 +1809,23 @@ class TpController extends AppBaseController {
             $device = new MikrotikDevice(tp: $tp);
             MsgQueue::msg(MsgType::SUCCESS, __('Successfully connected to the device | Успешно подключились к устройству | Успішно підключилися до пристрою') . ' [' . $tp[TP::F_TITLE] . ']');
             MsgQueue::msg(MsgType::SUCCESS, implode(' | ', $device->get_description()));
-            $result = $device->sync_address_list_from_array(
-                rows: $syncRows,
-                defaultList: $aclTable[DevAclTable::F_NAME]
-            );
-
-            if ($result) {
-                MsgQueue::msg(MsgType::SUCCESS, __('ACL table successfully synchronized | ACL-таблица успешно синхронизирована | ACL-таблиця успішно синхронізована') . ': ' . $aclTable[DevAclTable::F_NAME]);
-            } else {
+            $result = $device->sync_address_list_scoped(
+                    raw_items: $syncRows, 
+                    stop_on_error: false);
+            
+            if ($result === false) {
                 MsgQueue::msg(MsgType::ERROR, __('Synchronization completed with errors | Синхронизация завершилась с ошибками | Синхронізація завершилася з помилками') . ': ' . $aclTable[DevAclTable::F_NAME]);
-                foreach (MikrotikDevice::$errors ?? [] as $error) {
+                foreach (MikrotikDevice::$messages ?? [] as $error) {
                     MsgQueue::msg(MsgType::ERROR, $error);
                 }
+            } else {
+                MsgQueue::msg(MsgType::SUCCESS, __('ACL table successfully synchronized | ACL-таблица успешно синхронизирована | ACL-таблиця успішно синхронізована') . ': ' 
+                        . $aclTable[DevAclTable::F_NAME]
+                        . ' | ' . $result . ' ' . __('records | записей | записів'));
             }
         } catch (\Throwable $e) {
-            MsgQueue::msg(MsgType::ERROR, __('ACL synchronization error | Ошибка синхронизации ACL | Помилка синхронізації ACL') . ': ' . $e->getMessage());
+            MsgQueue::msg(MsgType::ERROR, __('ACL synchronization error | Ошибка синхронизации ACL | Помилка синхронізації ACL'));
+            MsgQueue::msg(MsgType::ERROR, $e->getMessage());
         }
 
         redirect(); // TP::URI_EDIT . '/' . $tp_id

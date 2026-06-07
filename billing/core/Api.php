@@ -26,6 +26,8 @@ use config\tables\PA;
 use DebugView;
 use PAStatus;
 
+require_once DIR_LIBS . '/compare_functions.php';
+
 /**
  * Description of Api.php
  *
@@ -141,7 +143,7 @@ class Api {
     public static function mik_connector(string $ip, string $login, string $pass, int $port, bool $ssl): MikroLink|false {
         $router = new MikroLink(
             timeout:  1, // Ожидание ответа при подключении
-            attempts: 2, // количество попыток подключения
+            attempts: 3, // количество попыток подключения
             delay:    0, // Задержка после попытки подключения
             logFile:  DIR_LOG . '/mikrolink.log',
             printLog: false
@@ -167,18 +169,80 @@ class Api {
 
 
 
-
-
-    public static function remake_table_lists(array $address_list): array {
+    /**
+     * Перестраивает полный список записей Address-List в структуру,
+     * оптимизированную для локального кэша.
+     *
+     * Функция выполняет два действия:
+     *
+     * 1. Сортирует входной массив записей по полям:
+     *      - list
+     *      - address
+     *      - comment
+     *      - disabled
+     *
+     *    Сортировка выполняется без учёта регистра (strcasecmp).
+     *
+     * 2. Группирует записи по имени адресного списка:
+     *
+     *      [
+     *          'ABON' => [...],
+     *          'DNS'  => [...],
+     *          ...
+     *      ]
+     *
+     * Такое представление позволяет быстро получать записи
+     * конкретного адресного списка без повторной фильтрации
+     * полного массива.
+     *
+     * Используется при построении и перестроении локального
+     * кэша Address-List после чтения данных из RouterOS.
+     *
+     * Входной формат:
+     *
+     *      [
+     *          [
+     *              '.id'     => '*1',
+     *              'list'    => 'ABON',
+     *              'address' => '10.0.0.1',
+     *              ...
+     *          ],
+     *          ...
+     *      ]
+     *
+     * Выходной формат:
+     *
+     *      [
+     *          'ABON' => [
+     *              [...],
+     *              [...],
+     *          ],
+     *          'DNS' => [
+     *              [...],
+     *          ],
+     *      ]
+     *
+     * Важно:
+     * - адреса сортируются как IP-адреса;
+     * - исходный порядок записей не сохраняется;
+     * - ключи исходного массива сохраняются благодаря uasort().
+     *
+     * @param array $address_list
+     *      Полный список записей Address-List RouterOS.
+     *
+     * @return array
+     *      Отсортированный и сгруппированный по имени списка массив.
+     */    
+    public static function group_address_list_by_list(array $address_list): array {
 
         uasort($address_list, function($a, $b) {
             $cmp = strcasecmp($a[Mik::F_LIST_LIST], $b[Mik::F_LIST_LIST]);
             if ($cmp === 0) {
-                $cmp = strcasecmp($a[Mik::F_LIST_ADDRESS], $b[Mik::F_LIST_ADDRESS]);
+                $cmp = cmp_ipv4($a[Mik::F_LIST_ADDRESS], $b[Mik::F_LIST_ADDRESS]);
                 if ($cmp === 0) {
                     $cmp = strcasecmp($a[Mik::F_LIST_COMMENT] ?? '', $b[Mik::F_LIST_COMMENT] ?? '');
                     if ($cmp === 0) {
-                        $cmp = strcasecmp($a[Mik::F_LIST_DISABLED], $b[Mik::F_LIST_DISABLED]);
+                        $cmp = (int) mikBool($a[Mik::F_LIST_DISABLED]) <=> (int) mikBool($b[Mik::F_LIST_DISABLED]);
                     }
                 }
             }
@@ -253,7 +317,6 @@ class Api {
         }
         return null;
     }
-
 
 
 
@@ -770,17 +833,19 @@ class Api {
          *  [disabled] => false
          *  все поля строковые.
          */
+        $arp_rec = MikrotikDevice::normalizeArpRow($arp_rec);
+                
         if (!empty($arp_rec['mac-address'])) {
             if (validate_mac($arp_rec['mac-address'])) {
                 $title = "[ I|V ] Invalid|Valid \n[ D|S ] Dynamic|Static \n[ C ] Complete \n[ X|E ] Disabled|Enabled";
                 // debug($arp_rec, '$arp_rec');
                 // ARP: .id address mac-address interface published invalid DHCP dynamic complete disabled
                 $idcx = "";
-                $idcx .= ($arp_rec['invalid']  == "true"? paint("I", RED)   : paint("V", GREEN));
-                $idcx .= ($arp_rec['dynamic']  == "true"? paint("D", GREEN) : paint("S", BLUE));
-                $idcx .= ($arp_rec['complete'] == "true"? paint("C", GREEN) : paint("C", RED));
-                $idcx .= ($arp_rec['disabled'] == "true"? paint("X", RED)   : paint("E", GREEN));
-                $idcx .= ($arp_rec['dhcp'] == "true" ? paint("H", RED, title: 'Из [DHCP] возможно не реальное значение')   : paint("H", GREEN, title: 'Не из [DHCP]'));
+                $idcx .= ($arp_rec['invalid']  ? paint("I", RED)   : paint("V", GREEN));
+                $idcx .= ($arp_rec['dynamic']  ? paint("D", GREEN) : paint("S", BLUE));
+                $idcx .= ($arp_rec['complete'] ? paint("C", GREEN) : paint("C", RED));
+                $idcx .= ($arp_rec['disabled'] ? paint("X", RED)   : paint("E", GREEN));
+                $idcx .= ($arp_rec['dhcp']     ? paint("H", RED, title: 'Из [DHCP] возможно не реальное значение')   : paint("H", GREEN, title: 'Не из [DHCP]'));
                 if (isset($arp_rec['status'])) {
                     switch ($arp_rec['status']) {
                         case "permanent": // постоянный
@@ -800,14 +865,14 @@ class Api {
                             break;
                     }
                 } else {
-                    $idcx .= paint("[_]", GRAY,  title: "поля status нет (firmvare v.6.x)");
+                    $idcx .= paint("[_]", GRAY,  title: "поля status нет (ROS v.6.x)");
                 }
 
                 return
-                    paint("[{$idcx}] "
+                    paint("{$idcx} | "
                         . paint($arp_rec['mac-address'],
                             color:  (
-                                        $arp_rec['disabled'] == 'true' ||
+                                        $arp_rec['disabled'] ||
                                         (isset($arp_rec['status']) ? ($arp_rec['status'] == 'stale') : 0)
                                         ? GRAY
                                         : BLACK
@@ -825,44 +890,54 @@ class Api {
 
 
 
-    /**
-     * Возвращает статус IP-адреса из таблицы ABON
-     * @param MikroLink $mik -- подключённый микротик
-     * @param string|null $ip -- искомый адрес
-     * @param bool $disconect_on_end -- отключать микротик по віполнении операции
-     * @return bool|null -- true/false -- статус адреса. Null -- ошибка. Детализация ошибки в Api::get_errors();
-     */
-    public static function get_ip_enabled_on_mik_abon(MikroLink $mik, string|null $ip, bool $disconect_on_end = false): bool|null {
-
-        if ($mik === false) {
-            self::$errors[] = __('Микротик не подключён');
-            return null;
-        }
-
-        if (!(validate_ip($ip) || is_ip_net($ip))) {
-            self::$errors[] = __('IP %s не верен или не указан', "[{$ip}]");
-            if ($disconect_on_end) { $mik->disconnect(); };
-            return null;
-        }
-
-        $rez = $mik->exec('/ip/firewall/address-list/print', 
-                    [
-                        "?list"=>Mik::L_ABON,
-                        "?address"=>$ip
-                    ]
-                );
-            
-        if (count($rez) == 1) {
-            $res = ($rez[0]['disabled'] === Mik::OFF);
-        } elseif (count($rez) == 0) {
-            $res = false;
-        } else {
-            self::$errors[] = __('В таблице ABON нет указанного IP-адреса');
-            $res = null;
-        }
-        if ($disconect_on_end) { $mik->disconnect(); };
-        return $res;
-    }
+//    /**
+//     * Возвращает статус IP-адреса из таблицы ABON
+//     * @param MikroLink $mik -- подключённый микротик
+//     * @param string|null $ip -- искомый адрес
+//     * @param bool $disconect_on_end -- отключать микротик по віполнении операции
+//     * @return bool|null -- true/false -- статус адреса. Null -- ошибка. Детализация ошибки в Api::get_errors();
+//     */
+//    public static function get_ip_enabled_on_mik_abon(MikroLink $mik, string|null $ip, bool $disconect_on_end = false): bool|null {
+//
+//        if ($mik === false) {
+//            self::$errors[] = __('Микротик не подключён');
+//            return null;
+//        }
+//
+//        if (!(validate_ip($ip) || is_ip_net($ip))) {
+//            self::$errors[] = __('IP %s не верен или не указан', "[{$ip}]");
+//            if ($disconect_on_end) { $mik->disconnect(); };
+//            return null;
+//        }
+//
+//        try {
+//            $rez = $mik->exec('/ip/firewall/address-list/print', 
+//                        [
+//                            "?list"=>Mik::L_ABON,
+//                            "?address"=>$ip
+//                        ]
+//                    );
+//            } catch (\TypeError $e) {
+//                var_dump($e);
+//                debug($e, 'ERROR', die:1);
+//            if (str_contains($e->getMessage(), 'ord()')) {
+//                $rez = [];
+//            } else {
+//                throw $e;
+//            }
+//        }            
+//            
+//        if (count($rez) == 1) {
+//            $res = !mikBool($rez[0]['disabled']);
+//        } elseif (count($rez) == 0) {
+//            $res = false;
+//        } else {
+//            self::$errors[] = __('В таблице ABON нет указанного IP-адреса');
+//            $res = null;
+//        }
+//        if ($disconect_on_end) { $mik->disconnect(); };
+//        return $res;
+//    }
 
 
 
@@ -893,7 +968,8 @@ class Api {
             } else {
                 self::$errors[] = __('Не удалось добавить IP в таблицу ABON');
                 if(is_array($rez)) {
-                    self::$errors[] = $rez['!trap'][0]['message'];
+                    debug($rez);
+                    self::$errors[] = $rez['!trap']['message'];
                 }
                 return false;
             }
@@ -923,13 +999,21 @@ class Api {
             /**
              * Получаем запись IP-адреса
              */
-            $rez = $mik->exec('/ip/firewall/address-list/print', 
-                [
-                            "?list"=>Mik::L_ABON,
-                            "?address"=>$ip
-                        ]
-                    );
-
+            try {
+                $rez = $mik->exec('/ip/firewall/address-list/print',
+                            [
+                                "?list"=>Mik::L_ABON,
+                                "?address"=>$ip
+                            ]
+                        ) ?: [];
+                } catch (\TypeError $e) {
+                if (str_contains($e->getMessage(), 'ord()')) {
+                    $rez = [];
+                } else {
+                    throw $e;
+                }
+            }            
+            
             if(count($rez) === 1) {
                 /**
                  * Есть одна запись. 
@@ -947,11 +1031,20 @@ class Api {
                 /**
                  * Проверка выполнения операции
                  */
-                $rez = $mik->exec('/ip/firewall/address-list/print', 
-                        [
-                            "?.id"=>$id
-                        ]
-                    );
+                try {
+                    $rez = $mik->exec('/ip/firewall/address-list/print', 
+                            [
+                                "?.id"=>$id
+                            ]
+                        );
+                    } catch (\TypeError $e) {
+                    if (str_contains($e->getMessage(), 'ord()')) {
+                        $rez = [];
+                    } else {
+                        throw $e;
+                    }
+                }            
+//                debug($rez, '$rez');
                 $result = ($rez[0]['disabled'] == ($enabled ? Mik::OFF : Mik::ON));
             } elseif (count($rez) === 0) {
                 /**

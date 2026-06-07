@@ -13,12 +13,12 @@
 # Copyright (C) 2025 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
 #
 
-№
+#
 # Usage:
 # ./i18n.sh en "Hello world"
 # Преводит входную строку, приводит её к виду "en | рус | укр"
 # и копирует в системный буфер обмена
-№
+#
 
 
 

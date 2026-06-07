@@ -249,8 +249,8 @@ class Model {
         return $this->validate_id(TP::TABLE, $id, TP::F_ID);
     }
 
-
     
+
     /**
      * Кэш-массив таблиц и строк
      * для функции get_row_by_id(string $table, int $id)

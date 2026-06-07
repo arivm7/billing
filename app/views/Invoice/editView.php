@@ -58,7 +58,8 @@ use config\tables\User;
                             </h5>
                         </div>
                         <div>
-                            <a href="<?=Abon::URI_VIEW;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm" target="_self" title="<?= __('Go to subscriber card | Перейти к карточке абонента | Перейти до картки абонента'); ?>"><span class="fw-bold">🅐</span> <?= __('Картка'); ?></a> <!-- ⒶⒶ🅐Ⓐ(A) -->
+                            <a class="btn btn-outline-info btn-sm ms-1" href="<?= Invoice::URI_LIST ?>/<?= $abon[Abon::F_ID];?>"><?= __('Return to list | Вернуться к списку | Повернутись до списку'); ?></a>
+                            <a class="btn btn-outline-info btn-sm ms-1" href="<?=Abon::URI_VIEW;?>/<?=$abon[Abon::F_ID];?>" target="_self" title="<?= __('Go to subscriber card | Перейти к карточке абонента | Перейти до картки абонента'); ?>"><span class="fw-bold">🅐</span> <?= __('Картка'); ?></a> <!-- ⒶⒶ🅐Ⓐ(A) -->
                         </div>
                     </div>
 

@@ -169,9 +169,9 @@ class BankController extends AppBaseController
                         if (PaymentsController::payInsert($rec)) {
                             MsgQueue::msg(MsgType::SUCCESS, 
                                 '<span class="font-monospace" style="white-space: pre;">'
-                                    . __('Платеж внесён') . ': ' 
+                                    . __('Payment has been made | Платеж внесён | Платіж внесено') . ': ' 
                                     . sprintf('%8d', $rec[Pay::F_ABON_ID]) . ' | ' 
-                                    . sprintf('%9.2f', $rec[Pay::F_PAY_FAKT]) . ' грн.' . ' | ' 
+                                    . sprintf('%9.2f', $rec[Pay::F_PAY_FAKT]) . ' '.__('UAH | грн | грн').'.' . ' | ' 
                                     . date('Y-m-d H:i:s', $rec[Pay::F_DATE]) . ' | ' 
                                     . h($rec[Pay::F_DESCRIPTION] )
                                 . '</span>'

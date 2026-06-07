@@ -220,7 +220,8 @@ function get_html_table(
         string      $bk_color1 = COLOR1_VALUE,
         string      $bk_color2 = COLOR2_VALUE,
         string|null $anchor = null           // установка якоря для #anchor (<a name={$anchor}></a>)
-        ): string {
+        ): string 
+{
     global $I_COLOR_STEP;
     if (is_null($t)) { $t = []; }
     if (!is_array($t)) { throw new Exception("get_html_table(array...); Первый аргумент должен быть массив"); }
@@ -2917,12 +2918,27 @@ function mikBool(mixed $value): bool
         return $value;
     }
 
-    if (empty($value)) {
-        return false;
-    }
-
     return match (strtolower(trim((string)$value))) {
-        'true', 'yes', '1', 'enabled' => true,
-        default => false,
+        'true', 'yes', '1', 'enabled'  => true,
+        'false', 'no', '0', 'disabled' => false,
+        default                        => false,
     };
 }
+
+
+
+/**
+ * Удаляет из массива все поля со значением null.
+ *
+ * @param array $data
+ * @return array
+ */
+function remove_null_fields(array $data): array
+{
+    return array_filter(
+        $data,
+        fn($v) => $v !== null
+    );
+}
+
+

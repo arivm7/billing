@@ -108,7 +108,7 @@ abstract class Controller
             error_log(
                 message: date('Y-m-d H:i:s') 
                     . ($log_ip ? " | " . sprintf('%-15s', ($_SERVER['REMOTE_ADDR'] ?? '') ?: 'UNKNOWN') : "") 
-                    . ' | ' . sprintf('%6s', App::get_user_id() ?: '-') 
+                    . ' | ' . sprintf('%'.App::get_config('port_max_digits').'s', App::get_user_id() ?: '-') 
                     . ' | ' . ($log_url ? get_full_request_url() . ($msg ? ' | ' : '') : '')
                 //  . sprintf('%6d', App::get_user()[User::F_LOGIN]) . ' | ' 
                     . $msg

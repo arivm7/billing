@@ -44,14 +44,20 @@ class Mik {
      * поля структуры "address_list"
      */
 
-    const F_LIST_ID             = '.id';             // [.id] => *1
-    const F_LIST_LIST           = 'list';            // [list] => ABON
-    const F_LIST_ADDRESS        = 'address';         // [address] => 0.0.0.0/0
-    const F_LIST_CREATION_TIME  = 'creation-time';   // [creation-time] => jan/23/2024 01:57:02
-    const F_LIST_TIMEOUT        = 'timeout';         // [timeout] =>
-    const F_LIST_DYNAMIC        = 'dynamic';         // [dynamic] => false
-    const F_LIST_DISABLED       = 'disabled';        // [disabled] => true
-    const F_LIST_COMMENT        = 'comment';         // [comment] =>
+    const F_LIST_ID             = '.id';            // [.id] => *1
+    const F_LIST_LIST           = 'list';           // [list] => ABON
+    const F_LIST_ADDRESS        = 'address';        // [address] => 0.0.0.0/0
+    const F_LIST_CREATION_TIME  = 'creation-time';  // [creation-time] => jan/23/2024 01:57:02
+    const F_LIST_TIMEOUT        = 'timeout';        // [timeout] =>
+    const F_LIST_DYNAMIC        = 'dynamic';        // [dynamic] => false
+    const F_LIST_DISABLED       = 'disabled';       // [disabled] => true
+    const F_LIST_COMMENT        = 'comment';        // [comment] =>
+    
+    /**
+     * Вычисляемыве поля
+     */
+    
+    const F_LIST_ENABLED        = 'enabled';        // [enabled] -- вычисляемое поле
 
 
 
@@ -78,6 +84,57 @@ class Mik {
     const F_RES_BOARD_NAME               =  'board-name';                // [board-name] => LHG 5
     const F_RES_PLATFORM                 =  'platform';                  // [platform] => MikroTik
 
+
+
+    /**
+     * Поля массива /ip/arp
+     */
+    
+    const F_ARP_ID        = '.id';          //
+    const F_ARP_IP        = 'address';      // 192.168.77.252
+    const F_ARP_MAC       = 'mac-address';  // CC:D3:C1:E6:7A:29
+    const F_ARP_COMMENT   = 'comment';      // Текст
+    const F_ARP_INTERFACE = 'interface';    // bridge
+    const F_ARP_DYNAMIC   = 'dynamic';      // =no  D - DYNAMIC
+    const F_ARP_DISABLED  = 'disabled';     // =no  X - DISABLED
+    const F_ARP_PUBLISHED = 'published';    // =no  P - PUBLISHED
+    const F_ARP_COMPLETE  = 'complete';     // =yes C - COMPLETE
+    const F_ARP_DHCP      = 'dhcp';         // =yes H - DHCP
+    const F_ARP_INVALID   = 'invalid';      // =no  I - INVALID
+    const F_ARP_STATUS    = 'status';       // ="failed", "permanent", "reachable", "stale"
+    const F_ARP_VRF       = 'vrf';          // =main
+    
+    const F_ARP_ENA       = 'ena';          // поле для нормализованной записи (скорее всего не поадобится)
+    const F_ARP_ENABLED   = 'enabled';      // поле для статистики
+    const F_ARP_TOTAL     = 'total';        // поле для статистики
+    const F_ARP_INTERFACES = 'interfaces';  // поле для статистики
+
+
+    /**
+     * Константы для полей поиска и обновления
+     */
+    
+    const F_SEARCH_LIST  = 'list';
+    const F_SEARCH_IP    = 'ip';
+    const F_SEARCH_ENA   = 'ena';
+    const F_SEARCH_DESCR = 'descr';
+    const F_SEARCH_ID    = 'id';
+    
+    const F_UPDATE_LIST  = 'list';
+    const F_UPDATE_IP    = 'ip';
+    const F_UPDATE_ENA   = 'ena';
+    const F_UPDATE_DESCR = 'descr';
+
+
+    /**
+     * Константы для полей таблицы статистики адресных листов
+     */
+    const F_STAT_ENABLED = 'enabled'  ;
+    const F_STAT_DISABLED = 'disabled' ;
+    const F_STAT_DYNAMIC = 'dynamic'  ;
+    const F_STAT_STATIC = 'static'   ;
+    const F_STAT_TOTAL = 'total'    ;
+    
 
 
 }
