@@ -40,7 +40,10 @@ if (!can_use(Module::MOD_TP)) {
 <div class="mx-auto w-auto">
     <?php if (can_add(Module::MOD_TP)) : ?>
         <div class="mb-3 text-end">
-            <a href="<?= TP::URI_ADD; ?>" class="btn btn-primary">
+            <a href="<?= TP::URI_ACL_SYNC_ALL; ?>" class="btn btn-sm btn-outline-primary ms-1">
+                <?= __('To ACL synchronizer | К синхронизатору ACL | До синхронізатора ACL') ?>
+            </a>
+            <a href="<?= TP::URI_ADD; ?>" class="btn btn-sm btn-outline-primary ms-1">
                 <?= __('Add technical site | Добавить техплощадку | Додати техмайданчик') ?>
             </a>
         </div>
@@ -94,6 +97,9 @@ if (!can_use(Module::MOD_TP)) {
                             <?php if ($tp[TP::F_ACTIVE]): ?>
                                 <span class="badge bg-success"><?= __('Works | Работает | Працює') ?></span>
                                 <div class="text-secondary font-monospace fs-8"><?= $tp[TP::F_IP]; ?></div>
+                                <div class="text-secondary font-monospace fs-8" title="<?= __('Number of Price Fragments | Количество Прайсовых Фрагментов | Кількість Прайсових Фрагментів') ?>">
+                                    <span class="fs-8"><?= __('Count PF | Колич.ПФ | Кільк.ПФ') ?>: </span><?= $tp[TP::F_COUNT_PA]; ?>
+                                </div>
                             <?php else: ?>
                                 <span class="badge bg-danger"><?= __('Disabled | Отключен | Вимкнено') ?></span>
                             <?php endif; ?>
@@ -156,6 +162,12 @@ if (!can_use(Module::MOD_TP)) {
                             <hr>
                             
                             <?php if ($tp[TP::F_ACTIVE] && $tp[TP::F_IS_MANAGED]) : ?>
+
+                                <a href="<?=TP::URI_MANAGE.'/'.$tp[TP::F_ID];?>" class="btn btn-sm btn-outline-primary my-1" target="_blank"
+                                   title="<?= __('Control panel | Панель упавления | Панель запалення') ?>">
+                                    <img src="<?= Icons::SRC_ICON_MIK_BLUE;?>" height="22rem" width="16rem">
+                                </a>
+                            
                                 <a href="<?= '/tp/aclsync/' . (int)$tp[TP::F_ID] . '?list=3'; ?>" class="btn btn-sm btn-outline-primary my-1"
                                    title="<?= __('Synchronize | Синхронизировать | Синхронізувати') ?> ACL [HACKERS]"
                                    onclick="return confirm('<?= __('Synchronize table [%s] with database | Синхронизировать таблицу [%s] с базой | Синхронізувати таблицю [%s] з базою', 'HACKERS') . '? ' . __('For a long time. May take up to a minute | Долго. Может занять до минуты | Довго. Може зайняти до хвилини') ?>');">

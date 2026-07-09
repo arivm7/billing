@@ -315,7 +315,8 @@ class UserModel extends AppBaseModel{
 
     
 
-    function get_firm($firm_id): array|null {
+    function get_firm(?int $firm_id): array|null {
+        if ($firm_id === null) { return null; }
         return $this->get_row_by_id(Firm::TABLE, $firm_id, Firm::F_ID);
     }
 

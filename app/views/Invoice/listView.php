@@ -34,6 +34,7 @@
  */
 
 use billing\core\Pagination;
+use app\controllers\InvoiceController;
 use config\tables\Abon;
 use config\tables\Invoice;
 use config\tables\Module;
@@ -58,10 +59,20 @@ use config\tables\User;
                     </h5>
 
                 </div>
-                <div>
+                <div class="ms-1 text-end">
                     <?php if (can_use(Module::MOD_USER_CARD)): ?>
                         <a href="<?=Invoice::URI_EDIT;?>?<?= Invoice::F_ABON_ID ?>=<?=$abon[Abon::F_ID];?>&<?= Invoice::F_INV_DATE_STR ?>=<?= date('d.m.Y'); ?>" class="btn btn-outline-info btn-sm" target="_blank" title="<?= __('Generate new invoice | Сформировать новый Счёт | Створити новий рахунок'); ?>"><i class="bi bi-receipt"></i> <?= __('New invoice | Новый счёт | Новий рахунок'); ?></a>
                         <a href="<?=Abon::URI_VIEW;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm" target="_self" title="<?= __('Go to subscriber card | Перейти к карточке абонента | Перейти до картки абонента'); ?>"><span class="fw-bold">🅐</span> <?= __('Card | Карта | Картка'); ?></a> <!-- ⒶⒶ🅐Ⓐ(A) -->
+                        <br>
+                        <?php foreach ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as $month_no) : ?>
+                            <?php
+//                                if ($month_no == 7) { echo '<br>'; }
+                                $rec[Invoice::F_ABON_ID] = $abon[Abon::F_ID];
+                                $rec[Invoice::F_INV_TODAY] = mktime(0, 0, 0, $month_no, 1, date('Y'));
+                                $query = http_build_query($rec);
+                            ?>
+                            <a href="<?=Invoice::URI_EDIT;?>?<?= $query ?>" class="btn btn-outline-info btn-sm mt-1" target="_blank" title="<?= __('Generate new invoice | Сформировать новый Счёт | Створити новий рахунок'); ?>"><i class="bi bi-receipt"></i> <?= $month_no; ?></a>
+                        <?php endforeach; ?>
                     <?php else: ?>
                         <a href="/" class="btn btn-outline-info btn-sm" target="_self" title="<?= __('Return to subscriber card | Вернуться в карточку абонента | Повернутися до картки абонента'); ?>"><span class="fw-bold">🅐</span> <?= __('Card | Карта | Картка'); ?></a> <!-- ⒶⒶ🅐Ⓐ(A) -->
                     <?php endif; ?>

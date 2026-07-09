@@ -62,7 +62,11 @@ use billing\core\base\View;
             .w-10 { width: 10% !important; }
             .w-15 { width: 15% !important; }
             .w-25 { width: 25% !important; }
+            .w-30 { width: 30% !important; }
+            .w-40 { width: 40% !important; }
             .w-50 { width: 50% !important; }
+            .w-60 { width: 60% !important; }
+            .w-70 { width: 70% !important; }
             .w-75 { width: 75% !important; }
             .w-90 { width: 90% !important; }
 

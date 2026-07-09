@@ -377,23 +377,58 @@ class PaController extends AppBaseController {
 
 
 
+    /**
+     * Включает или выключает услугу (прайсовый фрагмент) абонента:
+     * на управляемом Mikrotik (address-list) и в биллинге (закрытие/открытие
+     * прайсового фрагмента PA).
+     *
+     * Порядок операций: сначала пытаемся применить изменение на устройстве
+     * (если ТП управляемый), и только при успехе — фиксируем изменение в БД.
+     * Это защищает от ситуации "в БД отключено, а на роутере всё ещё работает".
+     * ВНИМАНИЕ: обратная защита отсутствует — см. пометку у update_row_by_id() ниже:
+     * если устройство изменить удалось, а запись в БД не удалась, состояние
+     * останется рассинхронизированным (устройство уже переключено, БД — нет).
+     *
+     * @param int|null    $pa_id  ID прайсового фрагмента (используется, если $pa не передан)
+     * @param array|null  $pa     Уже загруженная запись прайсового фрагмента (приоритетнее $pa_id)
+     * @param bool|int    $ena    true/1 — включить услугу, false/0 — выключить
+     * @param int|bool    $force  true/1 — при включении игнорировать давность паузы
+     *                            и не клонировать прайсовый фрагмент (см. ниже)
+     * @param string      &$log   Параметр по ссылке: сюда дописывается пошаговый
+     *                            текстовый лог (SUCCESS:/ERROR: строки) — вызывающий
+     *                            код не должен по нему определять успех/неудачу,
+     *                            для этого используется явный возврат функции.
+     *
+     * @return int|false  ID актуального прайсового фрагмента (может отличаться от
+     *                     входного $pa_id/$pa[PA::F_ID], если был создан клон —
+     *                     см. ветку клонирования) при успехе; false — при любой
+     *                     ошибке на любом из этапов (устройство или БД).
+     */
     public static function enable(int|null $pa_id = null, array|null $pa = null, bool|int $ena = 1, int|bool $force = 0, string &$log = ''): int|false {
 
         $ena = ($ena ? true : false);
         $force = ($force ? true : false);
         $model = new AbonModel();
 
-        if (empty($pa)) { 
-            $pa = $model->get_pa($pa_id); 
+        if (empty($pa)) {
+            // ВНИМАНИЕ: если оба параметра ($pa_id и $pa) не переданы — сюда придёт
+            // get_pa(null). Поведение AbonModel::get_pa(null) явно не проверено —
+            // стоит убедиться, что оно бросает исключение или возвращает пусто,
+            // а не какую-то первую попавшуюся запись.
+            $pa = $model->get_pa($pa_id);
         }
 
         $tp = $model->get_tp($pa[PA::F_TP_ID]);
 
         /**
-         * Установка (включение/выключение) услуги на микротике
+         * Установка (включение/выключение) услуги на Mikrotik.
+         * Выполняется ТОЛЬКО для активных управляемых ТП — для неуправляемых
+         * это шаг просто пропускается, и мы сразу переходим к изменению в БД.
          */
         if ($tp[TP::F_ACTIVE] && $tp[TP::F_IS_MANAGED]) {
             if (($mik = Api::tp_connector(tp: $tp)) === false) {
+                // Примечание: переменная $mik далее не используется — только
+                // для проверки успешности подключения. $dev создаётся отдельно ниже.
                 $s = "Не удалось подключиться к ТП";
                 MsgQueue::msg(MsgType::ERROR, $s);
                 $log .= 'ERROR: ' . $s;
@@ -404,23 +439,20 @@ class PaController extends AppBaseController {
                     search: [
                         Mik::F_SEARCH_LIST => Mik::L_ABON,
                         Mik::F_SEARCH_IP => $pa[PA::F_NET_IP],
-                    ], 
+                    ],
                     update: [
                         Mik::F_UPDATE_ENA => $ena,
                     ]);
             if (!$result) {
+                $s = '<pre>' . print_r(MikrotikDevice::get_messages(), true) . '</pre>';
+                MsgQueue::msg(MsgType::ERROR, $s);
+                $log .= 'ERROR: ' . $s;
                 $s = "Не удалось установить услугу на микротике. Изменение в базе отменено.";
                 MsgQueue::msg(MsgType::ERROR, $s);
                 $log .= 'ERROR: ' . $s;
+                // Корректно: раз устройство не поменялось, в БД тоже ничего не трогаем.
                 return false;
             }
-
-//            if (!Api::set_mik_abon_ip($mik, $pa[PA::F_NET_IP], $ena, true)) {
-//                $s = "Не удалось установить услугу на микротике. Изменение в базе отменено.";
-//                MsgQueue::msg(MsgType::ERROR, $s);
-//                $log .= 'ERROR: ' . $s;
-//                return false;
-//            }
 
             $s = "Услуга на микротике " . ($ena ? "включена" : "выключена");
             MsgQueue::msg(MsgType::SUCCESS_AUTO, $s);
@@ -429,16 +461,25 @@ class PaController extends AppBaseController {
 
         if ($ena) {
             /**
-             * Проверяем давно ли установлена пауза
+             * Включение услуги. Два варианта:
+             *  - фрагмент был закрыт давно (дольше pa_unpaused_days) и !$force
+             *    → не переоткрываем тот же фрагмент, а клонируем его и открываем клон
+             *      (вероятно, чтобы не искажать историю начислений старого периода);
+             *  - иначе (закрыт недавно, либо $force=true) → просто переоткрываем
+             *    тот же фрагмент, установив F_DATE_END = null.
+             *
+             * ВНИМАНИЕ: если фрагмент вообще не был на паузе (F_DATE_END уже null),
+             * get_between_days($pa[PA::F_DATE_END], TODAY()) получит null первым
+             * аргументом — поведение get_between_days(null, ...) здесь не проверялось.
              */
             if  (
-                    !$force && 
+                    !$force &&
                     get_between_days($pa[PA::F_DATE_END], TODAY()) > App::get_config('pa_unpaused_days')
-                ) 
+                )
             {
                 /**
-                 * Закрыт давно
-                 * Создаём копию и открываем клонированный ПФ
+                 * Закрыт давно — создаём копию и открываем клонированный ПФ,
+                 * оригинал остаётся закрытым как есть (сохраняется история).
                  */
                 if (($pa_new_id = self::clone(pa: $pa)) === false) {
                     $s = "Не удалось клонировать ПФ для открытия";
@@ -449,9 +490,7 @@ class PaController extends AppBaseController {
                 $s = "ПФ на паузе давно. Клонирован";
                 MsgQueue::msg(MsgType::SUCCESS_AUTO, $s);
                 $log .= 'SUCCESS: ' . $s . "\n";
-                /**
-                 * Запись для обновления в базе
-                 */
+
                 $pa_rec = [
                     PA::F_ID => $pa_new_id,
                     PA::F_DATE_END => null,
@@ -459,15 +498,12 @@ class PaController extends AppBaseController {
 
             } else {
                 /**
-                 * Закрыт недавно
-                 * Просто открываем ПФ
+                 * Закрыт недавно (или force=true) — просто открываем тот же ПФ.
                  */
                 $s = "ПФ на паузе недавно (или force). Открываем";
                 MsgQueue::msg(MsgType::SUCCESS_AUTO, $s);
                 $log .= 'SUCCESS: ' . $s . "\n";
-                /**
-                 * Запись для обновления в базе
-                 */
+
                 $pa_rec = [
                     PA::F_ID => $pa[PA::F_ID],
                     PA::F_DATE_END => null,
@@ -476,7 +512,8 @@ class PaController extends AppBaseController {
 
         } else {
             /**
-             * Запись для обновления в базе
+             * Выключение услуги — просто закрываем текущий ПФ сегодняшней датой.
+             * (Именно эта ветка используется из AbonModel::set_abon_pause().)
              */
             $pa_rec = [
                 PA::F_ID => $pa[PA::F_ID],
@@ -485,7 +522,14 @@ class PaController extends AppBaseController {
         }
 
         /**
-         * Внесение параметра услуги в базу
+         * Внесение параметра услуги в базу — финальный шаг.
+         * ВНИМАНИЕ: если мы до этого успешно поменяли состояние на Mikrotik
+         * (see выше), а здесь запись в БД не удастся — устройство и БД разойдутся:
+         * функция вернёт false (что корректно сигнализирует вызывающему коду
+         * об ошибке), но откатить уже применённое изменение на устройстве
+         * автоматически не пытается. Это стоит иметь в виду при интерпретации
+         * false как "ничего не изменилось" — на устройстве изменение уже могло
+         * произойти.
          */
         if ($model->update_row_by_id(PA::TABLE, $pa_rec, PA::F_ID)) {
             $s = "Услуга в биллинге " . ($ena ? "включена" : "выключена");
@@ -499,6 +543,7 @@ class PaController extends AppBaseController {
             return false;
         }
     }
+
 
     
     public static function delete(int $pa_id): bool {
@@ -520,7 +565,54 @@ class PaController extends AppBaseController {
     }
 
     
+    public function enableAction() {
+        /**
+         * Проверка наличия авторизации
+         */
+        if (!App::isAuth()) {   
+            MsgQueue::msg(MsgType::ERROR, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
+            self::log_unauthorize();
+            redirect('/');
+        }
 
+        /**
+         * Проверка прав на редактирование
+         */
+        if (!can_edit(Module::MOD_PA)) {   
+            MsgQueue::msg(MsgType::ERROR, __('No rights | Нет прав | Немає прав'));
+            self::log_no_rights();
+            redirect();
+        }
+        
+        $ena   = (($_GET[PA::F_ENABLED] ?? 0) ? 1 : 0);
+        $force = (($_GET[PA::F_FORCE] ?? 0) ? 1 : 0);
+        $pa_id = intval($_GET[PA::F_PA_ID] ?? 0);
+        $model = new AbonModel();
+        $pa = $model->get_pa($pa_id);
+        $pa_new_id = PaController::enable(pa: $pa, ena: $ena, force: $force);
+        if ($ena) {
+            /**
+             * если включаем ПФ, то установить время ожидания оплаты (из конфига).
+             */
+            MsgQueue::msg(MsgType::SUCCESS_AUTO, __('Set the waiting time for payment | Устанавливаем время ожидания оплаты | Встановлюємо час очікування оплати') . ' (' . App::get_config('pa_days_to_wait_payment') . ' ' . __('days | дней | днів') . ')');
+            $model->set_field_value(
+                table_name: Abon::TABLE, 
+                field_id: Abon::F_ID, 
+                value_id: $pa[PA::F_ABON_ID], 
+                field: Abon::F_DUTY_WAIT_DAYS, 
+                value: App::get_config('pa_days_to_wait_payment'),
+                update_access_time: false);
+        }
+        $model->recalc_abon($pa[PA::F_ABON_ID]);
+        if ($pa_new_id && ($pa_new_id != $pa_id)) {
+            redirect(PA::URI_EDIT . '/' . $pa_new_id);
+        }
+        redirect();
+        
+    }
+
+    
+    
     public function editAction() {
 
         // debug($_GET, '$_GET');

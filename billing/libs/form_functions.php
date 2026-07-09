@@ -206,7 +206,7 @@ function inputRow(
 
 function checkboxRow(
         string|null $label = null,
-        string|null $title = null,
+        string|null $title = null, // title="description"
         string|null $name = null,
         string|null $id = null,
         bool $checked = false,

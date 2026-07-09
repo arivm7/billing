@@ -70,7 +70,6 @@ $config = [
     /**
      * Список поддерживаемых языков
      * Минимальное поле order -- это язык по умолчанию
-     *
      */
     'lang_list' => [
             'uk' => [ 'title' => 'Українська',  'order' => 0 ],
@@ -172,6 +171,11 @@ $config = [
      * После истечения этого времени, в случае отсутствия оплаты, будет поставлен на паузу.
      */
     'pa_days_to_wait_payment' => 5, 
+    
+    /**
+     * Заглушка для отсутствующей даты
+     */
+    'pa_date_no' => '____-__-__',
 
 
 
@@ -216,7 +220,7 @@ $config = [
      * Высота, в количествах строк, редактора коментариев <textarea>
      */
     'textarea_rows_min' => 2,
-    'textarea_rows_max' => 10,
+    'textarea_rows_max' => 15,
     'textarea_approximate_chars_per_line' => 60,
     
 
@@ -291,7 +295,8 @@ $config = [
     'inv_per_page' => 12,
     // Максимальная длина номера Счёта-фактуры
     'inv_max_length_number' => 24,
-    'inv_body_template' => "Доступ до мережі інтернет за адресою {ADDRESS}, порт № {PORT}, <nobr>за {DATE}</nobr>",
+    'inv_body_template' => "Доступ до мережі інтернет за адресою {ADDRESS}, дог. № {PORT}, <nobr>за {DATE}</nobr>",
+    'inv_payer_recomend_max' => 50, // Рекомендуемое количество символов имени плательщика, для выбора между кратким названием полным названием предприятия
     'inv_payer_unknown' => "__________________________________________________",
     'inv_date_unknown' => "____.____.________",
 
@@ -413,13 +418,37 @@ $config = [
 
     /**
      * Блок работы с логами
+     * whois серверы:
      * https://www.whois.com/whois/{IP}
      * https://rdap.arin.net/registry/ip/{IP}
      * https://search.arin.net/rdap/?query={IP}
      * https://wq.apnic.net/static/search.html?query={IP}
      */
+    
+    'max_file_size_to_html' => 3 * 1024 * 1024, // 3Mb
     'whois_template_ip' => '{IP}',
     'whois_web_service' => 'https://wq.apnic.net/static/search.html?query={IP}',
+    
+    
+    
+    /**
+     * Начало блока ACL
+     * ========================================================================
+     * 
+     */
+    
+    'acl_sync_all_tables' => [
+        2, // [DNS]
+        3, // [HACKERS]
+        4, // [SERVICES]
+    ],
+    
+    /**
+     * Конец блока ACL
+     * ========================================================================
+     * 
+     */
+    
     
 ];
 

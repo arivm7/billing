@@ -36,7 +36,7 @@ class TpModel extends AppBaseModel {
         $userId = $userId ?? App::get_user_id();
         if (
             !$this->validate_id(User::TABLE, $userId, User::F_ID)
-            || !$this->validate_tp($tpId)
+            || !$this->validate_id_tp($tpId)
         ) {
             return null;
         }
@@ -111,6 +111,12 @@ class TpModel extends AppBaseModel {
 
 
 
+    /**
+     * Возвращает запись технической площадки по её названию.
+     *
+     * @param string $title Название технической площадки.
+     * @return array|null Массив с данными технической площадки, или null если не найдена.
+     */
     public function getTpByTitle(string $title): array|null
     {
         $sql = "SELECT *
@@ -123,6 +129,14 @@ class TpModel extends AppBaseModel {
 
 
 
+    /**
+     * Возвращает активную фирму-агента (предприятие-провайдер) по её идентификатору.
+     *
+     * Выбирается только активная (has_active = 1) фирма с признаком агента (has_agent = 1).
+     *
+     * @param int $firmId Идентификатор фирмы-агента.
+     * @return array|null Массив с данными фирмы-агента, или null если не найдена или не активна.
+     */
     public function getActiveAgentFirmById(int $firmId): array|null
     {
         $sql = "SELECT *
@@ -137,6 +151,12 @@ class TpModel extends AppBaseModel {
 
     
     
+    /**
+     * Возвращает запись имени и описания таблицы ACL по её id.
+     *
+     * @param int $id Идентификатор записи ACL.
+     * @return array|null Массив с данными записи, или null если запись не найдена.
+     */
     public function getAclTableById(int $id): array|null
     {
         $sql = "SELECT *
@@ -149,7 +169,18 @@ class TpModel extends AppBaseModel {
 
 
     
-    public function getAclListForSync(int $aclTableId, int $tpId): array
+    /**
+     * Возвращает список активных адресов ACL-записей для синхронизации по таблице ACL и технической площадке.
+     *
+     * Выбираются только включённые записи (enabled = 1), которые либо не привязаны
+     * к технической площадке (TP_ID IS NULL или 0), либо привязаны к указанной.
+     * Результат сортируется по технической площадке, затем по адресу.
+     *
+     * @param int $aclTableId Идентификатор таблицы ACL.
+     * @param int $tpId       Идентификатор технической площадки.
+     * @return array Массив активных ACL-записей для синхронизации.
+     */
+    public function getAclListForSync(int $aclTableId, int $tpId = 0): array
     {
         $sql = "SELECT *
                 FROM `" . DevAclList::TABLE . "`

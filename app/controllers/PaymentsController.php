@@ -182,7 +182,7 @@ class PaymentsController extends AppBaseController {
         }
 
         // const F_PPP_ID          = "pay_ppp_id";     // ППП
-        if (empty($pay[Pay::F_PPP_ID]) || !$model->validate_ppp($pay[Pay::F_PPP_ID])) {
+        if (empty($pay[Pay::F_PPP_ID]) || !$model->validate_id_ppp($pay[Pay::F_PPP_ID])) {
             MsgQueue::msg(MsgType::ERROR, __('Invalid PPP ID | ID ППП не верен | ID ППП невірний'));
             $valid = false;
         }
@@ -533,7 +533,7 @@ class PaymentsController extends AppBaseController {
             $title = __('New payment');
             $pay_type_id = Pay::TYPE_MONEY;
         }
-        $ppp_in_pay = ($model->validate_ppp($pay[Pay::F_PPP_ID]) ? $model->get_ppp($pay[Pay::F_PPP_ID]) : null);
+        $ppp_in_pay = ($model->validate_id_ppp($pay[Pay::F_PPP_ID]) ? $model->get_ppp($pay[Pay::F_PPP_ID]) : null);
         $ppp_list = array_merge($model->get_ppp_my(active: 1), [$ppp_in_pay]);
         $ppp_select_list = array_column($ppp_list, Ppp::F_TITLE, Ppp::F_ID);
 

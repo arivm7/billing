@@ -42,6 +42,7 @@ use config\tables\PppType;
 use config\tables\User;
 
 require_once DIR_LIBS . '/functions.php';
+require_once DIR_LIBS . '/chars.php';
 require_once DIR_LIBS . '/sms_functions.php';
 
 /**
@@ -82,7 +83,7 @@ $sms_print_num = 0;
             <!-- Вернуться в карточку абонента -->
             <a href="<?=Abon::URI_VIEW;?>/<?=$abon[Abon::F_ID];?>" class="btn btn-outline-info btn-sm me-1" target="_self"
                 title="<?= __('Go to subscriber card | Перейти в карточку абонента | Перейти до картки абонента'); ?>"
-                ><span class="fw-bold">🅐</span> <?= __('Card | Карта | Картка'); ?></a> <!-- ⒶⒶⒶ -->
+                ><span class="fw-bold">🅐</span> <?= __('Card | Карта | Картка'); ?></a>
         </div>
     </div>
    

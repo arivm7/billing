@@ -50,7 +50,7 @@ use config\SessionFields;
             } else {
 ?>
         <!-- статический alert -->
-        <div class="alert alert-<?= $suffix ?> alert-dismissible fade show" role="alert">
+        <div class="alert alert-<?= $suffix ?> alert-dismissible fade show font-monospace" role="alert">
             <?= $msg ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
@@ -68,7 +68,7 @@ use config\SessionFields;
              role="alert" aria-live="assertive" aria-atomic="true"
              data-bs-delay="<?= $alert['timeout'] ?>">
             <div class="d-flex">
-                <div class="toast-body">
+                <div class="toast-body font-monospace">
                     <?= $alert['msg'] ?>
                 </div>
                 <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>

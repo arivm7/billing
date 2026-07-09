@@ -62,6 +62,7 @@ class Module {
     const MOD_MONITORING    = 44;
     const MOD_LOGS          = 47;
     const MOD_SECURITY      = 48;
+    const MOD_NET_DEV       = 49;
 
 
 

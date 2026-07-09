@@ -57,6 +57,7 @@ class Invoice {
     const F_CONTRAGENT_NAME     = 'firm_contragent_name'; // предприятие-Заказчик
     const F_ABON_ID             = 'abon_id';            // ID Абонент
     const F_INV_NO              = 'sf_no';              // СФ №
+    const F_INV_TODAY           = 'sf_today';           // "текущая" дата для вычисления F_INV_DATE_STR и F_AKT_DATE_STR
     const F_INV_DATE_STR        = 'sf_date';            // Дата счёта
     const F_AKT_DATE_STR        = 'akt_date';           // Дата Акта
     const F_FIRM_PAYER_STR      = 'sf_firm';            // Предприятие плательщик
@@ -81,7 +82,14 @@ class Invoice {
     const F_URI_INV     = 'inv';    // Отображать Счёт
     const F_URI_ACT     = 'act';    // Отображать Акт
     const F_URI_BUTTONS = 'btns';   // Отображать кнопки
-        
+
+    
+    
+    /* --------------------
+     * вычисляемые поля
+     * -------------------- */
+    
+    const F_PAYMENTS = 'payments';
 
 
     /* --------------------
@@ -124,11 +132,10 @@ class Invoice {
 
 
 
-    const FIELDS_NEW_RECORD = [
-        self::F_AGENT_ID,
-        self::F_AGENT_NAME,
+    const SEARCH_FIELDS = [
+        self::F_ID,
         self::F_CONTRAGENT_ID,
-        self::F_CONTRAGENT_NAME,
+        self::F_AGENT_ID,
         self::F_ABON_ID,
         self::F_INV_NO,
         self::F_INV_DATE_STR,
@@ -139,13 +146,33 @@ class Invoice {
         self::F_COST_ALL,
         self::F_TEXT,
         self::F_IS_PAID,
+        self::F_MODIFIED_UID,
+        self::F_MODIFIED_DATE,
+        self::F_CREATION_UID,
+        self::F_CREATION_DATE,
     ];
 
-    /* --------------------
-     * вычисляемые поля
-     * -------------------- */
+    
+    
+    
+    const FIELDS_NEW_RECORD = [
+        self::F_AGENT_ID,
+        self::F_AGENT_NAME,
+        self::F_CONTRAGENT_ID,
+        self::F_CONTRAGENT_NAME,
+        self::F_ABON_ID,
+        self::F_INV_NO,
+        self::F_INV_TODAY,
+        self::F_INV_DATE_STR,
+        self::F_AKT_DATE_STR,
+        self::F_FIRM_PAYER_STR,
+        self::F_COST_1,
+        self::F_COUNT,
+        self::F_COST_ALL,
+        self::F_TEXT,
+        self::F_IS_PAID,
+    ];
 
-    // const F_ABON_NAME = 'abon_name';     // пример: поле из join
-    // const F_USER_LOGIN = 'user_login';   // пример: поле из join
+
 
 }

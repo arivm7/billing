@@ -128,6 +128,10 @@ function debug(mixed $value, string $comment = '', DebugView $debug_view = Debug
     if ($die) die();
 }
 
+function debug2(mixed $value, string $comment = '', DebugView $debug_view = DebugView::DUMP, int $die = 0): void
+{
+    debug($value, $comment, $debug_view, $die);
+}
 
 
 function debug_msg(string $text, string|null $color = null): void
@@ -1019,6 +1023,7 @@ function redirect(string|false $url = false) {
             // debug( $current_url, "Current URL: ");
             // debug($referer, "Referer: ", die: 1);
             // $redirect = '/';
+            debug(['CURRENT'=>$current_url, 'PREVIOS'=>$referer], '[$current_url, $referer] Возвращаться некуда', die:1);
             $redirect = $referer;
         } else {
             $redirect = $referer;
@@ -1161,7 +1166,7 @@ function get_uri(array $excludes = []): string {
  * @param string|null $default -- значение "по умолчанию" если в словаре нет записи
  * @return string
  */
-function  __(string $key, $param = null, string|null $default = null): string {
+function  __(string $key, mixed $param = null, string|null $default = null): string {
     return \billing\core\base\Lang::get(key: $key, param: $param, default: $default);
 }
 
@@ -1855,7 +1860,14 @@ function validate_ip(string|null $ip): bool {
 
 
 
-function validate_mac(string|null $mac) {
+function normalize_mac(string|null $mac): string {
+    return strtoupper(trim((string)($mac ?? '')));
+}
+
+
+
+
+function validate_mac(string|null $mac): bool {
     if (is_empty($mac)) {
         return false;
     } else {
@@ -2274,7 +2286,7 @@ function get_count_rows_for_textarea(?string $text, int $count_rows_min=0, int $
                     ? $count_rows_max
                     : $count_lines
                 )
-        );    
+        );
 }
 
 
@@ -2912,6 +2924,19 @@ function intersect_ranges(int $a1, int $a2, int $b1, int $b2): bool {
 
 
 
+/**
+ * Приводит значение из RouterOS API к булеву типу.
+ *
+ * RouterOS возвращает флаги в виде строк ("true"/"false", "yes"/"no",
+ * "1"/"0", "enabled"/"disabled") вместо нативного bool — функция
+ * нормализует любой из этих вариантов.
+ *
+ * Регистр и пробелы по краям не важны. Нераспознанное значение
+ * трактуется как false (а не выбрасывает ошибку).
+ *
+ * @param mixed $value Значение из ответа RouterOS API (строка, bool и т.п.)
+ * @return bool
+ */
 function mikBool(mixed $value): bool
 {
     if (is_bool($value)) {

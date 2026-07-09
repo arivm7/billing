@@ -101,6 +101,7 @@ $wcol2 = 12 - $wcol1; // ширина второй колонки
             <form method="post" class="needs-validation" novalidate>
                 <div class="card-body">
                     <input type="hidden" name="<?=Pay::POST_REC?>[<?=Pay::F_AGENT_ID?>]" value="<?=$form_data_fn(Pay::F_AGENT_ID)?>">
+                    
                     <!-- Pay ID -->
                     <?php if (!empty($form_data_fn(Pay::F_ID))): ?>
                         <div class="row mb-3 g-3">
@@ -110,6 +111,7 @@ $wcol2 = 12 - $wcol1; // ширина второй колонки
                             </div>
                         </div>
                     <?php endif; ?>
+                    
                     <!-- ABON_ID -->
                     <div class="row mb-3 g-3">
                         <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_ABON_ID?>">Abon ID</label>
@@ -118,6 +120,7 @@ $wcol2 = 12 - $wcol1; // ширина второй колонки
                             <div class="invalid-feedback">Required</div>
                         </div>
                     </div>
+                    
                     <!-- PAY_FAKT | Фактическая сумма -->
                     <div class="row mb-3 g-3">
                         <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_PAY_FAKT?>"><?= __('The actual amount') ?></label>
@@ -126,6 +129,7 @@ $wcol2 = 12 - $wcol1; // ширина второй колонки
                             <div class="invalid-feedback">Required</div>
                         </div>
                     </div>
+                    
                     <!-- PAY_ACNT | Сумма на ЛС -->
                     <div class="row mb-3 g-3">
                         <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_PAY_ACNT?>"><?= __('The amount on the account') ?></label>
@@ -134,6 +138,7 @@ $wcol2 = 12 - $wcol1; // ширина второй колонки
                             <div class="invalid-feedback">Required</div>
                         </div>
                     </div>
+                    
                     <!-- BALANCE/REST | на счету в банке по результатм транзакции -->
                     <div class="row mb-3 g-3">
                         <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_REST?>"><?= Pay::field_title(Pay::F_REST) ?></label>
@@ -142,6 +147,7 @@ $wcol2 = 12 - $wcol1; // ширина второй колонки
                             <div class="invalid-feedback">Required</div>
                         </div>
                     </div>
+                    
                     <!-- DATE | Дата -->
                     <div class="row mb-3 g-3">
                         <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_DATE_STR?>" title="<?= __('Payment date') ?>"><?= __('Date') ?></label>
@@ -149,6 +155,7 @@ $wcol2 = 12 - $wcol1; // ширина второй колонки
                             <input type="text" class="form-control min-w-200" id="<?=Pay::F_DATE_STR?>" name="<?=Pay::POST_REC?>[<?=Pay::F_DATE_STR?>]" value="<?=$form_data_fn(Pay::F_DATE_STR)?>">
                         </div>
                     </div>
+                    
                     <!-- BANK_NO | Bank No -->
                     <div class="row mb-3 g-3">
                         <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_BANK_NO?>" title="<?= __('Bank transaction ID') ?>">Bank No</label>
@@ -157,6 +164,7 @@ $wcol2 = 12 - $wcol1; // ширина второй колонки
                             <div class="invalid-feedback">Required</div>
                         </div>
                     </div>
+                    
                     <!-- TYPE_ID | Тип операции -->
                     <div class="row mb-3 g-3">
                         <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_TYPE_ID?>"><?= __('Type of operation') ?></label>
@@ -170,6 +178,7 @@ $wcol2 = 12 - $wcol1; // ширина второй колонки
                             <div class="invalid-feedback">Required</div>
                         </div>
                     </div>
+                    
                     <!-- PPP_ID | ППП -->
                     <div class="row mb-3 g-3">
                         <label class="col-<?=$wcol1?> col-form-label" for="<?=Pay::F_PPP_ID?>" title="<?= __('Payment acceptance point') ?>"><?= __('PAP') ?></label>
@@ -183,6 +192,7 @@ $wcol2 = 12 - $wcol1; // ширина второй колонки
                             <div class="invalid-feedback">Required</div>
                         </div>
                     </div>
+                    
                     <!-- DESCRIPTION | Описание -->
                     <div class="row mb-3 g-3">
                         <div class="col-12">
@@ -195,6 +205,7 @@ $wcol2 = 12 - $wcol1; // ширина второй колонки
                         </div>
                     </div>
                 </div>
+                
                 <!-- Действия -->
                 <div class="card-footer text-center">
                     <div class="d-flex justify-content-between align-items-center w-100">

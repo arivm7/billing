@@ -206,37 +206,59 @@ class LogController extends AppBaseController {
 
         return $fileRealPath;
     }
-    
-    
+
+
 
     /**
-     * Заменяет IP-адреса в строке на ссылки whois.com
+     * Заменяет IP-адреса в строке на ссылки:
+     *  - публичные адреса   → whois-сервис (whois.com / RDAP и т.п., см. App::get_config)
+     *  - приватные/зарезервированные ("серые") адреса → внутренний поиск my.ri.net.ua
      *
      * IPv4 и IPv6 поддерживаются.
      *
      * Пример:
      *   8.8.8.8
      *   <a href="https://www.whois.com/whois/8.8.8.8" target="_blank">8.8.8.8</a>
-     *   <a href="https://rdap.arin.net/registry/ip/8.8.8.8" target="_blank">8.8.8.8</a>
+     *
+     *   192.168.1.1
+     *   <a href="https://my.ri.net.ua/search/query?q=192.168.1.1" target="_blank">192.168.1.1</a>
      *
      * @param string $text
      * @return string
      */
     public static function replace_ip_to_whois_links(string $text): string {
-
         return preg_replace_callback(
             '/(?<![a-fA-F0-9:.])((?:\d{1,3}\.){3}\d{1,3}|(?:[a-fA-F0-9]{0,4}:){2,7}[a-fA-F0-9]{0,4})(?![a-fA-F0-9:.])/',
             static function(array $m): string {
-
                 $ip = $m[1];
 
-                // дополнительная проверка корректности IP
+                /**
+                 * Сначала — базовая проверка, что это вообще корректный IP
+                 * (без ограничений на диапазон). Если нет — оставляем как есть.
+                 */
                 if (!filter_var($ip, FILTER_VALIDATE_IP)) {
                     return $ip;
                 }
-                
-                $template_key = App::get_config('whois_template_ip');
-                $url = untemplate(App::get_config('whois_web_service'), [$template_key => $ip]);
+
+                /**
+                 * Публичный ли адрес (не приватный RFC 1918/ULA и не зарезервированный)?
+                 * От этого зависит, на какой сервис вести ссылку.
+                 */
+                $is_public = (bool) filter_var(
+                    $ip,
+                    FILTER_VALIDATE_IP,
+                    FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
+                );
+
+                if ($is_public) {
+                    $template_key = App::get_config('whois_template_ip');
+                    $url = untemplate(App::get_config('whois_web_service'), [$template_key => $ip]);
+                } else {
+                    /**
+                     * "Серый" адрес — внутренний поиск по абонентам/оборудованию.
+                     */
+                    $url = 'https://my.ri.net.ua/search/query?q=' . urlencode($ip);
+                }
 
                 return '<a href="' . h($url) . '" target="_blank" rel="noopener noreferrer">'
                     . h($ip)
@@ -244,8 +266,10 @@ class LogController extends AppBaseController {
             },
             $text
         );
-    }    
-    
+    }
+
+
+
     /**
      * Заменяет номера договоров в строке на ссылки
      *
@@ -274,7 +298,7 @@ class LogController extends AppBaseController {
             $abon_id = (int)$word;
 
             // проверка валидности договора
-            if (!$model->validate_abon($abon_id)) {
+            if (!$model->validate_id_abon($abon_id)) {
                 continue;
             }
 
@@ -302,6 +326,7 @@ class LogController extends AppBaseController {
                     '|&nbsp;<',
                     '|&nbsp;«',
                     'ERROR:',
+                    'ОШИБКА',
                     'SUCCESS:',
                 ], 
                 [
@@ -310,6 +335,7 @@ class LogController extends AppBaseController {
                     '|&nbsp;<span class="text-primary">&lt;</span>',
                     '|&nbsp;<span class="text-primary">«</span>',
                     '<span class="text-danger">ERROR</span>:',
+                    '<span class="text-danger">ОШИБКА</span>:',
                     '<span class="text-success">SUCCESS</span>:',
                 ], $text);
     }
@@ -370,24 +396,31 @@ class LogController extends AppBaseController {
         $count_lines = 0;
         $content = '';
 
+        $fsize = filesize($fullPath);
         $fh = fopen($fullPath, 'r');
-        if ($fh === false) {
+        if ($fh === false || $fsize === false) {
+            MsgQueue::msg(MsgType::ERROR, __('File access error | Ошибка доступа к файлу | Помилка доступу до файлу'));
             redirect();
         }
 
+        $has_html = $fsize <= (int)App::get_config('max_file_size_to_html');
         while (($line = fgets($fh)) !== false) {
             $count_lines++;
-
-            // тут позже можно вставлять HTML-обогащение
-            // например: замена договоров на ссылки
-            $line = str_replace(' ', '&nbsp;', $line);
-            if (!preg_match('/^errors\.log(\.\d+)?$/', $fileName)) {
-                $line = self::highlite_text($line);
-                $line = self::replace_abon_links($line, '&nbsp;');
-                $line = self::replace_ip_to_whois_links($line);
+            
+            if ($has_html) {
+                // тут позже можно вставлять HTML-обогащение
+                // например: замена договоров на ссылки
+                $line = str_replace(' ', '&nbsp;', $line);
+                if (!preg_match('/^errors\.log(\.\d+)?$/', $fileName)) {
+                    $line = self::highlite_text($line);
+                    $line = self::replace_abon_links($line, '&nbsp;');
+                    $line = self::replace_ip_to_whois_links($line);
+                }
+                $content .= $line . '<br>';
+            } else {
+                $content .= htmlspecialchars($line, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
             }
             
-            $content .= $line . '<br>';
         }
 
         fclose($fh);        
@@ -404,6 +437,7 @@ class LogController extends AppBaseController {
             'title' => $title,
             'file_name' => $fileName,
             'content' => $content,
+            'has_html' => $has_html,
             'count_lines' => $count_lines,
         ]);
 

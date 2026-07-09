@@ -87,6 +87,33 @@ abstract class Controller
         $this->variables = $variables;
     }
 
+
+
+    /**
+     * Формирует стандартную строку журнала.
+     *
+     * Формат:
+     * YYYY-MM-DD HH:MM:SS | IP | USER_ID | URL | MESSAGE
+     *
+     * Поля IP и URL могут быть отключены параметрами.
+     * Идентификатор пользователя выводится фиксированной ширины
+     * для удобства чтения логов.
+     *
+     * @param string   $msg      Текст сообщения.
+     * @param bool|int $log_url  Добавлять URL запроса.
+     * @param bool|int $log_ip   Добавлять IP-адрес клиента.
+     *
+     * @return string Сформированная строка для записи в лог.
+     */    
+    public static function make_message_str(string $msg = '', bool|int $log_url = false, bool|int $log_ip = true): string {
+        return  date('Y-m-d H:i:s') 
+                . ($log_ip ? " | " . sprintf('%-15s', ($_SERVER['REMOTE_ADDR'] ?? '') ?: 'UNKNOWN IP') : "") 
+                . ' | ' . sprintf('%'.App::get_config('port_max_digits').'s', App::get_user_id() ?: '-') 
+                . ' | ' . ($log_url ? str_replace(["\r", "\n"], '', get_full_request_url()) . ($msg ? ' | ' : '') : '')
+            //  . sprintf('%6d', App::get_user()[User::F_LOGIN]) . ' | ' 
+                . $msg;
+    }
+
     
     
     /**
@@ -106,12 +133,11 @@ abstract class Controller
     public static function log(string $msg = '', bool|int $eol_cr = true, string|null $log_filename = null, bool|int $log_url = false, bool|int $log_ip = true): bool {
         return 
             error_log(
-                message: date('Y-m-d H:i:s') 
-                    . ($log_ip ? " | " . sprintf('%-15s', ($_SERVER['REMOTE_ADDR'] ?? '') ?: 'UNKNOWN') : "") 
-                    . ' | ' . sprintf('%'.App::get_config('port_max_digits').'s', App::get_user_id() ?: '-') 
-                    . ' | ' . ($log_url ? get_full_request_url() . ($msg ? ' | ' : '') : '')
-                //  . sprintf('%6d', App::get_user()[User::F_LOGIN]) . ' | ' 
-                    . $msg
+                message: self::make_message_str(
+                        msg:  $msg,
+                        log_url:  $log_url,
+                        log_ip:  $log_ip
+                    )
                     /**
                      * message_type: 3 -- Сообщение message добавляется в файл, путь к которому указали в параметре destination.
                      * Символ новой строки не добавляется автоматически в конец строки сообщения message.

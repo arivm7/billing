@@ -40,11 +40,14 @@ class Db {
 
 
 
-    public function execute(string $sql, ?array $params = []): bool {
+    public function execute(string $sql, ?array $params = [], int &$count = 0): bool 
+    {
         self::$countSql++;
         self::$queriesSql[] = $sql;
         $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute($params);
+        $ok = $stmt->execute($params);
+        $count = $stmt->rowCount();
+        return $ok;
     }
 
 

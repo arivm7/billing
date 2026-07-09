@@ -259,9 +259,8 @@ class Lang {
                         ? self::parse_i18n_string($key)
                         : ($default ? $default : $key))
                 );
-        if ($param) {
-            return \sprintf($str, $param);
-        }
+        if ($param !== null) { $str = sprintf($str, $param); }
+//        $str =  str_replace(' ', '&nbsp;', $str);
         return  h($str);
     }
 

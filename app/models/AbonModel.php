@@ -309,9 +309,9 @@ class AbonModel extends UserModel {
 
 
 
-    function set_abon_pause(int $abon_id): string {
+    function set_abon_pause_(int $abon_id): string {
         $pa_list = $this->get_pa_by_abon_id($abon_id, active: 1);
-        $ok      = false;
+        $ok      = true;
         $first   = true;
         $log_str = "Постановка на паузу прайсовых фрагментов для абонента [".$abon_id."]...\n";
         foreach ($pa_list as $pa) {
@@ -332,9 +332,6 @@ class AbonModel extends UserModel {
                 }
                 $log_str .= ""
                     . "[tp_id]=>".$pa['net_router_id'].", "
-                    . ($tp[TP::F_ACTIVE]     == 1 ? "A" : "-" )
-                    . ($tp[TP::F_DELETED]    == 1 ? "X" : "-" )
-                    . ($tp[TP::F_IS_MANAGED] == 1 ? "M" : "-" ).", "
                     . "[pa_id]=>".$pa[PA::F_ID].", "
                     . "[net_ip]=>".$pa[PA::F_NET_IP].", "
                     . "[start]=>".$pa[PA::F_DATE_START_STR].", "
@@ -348,11 +345,60 @@ class AbonModel extends UserModel {
                 }
                 $log_str .= ($ok ? "Oк" : "ОШИБКА") . "\n" . $log_enable . "\n";
             }
+            if (!$ok) {
+                break;
+            }
         }
         if ($first) {
             $log_str .= "Нет активных прайсов на управляемых ТП. Действий нет.\n";
         }
         return $log_str;
+    }
+
+
+
+    function set_abon_pause(int $abon_id, string &$log = ''): bool {
+        $pa_list = $this->get_pa_by_abon_id($abon_id, active: 1);
+        $ok      = true;
+        $first   = true;
+        $log = "Постановка на паузу прайсовых фрагментов для абонента [".$abon_id."]...\n";
+        foreach ($pa_list as $pa) {
+            $pa[PA::F_DATE_START_STR] = date('Y-m-d', $pa[PA::F_DATE_START]);
+            $pa[PA::F_DATE_END_STR] = date('Y-m-d', $pa[PA::F_DATE_END]);
+            $tp = $this->get_tp($pa[PA::F_TP_ID]);
+            if  (
+                    (get_price_apply_age($pa) === PAStatus::CURRENT) &&
+                    ($tp[TP::F_ACTIVE]     == 1) &&
+                    ($tp[TP::F_DELETED]    == 0) &&
+                    ($tp[TP::F_IS_MANAGED] == 1)
+                )
+            {
+                if($first) {
+                    $first = false;
+                } else {
+                    $log .= "\n";
+                }
+                $log .= ""
+                    . "[tp_id]=>".$pa['net_router_id'].", "
+                    . "[pa_id]=>".$pa[PA::F_ID].", "
+                    . "[net_ip]=>".$pa[PA::F_NET_IP].", "
+                    . "[start]=>".$pa[PA::F_DATE_START_STR].", "
+                    . "[end]=>".$pa[PA::F_DATE_END_STR]."; ==> ";
+
+                $log_from_controller = '';
+                if (PaController::enable(pa: $pa, ena: 0, log: $log_from_controller) === false) {
+                    $ok = false;
+                    $log .= "ОШИБКА" . "\n";
+                } else {
+                    $log .= "Oк" . "\n";
+                }
+                $log .= rtrim($log_from_controller, "\n");
+            }
+        }
+        if ($first) {
+            $log .= "Нет активных прайсов на управляемых ТП. Действий нет.\n";
+        }
+        return $ok;
     }
 
 
@@ -877,102 +923,9 @@ class AbonModel extends UserModel {
 
 
 
-    function get_pa(int $pa_id):array {
-        self::$errors = [];
-        if ($this->validate_id(PA::TABLE, $pa_id, PA::F_ID)) {
-            return $this->get_row_by_id(PA::TABLE, $pa_id, PA::F_ID);
-        } else {
-            self::$errors[] = 'get_pa: ' . __('Invalid price fragment ID | Не верный ID прайсового фрагмента | Не вірний ID прайсового фрагмента') . ' [' . $pa_id . ']';
-            return [];
-        }
-    }
-
-
-
-    function get_srvice_type_by_pa(array $pa): ServiceType
-    {
-        if ($pa[PA::F_NET_IP_SERVICE]) {
-            return ServiceType::INTERNET;
-        } else {
-            return ServiceType::OTHER;
-        }
-    }
-
 
     function get_abons_by_uid(int $user_id): array {
         return $this->get_rows_by_field(table: Abon::TABLE, field_name: Abon::F_USER_ID, field_value: $user_id, order_by: Abon::F_DATE_JOIN . ' DESC');
-    }
-
-
-
-    /**
-     * Возвращает список активных прайсовых фрагментов на указанной ТП
-     * @param int $tp_id -- ID ТП
-     * @param PAStatus $PA_AGE
-     * @return array массив прайсовых фрагментов
-     */
-    function get_prices_apply_by_tp(int $tp_id, PAStatus $PA_AGE = PAStatus::ACTIVE_TODAY): array {
-        $pa_list_raw = $this-> get_rows_by_field(
-                            table: PA::TABLE,
-                            field_name: PA::F_TP_ID,
-                            field_value: $tp_id,
-                            order_by: PA::F_ABON_ID . " ASC");
-        if (is_null($PA_AGE)) {
-            return $pa_list_raw;
-        } else {
-            $pa_list = array();
-            foreach ($pa_list_raw as $pa_one) {
-                if ($PA_AGE->value & get_price_apply_age($pa_one)->value) {
-                    $pa_list[] = $pa_one;
-                }
-            }
-            return $pa_list;
-        }
-    }
-
-
-
-    /**
-     * Таблица кэширования прайсовых фрагментов для абонентов
-     */
-    protected static $CACHE_PA_BY_ABON = array();
-
-
-    /**
-     * Возвращает из кэша self::CACHE_PA_BY_ABON[$abon_id] все прикрепленные прайсовые фрагменты
-     * Если их там нет, то вносит их туда из базы и возвращает.
-     * @global array self::CACHE_PA_BY_ABON -- Кэш-таблица
-     * @param int $abon_id -- ID абоненета
-     * @return array -- список прикрепленных прайсовых фрагментов
-     */
-    function get_prices_apply_by_abon($abon_id): array {
-
-        if (!array_key_exists($abon_id, self::$CACHE_PA_BY_ABON)) {
-            //echo "CACHE_PA_BY_ABON - reading...<br>";
-            $SQL = "SELECT
-                prices_apply.*,
-                prices_apply.id                                                    AS prices_apply_id,
-                DATE_FORMAT(from_unixtime(prices_apply.date_start),'%Y-%m-%d')     AS date_start_str,
-                DATE_FORMAT(from_unixtime(prices_apply.date_end),  '%Y-%m-%d')     AS date_end_str,
-                DATE_FORMAT(from_unixtime(prices_apply.cost_date), '%Y-%m-%d')     AS cost_date_str,
-                DATE_FORMAT(from_unixtime(prices_apply.modified_date), '%Y-%m-%d') AS modified_date_str,
-                prices.title                                                       AS ".PA::F_PRICE_TITLE.",
-                prices.pay_per_day                                                 AS ".PA::F_PRICE_PPD.",
-                prices.pay_per_month                                               AS ".PA::F_PRICE_PPM.",
-                prices.description                                                 AS ".PA::F_PRICE_DESCR.",
-                tp_list.title                                                      AS ".PA::FF_TP_TITLE.",
-                tp_list.status                                                     AS ".PA::FF_TP_STATUS.",
-                tp_list.deleted                                                    AS ".PA::FF_TP_DELETED.",
-                tp_list.is_managed                                                 AS ".PA::FF_TP_IS_MANAGED."
-                FROM prices_apply
-                    LEFT JOIN billing.prices  ON prices_apply.prices_id     = prices.id
-                    LEFT JOIN billing.tp_list ON prices_apply.net_router_id = tp_list.id
-                WHERE abon_id =".$abon_id."
-                ORDER BY prices_apply.date_start ASC";
-            $prices = $this->get_rows_by_sql($SQL);
-            self::$CACHE_PA_BY_ABON[$abon_id] = $prices;
-        }
-        return self::$CACHE_PA_BY_ABON[$abon_id];
     }
 
 
@@ -1385,8 +1338,8 @@ class AbonModel extends UserModel {
     }
 
 
-    function get_abon_rest(int $abon_id, int $today = NA): array|null {
-        if ($today == NA) { $today = time(); }
+    function get_abon_rest(int $abon_id, ?int $today = null): array|null {
+        $today ??= time();
         $rest = $this->get_row_by_id(AbonRest::TABLE, $abon_id, AbonRest::F_ABON_ID);
         if ($rest) { 
             update_rest_fields($rest, $today);
@@ -1404,9 +1357,7 @@ class AbonModel extends UserModel {
      * Через Сотрудники - Предприятия - ППП
      */
     function is_my_ppp(int $ppp_id, ?int $user_id = null): bool { 
-        if (empty($user_id)) {
-            $user_id = App::get_user_id();
-        }
+        $user_id ??= App::get_user_id();
         return 
             1 === $this->get_count_by_sql(
                     sql: "SELECT * FROM `".Ppp::TABLE."` WHERE "
@@ -1500,10 +1451,10 @@ class AbonModel extends UserModel {
         if ($id === 0) {
             return $this->get_abon_0();
         }
-        if ($this->validate_id(Abon::TABLE, $id, Abon::F_ID)) {
+        if ($this->validate_id_abon($id)) {
             return $this->get_row_by_id(Abon::TABLE, $id, Abon::F_ID);
         } else {
-            throw new \Exception("get_abon(int $id) -- нет такого абонента");
+            throw new \Exception("get_abon($id): " . __('ID is not correct | ID не верен | ID не вірний'));
         }
     }
 
@@ -1588,7 +1539,7 @@ class AbonModel extends UserModel {
      * @return string -- Строка с html-кодом
      */
     function url_abon_form(int $abon_id): string {
-        if (is_null($abon_id) || $abon_id == 0 || !$this->validate_id(Abon::TABLE, $abon_id)) { return $abon_id; }
+        if (is_null($abon_id) || $abon_id == 0 || !$this->validate_id_abon($abon_id)) { return $abon_id; }
         $c = $this->get_html_chek_payer(aid: $abon_id);
         return "<nobr>" . a(href: Abon::URI_VIEW . "/{$abon_id}", text: "{$abon_id}", title: $this->get_abon_address($abon_id), target: "_blank") . "&nbsp;{$c}</nobr>";
     }
@@ -1598,6 +1549,137 @@ class AbonModel extends UserModel {
     function get_invoice(int $id): array {
         return $this->get_row_by_id(Invoice::TABLE, $id, Invoice::F_ID);
     }
+
+
+
+    /**
+     * Выполняет поиск счетов по указанным полям фильтра.
+     *
+     * Метод динамически формирует SQL-запрос на основе переданного массива
+     * фильтрации. В поиск включаются только поля, присутствующие в массиве
+     * `$filter` и имеющие непустые значения.
+     *
+     * Тип сравнения зависит от типа поля:
+     * - поля из Invoice::STR_TYPES ищутся через LIKE '%значение%';
+     * - поля из Invoice::INT_TYPES сравниваются как целые числа;
+     * - поля из Invoice::FLOAT_TYPES сравниваются с точностью до копеек
+     *   (значение умножается на 100 и округляется);
+     * - поля из Invoice::FLAGS сравниваются как булевы флаги (0/1).
+     *
+     * Для защиты от ошибочных запросов каждое поле фильтра проверяется на
+     * наличие в списке Invoice::SEARSH_FIELDS. Если обнаружено неизвестное
+     * поле или поле отсутствует в массивах типов, метод завершает работу,
+     * записывает сообщение об ошибке в self::$errors и возвращает null.
+     *
+     * Результат сортируется по:
+     *   1. ID абонента (по возрастанию);
+     *   2. Номеру счёта (по убыванию).
+     *
+     * Пример:
+     *
+     * <code>
+     * $list = $model->find_invoices([
+     *     Invoice::F_ABON_ID        => 12345,
+     *     Invoice::F_FIRM_PAYER_STR => 'Ромашка',
+     *     Invoice::F_IS_PAID        => 1,
+     * ]);
+     * </code>
+     *
+     * @param array $filter Ассоциативный массив условий поиска
+     *                      [поле => значение].
+     *
+     * @return array|null Массив найденных счетов либо null при ошибке.
+     */
+    public function find_invoices(array $filter): array|null
+    {
+        $sql = "SELECT * FROM `" . Invoice::TABLE . "` WHERE 1 ";
+        $params = [];
+        foreach ($filter as $field => $value) {
+
+            if (!in_array($field, Invoice::SEARCH_FIELDS, true)) {
+                self::$errors[] = __('Invalid filter field | Не допустимое поле фильтра | Не допустиме поле фільтра') . ": {$field}";
+                return null;
+            }
+            
+            if ($value === '' || $value === null) {
+                continue;
+            }
+            
+            if (in_array($field, Invoice::FLAGS, true)) {
+                $sql .= " AND `{$field}` = :{$field}";
+                $params[$field] = (int)(bool)$value;
+            } elseif (in_array($field, Invoice::INT_TYPES, true)) {
+                $sql .= " AND `{$field}` = :{$field}";
+                $params[$field] = (int)$value;
+            } elseif (in_array($field, Invoice::FLOAT_TYPES, true)) {
+                $sql .= " AND CAST(ROUND(`{$field}` * 100, 0) AS SIGNED) = :{$field}";
+                $params[$field] = (int)round($value * 100);
+            } elseif (in_array($field, Invoice::STR_TYPES, true)) {
+                $sql .= " AND `{$field}` LIKE :{$field}";
+                $params[$field] = "%{$value}%";
+            } else {
+                throw new \Exception('find_invoices: ' . __('Field missing from field type arrays | Поле отсутствует в массивах типов полей | Поле відсутнє у масивах типів полів') . ": {$field}");
+            }
+
+        }
+        $sql .= " ORDER BY `" . Invoice::F_ABON_ID . "` ASC, `" . Invoice::F_INV_NO . "` DESC";
+        return $this->query($sql, $params);
+    }
+
+
+
+    /**
+     * Поиск платежей по набору полей.
+     *
+     * В массиве $filter указываются поля таблицы payments и их значения.
+     * Поля со значением null или пустой строкой не участвуют в поиске.
+     *
+     * Типы сравнения:
+     * - FLAG_FIELDS  → точное сравнение после приведения к bool/int
+     * - INT_FIELDS   → точное числовое сравнение
+     * - FLOAT_FIELDS → сравнение с точностью до копеек
+     * - TEXT_FIELDS  → поиск через LIKE
+     *
+     * Разрешены только поля из Pay::SEARCH_FIELDS.
+     *
+     * @param array $filter Массив фильтров вида [поле => значение]
+     *
+     * @return array|null
+     */
+    public function find_payments(array $filter): array|null
+    {
+        $sql = "SELECT * FROM `" . Pay::TABLE . "` WHERE 1 ";
+        $params = [];
+        foreach ($filter as $field => $value) {
+
+            if (!in_array($field, Pay::SEARCH_FIELDS, true)) {
+                self::$errors[] = __('Invalid filter field | Не допустимое поле фильтра | Не допустиме поле фільтра') . ": {$field}";
+                return null;
+            }
+
+            if ($value === '' || $value === null) {
+                continue;
+            }
+
+            if (in_array($field, Pay::FLAG_FIELDS, true)) {
+                $sql .= " AND `{$field}` = :{$field}";
+                $params[$field] = (int)(bool)$value;
+            } elseif (in_array($field, Pay::INT_FIELDS, true)) {
+                $sql .= " AND `{$field}` = :{$field}";
+                $params[$field] = (int)$value;
+            } elseif (in_array($field, Pay::FLOAT_FIELDS, true)) {
+                $sql .= " AND CAST(ROUND(`{$field}` * 100, 0) AS SIGNED) = :{$field}";
+                $params[$field] = (int)round((float)$value * 100);
+            } elseif (in_array($field, Pay::TEXT_FIELDS, true)) {
+                $sql .= " AND `{$field}` LIKE :{$field}";
+                $params[$field] = "%{$value}%";
+            } else {
+                throw new \Exception('find_payments: ' . __('Field missing from field type arrays | Поле отсутствует в массивах типов полей | Поле відсутнє у масивах типів полів') . ": {$field}");
+            }
+        }
+        $sql .= " ORDER BY `" . Pay::F_DATE . "` DESC, `" . Pay::F_ID . "` DESC";
+        return $this->query($sql, $params);
+    }    
 
 
 
@@ -1983,22 +2065,24 @@ class AbonModel extends UserModel {
 
         MsgQueue::msg(MsgType::INFO, "price_apply_auto_ON($aid):");
 
-        if(!$this->validate_abon($aid)) {
-            MsgQueue::msg(MsgType::INFO, "[$aid] - " . __('Not a subscriber. No action | Не абонент. Действий нет | Чи не абонент. Дій немає'));
+        if(!$this->validate_id_abon($aid)) {
+            MsgQueue::msg(MsgType::INFO, "[$aid] - " . '<span class="text-danger">' . __('Not a subscriber | Не абонент | Не абонент') . '</span>' . '. ' 
+                    . __('No action | Действий нет | Дій немає'));
             MsgQueue::msg(MsgType::INFO, __('Verification required | Требуется проверка | Потрібна перевірка'));
             return;
         }
             
         if($this->price_apply_has_active($aid)) {
             // есть активные прайсы
-            MsgQueue::msg(MsgType::INFO, 'There are active prices. No action | Есть активные прайсы. Действий нет | Є активні прайси. Дій немає');
+            MsgQueue::msg(MsgType::INFO, __('There are active prices. No action | Есть активные прайсы. Действий нет | Є активні прайси. Дій немає'));
             return;
         }
             
         MsgQueue::msg(MsgType::INFO, __('No active prices | Нет активных прайсов | Немає активних прайсів'));
         
         if (!$this->is_payer($aid)) {
-            MsgQueue::msg(MsgType::INFO, "[$aid] - " . __('NOT the payer. No action | НЕ плательщик. Действий нет | НЕ платник. Дій немає'));
+            MsgQueue::msg(MsgType::INFO, "[$aid] - " . '<span class="text-danger">' . __('NOT the payer | НЕ плательщик | НЕ платник') . '</span>' . '. ' 
+                    . __('No action | Действий нет | Дій немає'));
             MsgQueue::msg(MsgType::INFO, __('Verification required | Требуется проверка | Потрібна перевірка'));
             return;
         }
@@ -2008,14 +2092,15 @@ class AbonModel extends UserModel {
         $pa_list = $this->get_pa_off_last_by_abon_id($aid);
 
         if(count($pa_list) == 0) {
-            MsgQueue::msg(MsgType::INFO, __('There are no disabled price fragments. No action | Отключённых прайсовых фрагментов нет. Действий нет | Відключених прайсових фрагментів немає. Дій немає'));
+            MsgQueue::msg(MsgType::INFO, __('There are no disabled price fragments | Отключённых прайсовых фрагментов нет | Відключених прайсових фрагментів немає') . '. ' 
+                    . __('No action | Действий нет | Дій немає'));
             return;
         }
         
         $rest = $this->get_abon_rest($aid);
         $unpaused_days = App::get_config('pa_unpaused_days'); // количество дней интервала автоактивации
         $base_date_end = $pa_list[0][PA::F_DATE_END]; // дата отключения самого последнего прайса
-        $between_days = get_between_days(date_only($pa_list[0][PA::F_DATE_END]), date('Y-m-d'));
+        $between_days = get_between_days(date_only($pa_list[0][PA::F_DATE_END]), date_only(time()));
 
         /**
          * Проверка: не слишком ли давно отключен прайс.
@@ -2029,7 +2114,6 @@ class AbonModel extends UserModel {
 
         MsgQueue::msg(MsgType::INFO, "Дата отключения: ".date("Y-m-d", $base_date_end) . "; дней с отключения: ".$between_days."; интервал автоактивации: ".$unpaused_days." дней.");
 
-//        for ($i = 0; $i < count($pa_list); $i++) {
         foreach ($pa_list as $pa_item) {
 
             if ($base_date_end != $pa_item[PA::F_DATE_END]) {
@@ -2068,150 +2152,26 @@ class AbonModel extends UserModel {
 
 
 
-//    /**
-//     * Автоматическое включение price_apply для абонента
-//     * @param int $aid
-//     */
-//    function price_apply_auto_ON_(int $aid) {
-//
-//        MsgQueue::msg(MsgType::INFO, "price_apply_auto_ON($aid):");
-//
-//        if($this->validate_id(Abon::TABLE, $aid)) {
-//            if(!$this->price_apply_has_active($aid)) {
-//                MsgQueue::msg(MsgType::INFO, "нет активных прайсов.");
-//                if ($this->is_payer($aid)) {
-//                    MsgQueue::msg(MsgType::INFO, "Попытка включения последних прайсов:");
-//
-//                    $pa_list = $this->get_pa_off_last_by_abon_id($aid);
-//
-//                    if(count($pa_list) > 0) {
-//                        $rest = $this->get_abon_rest($aid);
-//                        $unpaused_days = App::get_config('pa_unpaused_days'); // количество дней интервала автоактивации
-//                        $base_date_end = $pa_list[0][PA::F_DATE_END]; // дата отключения самого последнего прайса
-//                        $between_days = get_between_days(date_only($pa_list[0][PA::F_DATE_END]), date('Y-m-d'));
-//
-//                        /**
-//                         * Проверка: не слишком ли давно отключен прайс.
-//                         * Если слишком давно, то автоактивация не производится
-//                         */
-//                        if($between_days > App::get_config('pa_no_reactivate_days')) {
-//                            MsgQueue::msg(MsgType::INFO, "Прайсовый фрагмент отключен очень давно. Автоактивация не производится.");
-//                            return;
-//                        }
-//
-//                        MsgQueue::msg(MsgType::INFO, "Дата отключения: ".date("Y-m-d", $base_date_end) . "; дней с отключения: ".$between_days."; интервал автоактивации: ".$unpaused_days." дней.");
-//
-//                        for ($i = 0; $i < count($pa_list); $i++) {
-//
-//                            if($base_date_end == $pa_list[$i][PA::F_DATE_END]) {
-//
-//                                MsgQueue::msg(MsgType::INFO, "активируем прайс");
-//
-//                                if ($rest[AbonRest::F_REST] > 0) {
-//
-//                                    MsgQueue::msg(MsgType::INFO, "Баланс положительный. Включаем прайс.");
-//
-//                                    /**
-//                                     * Включение в биллинге
-//                                     */
-//
-//                                    /**
-//                                     * Решение о том, как включать прайс:
-//                                     * 1. Если отключен недавно (в пределах unpaused_days), то просто реактивируем
-//                                     * 2. Если отключен давно, то клонируем и активируем
-//                                     */
-//                                    if ($unpaused_days > 0 && $between_days >= 0 && $between_days < $unpaused_days) { 
-//
-//                                        MsgQueue::msg(MsgType::INFO, "Отключен недавно. Просто реактивируем.");
-//                                        if($this->set_field_value(
-//                                                table_name: PA::TABLE, 
-//                                                field_id: PA::F_ID, 
-//                                                value_id: $pa_list[$i][PA::F_ID], 
-//                                                field: PA::F_DATE_END, 
-//                                                value: null, 
-//                                                update_access_time: false)) 
-//                                        {
-//                                            MsgQueue::msg(MsgType::INFO, "В биллинге включили.");
-//                                        } else {
-//                                            MsgQueue::msg(MsgType::INFO, "ОШИБКА: В биллинге не включили");
-//                                            MsgQueue::msg(MsgType::ERROR, "ОШИБКА: В биллинге не включили");
-//                                        }
-//
-//                                    } else {
-//                                        MsgQueue::msg(MsgType::INFO, "Отключен давно. Клонируем и активируем.");
-//                                        $pa_new_id = PaController::clone(pa: $pa_list[$i]);
-//                                        if ($pa_new_id === false) {
-//                                            MsgQueue::msg(MsgType::INFO, "ОШИБКА: В биллинге не клонировали и не включили");
-//                                            MsgQueue::msg(MsgType::ERROR, "ОШИБКА: В биллинге не клонировали и не включили");
-//                                        } else {
-//                                            MsgQueue::msg(MsgType::INFO, "В биллинге клонировали и включили. Новый PA_ID: ".$pa_new_id);
-//                                        }
-//                                    }
-//
-//                                    /**
-//                                     * Включение на ТП
-//                                     */
-//                                    if($this->tp_has_managed($pa_list[$i][PA::F_TP_ID])) {
-//                                        MsgQueue::msg(MsgType::INFO, "ТП управляемая.");
-//                                        if (Api::set_mik_abon_ip(Api::tp_connector($pa_list[$i][PA::F_TP_ID]), $pa_list[$i][PA::F_NET_IP], 1, true)) {
-//                                            MsgQueue::msg(MsgType::INFO, "На ТП включили.");
-//                                        } else {
-//                                            MsgQueue::msg(MsgType::INFO, "ОШИБКА: На ТП включить не удалось");
-//                                            MsgQueue::msg(MsgType::ERROR, "ОШИБКА: На ТП включить не удалось");
-//                                        }
-//                                        MsgQueue::msg(MsgType::INFO, "... включили.");
-//                                    } else {
-//                                        MsgQueue::msg(MsgType::INFO, "ТП не управляемая.");
-//                                    }
-//
-//                                } else {
-//                                    MsgQueue::msg(MsgType::INFO, "Баланс отрицательный. Прайс не включаем." );
-//                                }
-//
-//                            } else {
-//                                MsgQueue::msg(MsgType::INFO, "Дальше прайсы не активируем, поскольку дата другая.");
-//                                return;
-//                            }
-//                        }
-//                    } else {
-//                        MsgQueue::msg(MsgType::INFO, "Отключённых прайсовых фрагментов нет. Действий нет.");
-//                    }
-//
-//                } else {
-//                    MsgQueue::msg(MsgType::INFO, "[$aid] - НЕ плательщик. Действий нет.");
-//                    MsgQueue::msg(MsgType::INFO, "Требуется проверка.");
-//                }
-//
-//            } else {
-//                // есть активные прайсы
-//                MsgQueue::msg(MsgType::INFO, "Есть активные прайсы. Действий нет.");
-//            }
-//        } else {
-//            MsgQueue::msg(MsgType::INFO, "[$aid] - Не абонент. Действий нет.");
-//            MsgQueue::msg(MsgType::INFO, "Требуется проверка.");
-//        }
-//    }
-
-
-
-    function price_apply_has_active($aid) {
-        $sql = "SELECT
-                    id
-                FROM
-                    prices_apply
-                WHERE
-                    (abon_id = $aid)
-                AND
+    function price_apply_has_active($aid) 
+    {
+        $sql = 
+            "SELECT
+                id
+            FROM
+                prices_apply
+            WHERE
+                (abon_id = $aid)
+            AND
+            (
                 (
-                    (
-                        (date_start < UNIX_TIMESTAMP()) AND
-                        (isnull(date_end))
-                    )
-                    OR
-                    (
-                        date_end > UNIX_TIMESTAMP()
-                    )
-                )";
+                    (date_start < UNIX_TIMESTAMP()) AND
+                    (isnull(date_end))
+                )
+                OR
+                (
+                    date_end > UNIX_TIMESTAMP()
+                )
+            )";
 
         $count = $this->get_count_by_sql($sql);
         if ($count !== false) {
@@ -2393,9 +2353,17 @@ class AbonModel extends UserModel {
     }
 
 
-    function validate_abon(?int $abon_id): bool {
+    
+    function validate_id_abon(?int $abon_id): bool {
         if (empty($abon_id)) { return false; }
         return $this->validate_id(Abon::TABLE, $abon_id, Abon::F_ID);
+    }
+
+    
+    
+    function validate_id_invoice(?int $id): bool {
+        if (empty($id)) { return false; }
+        return $this->validate_id(Invoice::TABLE, $id, Invoice::F_ID);
     }
 
 }

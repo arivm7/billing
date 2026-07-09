@@ -48,11 +48,11 @@ require_once DIR_LIBS . '/inc_functions.php';
  * @var array $tp_list -- список ТП, только названия
  */
 
-if (($arp_resolve[Dev::F_ARP_RESOLV_STATUS] ?? null) !== Dev::ARP_STATUS_OK_SINGLE) {
-    debug($arp_resolve, '$arp_resolve');    
-}
+//if (($arp_resolve[Dev::F_ARP_RESOLV_STATUS] ?? null) !== Dev::ARP_STATUS_OK_SINGLE) {
+//    debug($arp_resolve, '$arp_resolve');    
+//}
 
-$arp = $arp_resolve[Dev::F_ARP_RESOLV_FOUND][0];
+$arp = $arp_resolve[Dev::F_ARP_RESOLV_FOUND][0] ?? null;
 //$arp =  (    
 //            ($arp_resolve[Dev::F_ARP_RESOLV_STATUS] ?? null) === Dev::ARP_STATUS_OK_SINGLE 
 //            ?   $arp_resolve[Dev::F_ARP_RESOLV_FOUND][0]
@@ -73,27 +73,32 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
 <div class="col-12 col-md-10 col-lg-8">
     <div class="card mb-4 w-100 min-w-700">
         <div class="card-header">
-            <h2 class="fs-4">
-                <?php if (isset($item[PA::F_ID])) : ?> 
-                    <h3><?= __('Edit price fragment | Редактировать прайсовый фрагмент | Редагувати прайсовий фрагмент') ?> <span class="text-secondary">[<?= $pa[PA::F_ID] ?>]</span></h3>
-                    <h5 class="text-secondary fs-6">
-                        <span title="User ID"><?= num_len($user[User::F_ID], 6); ?></span> :: 
-                        <span title="User Name"><?= h($user[User::F_NAME_SHORT]); ?></span>
-                    </h5>
-                    <h5 class="text-secondary fs-6">
-                        <span title="Абон ID"><?= num_len($abon[Abon::F_ID], 6); ?></span> :: 
-                        <span title="Abon Address"><?= h($abon[Abon::F_ADDRESS]); ?>
-                    </h5>
-                    <h5 class="text-secondary fs-6">
-                        <span><?= __('Price fragment | Прайсовый фрагмент | Прайсовий фрагмент') ?>: </span>
-                        <span title="PA ID" class="fw-light"><?= $item[PA::F_ID]; ?></span> :: 
-                        <span title="PA net name" class="fw-bolder"><?= $pa[PA::F_NET_NAME] ?></span>
-                    </h5>
-                <?php else: ?>
-                    <?= __('New price fragment | Новый прайсовый фрагмент | Новий прайсовий фрагмент'); ?>
-                    <h5 class="text-secondary"><span title="User ID"><?= $user[User::F_ID] ?></span> :: <span title="User Name"><?= h($user[User::F_NAME_SHORT]); ?></span> :: <span title="Abon Address"><?= h($abon(Abon::F_ADDRESS)); ?></h5>
-                <?php endif; ?>
-            </h2>
+            <div class='d-flex justify-content-between align-items-start'>
+                <div class="mt-0">
+                    <?php if (isset($item[PA::F_ID])) : ?> 
+                        <h3><?= __('Edit price fragment | Редактировать прайсовый фрагмент | Редагувати прайсовий фрагмент') ?> <span class="text-secondary">[<?= $pa[PA::F_ID] ?>]</span></h3>
+                        <h5 class="text-secondary fs-6">
+                            <span title="User ID"><?= num_len($user[User::F_ID], 6); ?></span> :: 
+                            <span title="User Name"><?= h($user[User::F_NAME_SHORT]); ?></span>
+                        </h5>
+                        <h5 class="text-secondary fs-6">
+                            <span title="Абон ID"><?= num_len($abon[Abon::F_ID], 6); ?></span> :: 
+                            <span title="Abon Address"><?= h($abon[Abon::F_ADDRESS]); ?>
+                        </h5>
+                        <h5 class="text-secondary fs-6">
+                            <span><?= __('Price fragment | Прайсовый фрагмент | Прайсовий фрагмент') ?>: </span>
+                            <span title="PA ID" class="fw-light"><?= $item[PA::F_ID]; ?></span> :: 
+                            <span title="PA net name" class="fw-bolder"><?= $pa[PA::F_NET_NAME] ?></span>
+                        </h5>
+                    <?php else: ?>
+                        <?= __('New price fragment | Новый прайсовый фрагмент | Новий прайсовий фрагмент'); ?>
+                        <h5 class="text-secondary"><span title="User ID"><?= $user[User::F_ID] ?></span> :: <span title="User Name"><?= h($user[User::F_NAME_SHORT]); ?></span> :: <span title="Abon Address"><?= h($abon(Abon::F_ADDRESS)); ?></h5>
+                    <?php endif; ?>
+                </div>
+                <div class="mt-2">
+                    <a class="btn btn-outline-info btn-sm ms-1" href="<?=Abon::URI_VIEW;?>/<?=$item[PA::F_ABON_ID];?>"><span class="fw-bolder">🅐</span> <?= __('To the subscriber card | В карточку абонента | У картку абонента'); ?></a>
+                </div>
+            </div>
         </div>
         <form action="" method="post">
         <div class="card-body">
@@ -178,7 +183,11 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
                         <div class='col-8 d-flex align-items-center justify-content-end'>
                             <?php /*if ($item[PA::F_NET_IP_SERVICE] && !$item[PA::F_CLOSED] && $tp[TP::F_STATUS] && $tp[TP::F_IS_MANAGED]) :*/ ?>
                             <?php if (!$item[PA::F_CLOSED] && $item[PA::F_NET_IP_SERVICE]) : ?>
-                            <!-- Статус IP-MAC из ARP-таблицы микротика -->
+                            <!--
+                            
+                                Статус IP-MAC из ARP-таблицы микротика
+                            
+                            -->
                             <span class="badge text-bg-info mt-3 fs-6">
                                 <?php if ($tp[TP::F_IS_MANAGED]) : ?>
                                     <?= get_html_abon_ip_status($abon_ip_on); ?>&nbsp;|&nbsp;
@@ -220,7 +229,7 @@ if (isset($_SESSION[SessionFields::FORM_DATA])) {
                             inputRow(label: __('IP address | IP-адрес | IP-адреса'), post_rec: PA::POST_REC, name: 'net_ip', value: $item['net_ip'] ?? '', label_col: 12, input_col: 12, options: "class='col-3'");
                             inputRow(label: __('Network mask | Маска сети | Маска мережі'), post_rec: PA::POST_REC, name: 'net_mask', value: $item['net_mask'] ?? '', label_col: 12, input_col: 12, options: "class='col-3'");
                             inputRow(label: __('Gateway | Шлюз | Шлюз'), post_rec: PA::POST_REC, name: 'net_gateway', value: $item['net_gateway'] ?? '', label_col: 12, input_col: 12, options: "class='col-3'");
-                            checkboxRow(label: __('IP in trusted | IP в trusted | IP у trusted'), post_rec: PA::POST_REC, name: 'net_ip_trusted', checked: !empty($item['net_ip_trusted']), label_col: 12, input_col: 12, options: "class='col-3'");
+                            checkboxRow(label: __('IP in TRUSTED | IP в TRUSTED | IP у TRUSTED'), post_rec: PA::POST_REC, name: 'net_ip_trusted', checked: !empty($item['net_ip_trusted']), label_col: 12, input_col: 12, options: "class='col-3'", title: 'title="IP адрес в таблице `Доверенных` -- не проверяется на счётчиках флуда"');
                             ?>
                         </div>
                         <div class='mb-1 row'>

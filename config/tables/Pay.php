@@ -128,11 +128,15 @@ class Pay {
 
     public const INT_FIELDS = [
         self::F_ID,             // ID платежа в биллинге
-        self::F_DATE,
         self::F_AGENT_ID,       // ID пользователя, кто внёс запись
         self::F_ABON_ID,        // Абонент, на якого зараховується платіж
+        self::F_DATE,
         self::F_TYPE_ID,
         self::F_PPP_ID,
+        self::F_CREATION_DATE,
+        self::F_CREATION_UID,
+        self::F_MODIFIED_DATE,
+        self::F_MODIFIED_UID,
     ];
 
     public const TEXT_FIELDS = [
@@ -141,8 +145,40 @@ class Pay {
         self::F_DESCRIPTION,    // Описание платежа
     ];
 
-    
+    public const FLOAT_FIELDS = [
+        self::F_PAY_FAKT,
+        self::F_PAY_ACNT,
+        self::F_REST,
+    ];
 
+    public const FLAG_FIELDS = [
+        // пока нет. Будет добавлено поле VERIFIED
+    ];
+
+    public const SEARCH_FIELDS = [
+        self::F_ID,
+        self::F_AGENT_ID,
+        self::F_ABON_ID,
+        self::F_PAY_FAKT,
+        self::F_PAY_ACNT,
+        self::F_DATE,
+        self::F_REST,
+        self::F_BANK_NO,
+        self::F_TYPE_ID,
+        self::F_PPP_ID,
+        self::F_DESCRIPTION,
+        self::F_CREATION_DATE,
+        self::F_CREATION_UID,
+        self::F_MODIFIED_DATE,
+        self::F_MODIFIED_UID,
+        
+    ];
+   
+    
+    
+    /**
+     * Поля, при изменении которых нужно пересчитывать остатки
+     */
     public const RECALC_FIELDS = [
         self::F_ABON_ID,
         self::F_PAY_FAKT,
@@ -150,7 +186,7 @@ class Pay {
     ];
 
 
-
+    
     /**
      * Описание полей таблицы платежей
      */

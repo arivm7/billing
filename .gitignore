@@ -19,6 +19,7 @@ dcjqaccordion
 config/config_db.php
 config/config_email.php
 config/ip_acl.php
+config/config_secret.php
 .env
 .env.*
 

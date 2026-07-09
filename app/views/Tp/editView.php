@@ -74,7 +74,6 @@ $coord_label =
     . "</div>
 </div>";
 
-
 /**
  * select для выбора диапазона ID для новых абонентов
  * Данные вставляются в поля записи $tp[TP::F_ABON_ID_RANGE_START] и $tp[TP::F_ABON_ID_RANGE_END]

@@ -26,6 +26,7 @@ use config\tables\Price;
 use config\tables\TP;
 use config\tables\TSUserTp;
 use config\tables\User;
+use config\tables\PA;
 use PAStatus;
 
 require_once DIR_LIBS . '/datetime_functions.php';
@@ -580,4 +581,101 @@ class AppBaseModel extends Model
         return $ppp_type[PppType::F_TITLE[Lang::F_CODE]];
     }
 
+    
+    
+    function get_pa(int $pa_id):array {
+        self::$errors = [];
+        if ($this->validate_id(PA::TABLE, $pa_id, PA::F_ID)) {
+            return $this->get_row_by_id(PA::TABLE, $pa_id, PA::F_ID);
+        } else {
+            self::$errors[] = 'get_pa: ' . __('Invalid price fragment ID | Не верный ID прайсового фрагмента | Не вірний ID прайсового фрагмента') . ' [' . $pa_id . ']';
+            return [];
+        }
+    }
+
+
+
+    function get_srvice_type_by_pa(array $pa): ServiceType
+    {
+        if ($pa[PA::F_NET_IP_SERVICE]) {
+            return ServiceType::INTERNET;
+        } else {
+            return ServiceType::OTHER;
+        }
+    }
+
+    
+    
+    /**
+     * Возвращает список активных прайсовых фрагментов на указанной ТП
+     * @param int $tp_id -- ID ТП
+     * @param PAStatus $PA_AGE
+     * @return array массив прайсовых фрагментов
+     */
+    function get_prices_apply_by_tp(int $tp_id, PAStatus $PA_AGE = PAStatus::ACTIVE_TODAY): array {
+        $pa_list_raw = $this-> get_rows_by_field(
+                            table: PA::TABLE,
+                            field_name: PA::F_TP_ID,
+                            field_value: $tp_id,
+                            order_by: PA::F_ABON_ID . " ASC");
+        if (is_null($PA_AGE)) {
+            return $pa_list_raw;
+        } else {
+            $pa_list = array();
+            foreach ($pa_list_raw as $pa_one) {
+                if ($PA_AGE->value & get_price_apply_age($pa_one)->value) {
+                    $pa_list[] = $pa_one;
+                }
+            }
+            return $pa_list;
+        }
+    }
+
+
+
+    /**
+     * Таблица кэширования прайсовых фрагментов для абонентов
+     */
+    protected static $CACHE_PA_BY_ABON = array();
+
+    /**
+     * Возвращает из кэша self::CACHE_PA_BY_ABON[$abon_id] все прикрепленные прайсовые фрагменты
+     * Если их там нет, то вносит их туда из базы и возвращает.
+     * @global array self::CACHE_PA_BY_ABON -- Кэш-таблица
+     * @param int $abon_id -- ID абоненета
+     * @return array -- список прикрепленных прайсовых фрагментов
+     */
+    function get_prices_apply_by_abon($abon_id): array {
+
+        if (!array_key_exists($abon_id, self::$CACHE_PA_BY_ABON)) {
+            //echo "CACHE_PA_BY_ABON - reading...<br>";
+            $SQL = "SELECT
+                prices_apply.*,
+                prices_apply.id                                                    AS prices_apply_id,
+                DATE_FORMAT(from_unixtime(prices_apply.date_start),'%Y-%m-%d')     AS date_start_str,
+                DATE_FORMAT(from_unixtime(prices_apply.date_end),  '%Y-%m-%d')     AS date_end_str,
+                DATE_FORMAT(from_unixtime(prices_apply.cost_date), '%Y-%m-%d')     AS cost_date_str,
+                DATE_FORMAT(from_unixtime(prices_apply.modified_date), '%Y-%m-%d') AS modified_date_str,
+                prices.title                                                       AS ".PA::F_PRICE_TITLE.",
+                prices.pay_per_day                                                 AS ".PA::F_PRICE_PPD.",
+                prices.pay_per_month                                               AS ".PA::F_PRICE_PPM.",
+                prices.description                                                 AS ".PA::F_PRICE_DESCR.",
+                tp_list.title                                                      AS ".PA::FF_TP_TITLE.",
+                tp_list.status                                                     AS ".PA::FF_TP_STATUS.",
+                tp_list.deleted                                                    AS ".PA::FF_TP_DELETED.",
+                tp_list.is_managed                                                 AS ".PA::FF_TP_IS_MANAGED."
+                FROM prices_apply
+                    LEFT JOIN billing.prices  ON prices_apply.prices_id     = prices.id
+                    LEFT JOIN billing.tp_list ON prices_apply.net_router_id = tp_list.id
+                WHERE abon_id =".$abon_id."
+                ORDER BY prices_apply.date_start ASC";
+            $prices = $this->get_rows_by_sql($SQL);
+            self::$CACHE_PA_BY_ABON[$abon_id] = $prices;
+        }
+        return self::$CACHE_PA_BY_ABON[$abon_id];
+    }
+
+
+    
+    
 }

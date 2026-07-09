@@ -13,6 +13,14 @@ namespace config\tables;
 
 class DevAclTable {
 
+    public const URI_INDEX = '/acl-list';
+    public const URI_ADD = '/acl-list/add';
+    public const URI_EDIT = '/acl-list/edit';
+    public const URI_SAVE = '/acl-list/save';
+    public const URI_DELETE = '/acl-list/delete';
+
+    public const POST_REC = 'aclTable';
+
     public const TABLE = 'dev_acl_tables';
 
     public const F_ID = 'id';

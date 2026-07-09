@@ -13,6 +13,7 @@
 
 namespace billing\core;
 
+use billing\core\base\Model;
 use Exception;
 
 /**
@@ -122,30 +123,42 @@ class SecurityAttackGuard {
     }
 
 
-    public static function cleanupExpiredAttackEvents(): int {
+    public static function cleanup_expired_attack_events(): int|false {
         $now = time();
 
-        $sqlCount = "SELECT COUNT(*)
-                     FROM `security_attack_events` e
-                     INNER JOIN `security_attack_types` t
-                         ON t.`id` = e.`event_type_id`
-                     WHERE (? - e.`date_attack`) > t.`analytical_interval`";
+        $sqlDelete = 
+            "DELETE e
+            FROM `security_attack_events` e
+            INNER JOIN `security_attack_types` t
+                ON t.`id` = e.`event_type_id`
+            WHERE (? - e.`date_attack`) > t.`analytical_interval`";
 
-        $expiredCount = (int) self::db()->query($sqlCount, [$now], fetchCell: 0);
-
-        if ($expiredCount === 0) {
-            return 0;
+        $count = 0;
+        $ok = self::db()->execute($sqlDelete, [$now], $count);
+        if ($ok) {
+            return $count;
+        } else {
+            return false;
         }
+    }
 
-        $sqlDelete = "DELETE e
-                      FROM `security_attack_events` e
-                      INNER JOIN `security_attack_types` t
-                          ON t.`id` = e.`event_type_id`
-                      WHERE (? - e.`date_attack`) > t.`analytical_interval`";
 
-        self::db()->execute($sqlDelete, [$now]);
+    public static function cleanup_expired_blocked_ip(): int|false {
+        $model = new Model();
+        
+        $sql = 
+            "DELETE FROM `security_blocked_ip` 
+            WHERE 
+                `expires_at` IS NOT NULL
+                AND `expires_at` < UNIX_TIMESTAMP();";
 
-        return $expiredCount;
+        $count = 0;
+        $ok = $model->execute($sql, [], $count);
+        if ($ok) {
+            return $count;
+        } else {
+            return false;
+        }
     }
 
 

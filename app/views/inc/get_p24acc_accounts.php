@@ -69,7 +69,7 @@ include_once DIR_LIBS . '/functions.php';
 
 ?>
 
-<?php foreach ($accounts[P24acc::F_BALANCES] as $account): ?>
+<?php foreach (($accounts[P24acc::F_BALANCES] ?? []) as $account): ?>
 
     <div class="card mb-4 shadow-sm"  style="width: fit-content;">
 

@@ -14,12 +14,15 @@
 namespace app\controllers;
 
 use app\models\TpModel;
+use app\models\AbonModel;
 use billing\core\App;
 use billing\core\FWAbonValidator;
 use billing\core\MikrotikDevice;
 use billing\core\base\View;
 use billing\core\MsgQueue;
 use billing\core\MsgType;
+use billing\core\Api;
+use PAStatus;
 use config\FwInput;
 use config\SessionFields;
 use config\tables\DevAclList;
@@ -30,6 +33,8 @@ use config\tables\PA;
 use config\tables\TP;
 use config\tables\TSUserTp;
 use config\tables\User;
+use config\tables\Abon;
+use config\tables\Price;
 use config\Mik;
 use DataTypes;
 use DebugView;
@@ -54,35 +59,35 @@ class TpController extends AppBaseController {
 
 
     function indexAction() {
-        if (App::$auth->isAuth) {
-            if (can_view(Module::MOD_TP)) {
-                $my = $_SESSION[User::SESSION_USER_REC];
-                $tp_list = $this->db->get_tp_list(
-                        user_id: $my[User::F_ID],
-                        deleted: 0
-                );
-
-                foreach ($tp_list as &$row) {
-                    $sql = "SELECT COUNT(`".PA::F_ID."`) AS COUNT FROM `".PA::TABLE."` WHERE `".PA::F_TP_ID."`={$row[TP::F_ID]}";
-                    $row[TP::F_COUNT_PA] = $this->db->get_count_by_sql($sql);
-                }
-
-                View::setMeta(
-                        title: __('List of technical units | Список технических узлов | Список технічних вузлів')
-                    );
-                $this->setVariables([
-                        'tp_list' => $tp_list,
-                    ]);
-            } else {
-                MsgQueue::msg(MsgType::ERROR, __('Insufficient rights | Недостаточно прав | Недостатньо прав'));
-                self::log_no_rights();
-                redirect();
-            }
-        } else {
+        if (!App::$auth->isAuth) {
             MsgQueue::msg(MsgType::ERROR, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
             self::log_unauthorize();
             redirect();
         }
+        
+        if (!can_view(Module::MOD_TP)) {
+            MsgQueue::msg(MsgType::ERROR, __('Insufficient rights | Недостаточно прав | Недостатньо прав'));
+            self::log_no_rights();
+            redirect();
+        }
+            
+        $my = $_SESSION[User::SESSION_USER_REC];
+        $tp_list = $this->db->get_tp_list(
+                user_id: $my[User::F_ID],
+                deleted: 0
+        );
+
+        foreach ($tp_list as &$tp_one) {
+            $pa_list = $this->db->get_prices_apply_by_tp(tp_id: $tp_one[TP::F_ID], PA_AGE: PAStatus::ACTIVE_TODAY);
+            $tp_one[TP::F_COUNT_PA] = count($pa_list);
+        }
+
+        View::setMeta(
+                title: __('List of technical units | Список технических узлов | Список технічних вузлів')
+            );
+        $this->setVariables([
+                'tp_list' => $tp_list,
+            ]);
     }
 
 
@@ -311,50 +316,53 @@ class TpController extends AppBaseController {
 
 
     function editAction() {
-        if (App::$auth->isAuth) {
-            if (can_edit(Module::MOD_TP)) {
-                $tp_id = $this->route[F_ALIAS] ?? 0;
-                if ($tp_id) {
-                    $my = $_SESSION[User::SESSION_USER_REC];
-                    $my_tp_list = $this->db->get_my_tp_id_list();
-                    if (in_array($tp_id, $my_tp_list)) {
-                        $tp = $this->db->get_tp_raw($tp_id);
-                        $prices = $this->db->get_prices(tp_id: $tp_id);
-                        $admin_owner = $this->db->get_user($tp[TP::F_ADMIN_OWNER_ID] ?? 0);
-                        $uplink = (empty($tp[TP::F_UPLINK_ID]) ? null : $this->db->get_tp($tp[TP::F_UPLINK_ID]));
-                        $firm = ( $tp[TP::F_FIRM_ID] 
-                                    ? $this->db->get_row_by_id(table_name: Firm::TABLE, field_id: Firm::F_ID, id_value: $tp[TP::F_FIRM_ID])
-                                    : 0
-                                );
-                        $this->setVariables([
-                                'prices' => $prices,
-                                'admin_owner' => $admin_owner,
-                                'uplink' => $uplink,
-                                'firm' => $firm,
-                                'tp' => $tp,
-                                'ranges_proposed' => $this->db->get_tp_ranges_for_abon_id(),
-                            ]);
-
-                        View::setMeta(title: __('Editing technical site parameters | Редактирование параметров технической площадки | Редагування параметрів технічного майданчика'));
-
-                    } else {
-                        MsgQueue::msg(MsgType::ERROR, __('Someone else\'s technical site | Чужая техплощадка | Чужий техмайданчик'));
-                        redirect();
-                    }
-                } else {
-                    MsgQueue::msg(MsgType::ERROR, __('Technical site ID not specified | Не указан ID техплощадки | Не вказано ID техмайданчика'));
-                    redirect();
-                }
-            } else {
-                MsgQueue::msg(MsgType::ERROR, __('Insufficient rights | Недостаточно прав | Недостатньо прав'));
-                self::log_no_rights();
-                redirect();
-            }
-        } else {
+        
+        if (!App::isAuth()) {
             MsgQueue::msg(MsgType::ERROR, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
             self::log_unauthorize();
             redirect();
         }
+        
+        if (!can_edit(Module::MOD_TP)) {
+            MsgQueue::msg(MsgType::ERROR, __('Insufficient rights | Недостаточно прав | Недостатньо прав'));
+            self::log_no_rights();
+            redirect();
+        }
+
+        $tp_id = $this->route[F_ALIAS] ?? 0;
+        if (!$tp_id) {
+            MsgQueue::msg(MsgType::ERROR, __('Technical site ID not specified | Не указан ID техплощадки | Не вказано ID техмайданчика'));
+            redirect();
+        }
+        
+        $my = $_SESSION[User::SESSION_USER_REC];
+        $my_tp_list = $this->db->get_my_tp_id_list();
+
+        if (!in_array($tp_id, $my_tp_list)) {
+            MsgQueue::msg(MsgType::ERROR, __('Someone else\'s technical site | Чужая техплощадка | Чужий техмайданчик'));
+            redirect();
+        }
+        
+        $tp = $this->db->get_tp_raw($tp_id);
+        $prices = $this->db->get_prices(tp_id: $tp_id);
+        $admin_owner = $this->db->get_user($tp[TP::F_ADMIN_OWNER_ID] ?? 0);
+        $uplink = (empty($tp[TP::F_UPLINK_ID]) ? null : $this->db->get_tp($tp[TP::F_UPLINK_ID]));
+        $firm = ( $tp[TP::F_FIRM_ID] 
+                    ? $this->db->get_row_by_id(table_name: Firm::TABLE, field_id: Firm::F_ID, id_value: $tp[TP::F_FIRM_ID])
+                    : 0
+                );
+
+        $this->setVariables([
+                'prices' => $prices,
+                'admin_owner' => $admin_owner,
+                'uplink' => $uplink,
+                'firm' => $firm,
+                'tp' => $tp,
+                'ranges_proposed' => $this->db->get_tp_ranges_for_abon_id(),
+            ]);
+
+        View::setMeta(title: __('Editing technical site parameters | Редактирование параметров технической площадки | Редагування параметрів технічного майданчика'));
+
     }
 
 
@@ -422,7 +430,7 @@ class TpController extends AppBaseController {
 
         if (!empty($form['tp_id'])) {
             
-            if (!$this->db->validate_tp($form['tp_id'])) {
+            if (!$this->db->validate_id_tp($form['tp_id'])) {
                 MsgQueue::msg(MsgType::ERROR, __('Incorrect technical site ID | Не верный ID техплощадки | Не вірний ID техмайданчика'));
                 return false;
             }
@@ -1753,6 +1761,31 @@ class TpController extends AppBaseController {
 
 
 
+    /**
+     * Синхронизирует ACL-таблицу с сетевым устройством MikroTik.
+     *
+     * Получает ID технической площадки из роута ({@see F_ALIAS})
+     * и ID ACL-таблицы из GET-параметра ({@see TP::F_GET_ACL_LIST}),
+     * загружает соответствующие записи из БД и отправляет их на устройство.
+     *
+     * Требует авторизации и прав {@see Module::MOD_SECURITY}:
+     * {@see can_add()} + {@see can_del()}.
+     *
+     * Результат каждого этапа записывается в {@see MsgQueue}:
+     * - успешное подключение и описание устройства — SUCCESS
+     * - синхронизация завершена — SUCCESS с количеством записей
+     * - ошибки синхронизации — ERROR с детализацией из {@see MikrotikDevice::$messages}
+     *
+     * Ошибки на отдельных строках не прерывают синхронизацию (stop_on_error: false).
+     *
+     * URL возврата после выполнения скрипта можно указать в ?TP::F_REF='url'
+     * 
+     * Завершается {@see redirect()} во всех случаях.
+     *
+     * @return void
+     *
+     * @throws void исключения перехватываются внутри, пишутся в MsgQueue как ERROR
+     */
     function aclSyncAction() {
         if (!App::$auth->isAuth) {
             MsgQueue::msg(MsgType::ERROR, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
@@ -1760,29 +1793,34 @@ class TpController extends AppBaseController {
             redirect();
         }
 
-        if (!(can_add(Module::MOD_SECURITY) && can_del(Module::MOD_SECURITY))) {
+        if (!can_add(Module::MOD_SECURITY) || !can_del(Module::MOD_SECURITY)) {
             MsgQueue::msg(MsgType::ERROR, __('Insufficient rights | Недостаточно прав | Недостатньо прав'));
             self::log_no_rights();
             redirect();
         }
 
+        /**
+         * URL возврата после выполнения скрипта
+         */
+        $ref = ($_GET[TP::F_GET_REF] ?? false);
+        
         $tp_id = (int) ($this->route[F_ALIAS] ?? 0);
-        if (!$this->db->validate_tp($tp_id)) {
+        if (!$this->db->validate_id_tp($tp_id)) {
             MsgQueue::msg(MsgType::ERROR, __('Incorrect technical site ID | Не верный ID технической площадки | Не вірний ID технічного майданчика'));
-            redirect();
+            redirect($ref);
         }
 
         $aclTableId = (int) ($_GET[TP::F_GET_ACL_LIST] ?? 0);
         if (!$this->db->validate_id(DevAclTable::TABLE, $aclTableId, DevAclTable::F_ID)) {
             MsgQueue::msg(MsgType::ERROR, __('Invalid ACL table ID | Не верный ID ACL-таблицы | Невірний ID ACL-таблиці'));
-            redirect(TP::URI_EDIT . '/' . $tp_id);
+            redirect($ref);
         }
 
         $tp = $this->db->get_tp($tp_id);
         $aclTable = $this->db->getAclTableById($aclTableId);
         if (empty($aclTable)) {
             MsgQueue::msg(MsgType::ERROR, __('ACL table not found | ACL-таблица не найдена | ACL-таблиця не знайдена') . ': ' . $aclTableId);
-            redirect(TP::URI_EDIT . '/' . $tp_id);
+            redirect($ref);
         }
 
         $aclRows = $this->db->getAclListForSync(
@@ -1792,7 +1830,7 @@ class TpController extends AppBaseController {
 
         if (empty($aclRows)) {
             MsgQueue::msg(MsgType::INFO, __('No entries to sync | Нет записей для синхронизации | Немає записів для синхронізації') . ': ' . $aclTable[DevAclTable::F_NAME]);
-            redirect(); // TP::URI_EDIT . '/' . $tp_id
+            redirect($ref); // TP::URI_EDIT . '/' . $tp_id
         }
 
         $syncRows = [];
@@ -1812,7 +1850,7 @@ class TpController extends AppBaseController {
             $result = $device->sync_address_list_scoped(
                     raw_items: $syncRows, 
                     stop_on_error: false);
-            
+
             if ($result === false) {
                 MsgQueue::msg(MsgType::ERROR, __('Synchronization completed with errors | Синхронизация завершилась с ошибками | Синхронізація завершилася з помилками') . ': ' . $aclTable[DevAclTable::F_NAME]);
                 foreach (MikrotikDevice::$messages ?? [] as $error) {
@@ -1828,7 +1866,148 @@ class TpController extends AppBaseController {
             MsgQueue::msg(MsgType::ERROR, $e->getMessage());
         }
 
-        redirect(); // TP::URI_EDIT . '/' . $tp_id
+        redirect($ref); // TP::URI_EDIT . '/' . $tp_id
+    }
+
+
+
+    /**
+     * Синхронизирует все ACL-таблицы (из конфига {@see App::get_config('acl_sync_all_tables')})
+     * с выбранным устройством MikroTik.
+     *
+     * Если GET-параметр {@see TP::F_GET_ACL_SYNC_TP} содержит валидный ID технической площадки,
+     * выполняет синхронизацию: загружает записи по каждой таблице из конфига,
+     * формирует общий список и передаёт его в {@see MikrotikDevice::sync_address_list_scoped()}.
+     *
+     * Если параметр не передан или невалиден — синхронизация не выполняется,
+     * отображается страница со списком площадок для выбора.
+     *
+     * Результат каждого этапа фиксируется в {@see MsgQueue}:
+     * - количество записей к синхронизации — SUCCESS
+     * - успешное подключение и описание устройства — SUCCESS
+     * - итог синхронизации — SUCCESS с количеством изменённых записей
+     * - ошибки — ERROR с детализацией из {@see MikrotikDevice::$messages}
+     *
+     * Ошибки на отдельных строках не прерывают синхронизацию (stop_on_error: false).
+     *
+     * Передаёт во View:
+     * - `tp_list`     — список активных управляемых площадок текущего пользователя
+     * - `sync_row_no` — порядковый номер синхронизированной площадки в списке (для UI)
+     *
+     * @return void
+     * @throws void исключения перехватываются внутри, пишутся в MsgQueue как ERROR
+     */
+    function aclSyncAllAction() {
+        if (!App::$auth->isAuth) {
+            MsgQueue::msg(MsgType::ERROR, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
+            self::log_unauthorize();
+            redirect();
+        }
+
+        if (!(can_add(Module::MOD_SECURITY) && can_del(Module::MOD_SECURITY))) {
+            MsgQueue::msg(MsgType::ERROR, __('Insufficient rights | Недостаточно прав | Недостатньо прав'));
+            self::log_no_rights();
+            redirect();
+        }
+
+        /**
+         * Команда для синхронизации ТП
+         */
+        $tp_id = ($_GET[TP::F_GET_ACL_SYNC_TP] ?? null);
+        
+        $tp_list = $this->db->get_my_tp_list(active: 1, is_managed: 1);
+
+        if (empty($tp_list)) {
+            MsgQueue::msg(MsgType::ERROR, __('The list of technical platforms of subscriber [%d] is empty | Список технических площадок абонента [%d] пуст | Список технічних майданчиків абонента [%d] порожній', App::get_user_id()));
+            redirect();
+        }
+
+        $sync_row_no = 1;
+        if ($this->db->validate_id_tp($tp_id)) {
+
+            $tp = $this->db->get_tp($tp_id);
+            
+            /**
+             * Синхронизируем
+             */
+
+            $acl_tables = App::get_config('acl_sync_all_tables');
+
+            $sync_full = [];
+            foreach ($acl_tables as $table_id) {
+                if (!$this->db->validate_id(DevAclTable::TABLE, $table_id, DevAclTable::F_ID)) {
+                    MsgQueue::msg(MsgType::ERROR, __('Invalid ACL table ID | Не верный ID ACL-таблицы | Невірний ID ACL-таблиці') . ' [' . $table_id . ']');
+                    redirect();
+                }
+
+                $acl_table = $this->db->getAclTableById($table_id);
+
+                if (empty($acl_table)) {
+                    MsgQueue::msg(MsgType::ERROR, __('ACL table description entry not found | Запись описания ACL-таблицы не найдена | Запис опису ACL-таблиці не знайдено') . ' [' . $table_id. ']');
+                    redirect();
+                }
+
+                $acl_rows = $this->db->getAclListForSync(aclTableId: $table_id);
+                
+                $sync_rows = [];
+                foreach ($acl_rows as $row) {
+                    $sync_rows[] = [
+                        Mik::F_LIST_LIST    => $acl_table[DevAclTable::F_NAME],
+                        Mik::F_LIST_ADDRESS => $row[DevAclList::F_ADDRESS],
+                        Mik::F_LIST_COMMENT => $row[DevAclList::F_COMMENT] ?? '',
+                        Mik::F_LIST_ENABLED => $row[DevAclList::F_ENABLED] ?? true,
+                    ];
+                }
+                
+                $sync_full = array_merge($sync_full, $sync_rows);
+            }
+
+            if (empty($sync_full)) {
+                MsgQueue::msg(MsgType::ERROR, __('No entries to sync | Нет записей для синхронизации | Немає записів для синхронізації'));
+                redirect();
+            }            
+            MsgQueue::msg(MsgType::SUCCESS, __('Records to sync | Записей для синхронизации | Записів для синхронізації') . ': ' . count($sync_full));
+            
+//            debug($acl_full, '$acl_full', die:1);
+
+            try {
+                $device = new MikrotikDevice(tp: $tp);
+                MsgQueue::msg(MsgType::SUCCESS, __('Successfully connected to the device | Успешно подключились к устройству | Успішно підключилися до пристрою') . ' <span class="text-warning">[' . $tp[TP::F_TITLE] . ']</span>');
+                MsgQueue::msg(MsgType::SUCCESS, implode(' | ', $device->get_description()));
+                $result = $device->sync_address_list_scoped(
+                        raw_items: $sync_full, 
+                        stop_on_error: false);
+
+                if ($result === false) {
+                    MsgQueue::msg(MsgType::ERROR, __('Synchronization completed with errors | Синхронизация завершилась с ошибками | Синхронізація завершилася з помилками'));
+                    foreach (MikrotikDevice::$messages ?? [] as $error) {
+                        MsgQueue::msg(MsgType::ERROR, $error);
+                    }
+                } else {
+                    MsgQueue::msg(MsgType::SUCCESS, __('ACL table successfully synchronized | ACL-таблица успешно синхронизирована | ACL-таблиця успішно синхронізована') 
+                            . ' | ' . $result . ' ' . __('records | записей | записів'));
+                }
+            } catch (\Throwable $e) {
+                MsgQueue::msg(MsgType::ERROR, __('ACL synchronization error | Ошибка синхронизации ACL | Помилка синхронізації ACL'));
+                MsgQueue::msg(MsgType::ERROR, $e->getMessage());
+            }
+            
+            foreach ($tp_list as $tp_one) {
+                $sync_row_no++;
+                if ($tp_one[TP::F_ID] == $tp_id) {
+                    break;
+                }
+            }
+        }
+
+        View::setMeta(
+                title: __('Updating ACLs on technical nodes | Обновление ACL-списков на технических узлах | Оновлення ACL-списків на технічних вузлах')
+            );
+        $this->setVariables([
+                'tp_list'       => $tp_list,
+                'sync_row_no'   => $sync_row_no,
+            ]);
+        
     }
 
 
@@ -2183,7 +2362,248 @@ class TpController extends AppBaseController {
         return true;
     }
 
+    
+    
+    function make_pa_out(array &$bill_tables, MikrotikDevice $dev): array {
+        
+        $model = new AbonModel();
+        
+        $out = array();
+        /*
+            $out => 
+            [
+                [PA::TABLE] = [];
+                [Abon::TABLE] = [];
+                [Price::TABLE] = [];
+                [Mik::T_ARP] = [];
+                [Mik::T_LEASES] = [];
+                [Mik::T_NAT11] = []; // !!!
+            ]
+         */
+        
+        foreach ($bill_tables[Api::BILL_PA_LIST] as $pa_one) {
+            
+            $rec[PA::TABLE] = $pa_one;
+            $rec[User::TABLE] = $model->get_user_by_abon_id($pa_one[PA::F_ABON_ID]);
+            $rec[Abon::TABLE] = $model->get_abon($pa_one[PA::F_ABON_ID]);
+            $rec[Price::TABLE] = $model->get_price($pa_one[PA::F_PRICE_ID]);
 
+            if ($pa_one[PA::F_NET_IP_SERVICE]) {
+                
+                /**
+                 * ПРОВЕРКИ
+                 */
+                $rec['VALIDATE'][PA::TABLE]['IP_ON']              = (!empty($pa_one[PA::F_NET_IP]) xor !empty($pa_one[PA::F_NET_ON_ABON_IP]));
+                
+                $rec['VALIDATE'][PA::TABLE][PA::F_NET_IP]         = validate_ip($pa_one[PA::F_NET_IP]);
+                $rec['VALIDATE'][PA::TABLE][PA::F_NET_NAT11]      = (!empty($pa_one[PA::F_NET_NAT11])      ? validate_ip($pa_one[PA::F_NET_NAT11])      : null);
+                $rec['VALIDATE'][PA::TABLE][PA::F_NET_ON_ABON_IP] = (!empty($pa_one[PA::F_NET_ON_ABON_IP]) ? validate_ip($pa_one[PA::F_NET_ON_ABON_IP]) : null);
+
+                /**
+                 * NAT 1:1
+                 */
+                $rec[Mik::T_NAT11] = 
+                        ($rec['VALIDATE'][PA::TABLE][PA::F_NET_NAT11] 
+                            ? MikrotikDevice::get_nat_11_by_ip(
+                                rules: $dev->get_nat_rules(),
+                                ip_private: $pa_one[PA::F_NET_IP],
+                                ip_public: $pa_one[PA::F_NET_NAT11])
+                            : null
+                        );
+
+                /**
+                 * Реальный MAC
+                 */
+                $rec[Mik::T_ARP] = 
+                        (is_empty($pa_one[PA::F_NET_IP])
+                            ? null
+                            : $dev->get_arp_items(ip: $pa_one[PA::F_NET_IP])
+                        );
+
+                /**
+                 * Статус в DHCP LEASES
+                 */
+                $rec[Mik::T_LEASES] = $dev->get_dhcp_lease_by_ip($pa_one[PA::F_NET_IP]);
+                
+                /**
+                 * Соответствует ли МАК в ПФ и МАК в устройстве
+                 */
+                $rec['VALIDATE']['EQUAL_ARP'] = 
+                        (empty($pa_one[PA::F_NET_MAC] ?? null)
+                            ?   null // Мак в ПФ не установлен
+                            :   $pa_one[PA::F_NET_MAC] === ($rec[Mik::T_ARP][0][Mik::F_ARP_MAC] ?? null)
+                        );
+
+                /**
+                 * IP в ПФ и IP в ABON
+                 */
+                $rec['VALIDATE']['ON_ABON']['ON'] = 
+                        ($dev->in_address_list_abon(ip: $pa_one[PA::F_NET_IP], ena: 1)
+                            ?   true
+                            :   ($dev->in_address_list_abon(ip: $pa_one[PA::F_NET_IP], ena: 0)
+                                    ?   false
+                                    :   null
+                                )
+                        );
+
+                if ($rec['VALIDATE']['ON_ABON']['ON'] !== true) {
+                    /**
+                     * Поиск вариантов
+                     */
+                    $rec['VALIDATE']['ON_ABON']['FOUND_DOG'] = $dev->find_address_list_items([
+                        Mik::F_SEARCH_LIST => Mik::L_ABON,
+                        Mik::F_SEARCH_DESCR => $rec[Abon::TABLE][Abon::F_ID] . ' '
+                    ]);
+                    if (!empty($pa_one[PA::F_NET_IP])) {
+                        $rec['VALIDATE']['ON_ABON']['FOUND_IP'] = $dev->find_address_list_items([
+                            Mik::F_SEARCH_LIST => Mik::L_ABON,
+                            Mik::F_SEARCH_DESCR => $rec[Abon::TABLE][Abon::F_ID] . ' '
+                        ]);
+                    }
+                }
+
+                /**
+                 * Проверка статуса ИП-адреса в DHCP-Leases
+                 */
+                $rec['VALIDATE']['ON_DHCP']['IP_ON_LEASE'] = 
+                        ($rec[Mik::T_LEASES] === []
+                            ?   'NONE'  // Записи в dhcp lease нет. Приемлемо
+                            :   ($rec[Mik::T_LEASES][Mik::F_DHCP_LEASE_BLOCKED]
+                                    ?   'BLOCKED'
+                                    :   ($rec[Mik::T_LEASES][Mik::F_DHCP_LEASE_DYNAMIC]
+                                            ?   'DYNAMIK' // Запись в dhcp lease динамическая. Плохо
+                                            :   'STATIC'  // Запись в dhcp lease статическая. Хорошо
+                                        )
+                                )
+                        );
+
+            }
+            $out[] = $rec;
+        }
+        return $out;
+    }
+    
+
+    
+    function manageAction() {
+        
+        if (!App::$auth->isAuth) {
+            MsgQueue::msg(MsgType::ERROR, __('Please log in | Авторизуйтесь, пожалуйста | Авторизуйтесь, будь ласка'));
+            self::log_unauthorize();
+            redirect();
+        }
+
+        if (!(can_edit(Module::MOD_TP) && can_edit(Module::MOD_NET_DEV))) {
+            MsgQueue::msg(MsgType::ERROR, __('Insufficient rights | Недостаточно прав | Недостатньо прав'));
+            self::log_no_rights();
+            redirect();
+        }
+
+        $tp_id = (int) ($this->route[F_ALIAS] ?? 0);
+        if (!$this->db->validate_id_tp($tp_id)) {
+            MsgQueue::msg(MsgType::ERROR, __('Incorrect technical site ID | Не верный ID технической площадки | Не вірний ID технічного майданчика'));
+            redirect();
+        }
+
+        $bill_rec[TP::F_BILL_TP] = $this->db->get_tp($tp_id);
+        $bill_rec[TP::F_BILL_PA_LIST] = $this->db->get_prices_apply_by_tp($tp_id);
+
+        try {
+            $dev = new MikrotikDevice(tp: $bill_rec[TP::F_BILL_TP]);
+        } catch (\Exception $exc) {
+            MsgQueue::msg(MsgType::ERROR, __('Error accessing device | Ошибка обращения к устройству | Помилка звернення до пристрою') . ': [' . $bill_rec[TP::F_BILL_TP][TP::F_ID] . '] | ' . $bill_rec[TP::F_BILL_TP][TP::F_TITLE] );
+            MsgQueue::msg(MsgType::ERROR, MikrotikDevice::get_messages());
+            MsgQueue::msg(MsgType::ERROR, $exc->getMessage());
+            redirect();
+        }
+
+        $mik_rec[TP::F_T_HOSTNAME]  = $dev->get_hostname();
+        
+        $mik_rec[TP::F_T_IP_LIST]         = $dev->get_ip_address_items();
+        $mik_rec[TP::F_T_INFO]            = $dev->get_description();
+        $mik_rec[TP::F_T_STATE]           = $dev->get_state();
+        $mik_rec[TP::F_T_ADDR_LIST_STAT]  = $dev->get_address_lists_stat();
+        $mik_rec[TP::F_T_ADDR_LIST_CACHE] = $dev->get_address_list_cache();
+        $mik_rec[TP::F_T_ARP_STAT]        = $dev->get_arp_stat();
+        $mik_rec[TP::F_T_ARP_LIST]        = $dev->get_arp_items();
+        $mik_rec[TP::F_T_GATES]           = $dev->get_gateways();
+        $mik_rec[TP::F_T_NAT_LIST]        = $dev->get_nat_rules();
+//        debug($mik_rec[TP::F_T_NAT_LIST], '$mik_rec[TP::F_T_NAT_LIST]', die:0);
+//      $mik_rec[TP::F_T_LEASES_LIST]     = $dev->get_description() get_aligned_table(Api::get_tp_dhcp_leases_all($mik));
+
+        $out_tables = [
+            TP::F_OUT_PA    => $this->make_pa_out(bill_tables: $bill_rec, dev: $dev),
+//            [
+//                'title'             => '[PA]',
+//                'caption'           => "<h1>Биллинг: Список прайсовых фрагментов <font color=green>PRICES_APPLY</font></h1>",
+//                //                     ["id",           "abon_id", "inf", "ip_service",   "nat11",                    "trusted",      "ip",            "mac"]
+//                'cell_attributes'   => ["align=center", "abon_id", "inf", "align=center", "nat11",                    "align=center", "valign=bottom", "valign=bottom"],
+//                'col_titles'        => ["PA ID",        "Abon ID", "inf", "IP Service",   "NAT 1:1<br>IP у абонента", "trust",        "ip",            "mac"],
+//            ],
+
+//            OUT_ARP     =>  ['src_on'=>SRC_ARP_ACT,     'src_off'=>SRC_ARP_OFF,    'txt' => '[ARP]',    'mng_id' => 'out_arp',    'btn_id'=>'btn_put_arp',    'color'=>(isset($_GET[ANCH_ARP])    ? BLACK : GRAY),
+//                                'anch'              =>  ANCH_ARP,
+//                                't'                 =>  make_arp_out(TABLES: $TABLES, tp_id: $tp_id),
+//                                'caption'           =>  "<h1>МИК: Таблица <font color=green>ARP</font></h1>",
+//                                                    //   "aid_abon", "aid_pa", "sw_1",   "sw_comment", "ip",     "fine_1", "address", "mac-stat", "interface", "published",    "aid from ABON",                    "aid from PA",                    "sw from SW",                    "stat1"
+//                                'cell_attributes'   =>  ["hidden",   "hidden", "hidden", "hidden",     "hidden", "hidden", "address", "mac-stat", "interface", "align=center", "aid from ABON",                    "aid from PA",                    "sw from SW",                    "stat1"],
+//                                'col_titles'        =>  ["aid_abon", "aid_pa", "sw_1", "sw_comment",   "ip",     "fine_1", "address", "mac-stat", "interface", "published",    "aid<br>".paint("from ABON", GRAY), "aid<br>".paint("from PA", GRAY), "sw<br>".paint("ABON/SW", GRAY), "stat1"],
+//                            ],
+//
+//            OUT_ABON    =>  ['src_on'=>SRC_A_ACT,      'src_off'=>SRC_A_OFF,      'txt' => '['.MIK_TABLE_ABON.']',   'mng_id' => 'abon_out',   'btn_id'=>'btn_abon_out',   'color'=>(isset($_GET[ANCH_ABON])   ? BLACK : GRAY),
+//                                'anch'              =>  ANCH_ABON,
+//                                't'                 =>  make_abon_out(TABLES: $TABLES, tp_id: $tp_id),
+//                                'caption'           =>  "<h1>МИК: Список состояния абонентов таблицы <font color=green>".MIK_TABLE_ABON."</font></h1>",
+//                                'cell_attributes'   =>  null,
+//                                'col_titles'        =>  null,
+//                            ],
+//
+//            OUT_LEASES  =>  ['src_on'=>SRC_LEASES_ACT, 'src_off'=>SRC_LEASES_OFF, 'txt' => '[LEASES]', 'mng_id' => 'leases_out', 'btn_id'=>'btn_leases_out', 'color'=>(isset($_GET[ANCH_LEASES]) ? BLACK : GRAY),
+//                                'anch'              =>  ANCH_LEASES,
+//                                't'                 =>  make_dhcp_leases_out(TABLES: $TABLES, tp_id: $tp_id),
+//                                'caption'           =>  "<h1>МИК: Таблица <font color=green>DHCP-LEASES</font></h1>",
+//                                //                       "astat", "address", "mac-address", "address_mac",    "last-seen"  "server", "active-address", "comment", "aid_comment", "aid_comment_stat", "aid_abon", "aid_abon_stat",  "aid_ip_pa", "aid_ip_pa_stat", "act", "rename_comment"
+//                                'cell_attributes'   =>  ["",      "hidden",  "hidden",      "",               "",          "",       "",               "",        "hidden",      "",                 "hidden",   "",               "hidden",    "",               "",    ""],
+//                                'col_titles'        =>  ["stat",  "address", "mac-address", "address<br>mac", "last-seen", "server", "active-address", "comment", "aid_comment", "aid<br>comment",   "aid_abon", "aid<br>ABON IP", "aid_ip_pa", "aid<br>PA IP",   "act", "rename_comment"],
+//                            ],
+//
+//            OUT_NAT     =>  ['src_on'=>SRC_NAT_ACT,    'src_off'=>SRC_NAT_OFF,    'txt' => '[NAT]',    'mng_id' => 'nat_out',    'btn_id'=>'btn_nat_out',    'color'=>(isset($_GET[ANCH_NAT])    ? BLACK : GRAY),
+//                                'anch'              =>  ANCH_NAT,
+//                                't'                 =>  make_nat_out(TABLES: $TABLES, tp_id: $tp_id),
+//                                'caption'           =>  "<h1>МИК: Таблица <font color=green>NAT</font></h1>",
+//                                'cell_attributes'   =>  ["",      "",      "",       "",         "valign=top", "valign=top", "",        "",              "",    "",    ""],
+//                                'col_titles'        =>  ["stat1", "chain", "action", "protocol", "in",         "out",        "comment", "bytes|packets", "aid", "act", "rename"],
+//                            ],
+
+        ];
+
+
+
+
+
+
+        $this->setVariables([
+            'out_tables' => $out_tables,
+//            'mik_rec'    => $mik_rec,
+//            'bill_rec'   => $bill_rec,
+        ]);
+
+        View::setMeta(__('Device management | Управление устройством | Управління пристроєм'));
+
+//        debug($leases, '$leases', debug_view: DebugView::PRINTR, die: 0);
+//        debug($nat, '$nat', debug_view: DebugView::PRINTR, die: 0);
+//        debug($gates, '$gates', debug_view: DebugView::PRINTR, die: 0);
+//        debug($pa, '$pa', debug_view: DebugView::PRINTR, die: 0);
+//        debug($address_list, '$address_list', debug_view: DebugView::PRINTR, die: 0);
+//        debug($mik_info, '$mik_info', debug_view: DebugView::PRINTR, die: 0);
+//        debug($tp, '$tp', debug_view: DebugView::PRINTR, die: 0);
+
+//        debug('end', 'end', die: 1);        
+        
+        
+    }
+    
+    
     
     function testAction() {
         

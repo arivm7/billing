@@ -25,6 +25,7 @@ class PA {
     const URI_CLONE = "/pa/clone";
     const URI_DELETE = "/pa/delete";
     const URI_CLOSE = "/pa/close";
+    const URI_ENABLE = "/pa/enable";
 
     /**
      * имя массива в котором в пост-запрове хранятся данные формы
@@ -67,6 +68,12 @@ class PA {
     const F_MODIFIED_DATE       = 'modified_date';      // Дата изменения записи в базе
 
 
+    
+    public const F_ENABLED      = 'ena';
+    public const F_FORCE        = 'force';
+    public const F_PA_ID        = 'paid';
+
+    
 
     const FLAGS = [
         self::F_CLOSED,

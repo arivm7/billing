@@ -57,7 +57,7 @@ Lang::load_inc(__FILE__);
         font-family: Arial, sans-serif;
         font-size: 9pt;     /* вместо 12px */
         margin-left: 25mm;
-        margin-top: 15mm;
+        margin-top: 12mm;
         /* height:26cm; */
     }
 
@@ -267,13 +267,18 @@ Lang::load_inc(__FILE__);
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tr>
         <td width="55%" align="left" valign="top"><?= str_replace(" ", "&nbsp;", $agent[Firm::F_NAME_SHORT]); ?><br />
-        <br />
-        <br />
-        ______________________________</td>
-        <td width="45%" align="left" valign="top"><b><?= $invoice[Invoice::F_FIRM_PAYER_STR]; ?></b><br />
-        <br />
-        <br />
-        _________________ / _________________ / </td>
+        &nbsp;<br />
+        &nbsp;</td>
+        <td width="45%" align="left" valign="top"><?= 
+            isset($contragent[Firm::F_MANAGER_JOB_TITLE]) 
+                ? $contragent[Firm::F_MANAGER_JOB_TITLE] . '<br>' . $contragent[Firm::F_MANAGER_NAME_SHORT]
+                : $invoice[Invoice::F_FIRM_PAYER_STR]; ?><br />
+        &nbsp;<br />
+        &nbsp;</td>
+    </tr>
+    <tr>
+        <td width="55%" align="left" valign="top">______________________________</td>
+        <td width="45%" align="left" valign="top">_________________ / _________________ /</td>
     </tr>
 </table>
 <?php endif; ?>

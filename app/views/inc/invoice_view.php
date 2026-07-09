@@ -27,6 +27,10 @@ use config\tables\Invoice;
 use config\tables\Module;
 use config\tables\PA;
 use config\tables\User;
+use config\tables\Pay;
+
+
+require_once DIR_LIBS . '/compare_functions.php';
 
 /**
  * Переменные полученные из контроллера
@@ -185,19 +189,44 @@ $item_contragent = (isset($contragent_list[$item[Invoice::F_CONTRAGENT_ID]])
         </div>
         <?php if (can_view(Module::MOD_INVOICES)): ?>
         <div class="card-footer m-0">
-            <div class='d-flex justify-content-between align-items-center'>
-                <div class="text-start">
-                    |
+            <div class='d-flex justify-content-between align-items-end'>
+                <div class="w-40 text-start text-secondary font-monospace fs-9">
+                    <div>
+                        <!-- Кто создал -->
+                        <span title="<?= __user(user_id: $item[Invoice::F_CREATION_UID], field:User::F_NAME_FULL) ?>">Creation UID [<span class="text-info"><?=$item[Invoice::F_CREATION_UID]?></span>]</span>
+                        <!-- Когда создал -->
+                        <span> [<?=date('Y-m-d H:i:s', $item[Invoice::F_CREATION_DATE])?>]</span><br>
+                    </div>
+                    <div>
+                        <!-- Кто изменил -->
+                        <span title="<?= __user(user_id: $item[Invoice::F_MODIFIED_UID], field: User::F_NAME_FULL) ?>">Modified UID [<span class="text-info"><?=$item[Invoice::F_MODIFIED_UID]?></span>]</span>
+                        <!-- Когда изменил -->
+                        <span> [<?=date('Y-m-d H:i:s', $item[Invoice::F_MODIFIED_DATE])?>]</span>
+                    </div>
                 </div>
-                <div class="text-end text-secondary font-monospace fs-8">
-                    <!-- Кто создал -->
-                    <span title="<?= __user(user_id: $item[Invoice::F_CREATION_UID], field:User::F_NAME_FULL) ?>">Creation UID [<span class="text-info"><?=$item[Invoice::F_CREATION_UID]?></span>]</span>
-                    <!-- Когда создал -->
-                    <span> [<?=date('Y-m-d H:i:s', $item[Invoice::F_CREATION_DATE])?>]</span><br>
-                    <!-- Кто изменил -->
-                    <span title="<?= __user(user_id: $item[Invoice::F_MODIFIED_UID], field: User::F_NAME_FULL) ?>">Modified UID [<span class="text-info"><?=$item[Invoice::F_MODIFIED_UID]?></span>]</span>
-                    <!-- Когда изменил -->
-                    <span> [<?=date('Y-m-d H:i:s', $item[Invoice::F_MODIFIED_DATE])?>]</span>
+                <div class="w-60 text-end text-secondary font-monospace fs-8">
+                    <?php if ($item[Invoice::F_PAYMENTS] ?? null): ?>
+                        <?php foreach ($item[Invoice::F_PAYMENTS] as $pay): ?>
+                            <div class="card shadow-sm">
+                              <div class="card-body py-2">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <span class="fw-bold"><?= __('Payment | Платёж | Платіж') ?> <a href="<?= Pay::URI_FORM; ?>/<?= $pay[Pay::F_ID]; ?>" target="_blank" title="<?= __('Go to the payment editing form | Перейти в форму редактирования платежа | Перейти до форми редагування платежу') ?>">#<?= $pay[Pay::F_ID]; ?></a></span>
+                                        <span class="g-1 small"><?= date('Y-m-d H:i', $pay['pay_date']) ?></span>
+                                    </div>
+                                    <div>
+                                        <?php $class1 = (cmp_float($pay[Pay::F_PAY_FAKT], $item[Invoice::F_COST_ALL]) == 0 ? "bg-success" : "bg-warning"); ?>
+                                        <?php $class2 = (cmp_float($pay[Pay::F_PAY_ACNT], $item[Invoice::F_COST_ALL]) == 0 ? "bg-success" : "bg-warning"); ?>
+                                        FAKT:&nbsp;<span class="badge <?= $class1; ?>" title="<?= Pay::field_title(Pay::F_PAY_FAKT) ?>"><?= $pay[Pay::F_PAY_FAKT]; ?></span>
+                                        ACNT:&nbsp;<span class="badge <?= $class2; ?>" title="<?= Pay::field_title(Pay::F_PAY_ACNT) ?>"><?= $pay[Pay::F_PAY_ACNT]; ?></span>
+                                    </div>
+                                </div>
+                                <hr class="my-1">
+                                <div class="small text-muted text-start"><?= $pay['description']; ?></div>
+                              </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

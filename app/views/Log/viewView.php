@@ -21,6 +21,7 @@ use config\tables\Module;
  * @var string $title
  * @var string $file_name
  * @var string $content
+ * @var bool   $has_html
  * @var int $count_lines
  * 
  */
@@ -30,7 +31,7 @@ use config\tables\Module;
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
             <h2 class="display-6"><?= h($file_name) ?></h2>
-            <h3 class="fs-5 mb-0">Считано строк: <?= h($count_lines) ?></h3>
+            <h3 class="fs-5 mb-0"><?= __('Lines read | Прочитано строк | Прочитано рядків') ?>: <?= h($count_lines) ?> | <?= $has_html ? "HTML" : "TEXT" ?></h3>
         </div>
         <div class="d-flex gap-2">
             <a href="/log" class="btn btn-outline-secondary mx-1"><?= __('Back to list') ?></a>
@@ -49,14 +50,18 @@ use config\tables\Module;
 
     <div class="card shadow-sm">
         <div class="card-body">
+            <?php if ($has_html): ?>
             <div class="mb-0 font-monospace fs-7"><?= $content ?></div>
+            <?php else: ?>
+            <pre><?= $content ?></pre>
+            <?php endif; ?>
         </div>
     </div>
 
     <div id="bottom"></div>
     <div class="d-flex justify-content-between align-items-center mt-3">
         <div>
-            <h3 class="fs-5 mb-0">Считано строк: <?= h($count_lines) ?></h3>
+            <h3 class="fs-5 mb-0"><?= __('Lines read | Прочитано строк | Прочитано рядків') ?>: <?= h($count_lines) ?> | <?= $has_html ? "HTML" : "TEXT" ?></h3>
         </div>
         <div class="d-flex gap-2">
             <a href="/log" class="btn btn-outline-secondary mx-1"><?= __('Back to list') ?></a>

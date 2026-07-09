@@ -34,13 +34,17 @@ class TP {
     const URI_DELETE               = '/tp/delete';
     const URI_FW_INPUT             = '/tp/fw-input';
     const URI_COMBINE              = '/api/combine';
+    const URI_MANAGE               = '/tp/manage';
     const URI_ACL_SYNC             = '/tp/aclsync';
+    const URI_ACL_SYNC_ALL         = '/tp/aclsyncall';
 
     const POST_REC                 = 'tp';
 
     const TABLE                    = 'tp_list'; // Технические площадки, точки доступа
 
     const F_GET_ACL_LIST           = 'list';
+    const F_GET_REF                = 'ref'; // для возврата после выполнения
+    const F_GET_ACL_SYNC_TP        = 'synctpid'; // для передачи команды синхронизации ACL для ТП
 
 
 
@@ -293,6 +297,39 @@ class TP {
             }
         }
     }
+
+
+
+    /**
+     * Константы для именования ключей таблиц из базы
+     */
+    public const F_BILL_TP      = 'tp';
+    public const F_BILL_PA_LIST = 'pa_list';
+
+    /**
+     * Константы для именования ключей таблиц из микротика
+     */
+    public const F_T_HOSTNAME        = 'identity';   // Строка идентификации микротика
+    public const F_T_INFO            = 'info';   // таблица технических параметров устройства
+    public const F_T_STATE           = 'state';   // таблица состояний устройства
+    public const F_T_ADDR_LIST_STAT  = 'addr_list_stat';  // Статистика таблицы адресных листов
+    public const F_T_ADDR_LIST_CACHE = 'addr_list_cache';  // Все таблицы адресных листов, содержит подтаблицы по именам листов
+    public const F_T_IP_LIST         = 'ip_list';    // таблицы /ip/address содержит IP-адреса устройства
+    public const F_T_ARP_STAT        = 'arp_stat';   
+    public const F_T_ARP_LIST        = 'arp_list';    // таблицы адресных листов, содержит подтаблицы по именам листов
+    public const F_T_GATES           = 'gates';       // шлюзы устройтва
+    public const F_T_NAT_LIST        = 'nat_list';    // таблица NAT устройства
+    public const F_T_LEASES_LIST     = 'leases_list'; // таблийца DHCP LEASES (выданных адресов)
+
+
+    /**
+     * Константы для именования ключей выходных таблиц в общем массиве
+     */
+    public const F_OUT_PA     = 'OUT_PA';
+    public const F_OUT_ABON   = 'OUT_ABON';
+    public const F_OUT_LEASES = 'OUT_LEASES';
+    public const F_OUT_NAT    = 'OUT_NAT';
+    public const F_OUT_ARP    = 'OUT_ARP';
 
     
 

@@ -88,7 +88,7 @@ class BankController extends AppBaseController
 
         if  (
                 empty($this->route[F_ALIAS]) ||
-                !$model->validate_ppp((int)$this->route[F_ALIAS])
+                !$model->validate_id_ppp((int)$this->route[F_ALIAS])
             ) 
         {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('The payment acceptance point ID is incorrect or not specified | ID пункта приёма платежей не верен или не указан | ID пункту прийому платежів не вірний або не вказаний'));
@@ -99,6 +99,7 @@ class BankController extends AppBaseController
 
         if (!$model->is_my_ppp($ppp[Ppp::F_ID])) {
             MsgQueue::msg(MsgType::ERROR_AUTO, __('The payment acceptance point is not yours | Пункт приема платежей не Ваш | Пункт прийому платежів не Ваш'));
+            self::log_no_rights();
             redirect();
         }
 

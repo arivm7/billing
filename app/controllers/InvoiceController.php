@@ -38,6 +38,7 @@ use config\tables\Module;
 use config\tables\PA;
 use config\tables\TP;
 use config\tables\User;
+use config\tables\Pay;
 use Valitron\Validator;
 
 require_once DIR_LIBS . '/functions.php';
@@ -131,17 +132,40 @@ class InvoiceController extends AppBaseController
     }
 
 
+    
+    private static function exists_invoice_num(string $inv_no): bool {
+        $sql = "SELECT * FROM `".Invoice::TABLE."` WHERE `".Invoice::F_INV_NO."`='{$inv_no}'";
+        $model = new AbonModel();
+        return  (int)$model->get_count_by_sql($sql, Invoice::F_ID) > 0;
+    }
 
+    
+    
+    private static function get_invoice_num(string $inv_no): array|null {
+        $model = new AbonModel();
+        return $model->find_invoices([
+                Invoice::F_INV_NO => $inv_no,
+            ]);
+    }
+
+    
+    
     /**
      * Возвращает строку -- номер счёта для нового счёта, ещё не сформированного в базе,
      * в виде <abon_id>/<порядковый номер>
      * @param int $abon_id
      * @return string
      */
-    public static function make_invoice_num(int $abon_id): string {
+    public static function make_invoice_num(int $abon_id): string
+    {
         $count = self::get_count($abon_id);
-        $count++;
-        return "{$abon_id}/{$count}";
+        while (true) {
+            $count++;
+            $inv_no = "{$abon_id}/{$count}";
+            if (!self::exists_invoice_num($inv_no)) {
+                return $inv_no;
+            }
+        }
     }
     
 
@@ -182,13 +206,13 @@ class InvoiceController extends AppBaseController
         /**
          * Если передан пустой ID, то убираем его из обновления
          */
-        if (isset($data[Invoice::F_ID]) && ($data[Invoice::F_ID] < 1)) {
+        if (isset($data[Invoice::F_ID]) && empty($data[Invoice::F_ID])) {
             unset($data[Invoice::F_ID]);
         }
-        if (isset($data[Invoice::F_AGENT_ID]) && ($data[Invoice::F_AGENT_ID] < 1)) {
+        if (isset($data[Invoice::F_AGENT_ID]) && empty($data[Invoice::F_AGENT_ID])) {
             unset($data[Invoice::F_AGENT_ID]);
         }
-        if (isset($data[Invoice::F_CONTRAGENT_ID]) && ($data[Invoice::F_CONTRAGENT_ID] < 1)) {
+        if (isset($data[Invoice::F_CONTRAGENT_ID]) && empty($data[Invoice::F_CONTRAGENT_ID])) {
             unset($data[Invoice::F_CONTRAGENT_ID]);
         }
 
@@ -230,6 +254,11 @@ class InvoiceController extends AppBaseController
 
 
 
+    /**
+     * Количество уже выписанных счетов
+     * @param int $abon_id
+     * @return int
+     */
     public static function get_count(int $abon_id): int {
         $sql = "SELECT count(`".Invoice::F_ID."`) AS count_id FROM `".Invoice::TABLE."` WHERE `".Invoice::F_ABON_ID."` = '".$abon_id."'";
         $model = new AbonModel();
@@ -257,7 +286,7 @@ class InvoiceController extends AppBaseController
     public static function registration(array $invoice): int|false 
     {
         /**
-         * Добавляем поля, не относящиеся прямл к счёту
+         * Добавляем поля, не относящиеся прямо к счёту
          */
         $invoice[Invoice::F_IS_PAID]          = 0;
         $invoice[Invoice::F_MODIFIED_DATE]    = time();
@@ -267,7 +296,7 @@ class InvoiceController extends AppBaseController
 
         $model = new AbonModel();
 
-        // debug($invoice, '$invoice');
+//         debug($invoice, '$invoice', die:1);
 
         return $model->insert_row(Invoice::TABLE, $invoice);
     }
@@ -275,7 +304,7 @@ class InvoiceController extends AppBaseController
 
 
     /**
-     * Создание Счёт-фактуры (СФ) на месяц, указанный в $today, если $today = NA, то на текущий.
+     * Создание Счёт-фактуры (СФ) на месяц, указанный в $today.
      * Обязательно должен быть указан или $abon_id или $abon.
      * @param int|null $abon_id
      * @param array|null $abon
@@ -285,23 +314,34 @@ class InvoiceController extends AppBaseController
      * @throws \Exception
      * @return array -- Возвращает запись СФ
      */
-    public static function make_invoice(?int $abon_id = null, ?array $abon = null, int $today = NA, ?array $agent = null, ?array $contragent = null, ?array $rest = null): array {
+    public static function make_invoice(
+            ?int    $abon_id = null,
+            ?array  $abon = null,
+            ?int    $today = null,
+            ?array  $agent = null,
+            ?string $agent_name = null,
+            ?array  $contragent = null,
+            ?string $contragent_name = null,
+            ?array  $rest = null,
+            ?string $inv_date_str = null,
+            ?string $akt_date_str = null
+        ): array 
+    {
         if (empty($abon_id) && empty($abon)) {
             throw new \Exception("Не передан абонент. Нужно указать abon_id или запись абонента в массиве abon", 1);
         }
 
-        if($today == NA) { $today = TODAY(); }
-        $mail_body = "";
+        $today ??= TODAY();
 
         /**
          * Дата счтета -- начало периода оказания услуги
          */
-        $inv_date_str = date("d.m.Y", first_day_month($today)); //01.08.2023
+        $inv_date_str ??= date("d.m.Y", first_day_month($today)); //01.08.2023
 
         /**
          * Дата Акта -- конец периода оказания услуги
          */
-        $akt_date_str = date("d.m.Y", last_day_month($today)); //31.08.2023
+        $akt_date_str ??= date("d.m.Y", last_day_month($today)); //31.08.2023
 
         $model = new AbonModel();
 
@@ -320,6 +360,7 @@ class InvoiceController extends AppBaseController
             $agents = $model->get_agents_by_abon_id($abon[Abon::F_ID]);
             $agent = $agents[array_key_first($agents)];
         }
+        $agent_name ??= $agent[Firm::F_NAME_LONG];
 
         /**
          * Предприятие клиент
@@ -327,13 +368,14 @@ class InvoiceController extends AppBaseController
         if (empty($contragent)) { 
             $contragents = $model->get_firms_by_uid_cli($abon[Abon::F_USER_ID]); 
             if(empty($contragents)) {
-                $contragents[0][Firm::F_ID] = 0;
+                $contragents[0][Firm::F_ID] = null;
                 $contragents[0][Firm::F_NAME_LONG] = $user[User::F_NAME_FULL];
                 $contragents[0][Firm::F_NAME_SHORT] = $user[User::F_NAME_SHORT];
+                $contragent_name ??= App::get_config('inv_payer_unknown');
             }        
             $contragent = $contragents[array_key_first($contragents)];
         }
-
+        $contragent_name ??= $contragent[Firm::F_NAME_LONG];
         
         if (empty($rest)) {
             $rest = $model->get_abon_rest($abon[Abon::F_ID]);
@@ -347,32 +389,23 @@ class InvoiceController extends AppBaseController
         $inv_body = self::make_invoice_text($abon, $today);
 
         $invoice = [
-            Invoice::F_AGENT_ID => $agent[Firm::F_ID],
-            Invoice::F_CONTRAGENT_ID => $contragent[Firm::F_ID],
-            Invoice::F_ABON_ID => $abon[Abon::F_ID],
-            Invoice::F_INV_NO => $inv_no,
-            Invoice::F_INV_DATE_STR => $inv_date_str,
-            Invoice::F_AKT_DATE_STR => $akt_date_str,
-            Invoice::F_FIRM_PAYER_STR => $contragent[Firm::F_NAME_SHORT],
-            Invoice::F_COST_1 => $cost_1,
-            Invoice::F_COUNT => 1,
-            Invoice::F_COST_ALL => $cost_1,
-            Invoice::F_TEXT => $inv_body,
+            Invoice::F_AGENT_ID         => $agent[Firm::F_ID],
+            Invoice::F_CONTRAGENT_ID    => $contragent[Firm::F_ID],
+//            Invoice::F_AGENT_NAME       => $agent_name,
+//            Invoice::F_CONTRAGENT_NAME  => $contragent_name,
+            Invoice::F_ABON_ID          => $abon[Abon::F_ID],
+            Invoice::F_INV_NO           => $inv_no,
+            Invoice::F_INV_DATE_STR     => $inv_date_str,
+            Invoice::F_AKT_DATE_STR     => $akt_date_str,
+            Invoice::F_FIRM_PAYER_STR   => 
+                mb_strlen($contragent[Firm::F_NAME_LONG]) > App::get_config('inv_payer_recomend_max')
+                    ? $contragent[Firm::F_NAME_SHORT]
+                    : $contragent[Firm::F_NAME_LONG], 
+            Invoice::F_COST_1           => $cost_1,
+            Invoice::F_COUNT            => 1,
+            Invoice::F_COST_ALL         => $cost_1,
+            Invoice::F_TEXT             => $inv_body,
         ];
-        // $inv_id = self::registration(
-        //         $agent[Firm::F_ID],
-        //         $contragent[Firm::F_ID],
-        //         $abon[Abon::F_ID],
-        //         $inv_no,
-        //         $contragent[Firm::F_NAME_SHORT],
-        //         $inv_date_str, 
-        //         $akt_date_str,
-        //         $cost_1, 1, $cost_1,
-        //         $inv_body);
-
-        // if ($inv_id === false) {
-        //     throw new \Exception('По какой-то причине Счет-фактура не создана.');
-        // }
         return $invoice;
     }
 
@@ -650,16 +683,26 @@ class InvoiceController extends AppBaseController
         if  (
                 empty($this->route[F_ALIAS]) ||
                 !is_numeric($this->route[F_ALIAS]) ||
-                !$model->validate_id(Invoice::TABLE, intval($this->route[F_ALIAS]), Invoice::F_ID)
+                !$model->validate_id_invoice(intval($this->route[F_ALIAS]))
             ) 
         {
             $invoice = self::read_parameters();
+            $invoice = self::make_invoice(
+                    abon_id: $invoice[Invoice::F_ABON_ID] ?? null,
+                    today: $invoice[Invoice::F_INV_TODAY] ?? null,
+                    agent: $invoice[Invoice::F_AGENT_ID] ?? null,
+                    agent_name: $invoice[Invoice::F_AGENT_NAME] ?? null,
+                    contragent: $invoice[Invoice::F_CONTRAGENT_ID] ?? null,
+                    contragent_name: $invoice[Invoice::F_CONTRAGENT_NAME] ?? null,
+                    inv_date_str: $invoice[Invoice::F_INV_DATE_STR] ?? null,
+                    akt_date_str: $invoice[Invoice::F_AKT_DATE_STR] ?? null
+                );
             $this->normalize($invoice);
+            
             // debug($invoice, '$invoice', die:1);
-            if (!$model->validate_id(Abon::TABLE, $invoice[Invoice::F_ABON_ID] ?? 0, Abon::F_ID)) {
+            if (!$model->validate_id_abon($invoice[Invoice::F_ABON_ID] ?? null)) {
                 MsgQueue::msg(MsgType::ERROR, __('When creating a new invoice, you must specify a valid subscriber ID | При создании нового счёта нужно обязательно указать правильный ID абонента | При створенні нового рахунку потрібно обовʼязково вказати правильний ID абонента'));
                 redirect();
-
             }
         } 
         else
@@ -671,7 +714,8 @@ class InvoiceController extends AppBaseController
         /**
          * Данные форомы редактирования или создания счёта
          */
-        if (isset($_POST[Invoice::POST_REC]) && is_array($_POST[Invoice::POST_REC])) {
+        if (isset($_POST[Invoice::POST_REC]) && is_array($_POST[Invoice::POST_REC])) 
+        {
             $post_rec = $_POST[Invoice::POST_REC];
             $this->normalize($post_rec);
             if ($this::validate($post_rec)) {
@@ -724,8 +768,8 @@ class InvoiceController extends AppBaseController
 
         $abon = $model->get_abon($invoice[Invoice::F_ABON_ID]);
         $user = $model->get_user($abon[Abon::F_USER_ID]);
-        $agent = $model->get_firm($invoice[Invoice::F_AGENT_ID] ?? 0) ?? [];
-        $contragent = $model->get_firm($invoice[Invoice::F_CONTRAGENT_ID] ?? 0) ?? get_rec_firm_from_user($user);
+        $agent = $model->get_firm($invoice[Invoice::F_AGENT_ID] ?? null) ?? [];
+        $contragent = $model->get_firm($invoice[Invoice::F_CONTRAGENT_ID] ?? null) ?? get_rec_firm_from_user($user);
         $agent_list = $model->get_agent_list($abon[Abon::F_ID]);
         $contragent_list = $model->get_firms(user_id: $user[User::F_ID], has_active: 1);
         // debug($invoice, '$invoice');
@@ -750,7 +794,8 @@ class InvoiceController extends AppBaseController
 
     }
 
-    
+
+
     public function listAction()
     {
         // debug($_POST, '$_POST');
@@ -796,6 +841,21 @@ class InvoiceController extends AppBaseController
         );
 
         $invoices = $pager->get_rows();
+        foreach ($invoices as &$inv) {
+            if (!$inv[Invoice::F_IS_PAID]) {
+                $pays = $model->find_payments([
+                        Pay::F_ABON_ID => $inv[Invoice::F_ABON_ID],
+                        Pay::F_DESCRIPTION => $inv[Invoice::F_INV_NO],
+                    ]);
+                if ($pays) {
+                    foreach ($pays as &$pay) {
+                        $pay[Pay::F_DESCRIPTION] = highlight_like_groups(h($pay[Pay::F_DESCRIPTION]), $inv[Invoice::F_INV_NO]);
+//                        debug(h($pay[Pay::F_DESCRIPTION]), '$pay[Pay::F_DESCRIPTION]');
+                    }
+                    $inv[Invoice::F_PAYMENTS] = $pays;
+                }
+            }
+        }
         // debug($invoices, '$invoices');
 
         $title = __('Invoices and acts list | Список Счетов, Актов | Список Рахунків, Актів');

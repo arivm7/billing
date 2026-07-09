@@ -5,16 +5,17 @@
  *  Path    : scripts/auto_off.php
  *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
  *  Org     : RI-Network, Kiev, UK
- *  Created : 29 Apr 2026 22:23:47
+ *
+ *  Автоотключение абонентов по задолженности.
+ *
+ *  Логика разбита на функции, каждая с одной обязанностью:
+ *    decide_action()   — чистый расчёт решения, без БД и побочных эффектов
+ *    execute_action()  — выполняет действие (БД/пауза) и сама пишет в LOG_ACTION
+ *    print_abon_row()  — только форматирует и печатает строку таблицы в stdout
+ *    notify_admin_stub() — заглушка уведомления администратора (пока)
+ *
  *  License : GPL v3
- *
  *  Copyright (C) 2026 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
- */
-
-/**
- * Description of auto_off.php
- *
- * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
  */
 
 const APP_NAME = "RI-BILLING";
@@ -22,10 +23,11 @@ const APP_NAME = "RI-BILLING";
 use app\models\AbonModel;
 use app\models\AuthModel;
 use billing\core\App;
+use billing\core\base\Controller;
+use config\tables\PA;
 use config\tables\Abon;
 use config\tables\User;
 use config\tables\AbonRest;
-use billing\core\base\Controller;
 
 require __DIR__    . '/../config/dirs.php';
 require DIR_CONFIG . '/ini.php';
@@ -35,9 +37,227 @@ require DIR_LIBS   . '/functions.php';
 const LOG_ACTION = 'auto_off_actions.log';
 
 /**
- * Автозагручик Composer'а
+ * Возможные решения decide_action(). Простые строковые константы —
+ * без отдельного enum-класса, чтобы не плодить лишние файлы.
  */
-require __DIR__    . '/../vendor/autoload.php';
+const ACTION_SKIPPED_ZERO_TARIFF = 'SKIPPED_ZERO_TARIFF'; // sum_pp01a <= 0 — служебный/на паузе/контрагент
+const ACTION_NONE                = 'NONE';                // prepayed >= duty_max_off — всё в порядке
+const ACTION_WAIT_DECREMENTED    = 'WAIT_DECREMENTED';    // decrement duty_wait_days
+const ACTION_PAUSED              = 'PAUSED';              // постановка на паузу
+
+/**
+ * Ширина колонки "адрес"
+ */
+const MAX_WIDTH_STR = 50;
+
+
+/**
+ * Расчёт решения о нужном действии.
+ * Возвращааемые требуемые действия: 
+ *     ACTION_NONE                -- действия нет
+ *     ACTION_SKIPPED_ZERO_TARIFF -- действия нет
+ *     ACTION_WAIT_DECREMENTED    -- уменьшить счётчик ожидания
+ *     ACTION_PAUSED              -- поставить на паузу
+ *
+ * Ожидаемые ключи в $abon_data:
+ *   duty_max_off, duty_wait_days, sum_pp01a, prepayed
+ */
+function decide_action(array $abon_data): string
+{
+    if ($abon_data['sum_pp01a'] <= 0) {
+        return ACTION_SKIPPED_ZERO_TARIFF;
+    }
+
+    if ($abon_data['prepayed'] >= $abon_data['duty_max_off']) {
+        return ACTION_NONE;
+    }
+
+    if ($abon_data['duty_wait_days'] > 0) {
+        return ACTION_WAIT_DECREMENTED;
+    }
+
+    return ACTION_PAUSED;
+}
+
+
+
+/**
+ * Функция-заглушка административного уведомления.
+ * Получает данные абонента, если таковые есть, и текстовое сообщение, которое нужно отправить администратору.
+ * Обычно это лог ошибки работы базы или лог действия изменения статуса абонента.
+ */
+function notify_admin_stub(?array $abon_data, string $log_text): bool
+{
+    return true;
+}
+
+
+
+/**
+ * Выполняет реальные изменения (БД / пауза) и сама же пишет
+ * результат в лог-файл действий LOG_ACTION.
+ *
+ * Возвращает $abon_data, обогащённый:
+ *   - duty_wait_days  — обновлено (после декремента), если действие его меняло
+ *   - action_result   — '[N]' (осталось дней ожидания), '[X] SUCCESS'/'[X] ERROR'
+ *                        (факт отключения), или '' если действий не было
+ */
+function execute_action(string $action, array $abon_data, AbonModel $model, string $log_filename): array
+{
+    $abon_id = $abon_data['abon_id'];
+    $abon_data['action_result'] = '';
+
+    switch ($action) {
+
+        case ACTION_SKIPPED_ZERO_TARIFF:
+        case ACTION_NONE:
+            // Ничего не делать, в LOG_ACTION ничего не пишется, action_result остаётся пустым.
+            break;
+
+        case ACTION_WAIT_DECREMENTED:
+            $new_wait_days = $abon_data['duty_wait_days'] - 1;
+
+            $ok = $model->set_field_value(
+                Abon::TABLE,
+                Abon::F_ID,
+                $abon_id,
+                Abon::F_DUTY_WAIT_DAYS,
+                $new_wait_days,
+                false
+            );
+
+            log_action(sprintf('%8d', $abon_id) . " | Ожидание платежа: "
+                    .   ($ok
+                            ? "Осталось дней ожидания: {$new_wait_days}"
+                            : "ОШИБКА: не удалось изменить количество дней ожидания платежа в базе"
+                        ),
+                $log_filename
+            );
+
+            $abon_data['duty_wait_days'] = $ok ? $new_wait_days : $abon_data['duty_wait_days'];
+            $abon_data['action_result']  = '[' . sprintf('%02d', $abon_data['duty_wait_days']) . '] WAITING';
+            break;
+
+        case ACTION_PAUSED:
+            $header = sprintf('%8d', $abon_id);
+
+            /**
+             * Фактическая установка услуги в паузу (Mikrotik + БД).
+             * Явный булев результат — set_abon_pause() больше не требует
+             * парсинга текста лога для определения успеха/неудачи.
+             */
+            $pause_log = '';
+            $paused_ok = $model->set_abon_pause($abon_id, $pause_log);
+
+            log_action($header . " | " . $pause_log, $log_filename);
+
+            /**
+             * Уведомление администратора — пока заглушка.
+             * Её результат НЕ влияет на факт постановки на паузу —
+             * пауза уже необратимо произошла к этому моменту.
+             */
+            $notified = notify_admin_stub($abon_data, $header . "\n" . $pause_log);
+
+            log_action($header . " | Отправка уведомления администратору: " 
+                    . ($notified
+                        ? "SUCCESS"
+                        : "ERROR"
+                    ),
+                $log_filename
+            );
+
+            $abon_data['action_result'] = '[X] ' . ($paused_ok ? 'SUCCESS' : 'ERROR');
+            break;
+
+    }
+
+    return $abon_data;
+}
+
+
+
+/**
+ * Обёртка над Controller::log() — единственное место, знающее,
+ * как физически пишется строка в LOG_ACTION.
+ */
+function log_action(string $msg, string $log_filename): void
+{
+    Controller::log(
+        msg: $msg,
+        eol_cr: 1,
+        log_filename: $log_filename,
+        log_url: 0,
+        log_ip: 0
+    );
+}
+
+
+/**
+ * Очистка и подготовка адреса для колонки фиксированной ширины
+ * (перенесено без изменений из исходного скрипта).
+ */
+function clean_address(string $address): string
+{
+    $address = html_entity_decode($address);
+    $address = str_replace(search: '"', replace: "`", subject: $address);
+    $address = str_replace(search: "'", replace: "`", subject: $address);
+    $address = str_replace(search: "<", replace: "`", subject: $address);
+    $address = str_replace(search: ">", replace: "`", subject: $address);
+
+    if (iconv_strlen($address, "UTF-8") > MAX_WIDTH_STR) {
+        $address = "<" . mb_substr($address, -(MAX_WIDTH_STR - 1), MAX_WIDTH_STR - 1);
+    } else {
+        while (iconv_strlen($address, "UTF-8") < MAX_WIDTH_STR) {
+            $address .= " ";
+        }
+    }
+    return $address;
+}
+
+
+function print_table_header(): void
+{
+    echo ""
+        . ".------------" . str_repeat("-", MAX_WIDTH_STR)              . "-.-------.-----------.---------.--------------.\n"
+        . "|  abon_id | " . sprintf("%-".MAX_WIDTH_STR."s", "Адрес") . "      | PP01A | Опл. дней | граница |   действие   |\n"
+        . "|----------|-" . str_repeat("-", MAX_WIDTH_STR)              . "-|-------|-----------|---------|--------------|\n";
+}
+
+
+
+/**
+ * Печатает строку основной таблицы для одного абонента.
+ * Только форматирование — не принимает решений, не смотрит на $action,
+ * просто выводит то, что уже лежит в $abon_data (включая action_result).
+ */
+function print_abon_row(array $abon_data): void
+{
+    echo "| " . sprintf('%8d', $abon_data['abon_id']) . " | "
+       . sprintf("%-".MAX_WIDTH_STR."s", $abon_data['address']) . " | "
+       . sprintf('%5.2f', $abon_data['sum_pp01a']) . " | "
+       . sprintf('%9.2f', $abon_data['prepayed']) . " | "
+       . sprintf('%7d', $abon_data['duty_max_off']) . " | "
+       . sprintf('%-12s', $abon_data['action_result']) . " |\n";
+}
+
+
+
+function print_table_footer(): void
+{
+    echo ""
+        . " ----------------------------------------------------- ------- ----------- --------- -------------- \n\n";
+}
+
+
+
+// ======================================================================
+//  Точка входа
+// ======================================================================
+
+/**
+ * Автозагрузчик Composer'а
+ */
+require __DIR__ . '/../vendor/autoload.php';
 
 /**
  *  Инициализация Реестра App::$app
@@ -45,140 +265,115 @@ require __DIR__    . '/../vendor/autoload.php';
 new App;
 
 /**
- * Имитируем авторизацию от пользователя billling
- * $UID = 11;  // billng
+ * Авторизуемся от пользователя billling
  */
-$token = '$2y$10$wuMWlo240T7Hi1KmChL6ceWTJT5QQPpXkgxIxo1GM1QmWpDr12bWa';
+$conf  = require DIR_CONFIG . '/config_secret.php';
+$token = $conf['token'];
+
 $model = new AuthModel();
 $model->login_by_token($token);
 
 echo "\n";
-echo "AUTO_OFF | ".date("Y-m-d G:i:s")." | ".time()." | ". App::get_user_id() . ' | ' . App::get_user()[User::F_NAME_SHORT] . " \n";
+echo "AUTO_OFF | " . date("Y-m-d G:i:s") . " | " . time() . " | " . App::get_user_id() . ' | ' . App::get_user()[User::F_NAME_SHORT] . " \n";
 
 unset($model);
 $model = new AbonModel();
 
 $SQL = "SELECT
-            abons.id AS abon_id,
-            abons.address,
-            abons.duty_max_off,
-            abons.duty_wait_days
+            ".Abon::TABLE.".".Abon::F_ID." AS ".Abon::F_ABON_ID.",
+            ".Abon::TABLE.".".Abon::F_ADDRESS.",
+            ".Abon::TABLE.".".Abon::F_DUTY_MAX_OFF.",
+            ".Abon::TABLE.".".Abon::F_DUTY_WAIT_DAYS."
         FROM
-            prices_apply
-            LEFT JOIN abons ON abons.id = prices_apply.abon_id
+            ".PA::TABLE."
+            LEFT JOIN ".Abon::TABLE." ON ".Abon::TABLE.".".Abon::F_ID." = ".PA::TABLE.".".PA::F_ABON_ID."
         WHERE
-        ( abons.is_payer = 1 ) 
+        ( ".Abon::TABLE.".".Abon::F_IS_PAYER." = 1 )
         AND
-        ( abons.duty_auto_off = 1 )
+        ( ".Abon::TABLE.".".Abon::F_DUTY_AUTO_OFF." = 1 )
         AND
         (
             (
-                (prices_apply.date_start < UNIX_TIMESTAMP()) AND
-                (isnull(prices_apply.date_end))
+                (".PA::TABLE.".".PA::F_DATE_START." < UNIX_TIMESTAMP()) AND
+                (isnull(".PA::TABLE.".".PA::F_DATE_END."))
             )
             OR
             (
-                prices_apply.date_end > UNIX_TIMESTAMP()
+                ".PA::TABLE.".".PA::F_DATE_END." > UNIX_TIMESTAMP()
             )
         )
-        GROUP BY abons.id
+        GROUP BY ".Abon::TABLE.".".Abon::F_ID."
         ";
 
-$alist = $model->get_rows_by_sql($SQL);
-$max_width_str = 40; // Ширина колонки "адрес"
-if ($alist) {
-    $count_AID = count($alist);
-    echo "Строк: ".$count_AID."\n";
-    echo ""
-    . ".------------" .  str_repeat("-", $max_width_str)             . "-.------------.-----------.----------.-------.-----------.---------.----------.\n"
-    . "|  abon_id | ".sprintf("%-".($max_width_str)."s", "Адрес")."      | Начислено: | Оплачено: | Залишок: | PP01: | Опл. дней | граница | вкл/выкл |\n"
-    . "|----------|-" .  str_repeat("-", $max_width_str)             . "-|------------|-----------|----------|-------|-----------|---------|----------|\n";
-    for ($i = 0; $i < $count_AID; $i++) {
-        $abon = &$alist[$i];
-
-        if (!$model->update_abon_rest_all($abon[Abon::F_ABON_ID])) {
-            $msg = 'REST: Ошибка обновления остатков для абонента ' . $abon[Abon::F_ID];
-            echo "{$msg}\n";
-            $errors = $model->errorInfo();
-            if ($errors) { print_r($errors); }
-        }
-        
-        $rest = $model->get_abon_rest($abon[Abon::F_ABON_ID]);
-        //
-        // очистка
-        $abon[Abon::F_ADDRESS] = html_entity_decode($abon[Abon::F_ADDRESS]);
-        $abon[Abon::F_ADDRESS] = str_replace(search: '"', replace: "`", subject: $abon[Abon::F_ADDRESS]);
-        $abon[Abon::F_ADDRESS] = str_replace(search: "'", replace: "`", subject: $abon[Abon::F_ADDRESS]);
-        $abon[Abon::F_ADDRESS] = str_replace(search: "<", replace: "`", subject: $abon[Abon::F_ADDRESS]);
-        $abon[Abon::F_ADDRESS] = str_replace(search: ">", replace: "`", subject: $abon[Abon::F_ADDRESS]);
-        //
-        //
-
-        if(iconv_strlen($abon[Abon::F_ADDRESS], "UTF-8") > $max_width_str) {
-            $abon[Abon::F_ADDRESS] = "<".mb_substr($abon[Abon::F_ADDRESS], -($max_width_str-1), $max_width_str-1); // «
-        } else {
-            while (iconv_strlen($abon[Abon::F_ADDRESS], "UTF-8") < $max_width_str) {
-                $abon[Abon::F_ADDRESS] .= " ";
-            }
-        }
-
-        if (round($rest[AbonRest::F_SUM_PP01A] * 100) > 0) {
-            $action_msg = '';
-            $s  = "| ".sprintf("%8d", $abon[Abon::F_ABON_ID])." | "
-                    . sprintf("%-".($max_width_str)."s", $abon[Abon::F_ADDRESS])." | "
-                    . "".sprintf("%10.2f", $cost=$rest[AbonRest::F_SUM_COST])." | "
-                    . "".sprintf("%9.2f", $pays=$rest[AbonRest::F_SUM_PAY])." | "
-                    . "".sprintf("%8.2f", $rest[AbonRest::F_BALANCE])." | "
-                    . "".sprintf("%5.2f", $rest[AbonRest::F_SUM_PP01A])." | "
-                    . "".   ( $rest[AbonRest::F_SUM_PP01A] > 0 
-                                ?   sprintf("%9.2f", $rest[AbonRest::F_PREPAYED])
-                                :   sprintf("%9s", '-')
-                            ) . " | "
-                    . "".sprintf("%7d", $abon[Abon::F_DUTY_MAX_OFF])." | "
-                    . "".   (($rest[AbonRest::F_PREPAYED] < $abon[Abon::F_DUTY_MAX_OFF])
-                                ?   ($abon[Abon::F_DUTY_WAIT_DAYS] > 0 
-                                        ?   sprintf("%8s", "[" . $abon[Abon::F_DUTY_WAIT_DAYS] . "]")
-                                        :   sprintf("%8s", "[x]")
-                                    )
-                                    . " |\n|          |\n"
-                                    .   ($abon[Abon::F_DUTY_WAIT_DAYS] > 0
-                                            ?   ($model->set_field_value(Abon::TABLE, Abon::F_ID, $abon[Abon::F_ABON_ID], Abon::F_DUTY_WAIT_DAYS, --$abon[Abon::F_DUTY_WAIT_DAYS], false)
-                                                    ?   "|          | Режим ожидания платежа ".$abon[Abon::F_DUTY_WAIT_DAYS]." дней"
-                                                    :   "|          | ОШИБКА: изменение количества дней ожидания платежа не удалось"
-                                                )
-                                            :   ($action_msg = $model->set_abon_pause($abon[Abon::F_ABON_ID]))
-                                        )
-                                    . "\n|          |"
-                                :   "         |"
-                            ) 
-                            . "";
-            //echo str_replace(" ", "&nbsp;", $s)."\n";
-            echo $s."\n";
-            if (!empty($action_msg)) { Controller::log(msg: "".sprintf("%8d", $abon[Abon::F_ABON_ID])." | " . $action_msg, eol_cr: 1, log_filename: LOG_ACTION, log_url: 0, log_ip: 0); }
-            flush();
-        } else { 
-            $s  = "| ".sprintf("%8d", $abon['abon_id'])." | "
-                    . sprintf("%-".($max_width_str)."s", $abon['address'])." | "
-                    . "".sprintf("%10.2f", $rest[AbonRest::F_SUM_COST])." | "
-                    . "".sprintf("%9.2f", $rest[AbonRest::F_SUM_PAY])." | "
-                    . "".sprintf("%8.2f", $rest[AbonRest::F_BALANCE])." | "
-                    . "".sprintf("%5.2f", $rest[AbonRest::F_SUM_PP01A])." | "
-                    . "".   ( $rest[AbonRest::F_SUM_PP01A] > 0 
-                                ?   sprintf("%9.2f", $rest[AbonRest::F_PREPAYED])
-                                :   sprintf("%9s", '-')
-                            ) . " | "
-                    . "СЛУЖЕБНЫЙ (НУЛЕВОЙ)";
-            
-            echo $s."\n";
-        }
-    }
-    echo ""
-    . " ----------------------------------------------------- ------------ ----------- ---------- ------- ----------- --------- ---------- \n\n";
-
-} else {
-    echo "Ошибка запроса списка абонентов с автоотключением ".my_error()."<br />";
+try {
+    $alist = $model->get_rows_by_sql($SQL);
+} catch (Exception $exc) {
+    echo "Ошибка запроса списка абонентов " . $exc->getMessage() . "\n";
+    notify_admin_stub(
+            null,
+            "Ошибка запроса списка абонентов \n" 
+            . "ОШИБКА:\n" . $exc->getMessage() . "\n"
+            . "ТРАССА:\n" . print_r($exc->getTraceAsString(), true) . "\n"
+            );
     exit;
 }
 
+$count_AID = count($alist);
+echo "Строк: " . $count_AID . "\n";
 
-?>
+print_table_header();
+
+foreach ($alist as $abon_row) {
+    $abon_id = (int) $abon_row[Abon::F_ABON_ID];
+    $address = clean_address((string) ($abon_row[Abon::F_ADDRESS] ?? ''));
+
+    /**
+     * Обновление остатков — только для текущего абонента.
+     * Ошибка здесь касается только его одного, следующий абонент
+     * обрабатывается со своим собственным обновлением независимо.
+     */
+    try {
+        
+        /**
+         * Обновление остатков для абонента
+         */
+        $rest_update_ok = $model->update_abon_rest_all($abon_id);
+        if (!$rest_update_ok) {
+            $msg = "| " . sprintf('%8d', $abon_id) . " | " . sprintf("%-".MAX_WIDTH_STR."s", $address) . " | "
+                . 'REST: Ошибка обновления остатков для абонента ' . "\n";
+            echo $msg;
+            notify_admin_stub(null, $msg);
+            continue;
+        }
+        $rest = $model->get_abon_rest($abon_id);
+        
+    } catch (Exception $exc) {
+        $msg = "| " . sprintf('%8d', $abon_id) . " | " . sprintf("%-".MAX_WIDTH_STR."s", $address) . " | "
+            . 'Ошибка обращения к базе ' . "\n"
+            . $exc->getMessage() . "\n"
+            . print_r($exc->getTraceAsString(), true);
+        echo $msg;
+        notify_admin_stub(null, $msg);
+        continue;
+    }
+
+    /**
+     * Единая структура данных абонента — для decide_action() и для print_abon_row(). 
+     */
+    $abon_data = [
+        'abon_id'        => $abon_id,
+        'address'        => $address,
+        'duty_max_off'   => (int)   $abon_row[Abon::F_DUTY_MAX_OFF],
+        'duty_wait_days' => (int)   $abon_row[Abon::F_DUTY_WAIT_DAYS],
+        'sum_pp01a'      => (float) ($rest[AbonRest::F_SUM_PP01A] ?? 0),
+        'prepayed'       => (float) ($rest[AbonRest::F_PREPAYED]  ?? 0),
+    ];
+
+    $action = decide_action($abon_data);
+    $abon_data = execute_action($action, $abon_data, $model, LOG_ACTION);
+    print_abon_row($abon_data);
+
+    flush();
+}
+
+print_table_footer();

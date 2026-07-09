@@ -1171,6 +1171,13 @@ class P24acc {
 
             $s  = "Статус ответа банка: ".($arr['status']).(isset($arr['message']) ? " [".paint($arr['message'], color: RED)."]":"")."<br>\n";
             MsgQueue::msg(MsgType::INFO, $s);
+            if ($arr['status'] == 'ERROR') {
+                //    [status] => ERROR
+                //    [code] => 403
+                //    [message] => Your IP address 178.151.189.82 is not in the list of allowed
+                return [];
+            }
+                
             foreach ($arr['transactions'] as $T) {
                 switch ($trantype) {
                     case Bank::TRANSACTION_TYPE_ALL:

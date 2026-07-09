@@ -21,11 +21,10 @@
  * @return int -- возвращает -1 | 0 | 1
  */
 function cmp_float(?float $a, ?float $b): int {
-    // debug(['a' => $a, 'b' => $b]);
-    if ($a === null || $b === null) { return 0; }
-    if ($a === null || $b !== null) { return 1; }
-    if ($a !== null || $b === null) { return -1; }
-    if (round($a * ACCURACY) == round($b * ACCURACY)) { return 0; }
+    if ($a === null && $b === null) { return 0; }
+    if ($a === null && $b !== null) { return 1; }
+    if ($a !== null && $b === null) { return -1; }
+    if ((int)round($a * ACCURACY) == (int)round($b * ACCURACY)) { return 0; }
     return (($a < $b) ? -1 : 1);
 }
 
@@ -56,7 +55,7 @@ function cmp_ipv4(string|null $a, string|null $b): int {
  * @param $b
  * @return int
  */
-function compare_prepayed_asc($a, $b): int {
+function compare_prepayed_asc(?array $a, ?array $b): int {
     if ((is_null($a['prepayed']) && is_null($b['prepayed'])) || ($a['prepayed'] == $b['prepayed'])) {
         if ($a['balance'] == $b['balance']) {
             return 0;
@@ -90,15 +89,12 @@ function compare_prepayed_desc($a, $b): int {
 
 /**
  * Сравнение записей по полю [balance]
- * @param $a
- * @param $b
+ * @param array|null $a
+ * @param array|null $b
  * @return int
  */
-function compare_balance_asc($a, $b): int {
-    if ($a['balance'] == $b['balance']) {
-        return 0;
-    }
-    return (($a['balance'] < $b['balance']) ? -1 : 1);
+function compare_balance_asc(?array $a, ?array $b): int {
+    return cmp_float($a['balance'], $b['balance']);
 }
 
 

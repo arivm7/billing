@@ -155,8 +155,8 @@ class Model {
 
 
 
-    public function execute(string $sql, ?array $params = []): bool {
-        return $this->db->execute($sql, $params);
+    public function execute(string $sql, ?array $params = [], int &$count = 0): bool {
+        return $this->db->execute($sql, $params, $count);
     }
 
 
@@ -232,7 +232,7 @@ class Model {
      * @param int $id
      * @return bool
      */
-    public function validate_ppp(?int $id): bool {
+    public function validate_id_ppp(?int $id): bool {
         if (empty($id)) { return false; }
         return $this->validate_id(Ppp::TABLE, $id, Ppp::F_ID);
     }
@@ -244,7 +244,7 @@ class Model {
      * @param int $id
      * @return bool
      */
-    public function validate_tp(?int $id): bool {
+    public function validate_id_tp(?int $id): bool {
         if (empty($id)) { return false; }
         return $this->validate_id(TP::TABLE, $id, TP::F_ID);
     }
@@ -626,6 +626,8 @@ class Model {
             $values[] = (is_null($value) ? "NULL" : "" . $this->quote($value) . "");
         }
         $sql = "INSERT INTO `{$table}`(".implode(',', $fields).") VALUES (".implode(',', $values).")";
+//        debug($sql, '$sql', die:1);
+
         $rez = $this->execute($sql);
         if ($rez) {
             return (int)$this->lastInsertId();

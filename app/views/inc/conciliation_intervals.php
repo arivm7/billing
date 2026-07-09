@@ -34,12 +34,6 @@ $id = (!empty($abon[Abon::F_ID_HASH]) ? $abon[Abon::F_ID_HASH] : $abon_id);
 $uri = Conciliation::URI_PRINT . '/' . $id;
 /** @var int $abon_id */
 ?>
-<style>
-    .bukvitca::first-letter {
-            font-size: 2em;
-            font-weight: bold;
-    }
-</style>
 <div class="table-responsive">
 
     <table class="table table-bordered table-striped table-hover align-middle">

@@ -323,9 +323,9 @@ class Api {
     public static function get_nat11_rules(array $nat_list, string|null $ip_inner = null, string|null $ip_outer = null): array {
         $nat11 = array();
         foreach ($nat_list as $nat_row) {
-            // .id	chain	action	to-addresses    out-interface-list src-address in-interface-list out-interface	dst-address     to-ports protocol src-address-list in-interface	dst-port log   log-prefix bytes     packets invalid dynamic disabled comment
-            // *2	dstnat	netmap	10.1.1.57	*                  *           *                 *              159.224.135.200 *        *        *                *            *        false *          431129145 6362226 false   false   false    NAT 509 FARNSUA
-            // *3	srcnat	netmap	159.224.135.200 *                  10.1.1.57   *                 *              *               *        *        *                *            *        false *          21092371  86029   false   false   false    NAT 509 FARNSUA
+                // .id	chain	action	to-addresses    out-interface-list src-address in-interface-list out-interface	dst-address     to-ports protocol src-address-list in-interface	dst-port log   log-prefix bytes     packets invalid dynamic disabled comment
+                // *2	dstnat	netmap	10.1.1.57	*                  *           *                 *              159.224.135.200 *        *        *                *            *        false *          431129145 6362226 false   false   false    NAT 509 FARNSUA
+                // *3	srcnat	netmap	159.224.135.200 *                  10.1.1.57   *                 *              *               *        *        *                *            *        false *          21092371  86029   false   false   false    NAT 509 FARNSUA
             if (
                     (
                             ($nat_row['chain']    == 'dstnat')

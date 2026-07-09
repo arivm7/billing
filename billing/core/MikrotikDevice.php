@@ -1,7 +1,21 @@
 <?php
+/**
+ *  Project : my.ri.net.ua
+ *  File    : MikrotikDevice.php
+ *  Path    : billing/core/MikrotikDevice.php
+ *  Author  : Ariv <ariv@meta.ua> | https://github.com/arivm7
+ *  Org     : RI-Network, Kiev, UK
+ *  Created : 14 Jun 2026 21:56:27
+ *  License : GPL v3
+ *
+ *  Copyright (C) 2026 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
+ */
 
-
-
+/**
+ * Description of MikrotikDevice.php
+ *
+ * @author Ariv <ariv@meta.ua> | https://github.com/arivm7
+ */
 
 
 
@@ -50,7 +64,7 @@ class MikrotikDevice extends NetworkDevice {
      * [board-name] => hAP lite
      * [platform] => MikroTik
      */
-    private array $resource = [];
+    private ?array $resource = null;
     
     /**
      * /system/identity
@@ -63,13 +77,13 @@ class MikrotikDevice extends NetworkDevice {
      * ->where('dst-address', '0.0.0.0/0');
      * @var array
      */
-    private array $gateways = [];
+    private ?array $gateways = null;
     
-    private array $nat_rules = [];
+    private ?array $nat_rules = null;
 
-    private array $filter_rules = [];
+    private ?array $filter_rules = null;
     
-    private array $ip_services = [];
+    private ?array $ip_services = null;
     
     /**
      * .id  list    address   creation-time        dynamic disabled comment
@@ -78,6 +92,8 @@ class MikrotikDevice extends NetworkDevice {
     private ?array $address_list = null;
     
     private ?array $arp = null;
+
+
     
     public Client $client;
 
@@ -359,43 +375,43 @@ class MikrotikDevice extends NetworkDevice {
     
     
     public function get_list_dns(?string $ip = null, int|bool|null $ena = null): array {
-        return $this->get_address_list_items(self::LIST_DNS, $ip, $ena);
+        return $this->get_address_list_items(list: self::LIST_DNS, ip: $ip, ena: $ena);
     }
     
-    public function set_list_dns(string $ip, int|bool $ena, string $descr): bool {
-        return $this->set_address_list_item(self::LIST_DNS, $ip, $ena, $descr);
-    }
+//    public function set_list_dns(string $ip, int|bool $ena, string $descr): bool {
+//        return $this->set_address_list_item(self::LIST_DNS, $ip, $ena, $descr);
+//    }
     
     public function in_list_dns(?string $ip, int|bool|null $ena = null): bool {
-        return $this->in_address_list_item(self::LIST_DNS, $ip, $ena);
+        return $this->in_address_list_item(list: self::LIST_DNS, ip: $ip, ena: $ena);
     }
 
 
 
     public function get_list_hackers(?string $ip = null, int|bool|null $ena = null): array {
-        return $this->get_address_list_items(self::LIST_HACKERS, $ip, $ena);
+        return $this->get_address_list_items(list: self::LIST_HACKERS, ip: $ip, ena: $ena);
     }
 
-    public function set_list_hackers(string $ip, int|bool $ena, string $descr): bool {
-        return $this->set_address_list_item(self::LIST_HACKERS, $ip, $ena, $descr);
-    }
+//    public function set_list_hackers(string $ip, int|bool $ena, string $descr): bool {
+//        return $this->set_address_list_item(self::LIST_HACKERS, $ip, $ena, $descr);
+//    }
 
     public function in_list_hackers(?string $ip, int|bool|null $ena = null): bool {
-        return $this->in_address_list_item(self::LIST_HACKERS, $ip, $ena);
+        return $this->in_address_list_item(list: self::LIST_HACKERS, ip: $ip, ena: $ena);
     }
 
 
 
     public function get_list_flood(?string $ip = null, int|bool|null $ena = null): array {
-        return $this->get_address_list_items(self::LIST_FLOOD, $ip, $ena);
+        return $this->get_address_list_items(list: self::LIST_FLOOD, ip: $ip, ena: $ena);
     }
 
-    public function set_list_flood(string $ip, int|bool $ena, string $descr): bool {
-        return $this->set_address_list_item(self::LIST_FLOOD, $ip, $ena, $descr);
-    }
+//    public function set_list_flood(string $ip, int|bool $ena, string $descr): bool {
+//        return $this->set_address_list_item(self::LIST_FLOOD, $ip, $ena, $descr);
+//    }
 
     public function in_list_flood(?string $ip, int|bool|null $ena = null): bool {
-        return $this->in_address_list_item(self::LIST_FLOOD, $ip, $ena);
+        return $this->in_address_list_item(list: self::LIST_FLOOD, ip: $ip, ena: $ena);
     }
 
 
@@ -431,40 +447,17 @@ class MikrotikDevice extends NetworkDevice {
      * @param boolean $disconect_on_end
      * @return array
      */
-    private function read_mik_resources(): bool
+    private function ensureResource(): void
     {
-        try {
+        if (!$this->resource) { 
 
             $response = $this->client
                 ->query(new Query('/system/resource/print'))
                 ->read();
 
-            if (empty($response[0])) {
-                $this->resource = [];
-                self::$messages[] = __('RouterOS returned empty resource response | RouterOS вернул пустой ответ ресурса | RouterOS повернула порожню відповідь ресурсу');
-                return false;
-            }
-
             $this->resource = $response[0];
 
-            return true;
-
-        } catch (\Throwable $e) {
-
-            $this->resource = [];
-            self::$messages[] = __('Error reading data from device | Ошибка чтения данных из устройства | Помилка читання даних із пристрою');
-            self::$messages[] = $e->getMessage();
-
-            return false;
-
         }
-    }    
-    
-    
-    
-    private function ensureResource(): void
-    {
-        if (!$this->resource) { $this->read_mik_resources(); }
     }
     
     
@@ -652,14 +645,24 @@ class MikrotikDevice extends NetworkDevice {
             $query = (new Query('/ip/firewall/address-list/print'))
                 ->where(Mik::F_LIST_LIST, $list);
 
-            $this->address_list[$list] = $this->client
+            $rows = $this->client
                 ->query($query)
                 ->read();
-//            MsgQueue::msg(MsgType::INFO, 'TIMER: in_list_abon: ' . round(microtime(true) - $t, 3) . ' sec');
 
-            if (!is_array($this->address_list[$list])) {
+            if (!is_array($rows)) {
                 throw new \RuntimeException('ensureAddressList['.$list.']: ' . __('Invalid RouterOS response | Неверный ответ RouterOS | Недійсна відповідь RouterOS'));
             }
+            
+            $normalized = [];
+            foreach ($rows as $row) {
+                $item = self::normalizeAddressListRow($row);
+                if ($item !== null) {
+                    $normalized[] = $item;
+                }
+            }
+            $this->address_list[$list] = $normalized;            
+            
+//            MsgQueue::msg(MsgType::INFO, 'TIMER: in_list_abon: ' . round(microtime(true) - $t, 3) . ' sec');
 
         } catch (\Throwable $e) {
             $this->unset_address_list($list);
@@ -671,10 +674,30 @@ class MikrotikDevice extends NetworkDevice {
     
     
     /**
-     * Нормализует строку address-list к единому формату.
-     * Поддерживает ключи Mik::F_LIST_*
+     * Приводит сырую строку записи адрес-листа к единому внутреннему формату.
+     *
+     * Принимает строки как из MikroTik API (поля .id, list, address, disabled),
+     * так и из БД проекта (поля id, list, address, enabled) — формат
+     * определяется по наличию {@see Mik::F_LIST_ENABLED} либо {@see Mik::F_LIST_DISABLED}.
+     *
+     * Валидация:
+     * - имя списка (`list`) обязательно, иначе запись отбрасывается
+     * - адрес должен быть валидным IP ({@see validate_ip()}) либо подсетью ({@see is_ip_net()})
+     *
+     * При несоответствии причина записывается в {@see self::$messages}, метод возвращает null.
+     *
+     * @param array $row Сырая запись с ключами по константам {@see Mik}
+     *
+     * @return array{
+     *     id: string|null,
+     *     list: string,
+     *     address: string,
+     *     dynamic: mixed,
+     *     enabled: bool,
+     *     comment: string
+     * }|null Нормализованная запись либо null при невалидных данных
      */
-    private static function normalizeAddressListRow(array $row): ?array
+    public static function normalizeAddressListRow(array $row): ?array
     {
         $list = trim((string) ($row[Mik::F_LIST_LIST] ?? ''));
         $address = trim((string) ($row[Mik::F_LIST_ADDRESS] ?? ''));
@@ -697,12 +720,15 @@ class MikrotikDevice extends NetworkDevice {
         } else {
             $enabled = true;
         }
+        
+        $dynamic = mikBool($row[Mik::F_LIST_DYNAMIC] ?? null);
+
 
         return [
             Mik::F_LIST_ID      => $row[Mik::F_LIST_ID] ?? null,
             Mik::F_LIST_LIST    => $list,
             Mik::F_LIST_ADDRESS => $address,
-            Mik::F_LIST_DYNAMIC => $row[Mik::F_LIST_DYNAMIC] ?? Mik::OFF,
+            Mik::F_LIST_DYNAMIC => $dynamic,
             Mik::F_LIST_ENABLED => $enabled,
             Mik::F_LIST_COMMENT => $comment,
         ];
@@ -714,6 +740,7 @@ class MikrotikDevice extends NetworkDevice {
     
     /**
      * Возвращает статистику по адресным листам
+     * 
      * @return array
      */
     public function get_address_lists_stat(): array
@@ -796,6 +823,17 @@ class MikrotikDevice extends NetworkDevice {
     
     
     /**
+     * Возвращает полный массив адресных листов
+     * @return array
+     */
+    public function get_address_list_cache(): array 
+    {
+        return $this->address_list ?? []; 
+    }
+    
+    
+    
+    /**
      * Возвращает список указанной таблицы на микротике
      * Возвращает список из адресной таблицы микротика
      * @param string|null $address_list -- строка имена адресного листа
@@ -812,7 +850,7 @@ class MikrotikDevice extends NetworkDevice {
 
         $this->ensureAddressList($list);
 
-        return $this->address_list[$list] ?? []; 
+        return $this->address_list[$list] ?? [];
     }
     
     
@@ -858,19 +896,20 @@ class MikrotikDevice extends NetworkDevice {
         if ($ip    !== null) { $ip    = trim($ip); }
         if ($id    !== null) { $id    = trim($id); }
         if ($ena   !== null) { $ena   = (bool)$ena; }
-        if ($descr !== null) { $descr = trim($descr); }
+        if ($descr !== null) { $descr = mb_ltrim($descr); }
 
         $items = [];
 
         foreach ($address_list as $rec) {
 
-            if ( $id !== null && $rec[Mik::F_LIST_ID ] !== $id ) { continue; }
-            if ( $ip !== null && $rec[Mik::F_LIST_ADDRESS] !== $ip ) { continue; }
-            
-            if ($ena !== null) {
-                $rec_ena = !mikBool($rec[Mik::F_LIST_DISABLED]);
-                if ($rec_ena !== $ena) { continue; }
-            }
+            if ( $id  !== null && $rec[Mik::F_LIST_ID]      !== $id  ) { continue; }
+            if ( $ip  !== null && $rec[Mik::F_LIST_ADDRESS] !== $ip  ) { continue; }
+            if ( $ena !== null && $rec[Mik::F_LIST_ENABLED] !== $ena ) { continue; }
+
+//            if ($ena !== null) {
+//                $rec_ena = !mikBool($rec[Mik::F_LIST_DISABLED] ?? null);
+//                if ($rec_ena !== $ena) { continue; }
+//            }
 
             if ($descr !== null) {
                 $comment = $rec[Mik::F_LIST_COMMENT] ?? '';
@@ -1528,11 +1567,7 @@ class MikrotikDevice extends NetworkDevice {
      *   false — запись не удалена, идентификатор некорректен
      *           либо RouterOS вернул ошибку выполнения.
      */    
-    public function remove_address_list_item(
-        string $list,
-        string $id,
-        bool $clear_cache = true
-    ): bool
+    public function remove_address_list_item(string $list, string $id, bool $clear_cache = false): bool
     {
         $list = trim($list);
         if ($list === '') {
@@ -1615,18 +1650,22 @@ class MikrotikDevice extends NetworkDevice {
      */
     public function sync_address_list_scoped(array $raw_items, bool $stop_on_error = false): int|false
     {
+        
+        $make_key = static fn(string $address, bool|int $ena): string => $address . "#" . (int)$ena;
+        
+//        debug($raw_items, '$raw_items', die:0);
+        
         if ($raw_items === []) {
             self::$messages[] = 'sync_address_list_scoped: empty input';
             return false;
         }
-
+        
+        
+        
         /**
          * 1. GROUP INPUT BY LIST
          * 
-         * $desired = [
-         *     ['list' => 'ABON', ...],
-         *     ['list' => 'DNS', ...],
-         * ];        
+         * $desired[$list][$key] = $item;
          * 
          */
         $desired = [];
@@ -1644,14 +1683,18 @@ class MikrotikDevice extends NetworkDevice {
 
             $list = $item[Mik::F_LIST_LIST];
             
-            $key =
-                $item[Mik::F_LIST_ADDRESS] . "\0" .
-                (int)$item[Mik::F_LIST_ENABLED];
+            $key = $make_key($item[Mik::F_LIST_ADDRESS], $item[Mik::F_LIST_ENABLED]);
 
             $desired[$list][$key] = $item;
         }
-
+        
         $lists = array_keys($desired);
+        
+        foreach ($lists as $list) {
+            ksort($desired[$list]);
+        }
+        
+
         
         /**
          * 2. ГРУППИРОВАТЬ ТЕКУЩЕЕ СОСТОЯНИЕ ПО СПИСКАМ
@@ -1662,42 +1705,55 @@ class MikrotikDevice extends NetworkDevice {
             
             $this->ensureAddressList($list);
             
-            foreach ($this->address_list[$list] as $row) {
+            foreach ($this->address_list[$list] as $raw) {
 
-                $item = self::normalizeAddressListRow($row);
+                $item = self::normalizeAddressListRow($raw);
 
                 if ($item === null) {
                     if ($stop_on_error) {
                         self::$messages[] = 'sync_address_list_scoped: ' . __('After normalization, an empty entry was returned | После нормализации вернулась пустая запись | Після нормалізації повернувся порожній запис');
-                        self::$messages[] = 'RAW: ' . print_r($row, true);
+                        self::$messages[] = 'RAW: ' . print_r($raw, true);
                         return false;
                     }
                     continue;
                 }
 
-                $key =
-                    $item[Mik::F_LIST_ADDRESS] . "\0" .
-                    (int)$item[Mik::F_LIST_ENABLED];
+                $key = $make_key($item[Mik::F_LIST_ADDRESS], $item[Mik::F_LIST_ENABLED]);
 
                 $current[$list][$key] = $item;
             }
+            if (!empty($current[$list])) {
+                ksort($current[$list]);
+            }
         }
 
-        $done = 0;
-
+        
+        
         /**
          * 3. SCOPED SYNC PER LIST
          */
+        
+        $count_completed = 0;
+        
         foreach ($desired as $list => $desired_items) {
 
             $current_items = $current[$list] ?? [];
 
-            $to_add = array_diff_key($desired_items, $current_items);
             $to_del = array_diff_key($current_items, $desired_items);
+            $to_add = array_diff_key($desired_items, $current_items);
 
+//            MsgQueue::msg(MsgType::SUCCESS, '<pre>' . print_r([$to_add, $to_del], true) . '</pre>');
+            MsgQueue::msg(MsgType::SUCCESS, str_replace(' ', '&nbsp;', __('Таблица %10s', $list) . ' ' . __('в _базе_ содержит %4s записей', count($desired_items))));
+            MsgQueue::msg(MsgType::SUCCESS, str_replace(' ', '&nbsp;', __('Таблица %10s', $list) . ' ' . __('на устр. содержит %4s записей', count($current_items))));
+            MsgQueue::msg(MsgType::SUCCESS, str_replace(' ', '&nbsp;', __('План добавления %4d записей', count($to_add))));
+            MsgQueue::msg(MsgType::SUCCESS, str_replace(' ', '&nbsp;', __('План ..удаления %4d записей', count($to_del))));
+            
+            
+            
             /**
              * ADD
              */
+            $count_added = 0;
             foreach ($to_add as $item) {
 
                 $ok = $this->add_address_list_item(
@@ -1709,7 +1765,7 @@ class MikrotikDevice extends NetworkDevice {
                 );
 
                 if ($ok) {
-                    $done++;
+                    $count_added++;
                 } elseif ($stop_on_error) {
                     self::$messages[] = 'sync_address_list_scoped: ' . __('Error adding entry | Ошибка добавления записи | Помилка додавання запису');
                     self::$messages[] = 'ITEM: ' . print_r($item, true);
@@ -1717,9 +1773,12 @@ class MikrotikDevice extends NetworkDevice {
                 }
             }
 
+            MsgQueue::msg(MsgType::SUCCESS, str_replace(' ', '&nbsp;', __('Добавлено %4d записей', $count_added)));
+            
             /**
              * DELETE
              */
+            $count_delete = 0;
             foreach ($to_del as $item) {
                 $ok = $this->remove_address_list_item(
                         list: $item[Mik::F_LIST_LIST],
@@ -1728,7 +1787,7 @@ class MikrotikDevice extends NetworkDevice {
                 );
 
                 if ($ok) {
-                    $done++;
+                    $count_delete++;
                 } elseif ($stop_on_error) {
                     self::$messages[] = 'sync_address_list_scoped: ' . __('Error deleting entry | Ошибка удаления записи | Помилка видалення запису');
                     self::$messages[] = 'ITEM: ' . print_r($item, true);
@@ -1736,13 +1795,112 @@ class MikrotikDevice extends NetworkDevice {
                 }
             }
 
+            MsgQueue::msg(MsgType::SUCCESS, str_replace(' ', '&nbsp;', __('Удалено.. %4d записей', $count_delete)));
+            
             /**
              * 4. FINAL CACHE INVALIDATION (safe)
              */
             $this->unset_address_list($list);
+            
+            $count_completed += ($count_added + $count_delete);
+            
         }
 
-        return $done;
+        MsgQueue::msg(MsgType::SUCCESS, __('Результат операции') . ':');
+        foreach ($desired as $list => $unused) {
+            $this->ensureAddressList($list);
+            if (count($desired[$list]) == count($this->address_list[$list])) {
+                $msg_type = MsgType::SUCCESS;
+            } else {
+                $msg_type = MsgType::ERROR;
+            }
+            MsgQueue::msg($msg_type, str_replace(' ', '&nbsp;', __('Table | Таблица | Таблиця') . ' ' . $list . ' '
+                    . __('on device contains %4s entries | на устройстве содержит %4s записей | на пристрої містить %4s записів', count($this->address_list[$list])) . ', ' 
+                    . '(' . __('there should be %4s entries | должно быть %4s записей | має бути %4s записів', count($desired[$list])) . ')'));
+        }
+        
+        return $count_completed;
+    }    
+    
+    
+    
+    /*
+     * 
+     * ========================================================================
+     * Начало блока NAT
+     * 
+     */
+    
+
+    
+    private function ensureNatRules(): void
+    {
+        if ($this->nat_rules !== null) {
+            return;
+        }
+
+        try {
+
+            $query = new Query('/ip/firewall/nat/print');
+
+            $raw = $this->client
+                ->query($query)
+                ->read();
+            
+            $this->nat_rules = array_values(
+                array_filter(
+                    array_map(fn($row) => self::normalizeNatRuleRow($row), $raw),
+                    fn($row) => is_array($row)
+                )
+            );
+
+        } catch (\Throwable $e) {
+            $this->nat_rules = null;
+            self::$messages[] = 'ensureNatRules: ' . __('NAT rules request error | Ошибка получения NAT rules таблицы | Помилка отримання NAT rules таблиці');
+            self::$messages[] = $e->getMessage();
+        }
+    }    
+    
+
+
+    public static function normalizeNatRuleRow(?array $item): ?array
+    {
+        if (empty($item) || !is_array($item)) {
+            return null;
+        }
+
+        return [
+            Mik::F_NAT_ID                   => $item[Mik::F_NAT_ID] ?? null,
+            Mik::F_NAT_CHAIN                => trim((string)($item[Mik::F_NAT_CHAIN] ?? '')),
+            Mik::F_NAT_ACTION               => trim((string)($item[Mik::F_NAT_ACTION] ?? '')),
+            Mik::F_NAT_TO_ADDRESSES         => trim((string)($item[Mik::F_NAT_TO_ADDRESSES] ?? '')),
+            Mik::F_NAT_OUT_INTERFACE_LIST   => trim((string)($item[Mik::F_NAT_OUT_INTERFACE_LIST] ?? '')),
+            Mik::F_NAT_SRC_ADDRESS          => trim((string)($item[Mik::F_NAT_SRC_ADDRESS] ?? '')),
+            Mik::F_NAT_IN_INTERFACE_LIST    => trim((string)($item[Mik::F_NAT_IN_INTERFACE_LIST] ?? '')),
+            Mik::F_NAT_OUT_INTERFACE        => trim((string)($item[Mik::F_NAT_OUT_INTERFACE] ?? '')),
+            Mik::F_NAT_DST_ADDRESS          => trim((string)($item[Mik::F_NAT_DST_ADDRESS] ?? '')),
+            Mik::F_NAT_TO_PORTS             => trim((string)($item[Mik::F_NAT_TO_PORTS] ?? '')),
+            Mik::F_NAT_PROTOCOL             => trim((string)($item[Mik::F_NAT_PROTOCOL] ?? '')),
+            Mik::F_NAT_SRC_ADDRESS_LIST     => trim((string)($item[Mik::F_NAT_SRC_ADDRESS_LIST] ?? '')),
+            Mik::F_NAT_IN_INTERFACE         => trim((string)($item[Mik::F_NAT_IN_INTERFACE] ?? '')),
+            Mik::F_NAT_DST_PORT             => trim((string)($item[Mik::F_NAT_DST_PORT] ?? '')),
+            Mik::F_NAT_LOG                  => mikBool($item[Mik::F_NAT_LOG] ?? false),
+            Mik::F_NAT_LOG_PREFIX           => trim((string)($item[Mik::F_NAT_LOG_PREFIX] ?? '')),
+            Mik::F_NAT_BYTES                => (int)($item[Mik::F_NAT_BYTES] ?? 0),
+            Mik::F_NAT_PACKETS              => (int)($item[Mik::F_NAT_PACKETS] ?? 0),
+            Mik::F_NAT_INVALID              => mikBool($item[Mik::F_NAT_INVALID] ?? false),
+            Mik::F_NAT_DYNAMIC              => mikBool($item[Mik::F_NAT_DYNAMIC] ?? false),
+            Mik::F_NAT_DISABLED             => mikBool($item[Mik::F_NAT_DISABLED] ?? false),
+            Mik::F_NAT_COMMENT              => trim((string)($item[Mik::F_NAT_COMMENT] ?? '')),
+            Mik::F_NAT_ENA                  => !mikBool($item[Mik::F_NAT_DISABLED] ?? false),
+        ];
+    }
+    
+    
+    
+    public function get_nat_rules(): array {
+        $this->ensureNatRules();
+        return $this->nat_rules;
     }    
     
     
@@ -1757,10 +1915,8 @@ class MikrotikDevice extends NetworkDevice {
      *  ];
      * @return array
      */
-    public function get_nat_11(): array
+    public static function get_nat_11(array $rules): array
     {
-        $rules = $this->getNatRules();
-
         $dst = [];
         $src = [];
 
@@ -1803,6 +1959,91 @@ class MikrotikDevice extends NetworkDevice {
     }
 
     
+
+    /**
+     * Возвращает пару правил NAT 1:1 (dstnat + srcnat)
+     * для указанного соответствия private/public IP.
+     *
+     * @param array  $rules
+     * @param string $ip_private
+     * @param string $ip_public
+     *
+     * @return array
+     *
+     * @throws Exception
+     *   Если не найдена ровно одна пара:
+     *   1 dstnat и 1 srcnat.
+     */
+    public static function get_nat_11_by_ip(array $rules, string $ip_private, string $ip_public): array
+    {
+
+        if (!validate_ip($ip_private)) {
+            throw new InvalidArgumentException('get_nat_11_by_ip: invalid private ip [' . $ip_private . ']');
+        }
+
+        if (!validate_ip($ip_public)) {
+            throw new InvalidArgumentException('get_nat_11_by_ip: invalid public ip [' . $ip_public . ']');
+        }        
+        
+        $result = [];
+
+        $count_srcnat = 0;
+        $count_dstnat = 0;
+        
+        foreach ($rules as $row) {
+
+            if ($count_dstnat > 1 || $count_srcnat > 1) {
+                break;
+            }
+            
+            if (($row['action'] ?? null) !== 'netmap' || mikBool($row['disabled'] ?? false)) {
+                continue;
+            }
+
+            $chain = $row['chain'] ?? '';
+
+            /**
+             * dstnat
+             */
+            if ($chain === 'dstnat') {
+
+                if (($row['to-addresses'] ?? null) !== $ip_private) { continue; }
+                if (($row['dst-address']  ?? null) !== $ip_public)  { continue; }
+
+                $result[] = $row;
+                $count_dstnat++;
+                continue;
+            }
+
+            /**
+             * srcnat
+             */
+            if ($chain === 'srcnat') {
+
+                if (($row['src-address']  ?? null) !== $ip_private) { continue; }
+                if (($row['to-addresses'] ?? null) !== $ip_public)  { continue; }
+
+                $result[] = $row;
+                $count_srcnat++;
+                continue;
+            }
+        }
+
+        if ($count_dstnat !== 1 || $count_srcnat !==1) {
+            throw new Exception(
+                    'get_nat_11_by_ip: '
+                    . __('NAT 1:1 must contain exactly one srcnat and one dstnat rule | NAT 1:1 должен содержать ровно одно правило srcnat и одно правило dstnat | NAT 1:1 має містити точно одне правило srcnat і одне правило dstnat')
+                    . PHP_EOL
+                    . __('IP pair | IP-пара | IP пара')
+                    . ': [' . $ip_private . ' <-> ' . $ip_public . ']'
+                    . PHP_EOL
+                    . '<pre>' . print_r($result, true). '</pre>');
+        }
+        
+        return $result;
+    }
+    
+    
     
     public function set_nat_11(string $ip_local, string $ip_public, string $descr): bool
     {
@@ -1811,7 +2052,7 @@ class MikrotikDevice extends NetworkDevice {
             return false;
         }
 
-        $rules = $this->getNatRules();
+        $rules = $this->get_nat_rules();
 
         $dstRuleId = null;
         $srcRuleId = null;
@@ -1887,20 +2128,17 @@ class MikrotikDevice extends NetworkDevice {
         return true;
     }    
     
-    public function get_nat_list(): array {
-        return $this->getNatRules();
-        
-    }
 
+    
     public function get_nat_maskarade(): array {
-        
+        throw new \Exception('get_nat_maskarade: Не наисан');
     }
 
     
     
     public function get_nat_netmap(): array
     {
-        $rules = $this->getNatRules();
+        $rules = $this->get_nat_rules();
 
         $result = [];
 
@@ -1938,7 +2176,7 @@ class MikrotikDevice extends NetworkDevice {
             return [];
         }
 
-        $rules = $this->getNatRules();
+        $rules = $this->get_nat_rules();
 
         $ruleId = null;
 
@@ -2145,8 +2383,15 @@ class MikrotikDevice extends NetworkDevice {
 
         return true;
     }
+
     
 
+    /*
+     * 
+     * Конец блока NAT
+     * ========================================================================
+     * 
+     */
 
 
     
@@ -2641,12 +2886,6 @@ class MikrotikDevice extends NetworkDevice {
     
     
     
-    private function getNatRules(): array {
-        $this->ensureNatRules();
-        return $this->nat_rules;
-    }    
-    
-    
     private function ensureIpServices(): bool
     {
         if (empty($this->ip_services)) { 
@@ -2658,23 +2897,6 @@ class MikrotikDevice extends NetworkDevice {
                 return false;
             }
             $this->ip_services = $ipServices;
-        }
-        return true;
-    }    
-
-
-    
-    private function ensureNatRules(): bool
-    {
-        if (empty($this->nat_rules)) { 
-            $rules = $this->connector->exec('/ip/firewall/nat/print');
-
-            if (!$rules) {
-                self::$messages[] = 'NAT rules пусты или не получены';
-                $this->nat_rules = [];
-                return false;
-            }
-            $this->nat_rules = $rules;
         }
         return true;
     }    
@@ -2700,7 +2922,7 @@ class MikrotikDevice extends NetworkDevice {
     
     private function getPlaceBeforeByPosition(int $position): ?string
     {
-        $rules = $this->getNatRules();
+        $rules = $this->get_nat_rules();
 
         if (empty($rules)) {
             return null;
@@ -2711,9 +2933,12 @@ class MikrotikDevice extends NetworkDevice {
 
 
     
+
     /*
+     * 
      * ========================================================================
      * Начало блока ARP
+     * 
      */
 
     
@@ -3043,10 +3268,7 @@ class MikrotikDevice extends NetworkDevice {
      * true  — запись успешно удалена
      * false — ошибка удаления или некорректные параметры
      */
-    public function remove_arp_item(
-        string $id,
-        bool $clear_cache = true
-    ): bool
+    public function remove_arp_item(string $id, bool $clear_cache = false): bool
     {
         $id = trim($id);
 
@@ -3066,17 +3288,11 @@ class MikrotikDevice extends NetworkDevice {
                 ->read();
             
             $parsed = self::parse_response($response);
-
             if ($parsed[self::F_PARSE_SUCCESS]) {
-
                 if ($clear_cache) {
-
                     $this->arp = null;
-
                 } else {
-
                     if ($this->arp !== null) {
-
                         foreach ($this->arp as $k => $row) {
                             if (($row[Mik::F_ARP_ID] ?? null) === $id) {
                                 unset($this->arp[$k]);
@@ -3281,7 +3497,7 @@ class MikrotikDevice extends NetworkDevice {
      */
     public const F_ARP_RESOLV_STATUS = 'status'; // ARP_STATUS_ERROR | ARP_STATUS_OK_SINGLE | ARP_STATUS_OK_MULTI | ARP_STATUS_NOT_FOUND
     public const F_ARP_RESOLV_FOUND  = 'found';  // Весь список найденных arp записей
-    public const F_ARP_RESOLV_VALID  = 'valid';  // Список валидных записей из найденных
+    public const F_ARP_RESOLV_ACTIVE = 'active';  // Список активных записей из найденных
     
     /**
      * Значения поля [F_ARP_RESOLV_STATUS]
@@ -3292,6 +3508,16 @@ class MikrotikDevice extends NetworkDevice {
     public const ARP_STATUS_NOT_FOUND = 'NOT_FOUND';    // Валидных записей нет
 
     
+    /**
+     * Возвращает массив найденных ARP-записей и выделяет активные записи
+     * [
+     *      F_ARP_RESOLV_STATUS => ARP_STATUS_ERROR | ARP_STATUS_OK_SINGLE | ARP_STATUS_OK_MULTI | ARP_STATUS_NOT_FOUND
+     *      F_ARP_RESOLV_FOUND  => [Полный список]
+     *      F_ARP_RESOLV_ACTIVE => [Список активных]
+     * ]
+     * @param array $search
+     * @return array
+     */
     public function resolve_arp_items(array $search): array
     {
         $found = $this->find_arp_items($search);
@@ -3303,7 +3529,7 @@ class MikrotikDevice extends NetworkDevice {
             return [
                 self::F_ARP_RESOLV_STATUS => self::ARP_STATUS_ERROR,
                 self::F_ARP_RESOLV_FOUND  => [],
-                self::F_ARP_RESOLV_VALID  => [],
+                self::F_ARP_RESOLV_ACTIVE  => [],
             ];
         }        
         
@@ -3324,7 +3550,7 @@ class MikrotikDevice extends NetworkDevice {
             return [
                 self::F_ARP_RESOLV_STATUS => self::ARP_STATUS_NOT_FOUND,
                 self::F_ARP_RESOLV_FOUND  => $found,
-                self::F_ARP_RESOLV_VALID  => []
+                self::F_ARP_RESOLV_ACTIVE  => []
             ];
         }
 
@@ -3332,7 +3558,7 @@ class MikrotikDevice extends NetworkDevice {
             return [
                 self::F_ARP_RESOLV_STATUS => self::ARP_STATUS_OK_SINGLE,
                 self::F_ARP_RESOLV_FOUND  => $found,
-                self::F_ARP_RESOLV_VALID  => $valid
+                self::F_ARP_RESOLV_ACTIVE  => $valid
             ];
         }
 
@@ -3343,24 +3569,1527 @@ class MikrotikDevice extends NetworkDevice {
         return [
             self::F_ARP_RESOLV_STATUS => self::ARP_STATUS_OK_MULTI,
             self::F_ARP_RESOLV_FOUND  => $found,
-            self::F_ARP_RESOLV_VALID  => $valid
+            self::F_ARP_RESOLV_ACTIVE  => $valid
         ];
     }    
     
     
 
     /*
+     * 
      * Конец блока ARP
      * ========================================================================
+     * 
      */
 
 
 
+    /*
+     * 
+     * ========================================================================
+     * Начало блока IP ADDRESSES
+     * 
+     */
+
+    private ?array $ip_address = null;
+    
+    
+    /**
+     * Гарантировать, что $this->ip_address загружен и нормализован.
+     * Логика:
+     * если cache пуст → запрос в MikroTik
+     *      normalize
+     *      cache store
+     * @return void
+     */
+    private function ensureIpAddress(): void
+    {
+        if ($this->ip_address !== null) {
+            return;
+        }
+
+        try {
+
+            $query = new Query('/ip/address/print');
+            
+            $raw = $this->client
+                ->query($query)
+                ->read();
+
+            $this->ip_address = array_map(
+                fn($row) => self::normalizeIpAddressRow($row),
+                $raw
+            );
+        
+        } catch (\Throwable $e) {
+            $this->arp = null;
+            self::$messages[] = 'ensureArp: ' . __('IP ADDRESS request error | Ошибка получения IP ADDRESS таблицы | Помилка отримання IP ADDRESS таблиці');
+            self::$messages[] = $e->getMessage();
+        }
+    }
+    
+    
+    
+    /**
+     * Возвращает статистику
+     *   Например
+     *   [
+     *       Mik::F_STAT_TOTAL      => 100,
+     *       Mik::F_STAT_ENABLED    => 95,
+     *       Mik::F_STAT_DISABLED   => 5,
+     *       Mik::F_STAT_DYNAMIC    => 10,
+     *       Mik::F_STAT_INVALID    => 1,
+     *       Mik::F_STAT_INTERFACES => [
+     *           'bridge' => 40,
+     *           'vlan10' => 20,
+     *           'vlan20' => 40
+     *       ]
+     *   ]
+     * @return array
+     */
+    public function get_ip_address_stat(): array
+    {
+        $this->ensureIpAddress();
+
+        $stat = [
+            Mik::F_STAT_TOTAL    => 0,
+            Mik::F_STAT_ENABLED  => 0,
+            Mik::F_STAT_DISABLED => 0,
+            Mik::F_STAT_DYNAMIC  => 0,
+            Mik::F_STAT_INVALID  => 0,
+            Mik::F_STAT_INTERFACES => [],
+        ];
+
+        foreach ($this->ip_address as $item) {
+
+            $stat[Mik::F_STAT_TOTAL]++;
+
+            if ($item[Mik::F_ADDR_DISABLED]) {
+                $stat[Mik::F_STAT_DISABLED]++;
+            } else {
+                $stat[Mik::F_STAT_ENABLED]++;
+            }
+
+            if (!empty($item[Mik::F_ADDR_DYNAMIC])) {
+                $stat[Mik::F_STAT_DYNAMIC]++;
+            }
+
+            if (!empty($item[Mik::F_ADDR_INVALID])) {
+                $stat[Mik::F_STAT_INVALID]++;
+            }
+
+            $if = $item[Mik::F_ADDR_INTERFACE] ?? 'unknown';
+
+            $stat[Mik::F_STAT_INTERFACES][$if] =
+                ($stat[Mik::F_STAT_INTERFACES][$if] ?? 0) + 1;
+        }
+
+        return $stat;
+    }
+    
+
+
+    
+    /**
+     * Валидация состояния одной записи, НЕ структуры
+     * 
+     * Возвращает:
+     *   true → валидна
+     *   false → невалидна
+     *   null → “неопределённое состояние / недостаточно данных”
+     * Что обычно проверяется:
+     * INVALID:
+     *   нет address
+     *   нет ip
+     *   malformed prefix
+     *   empty interface
+     * DISABLED:
+     *   disabled = true -- считать НЕ валидным
+     */
+    public function validate_address_item(array $item): ?bool
+    {
+        // обязательные поля отсутствуют
+        if (
+            !isset($item[Mik::F_ADDR_ADDRESS]) ||
+            !isset($item[Mik::F_ADDR_INTERFACE])
+        ) {
+            return null;
+        }
+
+        // пустые значения
+        if (
+            empty($item[Mik::F_ADDR_ADDRESS]) ||
+            empty($item[Mik::F_ADDR_INTERFACE])
+        ) {
+            return false;
+        }
+
+        // MikroTik пометил запись как invalid
+        if (!empty($item[Mik::F_ADDR_INVALID])) {
+            return false;
+        }
+
+        // отключённый адрес считаем невалидным
+        if (!empty($item[Mik::F_ADDR_DISABLED])) {
+            return false;
+        }
+
+        $address = trim((string)$item[Mik::F_ADDR_ADDRESS]);
+
+        // должен быть адрес либо сеть
+        if (!validate_ip($address) && !is_ip_net($address)) {
+            return false;
+        }
+
+        // если есть выделенный IP — проверяем его
+        if (
+            isset($item[Mik::F_ADDR_IP]) &&
+            !empty($item[Mik::F_ADDR_IP]) &&
+            !validate_ip($item[Mik::F_ADDR_IP])
+        ) {
+            return false;
+        }
+
+        // проверяем префикс
+        if (isset($item[Mik::F_ADDR_PREFIX])) {
+
+            if (!is_numeric($item[Mik::F_ADDR_PREFIX])) {
+                return false;
+            }
+
+            $prefix = (int)$item[Mik::F_ADDR_PREFIX];
+
+            $is_ipv6 =
+                isset($item[Mik::F_ADDR_IP]) &&
+                strpos((string)$item[Mik::F_ADDR_IP], ':') !== false;
+
+            if ($is_ipv6) {
+                if ($prefix < 0 || $prefix > 128) {
+                    return false;
+                }
+            } else {
+                if ($prefix < 0 || $prefix > 32) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+    
+
+
+    public static function normalizeIpAddressRow(?array $item): ?array
+    {
+        if (empty($item) || !is_array($item)) {
+            return null;
+        }
+
+        $address = trim((string)($item[Mik::F_ADDR_ADDRESS] ?? ''));
+        $ip      = null;
+        $prefix  = null;
+
+        if (!empty($address) && str_contains($address, '/')) {
+
+            [$ip, $prefix] = explode('/', $address, 2);
+
+            $ip = trim($ip);
+
+            if (!is_numeric($prefix)) {
+                $prefix = null;
+            } else {
+                $prefix = (int)$prefix;
+            }
+        } else {
+            $ip = $address;
+        }
+
+        return [
+            Mik::F_ADDR_ID => $item[Mik::F_ADDR_ID] ?? null,
+            Mik::F_ADDR_ADDRESS => $address,
+            Mik::F_ADDR_IP => $ip,
+            Mik::F_ADDR_PREFIX => $prefix,
+            Mik::F_ADDR_NETWORK => $item[Mik::F_ADDR_NETWORK] ?? null,
+            Mik::F_ADDR_INTERFACE => trim((string)($item[Mik::F_ADDR_INTERFACE] ?? '')),
+            Mik::F_ADDR_COMMENT => trim((string)($item[Mik::F_ADDR_COMMENT] ?? '')),
+            Mik::F_ADDR_DISABLED => mikBool($item[Mik::F_ADDR_DISABLED] ?? false),
+            Mik::F_ADDR_ENA =>  !mikBool($item[Mik::F_ADDR_DISABLED] ?? false),
+            Mik::F_ADDR_DYNAMIC => mikBool($item[Mik::F_ADDR_DYNAMIC] ?? false),
+            Mik::F_ADDR_INVALID => mikBool($item[Mik::F_ADDR_INVALID] ?? false),
+        ];
+    }
+
+    
+    
+    /**
+     * Получить список IP-адресов, удовлетворяющих заданным условиям.
+     *
+     * Все параметры являются необязательными.
+     * Если параметр не указан (null), соответствующий фильтр не применяется.
+     *
+     * Условия поиска:
+     *   - id        : точное совпадение внутреннего ID MikroTik
+     *   - address   : точное совпадение адреса с префиксом
+     *                 (например: 10.10.10.1/24)
+     *   - ip        : точное совпадение IP-адреса
+     *   - network   : точное совпадение адреса сети
+     *   - interface : точное совпадение имени интерфейса
+     *   - ena       : состояние записи (true = включена)
+     *   - dynamic   : признак динамической записи
+     *   - invalid   : признак невалидной записи
+     *   - descr     : комментарий начинается с указанной строки
+     *                 (без учёта регистра)
+     *
+     * Возвращает массив нормализованных записей.
+     *
+     * @return array<int,array>
+     */
+    public function get_ip_address_items(
+        ?string $id = null,
+        ?string $address = null,
+        ?string $ip = null,
+        ?string $network = null,
+        ?string $interface = null,
+        int|bool|null $ena = null,
+        int|bool|null $dynamic = null,
+        int|bool|null $invalid = null,
+        ?string $descr = null
+    ): array
+    {
+        $this->ensureIpAddress();
+
+        /**
+         * коментарий приведённый к одному регистру
+         */
+        $descr_lc = $descr !== null
+            ? mb_strtolower($descr)
+            : null;
+        
+        $result = [];
+        foreach ($this->ip_address as $item) {
+
+            if ($id !== null
+                && ($item[Mik::F_ADDR_ID] ?? null) !== $id) {
+                continue;
+            }
+
+            if ($address !== null
+                && ($item[Mik::F_ADDR_ADDRESS] ?? null) !== $address) {
+                continue;
+            }
+
+            if ($ip !== null
+                && ($item[Mik::F_ADDR_IP] ?? null) !== $ip) {
+                continue;
+            }
+
+            if ($network !== null
+                && ($item[Mik::F_ADDR_NETWORK] ?? null) !== $network) {
+                continue;
+            }
+
+            if ($interface !== null
+                && ($item[Mik::F_ADDR_INTERFACE] ?? null) !== $interface) {
+                continue;
+            }
+
+            if ($ena !== null 
+                && (bool)$item[Mik::F_ADDR_ENA] !== (bool)$ena) {
+                continue;
+            }
+
+            if ($dynamic !== null
+                && (bool)$dynamic !== (bool)($item[Mik::F_ADDR_DYNAMIC] ?? false)) {
+                continue;
+            }
+
+            if ($invalid !== null
+                && (bool)$invalid !== (bool)($item[Mik::F_ADDR_INVALID] ?? false)) {
+                continue;
+            }
+
+            if ($descr !== null) {
+                $comment = mb_strtolower((string)($item[Mik::F_ADDR_COMMENT] ?? ''));
+                if (!str_starts_with($comment, $descr_lc)) {
+                    continue;
+                }
+            }
+
+            $result[] = $item;
+        }
+
+        return $result;
+    }
+
+    
+
+    /**
+     * Проверка корректности установленных фильтров IP-адресов.
+     *
+     * Выполняет валидацию значений, используемых при фильтрации
+     * списка адресов MikroTik.
+     *
+     * Проверяются:
+     *   - IP-адреса;
+     *   - адреса с префиксом (CIDR);
+     *   - адреса сетей;
+     *   - булевы параметры;
+     *   - прочие поля фильтра, имеющие ограничения формата.
+     *
+     * В случае ошибки добавляет описание в self::$errors.
+     *
+     * @return bool
+     *   true  - все фильтры корректны;
+     *   false - обнаружены ошибки в параметрах фильтрации.
+     */
+    public function validate_filter_address(array $search): bool
+    {
+        $allowed = [
+            Mik::F_ADDR_ID,
+            Mik::F_ADDR_ADDRESS,
+            Mik::F_ADDR_IP,
+            Mik::F_ADDR_NETWORK,
+            Mik::F_ADDR_INTERFACE,
+            Mik::F_ADDR_ENA,
+            Mik::F_ADDR_DYNAMIC,
+            Mik::F_ADDR_INVALID,
+            Mik::F_ADDR_COMMENT,
+        ];
+
+        foreach ($search as $field => $value) {
+
+            if (!in_array($field, $allowed, true)) {
+                throw new \Exception("validate_filter_ip_address: ".__('unsupported field | неподдерживаемое поле | непідтримуване поле')." '{$field}'");
+            }
+
+            switch ($field) {
+
+                case Mik::F_ADDR_ID:
+
+                    if (!is_string($value) || trim($value) === '') {
+                        self::$errors[] = "validate_filter_ip_address: " . __('invalid id | недействительный id | недійсний id');
+                        return false;
+                    }
+                    break;
+
+                case Mik::F_ADDR_ADDRESS:
+
+                    if (!is_string($value) || !is_ip_net($value)) {
+                        self::$errors[] = "validate_filter_ip_address: ".__('invalid address | недействительный адрес | недійсна адреса')." '{$value}'";
+                        return false;
+                    }
+                    break;
+
+                case Mik::F_ADDR_IP:
+                case Mik::F_ADDR_NETWORK:
+
+                    if (!is_string($value) || !validate_ip($value)) {
+                        self::$errors[] = "validate_filter_ip_address: ".__('invalid ip | неверный IP-адрес | недійсний ip')." '{$value}'";
+                        return false;
+                    }
+                    break;
+
+                case Mik::F_ADDR_INTERFACE:
+                case Mik::F_ADDR_COMMENT:
+
+                    if (!is_string($value)) {
+                        self::$errors[] = "validate_filter_ip_address: ".__('invalid string field | недопустимое строковое поле | недійсне поле рядка')." '{$field}'";
+                        return false;
+                    }
+                    break;
+
+                case Mik::F_ADDR_ENA:
+                case Mik::F_ADDR_DYNAMIC:
+                case Mik::F_ADDR_INVALID:
+
+                    if (
+                        !is_bool($value) &&
+                        !in_array($value, [0, 1], true)
+                    ) {
+                        self::$errors[] = "validate_filter_ip_address: ".__('invalid boolean field | недопустимое логическое поле | недійсне логічне поле')." '{$field}'";
+                        return false;
+                    }
+                    break;
+            }
+        }
+
+        return true;
+    }
+
+    
+    
+    /**
+     * Поиск IP-адресов по ассоциативному массиву критериев.
+     *
+     * Поддерживаемые ключи:
+     *
+     *   Mik::F_ADDR_ID
+     *   Mik::F_ADDR_ADDRESS
+     *   Mik::F_ADDR_IP
+     *   Mik::F_ADDR_NETWORK
+     *   Mik::F_ADDR_INTERFACE
+     *   Mik::F_ADDR_ENA
+     *   Mik::F_ADDR_DYNAMIC
+     *   Mik::F_ADDR_INVALID
+     *   Mik::F_ADDR_COMMENT
+     *
+     * Для поля Mik::F_ADDR_COMMENT выполняется поиск по началу строки
+     * без учёта регистра.
+     *
+     * Все условия объединяются по логике AND.
+     *
+     * Пример:
+     *
+     * <code>
+     * $items = $mik->find_address_items([
+     *     Mik::F_ADDR_INTERFACE => 'bridge',
+     *     Mik::F_ADDR_ENA       => true,
+     * ]);
+     * </code>
+     *
+     * @param array $search Критерии поиска.
+     *
+     * @return array|false
+     *   Массив найденных записей 
+     *   либо false, если ошибка параметров.
+     */
+    public function find_ip_address_items(array $search): array|false
+    {
+        $search = remove_null_fields($search);
+        
+        if (!$this->validate_filter_address($search)) {
+            return false;
+        }
+        $result = $this->get_ip_address_items(
+            id        : $search[Mik::F_ADDR_ID] ?? null,
+            address   : $search[Mik::F_ADDR_ADDRESS] ?? null,
+            ip        : $search[Mik::F_ADDR_IP] ?? null,
+            network   : $search[Mik::F_ADDR_NETWORK] ?? null,
+            interface : $search[Mik::F_ADDR_INTERFACE] ?? null,
+            ena       : $search[Mik::F_ADDR_ENA] ?? null,
+            dynamic   : $search[Mik::F_ADDR_DYNAMIC] ?? null,
+            invalid   : $search[Mik::F_ADDR_INVALID] ?? null,
+            descr     : $search[Mik::F_ADDR_COMMENT] ?? null,
+        );
+        return $result;
+    }
+    
+    
+    
+    /**
+     * Получить запись IP-адреса по внутреннему идентификатору MikroTik.
+     *
+     * @param string $id
+     *   Внутренний идентификатор записи (.id).
+     *
+     * @return array|null
+     *   Нормализованная запись IP-адреса или null,
+     *   если запись не найдена.
+     */
+    public function get_ip_address_item(string $id): array|null {
+        return $this->find_ip_address_items([Mik::F_ADDR_ID => $id])[0] ?? null;
+    }
+
+    
+    
+    /**
+     * Проверяет наличие IP-адреса в списке адресов MikroTik.
+     *
+     * Поиск выполняется по нормализованному кэшу адресов,
+     * загружаемому методом ensureAddress().
+     *
+     * Дополнительно может выполняться фильтрация по интерфейсу
+     * и состоянию записи (включена/отключена).
+     *
+     * @param string|null $ip
+     *   Проверяемый IP-адрес.
+     *
+     * @param string|null $interface
+     *   Имя интерфейса. Если указано, поиск выполняется только
+     *   среди адресов данного интерфейса.
+     *
+     * @param int|bool|null $ena
+     *   Состояние записи:
+     *     true  - только включённые адреса;
+     *     false - только отключённые адреса;
+     *     null  - не учитывать состояние.
+     *
+     * @return bool|null
+     *   true  - адрес найден;
+     *   false - адрес не найден;
+     *   null  - ошибка входных параметров.
+     */    
+    public function in_ip_address_item(
+        ?string $ip,
+        ?string $interface = null,
+        int|bool|null $ena = null): ?bool
+    {
+        if (!validate_ip($ip)) {
+            self::$errors[] = 'in_address_item: ' . __('invalid ip address | неверный IP-адрес | недійсна IP-адреса');
+            return null;
+        }
+
+        $this->ensureIpAddress();
+
+        foreach ($this->ip_address as $item) {
+
+            if (($item[Mik::F_ADDR_IP] ?? null) !== $ip) {
+                continue;
+            }
+
+            if ($interface !== null && ($item[Mik::F_ADDR_INTERFACE] ?? null) !== $interface) { 
+                continue;
+            }
+
+            if ($ena !== null && (bool)($item[Mik::F_ADDR_ENA]) !== (bool)$ena) {
+                continue;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    
+
+    /**
+     * Проверяет, является ли запись IP-адреса активной.
+     *
+     * Активной считается запись, которая:
+     *   - включена (ENA=true);
+     *   - не помечена как INVALID.
+     *
+     * @param array $item
+     *   Нормализованная запись IP-адреса.
+     *
+     * @return bool
+     */
+    public static function is_ip_address_active(array $item): bool {
+        return $item[Mik::F_ADDR_ENA] && !$item[Mik::F_ADDR_INVALID];
+    }
+    
+    
+    
+    /**
+     * Удаляет запись IP-адреса из устройства MikroTik.
+     *
+     * Для удаления используется внутренний идентификатор записи (.id).
+     *
+     * После успешного удаления:
+     *   - при $clear_cache = true локальный кэш адресов сбрасывается;
+     *   - при $clear_cache = false запись удаляется только из локального кэша.
+     *
+     * @param string $id
+     *   Внутренний идентификатор записи MikroTik (.id).
+     *
+     * @param bool $clear_cache
+     *   Сбрасывать ли весь локальный кэш после удаления.
+     *
+     * @return bool|null
+     *   true  - запись успешно удалена;
+     *   false - ошибка удаления, запись не найдена или
+     *           запрещено удаление последнего активного адреса;
+     *   null  - ошибка взаимодействия с устройством.
+     */
+    public function remove_ip_address_item(string $id, bool $clear_cache = true): bool|null
+    {
+        if (empty($id)) {
+            self::$messages[] = 'remove_ip_address_item: ' . __('empty id | пустой ID | порожній ID');
+            return false;
+        }
+        
+        $this->ensureIpAddress();
+        
+        $remove_item = $this->get_ip_address_item($id);
+        
+        if (empty($remove_item)) {
+            self::$messages[] = 'remove_ip_address_item: ' . __('There is no record with the specified id | Записи с указанным id нет | Записи із зазначеним id немає');
+            return false;
+        }
+        
+        if (self::is_ip_address_active($remove_item)) {
+            /**
+             * Количество активных ip адресов
+             */
+            $count_ena = 0;
+            foreach ($this->ip_address as $item) {
+                if (self::is_ip_address_active($item)) { $count_ena++; }
+            }
+
+            /**
+             * Нельзя удалять единственный активный IP-адрес.
+             */
+            if ($count_ena <= 1) {
+                self::$messages[] = 'remove_ip_address_item: ' . __('You cannot delete the only active IP address | Нельзя удалять единственный активный ip адрес | Не можна видаляти єдину активну ip адресу');
+                return false;
+            }
+        }
+        
+        try {
+
+            $query = (new Query('/ip/address/remove'))
+                ->equal('numbers', $id);
+            $response = $this->client
+                ->query($query)
+                ->read();
+            
+            $parsed = self::parse_response($response);
+
+            if ($parsed[self::F_PARSE_SUCCESS]) {
+
+                if ($clear_cache) {
+                    $this->ip_address = null;
+                } else {
+                    if ($this->ip_address !== null) {
+                        foreach ($this->ip_address as $k => $row) {
+                            if (($row[Mik::F_ADDR_ID] ?? null) === $id) {
+                                unset($this->ip_address[$k]);
+                                break;
+                            }
+                        }
+                    }
+                }
+                return true;
+            }
+
+            self::$messages[] = 'remove_ip_address_item: ' . __('Error deleting record | Ошибка удаления записи | Помилка видалення запису');
+            self::$messages[] = 'message: ' . ($parsed[self::F_PARSE_MESSAGE] ?? '-');
+            self::$messages[] = 'category: ' . ($parsed[self::F_PARSE_CATEGORY] ?? '-');
+            return false;
+
+        } catch (\Throwable $e) {
+            self::$messages[] = 'remove_ip_address_item: ' . __('Device operation error | Ошибка операции с устройством | Помилка операції з пристроєм');
+            self::$messages[] = 'id: ' . $id;
+            self::$messages[] = $e->getMessage();
+            return null;
+        }
+    }        
+
+    
+
+    /**
+     * Поиск интерфейсного IP-адреса по произвольному IP из сети.
+     *
+     * На вход получает IP-адрес, например:
+     *   10.10.10.5
+     *
+     * Возвращает запись из списка /ip/address, сеть которой
+     * содержит указанный IP.
+     *
+     * Например, для записи:
+     *   10.10.10.1/24
+     *
+     * будут найдены адреса:
+     *   10.10.10.1
+     *   10.10.10.5
+     *   10.10.10.254
+     *
+     * @param string $ip
+     *
+     * @return array|null
+     *   Найденная запись или null.
+     */
+    public function find_ip_address_by_ip(string $ip): ?array
+    {
+        if (!validate_ip($ip)) {
+            self::$errors[] = 'find_ip_address_by_ip: ' . __('invalid ip address | неверный IP-адрес | недійсна IP-адреса');
+            return null;
+        }
+
+        $this->ensureIpAddress();
+
+        $ip_long = ip2long($ip);
+
+        foreach ($this->ip_address as $item) {
+
+            $network = $item[Mik::F_ADDR_NETWORK] ?? null;
+            $prefix  = $item[Mik::F_ADDR_PREFIX] ?? null;
+
+            if (
+                !validate_ip($network) ||
+                !is_numeric($prefix)
+            ) {
+                // continue;
+                throw new \Exception('find_ip_address_by_ip: ' . __('Cache structure violation | Нарушение структуры кэша | Порушення структури кешу') . '<pre>' . print_r($item, true) . '</pre>');
+            }
+
+            $mask = -1 << (32 - (int)$prefix);
+
+            if (
+                ($ip_long & $mask) ===
+                (ip2long($network) & $mask)
+            ) {
+                return $item;
+            }
+        }
+
+        return null;
+    }
+    
+    public function resolve_interface_by_ip(string $ip): ?string
+    {
+        throw new \Exception('Не написана');
+    }
+    
+    
+    
+    /**
+     * Проверка существования сети
+     */
+    public function in_address_network(string $network): bool
+    {
+        throw new \Exception('Не написана');
+    }
+    
+    
+    /*
+     * 
+     * Конец блока IP ADDRESSES
+     * ========================================================================
+     * 
+     */
+
+    
+    
+    /*
+     * 
+     * ========================================================================
+     * начало блока IP DHCP LEASES
+     * 
+     */
+
+
+    
+    private ?array $dhcp_lease = null;
+
+    
+
+    /**
+     * Гарантировать, что $this->dhcp_lease загружен и нормализован.
+     *
+     * Логика:
+     *   если cache пуст:
+     *       запросить /ip/dhcp-server/lease/print
+     *       нормализовать записи
+     *       сохранить в cache
+     */
+    private function ensureDhcpLease(): void
+    {
+        if ($this->dhcp_lease !== null) {
+            return;
+        }
+
+        try {
+            $query = new Query('/ip/dhcp-server/lease/print');
+            $raw = $this->client
+                    ->query($query)
+                    ->read();
+
+            $this->dhcp_lease = array_values(
+                array_filter(
+                    array_map(
+                        fn($row) => self::normalizeDhcpLeaseRow($row),
+                        $raw
+                    ),
+                    fn($row) => is_array($row)
+                )
+            );
+
+        } catch (\Throwable $e) {
+            $this->dhcp_lease = null;
+            self::$messages[] = 'ensureDhcpLease: ' . __('DHCP lease request error | Ошибка получения DHCP lease | Помилка отримання DHCP lease');
+            self::$messages[] = $e->getMessage();
+        }
+    }
+    
+    
+    
+    /**
+     * Возвращает статистику DHCP lease.
+     * @return array
+     */
+    public function get_dhcp_lease_stat(): array
+    {
+        $this->ensureDhcpLease();
+
+        $stat = [
+            Mik::F_STAT_TOTAL     => 0,
+
+            Mik::F_STAT_DYNAMIC   => 0,
+            Mik::F_STAT_STATIC    => 0,
+
+            Mik::F_STAT_ENABLED   => 0,
+            Mik::F_STAT_DISABLED  => 0,
+            Mik::F_STAT_BLOCKED   => 0,
+
+            Mik::F_STAT_STATUS    => [],
+            Mik::F_STAT_SERVERS   => [],
+        ];
+
+        foreach ($this->dhcp_lease as $item) {
+
+            $stat[Mik::F_STAT_TOTAL]++;
+
+            if (!empty($item[Mik::F_DHCP_LEASE_BLOCKED])) {
+                $stat[Mik::F_STAT_BLOCKED]++;
+            }            
+            
+            if (!empty($item[Mik::F_DHCP_LEASE_ENA])) {
+                $stat[Mik::F_STAT_ENABLED]++;
+            } else {
+                $stat[Mik::F_STAT_DISABLED]++;
+            }
+
+            if (!empty($item[Mik::F_DHCP_LEASE_DYNAMIC])) {
+                $stat[Mik::F_STAT_DYNAMIC]++;
+            } else {
+                $stat[Mik::F_STAT_STATIC]++;
+            }
+
+            $status = trim((string)($item[Mik::F_DHCP_LEASE_STATUS] ?? 'unknown'));
+            $stat[Mik::F_STAT_STATUS][$status] =
+                ($stat[Mik::F_STAT_STATUS][$status] ?? 0) + 1;
+
+            $server = trim((string)($item[Mik::F_DHCP_LEASE_SERVER] ?? 'unknown'));
+            $stat[Mik::F_STAT_SERVERS][$server] =
+                ($stat[Mik::F_STAT_SERVERS][$server] ?? 0) + 1;
+        }
+        
+        ksort($stat[Mik::F_STAT_STATUS]);
+        ksort($stat[Mik::F_STAT_SERVERS]);
+        
+        return $stat;
+    }
+    
+
+    
+    /**
+     * Нормализация записи lease.
+     */
+    public static function normalizeDhcpLeaseRow(?array $item): ?array
+    {
+        if (empty($item)) { return null; }
+
+        return [
+            Mik::F_DHCP_LEASE_ID                    => $item[Mik::F_DHCP_LEASE_ID] ?? null,
+            Mik::F_DHCP_LEASE_ADDRESS               => trim((string)($item[Mik::F_DHCP_LEASE_ADDRESS] ?? '')),
+            Mik::F_DHCP_LEASE_MAC                   => normalize_mac($item[Mik::F_DHCP_LEASE_MAC] ?? ''),
+            Mik::F_DHCP_LEASE_CLIENT_ID             => trim((string)($item[Mik::F_DHCP_LEASE_CLIENT_ID] ?? '')),
+            Mik::F_DHCP_LEASE_DYNAMIC               => mikBool($item[Mik::F_DHCP_LEASE_DYNAMIC] ?? false),
+            Mik::F_DHCP_LEASE_BLOCKED               => mikBool($item[Mik::F_DHCP_LEASE_BLOCKED] ?? false),
+            Mik::F_DHCP_LEASE_DISABLED              => mikBool($item[Mik::F_DHCP_LEASE_DISABLED] ?? false),
+            Mik::F_DHCP_LEASE_ENA                   => !mikBool($item[Mik::F_DHCP_LEASE_DISABLED] ?? false),
+            Mik::F_DHCP_LEASE_SERVER                => trim((string)($item[Mik::F_DHCP_LEASE_SERVER] ?? '')),
+            Mik::F_DHCP_LEASE_STATUS                => strtolower(trim((string)($item[Mik::F_DHCP_LEASE_STATUS] ?? ''))),
+            Mik::F_DHCP_LEASE_HOSTNAME              => trim((string)($item[Mik::F_DHCP_LEASE_HOSTNAME] ?? '')),
+            Mik::F_DHCP_LEASE_COMMENT               => trim((string)($item[Mik::F_DHCP_LEASE_COMMENT] ?? '')),
+            Mik::F_DHCP_LEASE_ADDRESS_LISTS         => trim((string)($item[Mik::F_DHCP_LEASE_ADDRESS_LISTS] ?? '')),
+            Mik::F_DHCP_LEASE_DHCP_OPTION           => trim((string)($item[Mik::F_DHCP_LEASE_DHCP_OPTION] ?? '')),
+            Mik::F_DHCP_LEASE_EXPIRES_AFTER         => trim((string)($item[Mik::F_DHCP_LEASE_EXPIRES_AFTER] ?? '')),
+            Mik::F_DHCP_LEASE_LAST_SEEN             => trim((string)($item[Mik::F_DHCP_LEASE_LAST_SEEN] ?? '')),
+            Mik::F_DHCP_LEASE_ACTIVE_ADDRESS        => trim((string)($item[Mik::F_DHCP_LEASE_ACTIVE_ADDRESS] ?? '')),
+            Mik::F_DHCP_LEASE_ACTIVE_MAC_ADDRESS    => normalize_mac($item[Mik::F_DHCP_LEASE_ACTIVE_MAC_ADDRESS] ?? ''),
+            Mik::F_DHCP_LEASE_ACTIVE_CLIENT_ID      => trim((string)($item[Mik::F_DHCP_LEASE_ACTIVE_CLIENT_ID] ?? '')),
+            Mik::F_DHCP_LEASE_ACTIVE_SERVER         => trim((string)($item[Mik::F_DHCP_LEASE_ACTIVE_SERVER] ?? '')),
+            Mik::F_DHCP_LEASE_ALWAYS_BROADCAST      => mikBool($item[Mik::F_DHCP_LEASE_ALWAYS_BROADCAST] ?? false),
+            Mik::F_DHCP_LEASE_RADIUS                => mikBool($item[Mik::F_DHCP_LEASE_RADIUS] ?? false),
+        ];
+    }
+    
+    
+    
+    /**
+     * Проверка одной записи lease.
+     */
+    public function validate_dhcp_lease_item(array $item): bool
+    {
+        if  (
+                (
+                    !isset($item[Mik::F_DHCP_LEASE_ADDRESS]) ||
+                    !isset($item[Mik::F_DHCP_LEASE_MAC]) ||
+                    !isset($item[Mik::F_DHCP_LEASE_STATUS])
+                ) 
+                ||
+                (
+                    empty($item[Mik::F_DHCP_LEASE_ADDRESS]) ||
+                    empty($item[Mik::F_DHCP_LEASE_MAC]) ||
+                    empty($item[Mik::F_DHCP_LEASE_STATUS])
+                )
+            )
+        {
+            self::$messages[] = 'validate_dhcp_lease_item: ' . __('Error in fields | Ошибка в полях | Помилка у полях') . ': [' . Mik::F_DHCP_LEASE_ADDRESS . '|' . Mik::F_DHCP_LEASE_MAC . '|' . Mik::F_DHCP_LEASE_STATUS . ']';
+            return false;
+        }
+
+        if (!validate_ip($item[Mik::F_DHCP_LEASE_ADDRESS])) {
+            self::$messages[] = 'validate_dhcp_lease_item: ' . __('Error in fields | Ошибка в полях | Помилка у полях') . ': [' . Mik::F_DHCP_LEASE_ADDRESS . ']';
+            return false;
+        }
+
+        if (!validate_mac($item[Mik::F_DHCP_LEASE_MAC])) {
+            self::$messages[] = 'validate_dhcp_lease_item: ' . __('Error in fields | Ошибка в полях | Помилка у полях') . ': [' . Mik::F_DHCP_LEASE_MAC . ']';
+            return false;
+        }
+
+
+        if (
+            isset($item[Mik::F_DHCP_LEASE_ACTIVE_ADDRESS]) &&
+            !empty($item[Mik::F_DHCP_LEASE_ACTIVE_ADDRESS]) &&
+            !validate_ip($item[Mik::F_DHCP_LEASE_ACTIVE_ADDRESS])
+        ) {
+            self::$messages[] = 'validate_dhcp_lease_item: ' . __('Error in fields | Ошибка в полях | Помилка у полях') . ': [' . Mik::F_DHCP_LEASE_ACTIVE_ADDRESS . ']';
+            return false;
+        }
+
+        if (
+            isset($item[Mik::F_DHCP_LEASE_ACTIVE_MAC_ADDRESS]) &&
+            !empty($item[Mik::F_DHCP_LEASE_ACTIVE_MAC_ADDRESS]) &&
+            !validate_mac($item[Mik::F_DHCP_LEASE_ACTIVE_MAC_ADDRESS])
+        ) {
+            self::$messages[] = 'validate_dhcp_lease_item: ' . __('Error in fields | Ошибка в полях | Помилка у полях') . ': [' . Mik::F_DHCP_LEASE_ACTIVE_MAC_ADDRESS . ']';
+            return false;
+        }
+
+        return true;
+    }
+    
+    
+    
+    /**
+     * Получить список lease по фильтрам.
+     */
+    public function get_dhcp_lease_items(
+        ?string $id = null,
+        ?string $address = null,
+        ?string $mac = null,
+        ?string $server = null,
+        ?string $status = null,
+        int|bool|null $ena = null,
+        int|bool|null $dynamic = null,
+        int|bool|null $blocked = null,
+        ?string $descr = null
+    ): array
+    {
+        $this->ensureDhcpLease();
+
+        $descr_lc = $descr !== null
+            ? mb_strtolower(ltrim($descr))
+            : null;
+
+        $status_lc = $status !== null
+            ? mb_strtolower($status)
+            : null;
+
+        $mac = $mac !== null
+            ? normalize_mac($mac)
+            : null;
+
+        $result = [];
+
+        foreach ($this->dhcp_lease as $item) {
+
+            if (
+                $id !== null &&
+                ($item[Mik::F_DHCP_LEASE_ID] ?? null) !== $id
+            ) {
+                continue;
+            }
+
+            if (
+                $address !== null &&
+                ($item[Mik::F_DHCP_LEASE_ADDRESS] ?? null) !== $address
+            ) {
+                continue;
+            }
+
+            if (
+                $mac !== null &&
+                strtoupper((string)($item[Mik::F_DHCP_LEASE_MAC] ?? '')) !== $mac
+            ) {
+                continue;
+            }
+
+            if (
+                $server !== null &&
+                ($item[Mik::F_DHCP_LEASE_SERVER] ?? null) !== $server
+            ) {
+                continue;
+            }
+
+            if (
+                $status !== null &&
+                mb_strtolower((string)($item[Mik::F_DHCP_LEASE_STATUS] ?? '')) !== $status_lc
+            ) {
+                continue;
+            }
+
+            if (
+                $ena !== null &&
+                (bool)($item[Mik::F_DHCP_LEASE_ENA] ?? false) !== (bool)$ena
+            ) {
+                continue;
+            }
+
+            if (
+                $dynamic !== null &&
+                (bool)($item[Mik::F_DHCP_LEASE_DYNAMIC] ?? false) !== (bool)$dynamic
+            ) {
+                continue;
+            }
+
+            if (
+                $blocked !== null &&
+                (bool)($item[Mik::F_DHCP_LEASE_BLOCKED] ?? false) !== (bool)$blocked
+            ) {
+                continue;
+            }
+
+            if ($descr !== null) {
+
+                $comment = mb_strtolower((string)($item[Mik::F_DHCP_LEASE_COMMENT] ?? ''));
+
+                if (!str_starts_with($comment, $descr_lc)) {
+                    continue;
+                }
+            }
+
+            $result[] = $item;
+        }
+
+        return $result;
+    }
+    
+    
+    /**
+     * Проверка фильтров.
+     */
+    public function validate_filter_dhcp_lease(array $search): bool
+    {
+        $allowed = [
+            Mik::F_DHCP_LEASE_ID,
+            Mik::F_DHCP_LEASE_ADDRESS,
+            Mik::F_DHCP_LEASE_MAC,
+            Mik::F_DHCP_LEASE_SERVER,
+            Mik::F_DHCP_LEASE_STATUS,
+            Mik::F_DHCP_LEASE_ENA,
+            Mik::F_DHCP_LEASE_DYNAMIC,
+            Mik::F_DHCP_LEASE_BLOCKED,
+            Mik::F_DHCP_LEASE_COMMENT,
+        ];
+
+        foreach ($search as $field => $value) {
+
+            if (!in_array($field, $allowed, true)) {
+                throw new \Exception("validate_filter_dhcp_lease: " . __('unsupported field | неподдерживаемое поле | непідтримуване поле') . " '{$field}'");
+            }
+
+            switch ($field) {
+
+                case Mik::F_DHCP_LEASE_ID:
+                    if (!is_string($value) || trim($value) === '') {
+                        self::$messages[] = 'validate_filter_dhcp_lease: ' . __('invalid id | недействительный id | недійсний id');
+                        return false;
+                    }
+                    break;
+
+                case Mik::F_DHCP_LEASE_ADDRESS:
+                    if (!is_string($value) || !validate_ip($value)) {
+                        self::$messages[] = 'validate_filter_dhcp_lease: ' . __('invalid ip address | неверный IP-адрес | недійсна IP-адреса') . " '{$value}'";
+                        return false;
+                    }
+                    break;
+
+                case Mik::F_DHCP_LEASE_MAC:
+                    if (!is_string($value) || !validate_mac($value)) {
+                        self::$messages[] = 'validate_filter_dhcp_lease: ' . __('invalid mac address | неверный MAC-адрес | недійсна MAC-адреса') . " '{$value}'";
+                        return false;
+                    }
+                    break;
+
+                case Mik::F_DHCP_LEASE_SERVER:
+                case Mik::F_DHCP_LEASE_STATUS:
+                case Mik::F_DHCP_LEASE_COMMENT:
+                    if (!is_string($value)) {
+                        self::$messages[] = 'validate_filter_dhcp_lease: ' . __('invalid string field | недопустимое строковое поле | недійсне поле рядка') . " '{$field}'";
+                        return false;
+                    }
+                    break;
+
+                case Mik::F_DHCP_LEASE_ENA:
+                case Mik::F_DHCP_LEASE_DYNAMIC:
+                case Mik::F_DHCP_LEASE_BLOCKED:
+                    if (
+                        !is_bool($value)
+                        &&
+                        !in_array($value, [0, 1], true)
+                    ) {
+                        self::$messages[] = 'validate_filter_dhcp_lease: ' . __('invalid boolean field | недопустимое логическое поле | недійсне логічне поле') . " '{$field}'";
+                        return false;
+                    }
+                    break;
+            }
+        }
+        return true;
+    }    
+    
+    
+    
+    /**
+     * Поиск lease по массиву критериев.
+     */
+    public function find_dhcp_lease_items(array $search): array|false
+    {
+        $search = remove_null_fields($search);
+
+        if (!$this->validate_filter_dhcp_lease($search)) {
+            return false;
+        }
+
+        return $this->get_dhcp_lease_items(
+            id      : $search[Mik::F_DHCP_LEASE_ID] ?? null,
+            address : $search[Mik::F_DHCP_LEASE_ADDRESS] ?? null,
+            mac     : $search[Mik::F_DHCP_LEASE_MAC] ?? null,
+            server  : $search[Mik::F_DHCP_LEASE_SERVER] ?? null,
+            status  : $search[Mik::F_DHCP_LEASE_STATUS] ?? null,
+            ena     : $search[Mik::F_DHCP_LEASE_ENA] ?? null,
+            dynamic : $search[Mik::F_DHCP_LEASE_DYNAMIC] ?? null,
+            blocked : $search[Mik::F_DHCP_LEASE_BLOCKED] ?? null,
+            descr   : $search[Mik::F_DHCP_LEASE_COMMENT] ?? null,
+        );
+    }
+    
+    
+    
+    
+    /**
+     * Получить lease по id.
+     */
+    public function get_dhcp_lease_item(string $id): array
+    {
+        return $this->find_dhcp_lease_items([
+            Mik::F_DHCP_LEASE_ID => $id
+        ])[0] ?? [];
+    }
+
+    
+    
+    public function get_dhcp_lease_by_ip(string $ip): array
+    {
+        return $this->find_dhcp_lease_items([
+            Mik::F_DHCP_LEASE_ADDRESS => $ip,
+            Mik::F_DHCP_LEASE_ENA => true,
+        ])[0] ?? [];
+    }
+
+    
+    
+    public function get_dhcp_lease_by_mac(string $mac): array
+    {
+        return $this->find_dhcp_lease_items([
+            Mik::F_DHCP_LEASE_MAC => $mac,
+            Mik::F_DHCP_LEASE_ENA => true,
+        ])[0] ?? [];
+    }
+    
+    
+    
+    /**
+     * Проверка существования lease.
+     */
+    public function in_dhcp_lease_item(
+        ?string $ip,
+        ?string $mac = null,
+        ?string $ena = null
+    ): bool|null
+    {
+        $found = $this->find_dhcp_lease_items([
+            Mik::F_DHCP_LEASE_ADDRESS => $ip,
+            Mik::F_DHCP_LEASE_MAC => $mac,
+            Mik::F_DHCP_LEASE_ENA => $ena,
+        ]);
+        
+        if ($found === null) {
+            return null;
+        } else {
+            return boolval($found);
+        }
+    }
+
+    
+    
+    /**
+     * Активна ли lease.
+     */
+    public static function is_dhcp_lease_active(array $item): bool
+    {
+        return
+            !empty($item[Mik::F_DHCP_LEASE_ENA])
+            &&
+            !empty($item[Mik::F_DHCP_LEASE_STATUS])
+            &&
+            strtolower((string)($item[Mik::F_DHCP_LEASE_STATUS] ?? null)) === 'bound';
+    }
+    
+    
+    /**
+     * Удалить lease.
+     */
+    public function remove_dhcp_lease_item(string $id, bool $clear_cache = false): bool
+    {
+        $id = trim($id);
+
+        if ($id === '') {
+            self::$messages[] = 'remove_dhcp_lease_item: ' . __('record id not specified | id записи не указан | id запису не вказано');
+            return false;
+        }
+
+        $this->ensureDhcpLease();
+        
+        $item = $this->get_dhcp_lease_item($id);
+        if ($item === null) {
+            self::$messages[] = 'remove_dhcp_lease_item: ' . __('record not found | запись не найдена | запис не знайдено');
+            return false;
+        }
+
+        try {
+
+            $query = (new Query('/ip/dhcp-server/lease/remove'))
+                ->equal('numbers', $id);
+
+            $response = $this->client
+                ->query($query)
+                ->read();
+
+            $parsed = self::parse_response($response);
+            if ($parsed[self::F_PARSE_SUCCESS]) {
+                if ($clear_cache) {
+                    $this->dhcp_lease = null;
+                } else {
+                    if ($this->dhcp_lease !== null) {
+                        foreach ($this->dhcp_lease as $k => $row) {
+                            if (($row[Mik::F_DHCP_LEASE_ID] ?? null) === $id) 
+                            {
+                                unset($this->dhcp_lease[$k]);
+                                break;
+                            }
+                        }
+                    }
+                }
+                return true;
+            }
+
+            self::$messages[] = 'remove_dhcp_lease_item: ' . __('Error deleting record | Ошибка удаления записи | Помилка видалення запису');
+            self::$messages[] = 'message: ' . ($parsed[self::F_PARSE_MESSAGE] ?? '-');
+            self::$messages[] = 'category: ' . ($parsed[self::F_PARSE_CATEGORY] ?? '-');
+            return false;
+
+        } catch (\Throwable $e) {
+
+            self::$messages[] = 'remove_dhcp_lease_item: ' . __('Operation failed | Ошибка операции | Помилка операції');
+            self::$messages[] = 'id: ' . $id;
+            self::$messages[] = $e->getMessage();
+            return false;
+        }
+    }    
+
+
+    /**
+     * Сделать запись lease статической
+     */
+    public function set_dhcp_lease_static(string $id, bool $clear_cache = false): bool
+    {
+        $id = trim($id);
+
+        if ($id === '') {
+            self::$messages[] = 'set_dhcp_lease_static: ' . __('record id not specified | id записи не указан | id запису не вказано');
+            return false;
+        }
+
+        $this->ensureDhcpLease();
+
+        $item = $this->get_dhcp_lease_item($id);
+
+        if ($item === null) {
+            self::$messages[] = 'set_dhcp_lease_static: ' . __('record not found | запись не найдена | запис не знайдено');
+            return false;
+        }
+
+        if ($item[Mik::F_DHCP_LEASE_DYNAMIC] === false) {
+            self::$messages[] = 'set_dhcp_lease_static: ' . __('Запись уже статична');
+            return true;
+        }
+
+        try {
+
+            $query = (new Query('/ip/dhcp-server/lease/make-static'))
+                ->equal('numbers', $id);
+
+            $response = $this->client
+                ->query($query)
+                ->read();
+
+            $parsed = self::parse_response($response);
+            if ($parsed[self::F_PARSE_SUCCESS]) {
+                if ($clear_cache) {
+                    $this->dhcp_lease = null;
+                } else {
+                    foreach ($this->dhcp_lease as $k => $row) {
+                        if (($row[Mik::F_DHCP_LEASE_ID] ?? null) === $id) {
+                            unset($this->dhcp_lease[$k]);
+                            break;
+                        }
+                    }
+                }
+                return true;
+            }
+
+            self::$messages[] = 'set_dhcp_lease_static: ' . __('Operation failed | Ошибка операции | Помилка операції');
+            self::$messages[] = 'message: ' . ($parsed[self::F_PARSE_MESSAGE] ?? '-');
+            self::$messages[] = 'category: ' . ($parsed[self::F_PARSE_CATEGORY] ?? '-');
+            return false;
+
+        } catch (\Throwable $e) {
+
+            self::$messages[] = 'set_dhcp_lease_static: ' . __('Operation failed | Ошибка операции | Помилка операції');
+            self::$messages[] = 'id: ' . $id;
+            self::$messages[] = $e->getMessage();
+
+            return false;
+        }
+    }
+
+
+    /**
+     * Получить активные lease.
+     */
+    public function get_dhcp_leases_active(): array
+    {
+        $this->ensureDhcpLease();
+        $result = [];
+        foreach ($this->dhcp_lease as $item) {
+            if (self::is_dhcp_lease_active($item)) {
+                $result[] = $item;
+            }
+        }
+        return $result;
+    }
+    
+    
+
+    /**
+     * Получить dynamic lease.
+     */
+    public function get_dhcp_leases_dynamic(): array
+    {
+        $this->ensureDhcpLease();
+        $result = [];
+        foreach ($this->dhcp_lease as $item) {
+            if ( $item[Mik::F_DHCP_LEASE_ENA] && $item[Mik::F_DHCP_LEASE_DYNAMIC] ) 
+            {
+                $result[] = $item;
+            }
+        }
+        return $result;
+    }
+    
+    
+
+    /**
+     * Получить static lease.
+     */
+    public function get_dhcp_leases_static(): array
+    {
+        $this->ensureDhcpLease();
+        $result = [];
+        foreach ($this->dhcp_lease as $item) {
+            if ( $item[Mik::F_DHCP_LEASE_ENA] && !$item[Mik::F_DHCP_LEASE_DYNAMIC] ) 
+            {
+                $result[] = $item;
+            }
+        }
+        return $result;
+    }
+    
+    
+
+    public function in_dhcp_leases_ip(string $ip): bool
+    {
+        $this->ensureDhcpLease();
+        $result = $this->find_dhcp_lease_items([
+            Mik::F_DHCP_LEASE_ADDRESS => $ip,
+            Mik::F_DHCP_LEASE_ENA => true,
+        ]);
+        return count($result ?? []) > 0;
+    }
 
 
 
+    /**
+     * MAC уже присутствует?
+     */
+    public function in_dhcp_leases_mac(string $mac): bool
+    {
+        $this->ensureDhcpLease();
+        $mac = normalize_mac($mac);
+        $result = $this->find_dhcp_lease_items([
+            Mik::F_DHCP_LEASE_MAC => $mac,
+            Mik::F_DHCP_LEASE_ENA => true,
+        ]);
+        return count($result ?? []) > 0;
+    }
 
 
 
+    /**
+     * Есть ли активная lease для MAC.
+     */
+    public function has_dhcp_lease_active(string $mac): bool
+    {
+        $this->ensureDhcpLease();
+        $mac = normalize_mac($mac);
+        $result = [];
+        foreach ($this->dhcp_lease as $item) {
+            if  (
+                    $item[Mik::F_DHCP_LEASE_ENA] 
+                    && $item[Mik::F_DHCP_LEASE_MAC] === $mac
+                    && self::is_dhcp_lease_active($item)
+                )
+            {
+                $result[] = $item;
+            }
+        }
+        return count($result ?? []) > 0;
+    }
+    
+    
+    /**
+     * Получить static lease.
+     */
+    public function has_dhcp_lease_static(string $ip): bool
+    {
+        $this->ensureDhcpLease();
+        $result = [];
+        foreach ($this->dhcp_lease as $item) {
+            if  (
+                    $item[Mik::F_DHCP_LEASE_ENA]
+                    && $item[Mik::F_DHCP_LEASE_ADDRESS] === $ip
+                    && !$item[Mik::F_DHCP_LEASE_DYNAMIC]
+                )
+            {
+                $result[] = $item;
+            }
+        }
+        return count($result ?? []) > 0;
+    }
+
+
+    
+    /*
+     * 
+     * Конец блока IP DHCP LEASES
+     * ========================================================================
+     * 
+     */
+    
+    
+    
 }
-

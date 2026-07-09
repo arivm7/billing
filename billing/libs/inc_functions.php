@@ -27,6 +27,7 @@ use billing\core\MsgType;
 use config\Icons;
 use config\tables\Module;
 use config\tables\PA;
+use config\tables\TP;
 
 require_once DIR_LIBS . '/billing_functions.php';
 require_once DIR_LIBS . '/datetime_functions.php';
@@ -145,7 +146,8 @@ function get_html_btn_abon_ip_turn(int $tp_id, string $ip, bool|int $enable, str
  * @param string $target
  * @return string
  */
-function get_html_btn_serv_ena(int|null $pa_id = null, array|null $pa = null, bool|int $ena = 1, bool|int $force = 0, string $title = '', string $options = 'class="btn"', string $target = '_self'): string {
+function get_html_btn_serv_ena(int|null $pa_id = null, array|null $pa = null, bool|int $ena = 1, bool|int $force = 0, string $title = '', string $options = 'class="btn"', string $target = '_self'): string 
+{
     global $TODAY;
 
     if (empty($pa)) {
@@ -221,7 +223,7 @@ function get_html_btn_serv_ena(int|null $pa_id = null, array|null $pa = null, bo
     $src = ($ena ? ($force ? Icons::SRC_UNPAUSE_FORCE : Icons::SRC_UNPAUSE) : Icons::SRC_PAUSE);
     $alt = ($ena ? ($force ? "⏩" : "⏯") : "⏸"); // [On] [Off]
 
-    $html = "<a ".($options ?:'')." href='".Api::URI_CMD."?{$query}' title='{$title}' target='{$target}'>"
+    $html = "<a ".($options ?:'')." href='".PA::URI_ENABLE."?{$query}' title='{$title}' target='{$target}'>"
                 ."<img src='{$src}' alt='{$alt}' height='24rem'></img>"
             ."</a>";
     return $html;
@@ -328,4 +330,29 @@ function html_badge(string $text, int|string $sign, array $statuses = STATUSES, 
     // Возвращаем сформированную строку
     return $s;
 
+}
+
+
+
+function status_ip_abon_img(null|bool $state): string {
+    $width = 22;
+    $s = '';
+    switch (true) {
+        
+        case $state === null:
+            $s .= '<img src="'.Icons::SRC_ICON_MIK_ABON_IP_OFF.'" alt="NO" width='.$width.' title="'.__('The IP address is not in the ABON table | IP адреса нет в таблице ABON | IP адреси немає в таблиці ABON').'">';
+            break;
+
+        case $state === true:
+            $s .= '<img src="'.Icons::SRC_ICON_MIK_ABON_IP_ON.'" alt="ON" width='.$width.' title="'.__('The IP address is in the ABON table and is active | IP адрес есть в таблице ABON и активен | IP адреса є в таблиці ABON і активна').'">';
+            break;
+
+        case $state === false:
+            $s .= '<img src="'.Icons::SRC_ICON_MIK_ABON_IP_OFF_RED.'" alt="OFF" width='.$width.' title="'.__('The IP address is in the ABON table and is disabled | IP адрес есть в таблице ABON и отключён | IP адреса є в таблиці ABON і відключена').'">';
+            break;
+
+        default:
+            break;
+    }
+    return $s;
 }
