@@ -1023,6 +1023,8 @@ function redirect(string|false $url = false) {
             // debug( $current_url, "Current URL: ");
             // debug($referer, "Referer: ", die: 1);
             // $redirect = '/';
+            echo "<p><a href='/'>На главную</a></p>";
+            echo "<p><a href='".$referer."'>".$referer."</a></p>";
             debug(['CURRENT'=>$current_url, 'PREVIOS'=>$referer], '[$current_url, $referer] Возвращаться некуда', die:1);
             $redirect = $referer;
         } else {

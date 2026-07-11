@@ -81,6 +81,7 @@ class TpController extends AppBaseController {
             $pa_list = $this->db->get_prices_apply_by_tp(tp_id: $tp_one[TP::F_ID], PA_AGE: PAStatus::ACTIVE_TODAY);
             $tp_one[TP::F_COUNT_PA] = count($pa_list);
         }
+        unset($tp_one);
 
         View::setMeta(
                 title: __('List of technical units | Список технических узлов | Список технічних вузлів')

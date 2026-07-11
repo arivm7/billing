@@ -215,6 +215,14 @@ $config = [
      */
 
 
+    /**
+     * Системные пользовательские учётные записи
+     * Могут содержать служебные данные, которое не проверяются валидатором при редактировании
+     */
+//    'system_users' => [
+//        11, // billing
+//    ],
+    
 
     /**
      * Высота, в количествах строк, редактора коментариев <textarea>
@@ -249,7 +257,8 @@ $config = [
     
 
     /**
-     * Параметры уведомлений SMS, email и прочие
+     * ========================================================================
+     * Параметры блока уведомлений SMS, email и прочие
      */
 
 
@@ -290,6 +299,43 @@ $config = [
 
 
     /**
+     * параметры для почтовой подсистемы
+     */
+
+    'email_max_body_text' => 10*1024, // 10k
+    'email_max_body_html' => 50*1024, // 50k
+    'email_max_file_size' => ini_get('upload_max_filesize'), // 500*1024*1024, // 500M
+    'email_max_filename_length' => 200,
+    'email_subject_template' => 'Рілан-мережа',
+    'email_body_html_template' =>
+        "<html>\n"
+        ."<body>\n"
+        ."<p>Добридень.</p>\n"
+        ."<p></p>\n"
+        ."<p></p>\n"
+        ."<p></p>\n"
+        ."<font size='-1' color=gray>----<br>\n"
+        ."З повагою,<br>\n"
+        ."Рілан-мережа,<br>\n"
+        ."<a href='https://my.ri.net.ua' target='_blank'>https://my.ri.net.ua</a><br>\n"
+        ."</font>\n"
+        ."</body>\n"
+        ."</html>\n",
+    'email_to_debug' => 'rilan@ukr.net',
+    
+    'email_inv_subject_template' => "{AGENT_TITLE}. Рахунок за інтернет. ОР: {PORT} | {ADDRESS}",
+    'email_inv_body_html_template' => '',
+
+
+
+    /**
+     * Конец блока уведомлений
+     * ========================================================================
+     */
+
+
+
+    /**
      * Счета-фактуры и Акты
      */
     'inv_per_page' => 12,
@@ -319,36 +365,6 @@ $config = [
     'bank_liqpay_ident_text'  => "LIQPAY", // Идентификатор LiqPay в тексте назначения платежа
 //    'bank_api_log_path'       => '/tmp/my-auto-logs', // Путь, где сохраняются логи автоматических внесений платежей
     'bank_pay_num_len'        => 8, // максимальное количество цифр в сумме платежа, включая 2 цифры копеек
-    
-
-
-    /**
-     * параметры для почтовой подсистемы
-     */
-    
-    'email_max_body_text' => 10*1024, // 10k
-    'email_max_body_html' => 50*1024, // 50k
-    'email_max_file_size' => ini_get('upload_max_filesize'), // 500*1024*1024, // 500M
-    'email_max_filename_length' => 200,
-    'email_subject_template' => 'Рілан-мережа',
-    'email_body_html_template' =>
-        "<html>\n"
-        ."<body>\n"
-        ."<p>Добридень.</p>\n"
-        ."<p></p>\n"
-        ."<p></p>\n"
-        ."<p></p>\n"
-        ."<font size='-1' color=gray>----<br>\n"
-        ."З повагою,<br>\n"
-        ."Рілан-мережа,<br>\n"
-        ."<a href='https://my.ri.net.ua' target='_blank'>https://my.ri.net.ua</a><br>\n"
-        ."</font>\n"
-        ."</body>\n"
-        ."</html>\n",
-    'email_to_debug' => 'rilan@ukr.net',
-    
-    'email_inv_subject_template' => "{AGENT_TITLE}. Рахунок за інтернет. ОР: {PORT} | {ADDRESS}",
-    'email_inv_body_html_template' => '',
     
 
 

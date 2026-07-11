@@ -12,7 +12,7 @@
  *    decide_action()   — чистый расчёт решения, без БД и побочных эффектов
  *    execute_action()  — выполняет действие (БД/пауза) и сама пишет в LOG_ACTION
  *    print_abon_row()  — только форматирует и печатает строку таблицы в stdout
- *    notify_admin_stub() — заглушка уведомления администратора (пока)
+ *    notify_admin() — уведомления администратора
  *
  *  License : GPL v3
  *  Copyright (C) 2026 Ariv <ariv@meta.ua> | https://github.com/arivm7 | RI-Network, Kiev, UK
@@ -22,6 +22,7 @@ const APP_NAME = "RI-BILLING";
 
 use app\models\AbonModel;
 use app\models\AuthModel;
+use app\controllers\EmailController;
 use billing\core\App;
 use billing\core\base\Controller;
 use config\tables\PA;
@@ -82,13 +83,40 @@ function decide_action(array $abon_data): string
 
 
 /**
- * Функция-заглушка административного уведомления.
+ * Административное уведомление администратора об ошибках или изменениях параметров абонента или услуги.
  * Получает данные абонента, если таковые есть, и текстовое сообщение, которое нужно отправить администратору.
  * Обычно это лог ошибки работы базы или лог действия изменения статуса абонента.
  */
-function notify_admin_stub(?array $abon_data, string $log_text): bool
+function notify_admin(?array $abon_data, string $log_text, string &$log_send = ''): bool
 {
-    return true;
+    $to = EmailController::parse_mail_recipients(App::get_user()[User::F_EMAIL_MAIN]);
+    
+    $subject = 
+            'RI-BILLING. '
+            . ($abon_data
+                ?   $abon_data[Abon::F_ABON_ID] . ' | ' . $abon_data[Abon::F_ADDRESS] . ' | ' . __('Operations with the subscriber’s personal account and connected services | Операции с лицевым счётом абонента и подключёнными услугами | Операції з особовим рахунком абонента та підключеними послугами')
+                :   'ERROR. ' . __('Error in auto shutdown script | Ошибка в работе скрипта автоотключения | Помилка роботи скрипта автовідключення')
+              );
+    
+    $body_text = 
+            'RI-BILLING. ' . "\n"
+            . ($abon_data
+                ?   $abon_data[Abon::F_ABON_ID] . ' | ' . $abon_data[Abon::F_ADDRESS] . "\n" 
+                    . __('Operations with the subscriber’s personal account and connected services | Операции с лицевым счётом абонента и подключёнными услугами | Операції з особовим рахунком абонента та підключеними послугами')
+                :   __('Error in auto shutdown script | Ошибка в работе скрипта автоотключения | Помилка роботи скрипта автовідключення')
+              ) . "\n"
+            . "\n"
+            . $log_text;
+    
+    $as_html = false;
+    
+    return EmailController::send(
+            to: $to,
+            subject: $subject,
+            body_text: $body_text,
+            as_html: $as_html,
+            log: $log_send
+        );
 }
 
 
@@ -156,13 +184,12 @@ function execute_action(string $action, array $abon_data, AbonModel $model, stri
              * Её результат НЕ влияет на факт постановки на паузу —
              * пауза уже необратимо произошла к этому моменту.
              */
-            $notified = notify_admin_stub($abon_data, $header . "\n" . $pause_log);
+            $notify_log = '';
+            $notified = notify_admin($abon_data, $header . "\n" . $pause_log, $notify_log);
 
             log_action($header . " | Отправка уведомления администратору: " 
-                    . ($notified
-                        ? "SUCCESS"
-                        : "ERROR"
-                    ),
+                    . ($notified ? "SUCCESS" : "ERROR")
+                    . ($notify_log ? "\n" . $notify_log : ""),
                 $log_filename
             );
 
@@ -245,14 +272,18 @@ function print_abon_row(array $abon_data): void
 function print_table_footer(): void
 {
     echo ""
-        . " ----------------------------------------------------- ------- ----------- --------- -------------- \n\n";
+        . " ---------- -" . str_repeat("-", MAX_WIDTH_STR)              . "- ------- ----------- --------- -------------- \n\n";
 }
 
 
 
-// ======================================================================
-//  Точка входа
-// ======================================================================
+// ============================================================================
+// 
+//                                Точка входа
+//  
+// ============================================================================
+
+
 
 /**
  * Автозагрузчик Composer'а
@@ -309,12 +340,17 @@ try {
     $alist = $model->get_rows_by_sql($SQL);
 } catch (Exception $exc) {
     echo "Ошибка запроса списка абонентов " . $exc->getMessage() . "\n";
-    notify_admin_stub(
+    $notify_log = '';
+    notify_admin(
             null,
             "Ошибка запроса списка абонентов \n" 
             . "ОШИБКА:\n" . $exc->getMessage() . "\n"
-            . "ТРАССА:\n" . print_r($exc->getTraceAsString(), true) . "\n"
-            );
+            . "ТРАССА:\n" . print_r($exc->getTraceAsString(), true) . "\n",
+            $notify_log
+        );
+    if ($notify_log) {
+        echo $notify_log . "\n";
+    }
     exit;
 }
 
@@ -342,7 +378,11 @@ foreach ($alist as $abon_row) {
             $msg = "| " . sprintf('%8d', $abon_id) . " | " . sprintf("%-".MAX_WIDTH_STR."s", $address) . " | "
                 . 'REST: Ошибка обновления остатков для абонента ' . "\n";
             echo $msg;
-            notify_admin_stub(null, $msg);
+            $notify_log = '';
+            notify_admin(null, $msg, $notify_log);
+            if ($notify_log) {
+                echo $notify_log . "\n";
+            }
             continue;
         }
         $rest = $model->get_abon_rest($abon_id);
@@ -353,7 +393,11 @@ foreach ($alist as $abon_row) {
             . $exc->getMessage() . "\n"
             . print_r($exc->getTraceAsString(), true);
         echo $msg;
-        notify_admin_stub(null, $msg);
+        $notify_log = '';
+        notify_admin(null, $msg, $notify_log);
+        if ($notify_log) {
+            echo $notify_log . "\n";
+        }
         continue;
     }
 

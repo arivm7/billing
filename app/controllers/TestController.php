@@ -52,6 +52,10 @@ class TestController extends AppBaseController {
              */
 
             
+            $mail = EmailController::send(to: [['email'=>'ariv@meta.ua']], subject: 'test', body_text: 'test1', as_html: false);
+            
+            
+            die();
             
             // 44. 2922-VOK
             // 68. RI_MAIN_CCR 

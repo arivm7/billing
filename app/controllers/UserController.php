@@ -79,6 +79,14 @@ class UserController extends AppBaseController {
      */
     public static function validate(array $data, bool $isNew = false): bool
     {
+        
+//        if (isset($data[User::F_ID])) {
+//            $sys_users = App::get_config('system_users');
+//            if (in_array((int)$data[User::F_ID], $sys_users)) {
+//                return true;
+//            }
+//        }
+        
         // Инициализация валидатора
 
         Validator::lang(Lang::code());
@@ -245,7 +253,7 @@ class UserController extends AppBaseController {
             $data[User::F_NAME_FULL] = $data[User::F_ID];
         }
 
-        // Email —  trim (strtolower убрал, поскольку email может быть с именем)
+        // Email —  trim (email может быть с именем)
         if (!empty($data[User::F_EMAIL_MAIN])) {
             $data[User::F_EMAIL_MAIN] = trim($data[User::F_EMAIL_MAIN]);
         }
@@ -372,7 +380,7 @@ class UserController extends AppBaseController {
 
             $user = $model->get_user((int)$this->route[F_ALIAS]);
 
-            // Копируем только разрешённые поля
+            // Копируем из $_POST[User::POST_REC] только разрешённые поля
             $user_rec = [];
             foreach (User::FORM_FIELDS as $field=>$def_value) {
                 if (array_key_exists($field, $_POST[User::POST_REC])) {

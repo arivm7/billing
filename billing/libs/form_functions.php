@@ -360,3 +360,5 @@ function get_html_form_delete_confirm(
                 . "</button>"
             . "</form>";
 }
+
+

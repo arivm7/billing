@@ -529,7 +529,6 @@ class Api {
 
 
     public static function get_mac_from_arp_by_ip(MikroLink $mik, null|string $ip, bool $disconect_on_end = false): array {
-
         /**
          * Выполним команду print с фильтром адреса
          * В параметрах массива мы указываем фильтр вида '=address=192.168.88.50', 
@@ -713,6 +712,7 @@ class Api {
                     unset($row["DHCP"]);
                 }
             }
+            unset($row);
             return $rez;
         } else {
             self::$errors[] = "Возможно, нет записей в АРП-таблице, что странно.";

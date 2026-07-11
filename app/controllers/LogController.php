@@ -271,50 +271,51 @@ class LogController extends AppBaseController {
 
 
     /**
-     * Заменяет номера договоров в строке на ссылки
+     * Заменяет в тексте номера договоров (лицевых счетов абонентов) на ссылки
+     * на карточку абонента.
      *
-     * @param string $line
-     * @param object $model должен иметь метод validate_abon(int $id): bool
-     * @return string
+     * Числовой последовательностью-кандидатом считается любая изолированная
+     * (с обеих сторон не граничащая с другой цифрой) группа цифр длиной от
+     * port_min_digits до port_max_digits символов включительно (см. конфиг) —
+     * независимо от того, является ли она отдельным "словом" или обрамлена
+     * другими символами (скобками, точками, знаками препинания и т.п.), например:
+     *
+     *   "абонент 19595 подключен"        → "абонент <a ...>19595</a> подключен"
+     *   "для абонента [19595]..."        → "для абонента [<a ...>19595</a>]..."
+     *
+     * Каждый найденный кандидат дополнительно проверяется на существование
+     * реального договора с таким номером (AbonModel::validate_id_abon());
+     * если договор не найден — число остаётся в тексте без изменений.
+     *
+     * @param string $line Строка текста, в которой производится замена
+     *                      (например, строка лога)
+     * @return string      Строка с номерами договоров, заменёнными на ссылки
+     *                      вида <a href="{Abon::URI_VIEW}/{id}" target="_blank"
+     *                      rel="noopener noreferrer" title="{адрес абонента}">{id}</a>
      */
-    public static function replace_abon_links(string $line, $word_vidider = ' '): string {
-
-        $model = new AbonModel;
-        
+    public static function replace_abon_links(string $line): string {
         if (empty($line)) { return $line; }
-
-        $words = explode($word_vidider, $line);
-        
+        $model = new AbonModel;
         $min_digit = App::get_config('port_min_digits');
         $max_digit = App::get_config('port_max_digits');
-
-        foreach ($words as &$word) {
-
-            // только цифры
-            if (!preg_match('/^\d{'.$min_digit.','.$max_digit.'}$/', $word)) {
-                continue;
-            }
-
-            $abon_id = (int)$word;
-
-            // проверка валидности договора
-            if (!$model->validate_id_abon($abon_id)) {
-                continue;
-            }
-
-            // замена на ссылку
-            $word = sprintf(
-                '<a href="'.Abon::URI_VIEW.'/%s" target="_blank" title="%s">%s</a>',
-                $abon_id,
-                h(__abon($abon_id, field: Abon::F_ADDRESS)),
-                $abon_id
-            );
-        }
-
-        unset($word);
-
-        return implode($word_vidider, $words);
-    }    
+        return preg_replace_callback(
+            '/(?<!\d)\d{'.$min_digit.','.$max_digit.'}(?!\d)/',
+            function (array $m) use ($model): string {
+                $abon_id = (int) $m[0];
+                // проверка валидности договора
+                if (!$model->validate_id_abon($abon_id)) {
+                    return $m[0];
+                }
+                return sprintf(
+                    '<a href="'.Abon::URI_VIEW.'/%s" target="_blank" rel="noopener noreferrer" title="%s">%s</a>',
+                    $abon_id,
+                    h(__abon($abon_id, field: Abon::F_ADDRESS)),
+                    $abon_id
+                );
+            },
+            $line
+        );
+    }
 
     
     

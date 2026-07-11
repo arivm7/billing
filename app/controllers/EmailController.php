@@ -40,52 +40,54 @@ use PHPMailer\PHPMailer\PHPMailer;
 
 class EmailController extends AppBaseController  {
 
-
-
-    private PHPMailer $mailer;
-
-
+    
 
     public function __construct($route)
     {
         parent::__construct($route);
-        $mail_config = require DIR_CONFIG . '/config_email.php';
-       
-        $this->mailer = new PHPMailer(true);
-        $this->mailer->CharSet = 'UTF-8';
-        /**
-         * Which method to use to send mail.
-         * Options: "mail", "sendmail", or "smtp": isMail() | isSendmail() | isSMTP()
-         */
-        $this->mailer->isSMTP();
-        $this->mailer->Host       = $mail_config[Email::CONF_SMTP_HOST];
-        $this->mailer->SMTPAuth   = true;
-        $this->mailer->Username   = $mail_config[Email::CONF_USER];
-        $this->mailer->Password   = $mail_config[Email::CONF_PASS];
-        $this->mailer->SMTPSecure = $mail_config[Email::CONF_SMTP_SECURE];
-        $this->mailer->Port       = $mail_config[Email::CONF_SMTP_PORT];
-        $this->mailer->setFrom($mail_config[Email::CONF_MAIL_FROM], $mail_config[Email::CONF_MAIL_SENDER_NAME]);
-        $this->mailer->addReplyTo($mail_config[Email::CONF_MAIL_RETURN_PATH], $mail_config[Email::CONF_MAIL_SENDER_NAME]);
-        $this->mailer->addBCC($mail_config[Email::CONF_MAIL_RETURN_PATH]);
     }    
 
 
 
+    public static function init_mailer(): PHPMailer
+    {
+        $mail_config = require DIR_CONFIG . '/config_email.php';
+        $mailer = new PHPMailer(true);
+        $mailer->CharSet = 'UTF-8';
+        /**
+         * Which method to use to send mail.
+         * Options: "mail", "sendmail", or "smtp": isMail() | isSendmail() | isSMTP()
+         */
+        $mailer->isSMTP();
+        $mailer->Host       = $mail_config[Email::CONF_SMTP_HOST];
+        $mailer->SMTPAuth   = true;
+        $mailer->Username   = $mail_config[Email::CONF_USER];
+        $mailer->Password   = $mail_config[Email::CONF_PASS];
+        $mailer->SMTPSecure = $mail_config[Email::CONF_SMTP_SECURE];
+        $mailer->Port       = $mail_config[Email::CONF_SMTP_PORT];
+        $mailer->setFrom($mail_config[Email::CONF_MAIL_FROM], $mail_config[Email::CONF_MAIL_SENDER_NAME]);
+        $mailer->addReplyTo($mail_config[Email::CONF_MAIL_RETURN_PATH], $mail_config[Email::CONF_MAIL_SENDER_NAME]);
+        $mailer->addBCC($mail_config[Email::CONF_MAIL_RETURN_PATH]);
+        return $mailer;
+    }
+
+    
+    
     /**
      * Просто возвращает правильную структуру для PHPMailer Attachment
-     * @param mixed $path
-     * @param mixed $name
-     * @param mixed $encoding
-     * @param mixed $type
-     * @param mixed $disposition
+     * @param string $path
+     * @param string $name
+     * @param string $encoding
+     * @param string $type
+     * @param string $disposition
      * @return array
      */
     public static function attachment_rec(
-            $path,
-            $name = '',
-            $encoding = PHPMailer::ENCODING_BASE64,
-            $type = '',
-            $disposition = 'attachment'): array
+            string $path,
+            string $name = '',
+            string $encoding = PHPMailer::ENCODING_BASE64,
+            string $type = '',
+            string $disposition = 'attachment'): array
     {
         return [
             Email::ATTACH_PATH => $path,
@@ -107,7 +109,8 @@ class EmailController extends AppBaseController  {
      * @param string $body -- тело письма
      * @return bool
      */
-    function registration(int $abon_id, array $to, string $subject, string $body, string $method = Notify::METHOD_EMAIL_LIST): bool {
+    public static function registration(int $abon_id, array $to, string $subject, string $body, string $method = Notify::METHOD_EMAIL_LIST): bool
+    {
 
         $model = new AbonModel();
         if (!$model->validate_id(Abon::TABLE, $abon_id, Abon::F_ID)) {
@@ -152,55 +155,56 @@ class EmailController extends AppBaseController  {
      * @param string $body_html     -- html версия тела письма
      * @param array $attachments    -- Массив ассоциативных массивов описывающих вложения
      * @param bool $as_html         -- флаг: отправлять как html, если false то как plain/text
+     * @param PHPMailer|null $mailer
+     * @param string $log
      * @return bool
      */
-    public function send(array $to, string $subject, string $body_text = '', string $body_html = '', array $attachments = [], bool $as_html = true): bool
+    public static function send(
+            array $to, 
+            string $subject, 
+            string $body_text = '', 
+            string $body_html = '', 
+            array $attachments = [], 
+            bool $as_html = true, 
+            PHPMailer|null $mailer = null,
+            string &$log = ''): bool
     {
-
-        // debug(
-        //     [
-        //         '$to'=>$to, 
-        //         '$subject'=>$subject, 
-        //         // '$body_text'=>$body_text, 
-        //         // '$body_html'=>$body_html, 
-        //         // '$attachments'=>$attachments, 
-        //         // '$as_html'=>$as_html
-        //     ], 
-        //     'Отправка', 
-        //     die:0
-        // );
+        
+        if ($mailer === null) {
+            $mailer = self::init_mailer();
+        }
 
         try {
 
-            $this->mailer->clearAddresses();
+            $mailer->clearAddresses();
 
             foreach ($to as $rec) {
                 $rec['email'] = trim($rec['email']);
                 $rec['name'] = trim($rec['name'] ?? '');
                 if (empty($rec['name'])) {
-                    $this->mailer->addAddress($rec['email']);
+                    $mailer->addAddress($rec['email']);
                 } else {
-                    $this->mailer->addAddress($rec['email'], $rec['name']);
+                    $mailer->addAddress($rec['email'], $rec['name']);
                 }
             }
             
-            $this->mailer->Subject = $subject;
+            $mailer->Subject = $subject;
 
-            $this->mailer->isHTML($as_html);
+            $mailer->isHTML($as_html);
             
             if ($as_html) {
-                $this->mailer->Body    = $body_html;     // HTML версия
-                $this->mailer->AltBody = $body_text ?: html_to_text($body_html);     // текстовая версия
+                $mailer->Body    = $body_html;     // HTML версия
+                $mailer->AltBody = $body_text ?: html_to_text($body_html);     // текстовая версия
             } else {
-                $this->mailer->Body    = $body_text;     // текстовая версия
+                $mailer->Body    = $body_text;     // текстовая версия
             }
 
-            $this->mailer->clearAttachments();
+            $mailer->clearAttachments();
 
             foreach ($attachments as $attach_rec) {
                 // вложение
                 if (is_file($attach_rec[Email::ATTACH_PATH])) {
-                    $this->mailer->addAttachment(
+                    $mailer->addAttachment(
                         path: $attach_rec[Email::ATTACH_PATH],
                         name: $attach_rec[Email::ATTACH_NAME],
                         encoding: $attach_rec[Email::ATTACH_ENCODING],
@@ -211,12 +215,11 @@ class EmailController extends AppBaseController  {
             }
 
             // отправка
-            return $this->mailer->send();
+            return $mailer->send();
         } catch (\Exception $e) {
-            // error_log('Mail error: ' . $this->mail->ErrorInfo);
-            echo "Mail Error: " . $this->mailer->ErrorInfo . "\n<hr>";
-            echo "Error: " . $e->getMessage() . "\n<hr>";
-            echo "Trace: <pre>" . $e->getTraceAsString() . "</pre>\n<hr>";
+            $log .= "Mail Error: " . $mailer->ErrorInfo . "\n";
+            $log .= "Error: " . $e->getMessage() . "\n";
+            $log .= "Trace: " . $e->getTraceAsString() . "\n";
             return false;
         }
     }
@@ -236,7 +239,8 @@ class EmailController extends AppBaseController  {
      * @param bool $error_to_msg_queue
      * @return bool
      */
-    public static function validate_to(string $to_str, bool $error_to_msg_queue = false): bool {
+    public static function validate_to(string $to_str, bool $error_to_msg_queue = false): bool
+    {
         // Убираем пробелы по краям
         $to_str = trim($to_str);
 
@@ -280,7 +284,8 @@ class EmailController extends AppBaseController  {
      * @param bool $error_to_msg_queue
      * @return bool
      */
-    public static function validate_subject(string $subject, bool $error_to_msg_queue = false): bool {
+    public static function validate_subject(string $subject, bool $error_to_msg_queue = false): bool
+    {
         // Убираем пробелы по краям
         $subject = trim($subject);
 
@@ -395,7 +400,8 @@ class EmailController extends AppBaseController  {
      * @param bool $error_to_msg_queue
      * @return bool
      */
-    public static function validate_attach(string $path, string $name, bool $error_to_msg_queue = false): bool {
+    public static function validate_attach(string $path, string $name, bool $error_to_msg_queue = false): bool
+    {
 
         // --- Проверка пути ---
         $path = trim($path);
@@ -522,7 +528,8 @@ class EmailController extends AppBaseController  {
      * @param array $abon -- Запись абонента для которого отправляется уведомление
      * @return string
      */
-    public static function make_email_subject(array $agents, array $abon): string {
+    public static function make_email_subject(array $agents, array $abon): string
+    {
         $subject = untemplate(
                 App::get_config('email_inv_subject_template'),
                 [
@@ -544,7 +551,8 @@ class EmailController extends AppBaseController  {
      * @param array $invoices -- Список счетов, ссылки на котороые нужно отправить
      * @return string
      */
-    public static function make_email_body(array $agents, array $abon, array $invoices) {
+    public static function make_email_body(array $agents, array $abon, array $invoices)
+    {
 
         $header = "<p>Доброго дня.</p>"
                 . "<p>Рахунок за послуги доступу до мережі інтернет.</p>"
@@ -579,10 +587,8 @@ class EmailController extends AppBaseController  {
      * Список рассылки уведомлений по email
      * @return void
      */
-    public function listAction() {
-
-        // debug($_GET, '$_GET', die:0);
-        // debug($_POST, '$_POST', die:0);
+    public function listAction()
+    {
 
         $model = new AbonModel();
 
@@ -607,13 +613,6 @@ class EmailController extends AppBaseController  {
                 )
             );
 
-        // debug([
-        //     '$today'=>$today,
-        //     '$autocreate_invoice'=>$autocreate_invoice,
-        //     '$do_send'=>$do_send,
-        //     '$to_test_send'=>$to_test_send,
-        // ], '', die:0);
-
         /**
          * Отправлять письма
          */
@@ -624,6 +623,13 @@ class EmailController extends AppBaseController  {
             if (empty($_POST[Email::REC][Abon::TABLE])) {
                 MsgQueue::msg(MsgType::INFO, 'Не выбраны абоненты для отправки писем');
             } else {
+                
+                /**
+                 * Инициализация объекта для отправки почты
+                 */
+                $mailer = self::init_mailer();
+                $mailer->SMTPKeepAlive = true;   // держать соединение открытым между send()
+                
                 foreach ($_POST[Email::REC][Abon::TABLE] as $abon_id => $send) {
                     $rec = $model->get_rec_for_email_send($abon_id, $today);
                     if (count($rec[Invoice::TABLE]) == 0) {
@@ -661,82 +667,99 @@ class EmailController extends AppBaseController  {
                     $as_html    = boolval($rec[User::TABLE][User::F_EMAIL_SEND_HTML]);
 
                     $attachments = [];
-                    if ($rec[User::TABLE][User::F_EMAIL_SEND_PDF]) {
-                        foreach ($rec[Invoice::TABLE] as $invoice) {
-                            $show_inv = 1; // !!! эти параметры нужно откуда-то брать
-                            $show_act = 1; // !!! эти параметры нужно откуда-то брать
-                            $show_sht = 1; // !!! эти параметры нужно откуда-то брать
-                            $path = InvoiceController::generate_pdf($invoice, $show_inv, $show_act, $show_sht);
-                            $name = InvoiceController::make_filename($invoice, $show_inv);
-                            MsgQueue::msg(MsgType::INFO, 'Создан файл PDF: ' . $name);
-                            $attachments[] = 
-                                self::attachment_rec(
-                                    path: $path,
-                                    name: $name,
-                                    type: 'application/pdf',
-                                );
+                    
+                    try { // для корректного удаления файлов вложений в случае исключения
+                        
+                        if ($rec[User::TABLE][User::F_EMAIL_SEND_PDF]) {
+                            foreach ($rec[Invoice::TABLE] as $invoice) {
+                                $show_inv = 1; // !!! эти параметры нужно откуда-то брать
+                                $show_act = 1; // !!! эти параметры нужно откуда-то брать
+                                $show_sht = 1; // !!! эти параметры нужно откуда-то брать
+                                $path = InvoiceController::generate_pdf($invoice, $show_inv, $show_act, $show_sht);
+                                $name = InvoiceController::make_filename($invoice, $show_inv);
+                                MsgQueue::msg(MsgType::INFO, 'Создан файл PDF: ' . $name);
+                                $attachments[] = 
+                                    self::attachment_rec(
+                                        path: $path,
+                                        name: $name,
+                                        type: 'application/pdf',
+                                    );
+                            }
                         }
-                    }
 
-                    if (empty($to_test_send)) {
-                        /**
-                         * Реальная отправка абоненту
-                         */
-                        if ($this->send(
-                                    to: $to, 
-                                    subject: $subject, 
-                                    body_text: $body_text, 
-                                    body_html: $body_html, 
-                                    attachments: $attachments, 
-                                    as_html: $as_html
-                            ))
-                        {
-                            MsgQueue::msg(MsgType::SUCCESS, 
-                                    '<span class="font-monospace">'
-                                    . (boolval($rec[User::TABLE][User::F_EMAIL_SEND_HTML]) ? "HTML" : "TEXT") . ' | ' 
-                                    . (boolval($rec[User::TABLE][User::F_EMAIL_SEND_PDF])  ? "PDF"  : "---")  . ' | ' 
-                                    . 'Успешно: '
-                                    . "{$subject}")
-                                    . '</span>';
+                        if (empty($to_test_send)) {
                             /**
-                             * Регистрируем в базе
+                             * Реальная отправка абоненту
                              */
-                            if (!$this->registration($rec[Abon::TABLE][Abon::F_ID], $to, $subject, $body_text)) {
-                                MsgQueue::msg(MsgType::ERROR, (empty($to_test_send) ? '' : 'Ошибка регистрации: ') . "{$subject}");
+                            $log_send = '';
+                            if (self::send(
+                                        to: $to, 
+                                        subject: $subject, 
+                                        body_text: $body_text, 
+                                        body_html: $body_html, 
+                                        attachments: $attachments, 
+                                        as_html: $as_html,
+                                        mailer: $mailer,
+                                        log: $log_send
+                                ))
+                            {
+                                MsgQueue::msg(MsgType::SUCCESS, 
+                                        '<span class="font-monospace">'
+                                        . (boolval($rec[User::TABLE][User::F_EMAIL_SEND_HTML]) ? "HTML" : "TEXT") . ' | ' 
+                                        . (boolval($rec[User::TABLE][User::F_EMAIL_SEND_PDF])  ? "PDF"  : "---")  . ' | ' 
+                                        . 'Успешно: '
+                                        . "{$subject}")
+                                        . '</span>';
+                                /**
+                                 * Регистрируем в базе
+                                 */
+                                if (!self::registration($rec[Abon::TABLE][Abon::F_ID], $to, $subject, $body_text)) {
+                                    MsgQueue::msg(MsgType::ERROR, (empty($to_test_send) ? '' : __('Registration error | Ошибка регистрации | Помилка реєстрації') . ': ') . "{$subject}");
+                                }
+                            } else {
+                                MsgQueue::msg(MsgType::ERROR, __('Send error | Ошибка отправки | Помилка відправлення') . ': ' . "{$subject}" . ($log_send ? "<pre>{$log_send}</pre>" : ''));
                             }
                         } else {
-                            MsgQueue::msg(MsgType::ERROR, 'Ошибка отправки: ' . "{$subject}");
+                            /**
+                             * Тестовая отправка абоненту
+                             */
+                            $log_send = '';
+                            if (self::send(
+                                        to: [['email'=>$to_test_send]], 
+                                        subject: $subject, 
+                                        body_text: $body_text, 
+                                        body_html: $body_html, 
+                                        attachments: $attachments, 
+                                        as_html: $as_html,
+                                        mailer: $mailer,
+                                        log: $log_send
+                                ))
+                            {
+                                MsgQueue::msg(MsgType::SUCCESS, 
+                                        (boolval($rec[User::TABLE][User::F_EMAIL_SEND_HTML]) ? "HTML" : "TEXT") . ' | ' 
+                                        . (boolval($rec[User::TABLE][User::F_EMAIL_SEND_PDF])  ? "PDF"  : "---")  . ' | ' 
+                                        . 'Тест оправлен успешно: '
+                                        . "{$subject}");
+                            } else {
+                                MsgQueue::msg(MsgType::ERROR, __('Error sending test email | Ошибка отправки тестового письма | Помилка надсилання тестового листа') . ': ' . "{$subject}" . ($log_send ? "<pre>{$log_send}</pre>" : ''));
+                            }
                         }
-                    } else {
+
+                        
+                    } finally { // Для удаления файлов вложении на сервере даже в случае исключения в процессе обработки
+
                         /**
-                         * Тестовая отправка абоненту
+                         * Удаление файлов вложений на сервере
                          */
-                        if ($this->send(
-                                    to: [['email'=>$to_test_send]], 
-                                    subject: $subject, 
-                                    body_text: $body_text, 
-                                    body_html: $body_html, 
-                                    attachments: $attachments, 
-                                    as_html: $as_html
-                            ))
-                        {
-                            MsgQueue::msg(MsgType::SUCCESS, 
-                                    (boolval($rec[User::TABLE][User::F_EMAIL_SEND_HTML]) ? "HTML" : "TEXT") . ' | ' 
-                                    . (boolval($rec[User::TABLE][User::F_EMAIL_SEND_PDF])  ? "PDF"  : "---")  . ' | ' 
-                                    . 'Тест оправлен успешно: '
-                                    . "{$subject}");
-                        } else {
-                            MsgQueue::msg(MsgType::ERROR, 'Ошибка отправки тестового письма: ' . "{$subject}");
+                        foreach ($attachments as $attachment) {
+                            @unlink($attachment[Email::ATTACH_PATH]);
                         }
+                        
                     }
 
-                    /**
-                     * Удаление файлов вложений на сервере
-                     */
-                    foreach ($attachments as $attachment) {
-                        unlink($attachment[Email::ATTACH_PATH]);
-                    }
+
                 }
+                $mailer->smtpClose();            // закрыть явно после цикла
             }
 
             redirect();
@@ -751,12 +774,11 @@ class EmailController extends AppBaseController  {
         $list_send = $model->get_full_list_for_email_send($today);
         foreach ($list_send as &$rec) {
             $rec[Email::REC][Email::F_TO] = self::parse_mail_recipients($rec[User::TABLE][User::F_EMAIL_MAIN]);
-            // $rec[Email::REC][Email::F_SUBJECT] = self::make_email_subject($rec['agents'], $rec[Abon::TABLE]);
-            // $rec[Email::REC][Email::F_BODY_HTML] = self::make_email_body($rec['agents'], $rec[Abon::TABLE], $rec[Invoice::TABLE]);
             $rec[Notify::TABLE] = NoticeController::get_notice_list($rec[Abon::TABLE][Abon::F_ID], Notify::TYPE_EMAIL, $today);
         }
+        unset($rec);
 
-        $title = __('Список рассылки Счетов по электроной почте');
+        $title = __('Email invoice distribution list | Список рассылки счетов по электроной почте | Список розсилки рахунків електронною поштою');
 
         $this->setVariables([
             'title'=> $title,
@@ -774,74 +796,40 @@ class EmailController extends AppBaseController  {
 
     }
 
+    
+
+    private static function input(string $key, string|int $default = ''): mixed
+    {
+        return $_POST[Email::REC][$key] ?? $_GET[Email::REC][$key] ?? $default;
+    }    
 
 
+    
     public function formAction() {
 
-        // debug($_GET, '_GET');
-        // debug($_POST, '_POST');
+        $abon_id = self::input(Email::F_REGISTER_ABON_ID, "");
 
-        $abon_id = (isset($_POST[Email::REC][Email::F_REGISTER_ABON_ID]) 
-                ? $_POST[Email::REC][Email::F_REGISTER_ABON_ID] 
-                : (isset($_GET[Email::REC][Email::F_REGISTER_ABON_ID]) 
-                    ? $_GET[Email::REC][Email::F_REGISTER_ABON_ID] 
-                    : ""));
-
-        $to_str = (isset($_POST[Email::REC][Email::F_TO]) 
-                ? $_POST[Email::REC][Email::F_TO] 
-                : (isset($_GET[Email::REC][Email::F_TO]) 
-                    ? $_GET[Email::REC][Email::F_TO] 
-                    : ""));
+        $to_str = self::input(Email::F_TO, "");
 
         $to = EmailController::parse_mail_recipients($to_str);
 
-        $subject = (isset($_POST[Email::REC][Email::F_SUBJECT]) 
-                ? $_POST[Email::REC][Email::F_SUBJECT] 
-                : (isset($_GET[Email::REC][Email::F_SUBJECT]) 
-                    ? $_GET[Email::REC][Email::F_SUBJECT] 
-                    : ""));
+        $subject = self::input(Email::F_SUBJECT, "");
 
-        $body_text = (isset($_POST[Email::REC][Email::F_BODY_TEXT]) 
-                ? $_POST[Email::REC][Email::F_BODY_TEXT] 
-                : (isset($_GET[Email::REC][Email::F_BODY_TEXT]) 
-                    ? $_GET[Email::REC][Email::F_BODY_TEXT] 
-                    : ""));
+        $body_text = self::input(Email::F_BODY_TEXT, "");
                     
-        $body_html = (isset($_POST[Email::REC][Email::F_BODY_HTML]) 
-                ? $_POST[Email::REC][Email::F_BODY_HTML] 
-                : (isset($_GET[Email::REC][Email::F_BODY_HTML]) 
-                    ? $_GET[Email::REC][Email::F_BODY_HTML] 
-                    : ""));
+        $body_html = self::input(Email::F_BODY_HTML, "");
 
-        $attach_path = (isset($_POST[Email::REC][Email::F_ATTACH_PATH]) 
-                ? $_POST[Email::REC][Email::F_ATTACH_PATH] 
-                : (isset($_GET[Email::REC][Email::F_ATTACH_PATH]) 
-                    ? $_GET[Email::REC][Email::F_ATTACH_PATH] 
-                    : ""));
+        $attach_path = self::input(Email::F_ATTACH_PATH, "");
 
-        $attach_name = (isset($_POST[Email::REC][Email::F_ATTACH_NAME]) 
-                ? $_POST[Email::REC][Email::F_ATTACH_NAME] 
-                : (isset($_GET[Email::REC][Email::F_ATTACH_NAME]) 
-                    ? $_GET[Email::REC][Email::F_ATTACH_NAME] 
-                    : ""));
+        $attach_name = self::input(Email::F_ATTACH_NAME, "");
 
         /**  Флаг: зарегистрировать  письмо в базе уведомлений */
-        $register = (isset($_POST[Email::REC][Email::F_REGISTER]) 
-                ? ($_POST[Email::REC][Email::F_REGISTER] ? 1 : 0)
-                : (isset($_GET[Email::REC][Email::F_REGISTER]) 
-                    ? ($_GET[Email::REC][Email::F_REGISTER] ? 1 : 0)
-                    : 0));
+        $register = self::input(Email::F_REGISTER, 0) ? 1 : 0;
 
-        $do_send = (isset($_POST[Email::REC][Email::F_DO_SEND]) 
-                ? ($_POST[Email::REC][Email::F_DO_SEND] ? 1 : 0)
-                : (isset($_GET[Email::REC][Email::F_DO_SEND]) 
-                    ? ($_GET[Email::REC][Email::F_DO_SEND] ? 1 : 0) 
-                    : 0));
+        /**  Флаг: Отправлять это письмо */
+        $do_send = self::input(Email::F_DO_SEND, 0) ? 1 : 0;
 
         $title = __('Email notification form | Форма отправки уведомления электнонной почтой | Форма надсилання повідомлення електронною поштою');
-
-        // MsgQueue::msg(MsgType::INFO, "do_send: $do_send"); 
-        // MsgQueue::msg(MsgType::INFO, "do_send: $do_send"); 
 
         /**
          * Отправка письма
@@ -858,55 +846,45 @@ class EmailController extends AppBaseController  {
                 )
             ) 
         {
-            // debug('Отправка', die:0);
-            // debug([
-            //     'to_str' => $to_str, 
-            //     'subject'=>$subject, 
-            //     'body_text'=>$body_text, 
-            //     'body_html'=>$body_html, 
-            //     'register' => $register,
-            //     'abon_id'=>$abon_id,
-            //     'attach_path'=>$attach_path, 
-            //     'attach_name'=>$attach_name], '$to, $subject, $body_text, $body_html, $attach_path, $attach_name');
-            // debug('Отправка', die:1);
             $subject = trim($subject);
             $body_text = trim($body_text);
             $body_html = trim($body_html);
             $as_html = !empty($body_html);
             if (empty($body_text)) { $body_text = html_to_text($body_html); }
-
-            if ($this->send(
+            $log_send = '';
+            if (self::send(
                         to: $to, 
                         subject: $subject, 
                         body_text: $body_text, 
                         body_html: $body_html, 
                         attachments: [], 
-                        as_html: $as_html
+                        as_html: $as_html,
+                        log: $log_send
                     )
                 )
             {
-                MsgQueue::msg(MsgType::SUCCESS, 'Успешная отправка письма | ' . ($as_html ? "HTML" : "TEXT") . ' | ' . "{$subject}");
+                MsgQueue::msg(MsgType::SUCCESS, __('Successful sending of email | Успешная отправка электронного письма | Успішне надсилання електронного листа') . ' | ' . ($as_html ? "HTML" : "TEXT") . ' | ' . "{$subject}");
                 /**
                  * Регистрируем в базе
                  */
                 if ($register) {
-                    if ($this->registration(
+                    if (self::registration(
                             abon_id: $abon_id, 
                             to: $to, 
                             subject: $subject,
                             body: $body_text,
                             method: Notify::METHOD_EMAIL_FORM)) 
                     {
-                        MsgQueue::msg(MsgType::SUCCESS, 'Успешная регистрация уведомления | ' . "{$subject}");
+                        MsgQueue::msg(MsgType::SUCCESS, __('Successful notification registration | Успешная регистрация уведомления | Успішна реєстрація повідомлення') . ' | ' . "{$subject}");
                     } else {
-                        MsgQueue::msg(MsgType::ERROR, 'Ошибка регистрации уведомления | ' . "{$subject}");
+                        MsgQueue::msg(MsgType::ERROR, __('Notification registration error | Ошибка регистрации уведомления | Помилка реєстрації повідомлення') . ' | ' . "{$subject}");
                     }
                 }
             } else {
-                MsgQueue::msg(MsgType::ERROR, 'Ошибка отправки | ' . ($as_html ? "HTML" : "TEXT") . ' | ' . "{$subject}");
+                MsgQueue::msg(MsgType::ERROR, 'Ошибка отправки | ' . ($as_html ? "HTML" : "TEXT") . ' | ' . "{$subject}" . ($log_send ? "<pre>{$log_send}</pre>" : ''));
             }
 
-            // redirect();
+            redirect();
 
         }
 
@@ -933,11 +911,10 @@ class EmailController extends AppBaseController  {
     
     public function testAction() 
     {
-        if ($this->send(
+        if (self::send(
                 to: [
-                    'name' => 'Ariv',
-                    'email' => "ariv@meta.ua"
-                ], 
+                        ['name' => 'Ariv', 'email' => "ariv@meta.ua"],
+                    ], 
                 subject: "TEST MailController 1", 
                 body_text: "TEST", 
                 body_html: "<h1>TEST</h1>", 
