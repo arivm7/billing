@@ -70,6 +70,7 @@ class Api {
     public const CMD_CHANGE_PRICE = 'cmd_change_price';
     public const CMD_INVOICE_PAY_CONFIRM  = 'cmd_inv_pay_confirm';
     public const CMD_SMS_REG    = 'sms_reg';
+    public const CMD_TEST_AUTH  = 'test_auth';
     
 // prices_apply_id=2760
 // date_end=null

@@ -787,6 +787,34 @@ class ApiController extends AppBaseController {
                         exit(1);
                     }
                     break;
+                    
+                    
+                    
+                case Api::CMD_TEST_AUTH:
+
+                    /**
+                     * Обработка POST API-запроса с Bearer-токеном и form-данными
+                     * к этому месту уже прошла проверка Bearer Token
+                     */
+
+                    // 1. Проверка метода
+                    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                        http_response_code(405);
+                        echo __('Method not allowed | Метод не разрешен | Метод не дозволено') . "\n";
+                        exit(1);
+                    }
+
+                    if (can_add(Module::MOD_NOTICE)) {
+                        http_response_code(200);
+                        echo "OK";
+                        exit(0);
+                    } else {
+                        http_response_code(403);
+                        echo __('No rights | Нет прав | Немає прав') . "\n";
+                        self::log_no_rights();
+                        exit(1);
+                    }
+                    break;
 
 
 
