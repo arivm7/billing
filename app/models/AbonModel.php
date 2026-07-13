@@ -2208,7 +2208,7 @@ class AbonModel extends UserModel {
      * @return array -- запись платежа или пустой массив если нет платежей
      */
     function get_payment_last(int $abon_id): array {
-        $sql= "SELECT * FROM ".Pay::TABLE." WHERE ".Pay::F_ABON_ID." = $abon_id ORDER BY ".Pay::F_DATE." DESC LIMIT 1";
+        $sql= "SELECT * FROM ".Pay::TABLE." WHERE ".Pay::F_ABON_ID." = $abon_id AND `".Pay::F_PAY_FAKT."` > 0 ORDER BY ".Pay::F_DATE." DESC LIMIT 1";
         $rows = $this->get_rows_by_sql($sql);
         return $rows[array_key_first($rows)] ?? [];
     }    

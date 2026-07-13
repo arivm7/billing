@@ -407,20 +407,7 @@ class NoticeController extends AppBaseController
                         $row['last_pay'] = $model->get_payment_last($row['abon_id']);
                         $row['do_send'] = 0;
                         $lines[] = $row;
-                        // if ($row['abon_id'] == 19595) {
-                        //     debug($row, '$row');
-                        // }
                     }
-                    // else
-                    // {
-                    //     if ($row[AbonRest::TABLE][AbonRest::F_SUM_PP30A] == 0) {
-                    //         debug($row, '$row');
-                    //     }
-                    //     else {
-                    //         echo $row['abon_id'] . '<br>';
-                    //     }
-                        
-                    // }
                 }
                 unset($rows);
 
